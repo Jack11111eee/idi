@@ -459,3 +459,23 @@ button.primary {
   font-weight: 600;
 }
 #btn-process-round:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* 划词小菜单(D-P2-1:原生 DOM,绝对定位,选区末端附近;不越视口由 JS clamp) */
+#selection-menu {
+  position: absolute;
+  z-index: 200;
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+#selection-menu.hidden { display: none; }
+#selection-menu button {
+  border: none;
+  background: transparent;
+  white-space: nowrap;
+}
+#selection-menu button:hover { background: #eef4ff; }

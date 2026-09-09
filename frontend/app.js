@@ -45,6 +45,11 @@ const pendingCount = document.getElementById('pending-count');
 const annotationList = document.getElementById('annotation-list');
 const processRoundBtn = document.getElementById('btn-process-round');
 
+// 划词小菜单句柄(D-P2-1)
+const selectionMenu = document.getElementById('selection-menu');
+const annotateBtn = document.getElementById('btn-annotate');
+const plainAskBtn = document.getElementById('btn-plain-ask');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
@@ -407,6 +412,8 @@ async function loadRoundsView(roundN) {
   });
   roundSwitcher.value = String(target);
   await loadRoundView(target, current_round);
+  // 划词菜单一次性绑定(menu 单例;handler 内部动态读当前显示轮判定冻结,D-P2-21)
+  initSelectionMenu();
 }
 
 // 渲染指定轮:标题 + 冻结判定 + 文档 markdown + 批注流条目
@@ -577,6 +584,179 @@ roundSwitcher.addEventListener('change', () => {
   if (!Number.isFinite(n)) return;
   loadRoundView(n);
 });
+
+// ---------------------------------------------------------------------------
+// 划词交互(D-P2-1~3,§4.2/§9):mouseup 检测选区 → 原生小菜单两项
+// 「批注」「用大白话讲这段」。仅绑 round-doc 容器——阶段 1-2 草稿区/会话流
+// 无划词(D-P2-2);冻结轮(显示轮 < 当前轮)handler 直接返回(D-P2-21)。
+// ---------------------------------------------------------------------------
+
+// mouseup 时捕获的选区快照(菜单动作延迟读取会因选择被清除而丢)
+let menuSelection = null;
+
+// before 计算(D-P2-3):选区真正起点(方向无关)在其文本节点中的前文取末 40 字。
+// 用 getRangeAt(0).startContainer/startOffset,不用 anchorNode——反向拖拽时
+// anchor 是选区终点,locate_quote 的 before 二次定位会被反向起点败掉;
+// Range 起点在两种拖拽方向下同为选区真正起点。startContainer 非文本节点
+// (元素节点,如划过整段)时取空串——配对靠 quote 唯一性,合法降级。
+function computeBefore(selection) {
+  if (!selection || selection.rangeCount === 0) return '';
+  const range = selection.getRangeAt(0);
+  const { startContainer, startOffset } = range;
+  if (startContainer.nodeType === Node.TEXT_NODE) {
+    // 文本节点:起点前的字符切片取末 40(中文按字符计,§6.2「前 40 字」)
+    return String(startContainer.data || '').slice(0, startOffset).slice(-40);
+  }
+  return ''; // 元素节点起点:无同文本节点前文可取,配对靠 quote 唯一性
+}
+
+// 选区是否落在 round-doc 容器内(menu 本就只在 round-doc mouseup 时弹出,
+// 双保险:跨容器选区(从侧栏拖进文档)也要求锚定在 round-doc)
+function selectionInRoundDoc(selection) {
+  if (!selection || selection.rangeCount === 0) return false;
+  const node = selection.anchorNode;
+  if (!node) return false;
+  const el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  return !!(el && roundDoc.contains(el));
+}
+
+// 隐藏菜单并清空选区快照
+function hideSelectionMenu() {
+  selectionMenu.classList.add('hidden');
+  menuSelection = null;
+}
+
+// 显示菜单在选区附近(向右下偏移,不越视口——简单 clamp)
+function showSelectionMenu(selection) {
+  const range = selection.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  selectionMenu.classList.remove('hidden');
+  const OFFSET = 8;
+  let x = window.scrollX + rect.left + OFFSET;
+  let y = window.scrollY + rect.bottom + OFFSET;
+  // clamp:不越视口右/下边界(简单数学,不含菜单尺寸精确补偿)
+  const menuRect = selectionMenu.getBoundingClientRect();
+  const maxX = window.scrollX + document.documentElement.clientWidth - menuRect.width - 4;
+  const maxY = window.scrollY + document.documentElement.clientHeight - menuRect.height - 4;
+  if (x > maxX) x = maxX;
+  if (y > maxY) y = maxY;
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+  selectionMenu.style.left = `${x}px`;
+  selectionMenu.style.top = `${y}px`;
+}
+
+// 一次性绑定入口(menu 单例,handler 内部动态读当前显示轮判定冻结)
+let selectionMenuBound = false;
+function initSelectionMenu() {
+  if (selectionMenuBound) return;
+  selectionMenuBound = true;
+
+  // 仅 round-doc 容器内 mouseup 触发(D-P2-2:draft-view / chat 区绝不绑此菜单)
+  roundDoc.addEventListener('mouseup', () => {
+    // 冻结轮禁用(D-P2-21:历史轮不可批注)——服务端 409 是防线,这里只是呈现
+    if (currentRoundNumber != null && displayedRoundNumber != null
+        && displayedRoundNumber < currentRoundNumber) return;
+    if (currentState !== 'phase3') return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !String(selection.toString()).trim()) {
+      hideSelectionMenu();
+      return;
+    }
+    if (!selectionInRoundDoc(selection)) {
+      hideSelectionMenu();
+      return;
+    }
+    menuSelection = selection;
+    showSelectionMenu(selection);
+  });
+
+  // 点文档其他位置/滚动 → 菜单消失(菜单自身点击不冒泡关闭)
+  document.addEventListener('mousedown', (e) => {
+    if (selectionMenu.classList.contains('hidden')) return;
+    if (selectionMenu.contains(e.target)) return;
+    hideSelectionMenu();
+  });
+  window.addEventListener('scroll', hideSelectionMenu, true);
+
+  // 菜单项 1:「批注」→ 原生 prompt 收 note → POST annotations(实现取简,零依赖)
+  annotateBtn.addEventListener('click', async () => {
+    const sel = menuSelection;
+    hideSelectionMenu();
+    if (!sel) return;
+    const quote = String(sel.toString());
+    const before = computeBefore(sel);
+    const note = window.prompt('写批注(将绑定到划选原文)', '');
+    if (note == null) return; // 取消:不建条目
+    if (!note.trim()) {
+      renderEvent({ kind: 'error', content: '批注内容不能为空', raw: null });
+      return;
+    }
+    const n = displayedRoundNumber;
+    const result = await roundApi.postAnnotations(n, { quote, before, note });
+    if (result.ok) {
+      // 成功:拉新侧栏(新条目 pending 徽标)+ 计数(G-idi01-7 同型拉新)
+      await loadRoundView(n);
+      await refreshPendingCount();
+    } else if (result.status === 409) {
+      renderEvent({ kind: 'error', content: '仅当前轮可批注', raw: null });
+    } else {
+      renderEvent({
+        kind: 'error',
+        content: `批注失败:${(result.data && result.data.message) || result.status}`,
+        raw: null,
+      });
+    }
+  });
+
+  // 菜单项 2:「用大白话讲这段」→ 固定 question 直接 POST plain(实现取简)
+  plainAskBtn.addEventListener('click', async () => {
+    const sel = menuSelection;
+    hideSelectionMenu();
+    if (!sel) return;
+    const quote = String(sel.toString());
+    const before = computeBefore(sel);
+    const n = displayedRoundNumber;
+    renderEvent({ kind: 'say', content: '正在请 AI 用大白话解释这段(数秒内返回)…', raw: null });
+    const result = await roundApi.postPlain(n, {
+      quote,
+      before,
+      question: '用大白话讲讲这段',
+    });
+    if (result.ok) {
+      // 即时答已落盘为 plain 条目:拉新侧栏(answer 灰斜体展示)
+      await loadRoundView(n);
+    } else if (result.status === 409) {
+      renderEvent({ kind: 'error', content: '仅当前轮可用大白话(或有调用进行中)', raw: null });
+    } else if (result.status === 502) {
+      renderEvent({
+        kind: 'error',
+        content: `大白话调用失败:${(result.data && result.data.message) || 'AI 未返回结果'}`,
+        raw: null,
+      });
+    } else {
+      renderEvent({
+        kind: 'error',
+        content: `大白话请求失败:${(result.data && result.data.message) || result.status}`,
+        raw: null,
+      });
+    }
+  });
+}
+
+// 拉新未处理数(建批注后 / done 后共用)
+async function refreshPendingCount() {
+  if (currentProject == null) return;
+  try {
+    const resp = await fetch('/api/session');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (data.status === 'ok' && data.state === 'phase3') {
+      pendingCount.textContent = `本轮批注未处理 ${data.pending_annotations}`;
+    }
+  } catch { /* 拉不到保持现状 */ }
+}
 
 // ---------------------------------------------------------------------------
 // 发散模式(FLOW-06 §3.7):「没想法」入口 → POST /api/divergence,过程走 SSE 直播

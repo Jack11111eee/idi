@@ -66,7 +66,9 @@ def write_config(update: dict) -> dict:
 def make_ai_caller(config: dict):
     """工厂:按 config 的 ai_caller 键选择 AICaller 实现路线(D-P1-5)。
 
-    Task 1 只提供 subprocess 路线;Task 2 增加 SDK 路线后此处切换两条实现。
+    "sdk" → SdkAICaller(Claude Agent SDK 首选路线,Task 2 起可用)
+    "subprocess" → SubprocessAICaller(claude CLI 子进程兜底)
+    前端与上层零改动,两条路线事件契约一致。
     """
     route = config.get("ai_caller", "sdk")
     if route == "subprocess":
@@ -74,9 +76,7 @@ def make_ai_caller(config: dict):
 
         return SubprocessAICaller()
     if route == "sdk":
-        # SDK 路线在 Task 2 落地;此前回落到 subprocess(引导期唯一可运行路线)
-        from backend.ai_caller import SubprocessAICaller
+        from backend.ai_caller import SdkAICaller
 
-        logger.warning("sdk 路线尚未就绪,回落 subprocess(Task 2 接入)")
-        return SubprocessAICaller()
+        return SdkAICaller(model=config.get("ai_model"))
     raise ValueError(f"未知 ai_caller 路线:{route!r}")

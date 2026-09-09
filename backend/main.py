@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from backend import config as cfg
 from backend.ai_caller import AICaller
+from backend.cli_check import check_claude_cli
 from backend.events import broker
 
 app = FastAPI(title="interactive-discuss-iteration")
@@ -73,6 +74,16 @@ def abort() -> JSONResponse:
 @app.get("/api/health")
 def health() -> JSONResponse:
     return JSONResponse({"status": "ok"})
+
+
+@app.get("/api/cli-check")
+def cli_check() -> JSONResponse:
+    """claude CLI 自检(§7.1)。
+
+    「只挡第一次」语义在前端:后端不缓存失败、不拒绝后续请求,
+    用户点「重新检测」即再调本端点。
+    """
+    return JSONResponse(check_claude_cli())
 
 
 @app.get("/api/events")

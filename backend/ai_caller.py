@@ -11,8 +11,10 @@
   }
 """
 
+import asyncio
 import json
 import subprocess
+import threading
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Iterator
@@ -267,4 +269,210 @@ class SubprocessAICaller(AICaller):
         except ProcessLookupError:
             pass  # 进程已先于我们退出
         self._process = None
+        return True
+
+
+# ---------------------------------------------------------------------------
+# SdkAICaller:Claude Agent SDK 路线(Task 2,§5.3 首选路线)
+# ---------------------------------------------------------------------------
+
+# SDK 消息里的 tool name → 统一 kind(与子进程路线共表)
+_SDK_TOOL_KIND = _TOOL_KIND
+
+
+def normalize_sdk_message(message) -> list[dict]:
+    """把 SDK 消息对象归一化为统一事件字典列表(独立纯函数,便于单测)。
+
+    - AssistantMessage:文本块 → say;ToolUseBlock → 按 _SDK_TOOL_KIND
+      (一条消息可同时含文本与工具块,逐块产出,不丢事件)
+    - ResultMessage → kind=done(或 error,当 is_error)
+    - 其余(SystemMessage 等)→ 空列表
+    """
+    from claude_agent_sdk.types import AssistantMessage, ResultMessage
+
+    if isinstance(message, AssistantMessage):
+        events = []
+        for block in message.content:
+            block_type = type(block).__name__
+            if block_type == "TextBlock" and block.text.strip():
+                events.append(
+                    {"kind": "say", "content": block.text, "raw": _raw_of(message)}
+                )
+            elif block_type == "ToolUseBlock":
+                kind = _SDK_TOOL_KIND.get(block.name, "command")
+                tool_input = block.input or {}
+                target = (
+                    tool_input.get("file_path")
+                    or tool_input.get("notebook_path")
+                    or tool_input.get("path")
+                    or tool_input.get("command")
+                    or tool_input.get("pattern")
+                    or ""
+                )
+                events.append(
+                    {"kind": kind, "content": str(target), "raw": _raw_of(message)}
+                )
+        return events
+    if isinstance(message, ResultMessage):
+        kind = "error" if message.is_error else "done"
+        content = message.result or ("调用结束" if kind == "done" else "调用出错")
+        return [{"kind": kind, "content": content, "raw": _raw_of(message)}]
+    return []
+
+
+def _raw_of(message) -> dict:
+    """把 dataclass 消息转成可 JSON 序列化的 dict(raw 字段用)。"""
+    import dataclasses
+
+    if dataclasses.is_dataclass(message) and not isinstance(message, type):
+        try:
+            return dataclasses.asdict(message)
+        except Exception:  # 不可序列化字段(枚举等)兜底
+            return {"type": type(message).__name__}
+    return {"type": type(message).__name__}
+
+
+class SdkAICaller(AICaller):
+    """SDK 首选路线:claude-agent-sdk 的 query() 查询式调用。
+
+    事件枚举与 SubprocessAICaller 完全同构(§5.3 双轨契约);
+    can_use_tool 回调接入 make_permission_decision:
+    allow 放行 / reject 拒绝 / confirm 按 reject 处理并打日志
+    (默认 deny 更安全;完整 SSE 弹窗闭环在后续计划完成)。
+    """
+
+    def __init__(self, cli_path: str | None = None, model: str | None = None):
+        self._cli_path = cli_path
+        self._model = model
+        self._abort_flag = threading.Event()
+        self._interrupt_event: asyncio.Event | None = None
+
+    def _build_options(self, project_path):
+        from claude_agent_sdk import ClaudeAgentOptions
+
+        project = Path(project_path)
+
+        async def _can_use_tool(
+            tool_name: str, tool_input: dict, context
+        ):
+            # 动作分类:写类工具 → write,其余(read/查)→ read,Bash → command
+            if tool_name == "Bash":
+                action, target = "command", tool_input.get("command", "")
+            elif tool_name in ("Write", "Edit"):
+                action, target = "write", tool_input.get("file_path", "")
+            else:
+                action, target = "read", tool_input.get("file_path") or tool_input.get(
+                    "path", ""
+                )
+            decision = make_permission_decision(project, action, target)
+            from claude_agent_sdk.types import (
+                PermissionResultAllow,
+                PermissionResultDeny,
+            )
+
+            if decision == "allow":
+                return PermissionResultAllow()
+            if decision == "reject":
+                return PermissionResultDeny(message=f"权限拒绝:目标 {target}")
+            # confirm:Phase 1 按 reject 处理(默认 deny 更安全,SSE 弹窗后续计划接)
+            return PermissionResultDeny(message=f"需确认(暂按拒绝):{action} {target}")
+
+        options = ClaudeAgentOptions(
+            cwd=str(project),
+            system_prompt=build_system_prompt(),
+            can_use_tool=_can_use_tool,
+        )
+        if self._cli_path:
+            options.cli_path = self._cli_path
+        if self._model:
+            options.model = self._model
+        return options
+
+    async def _run_async(self, project_path, prompt: str):
+        from claude_agent_sdk import ClaudeSDKClient
+        from claude_agent_sdk.types import ResultMessage
+
+        self._abort_flag.clear()
+        self._interrupt_event = asyncio.Event()
+
+        async def _watch_abort():
+            # 在工作线程里等 threading.Event,置 asyncio Event 以中断迭代
+            while not self._abort_flag.is_set():
+                await asyncio.sleep(0.2)
+            self._interrupt_event.set()
+
+        options = self._build_options(project_path)
+        client = ClaudeSDKClient(options=options)
+        await client.connect()
+        watcher = asyncio.create_task(_watch_abort())
+        try:
+            await client.query(prompt)
+            async for message in client.receive_messages():
+                if self._abort_flag.is_set():
+                    break  # 中止:提前收流
+                for event in normalize_sdk_message(message):
+                    yield event
+                if isinstance(message, ResultMessage):
+                    return
+        finally:
+            watcher.cancel()
+            try:
+                await client.disconnect()
+            except Exception:
+                pass  # 中止路径下的断开异常不致命
+            self._interrupt_event = None
+
+    def run(self, project_path, prompt: str) -> Iterator[dict]:
+        """驱动单个 asyncio 循环耗尽 _run_async,同步生成器逐条产出统一事件。
+
+        注意:async 生成器必须绑定在同一个事件循环里迭代
+        (asyncio.run 每次新建循环会导致 aclose 异常与事件丢失),
+        因此把整个耗尽过程放进一个 loop,用队列把事件递给调用方。
+        """
+        import queue as _queue
+
+        out_q: _queue.Queue = _queue.Queue()
+        FIN = object()  # 流结束哨兵
+
+        def _worker():
+            async def _consume():
+                agen = self._run_async(project_path, prompt)
+                try:
+                    async for event in agen:
+                        out_q.put(event)
+                finally:
+                    out_q.put(FIN)
+
+            try:
+                asyncio.run(_consume())
+            except Exception as exc:
+                out_q.put({"kind": "error", "content": f"SDK 调用异常:{exc}", "raw": None})
+                out_q.put(FIN)
+
+        thread = threading.Thread(target=_worker, daemon=True)
+        thread.start()
+        saw_done = False
+        while True:
+            item = out_q.get()
+            if item is FIN:
+                break
+            if item["kind"] in ("done", "error"):
+                saw_done = True  # 流自带收尾事件(ResultMessage 异常转 error)
+            yield item
+        thread.join(timeout=5)
+        if self._abort_flag.is_set():
+            yield {"kind": "done", "content": "已中止", "raw": {"aborted": True}}
+        elif not saw_done:
+            # ResultMessage 未出现时(异常早退)补一条 done 收尾流
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    def abort(self) -> bool:
+        """设置中止标志:迭代器侧提前 break;尽力断开底层 CLI 子进程。"""
+        self._abort_flag.set()
+        ev = self._interrupt_event
+        if ev is not None:
+            try:
+                ev.set()
+            except RuntimeError:  # 循环已关
+                pass
         return True

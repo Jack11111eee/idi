@@ -3,17 +3,17 @@ gsd_state_version: "1.0"
 milestone: v1.13
 current_phase: 1
 current_phase_name: 行走骨架——服务器、单界面与阶段 1-2 会话
-status: planning
-stopped_at: Completed idi-01-03-PLAN.md
-last_updated: "2026-09-09T07:56:31.487Z"
+status: verifying
+stopped_at: Completed idi-01-04-PLAN.md
+last_updated: "2026-09-09T08:39:20.493Z"
 last_activity: 2026-09-09
 last_activity_desc: Roadmap 创建(3 阶段、20/20 需求映射);REQUIREMENTS.md Traceability 回填
-state_head: cb73d0229fa8e5612fea8bb00e46c63b6d9fd09d
+state_head: 5ec5b9b08906511e81a364f14fb1b0dbbb5f7b37
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-09)
 
 Phase: 1 of 3 (行走骨架——服务器、单界面与阶段 1-2 会话)
 Plan: 0 of 0 in current phase (待规划)
-Status: Ready to plan
+Status: Phase complete — ready for verification
 Last activity: 2026-09-09 — Roadmap 创建(3 阶段、20/20 需求映射);REQUIREMENTS.md Traceability 回填
 
 Progress: [░░░░░░░░░░] 0%
@@ -63,6 +63,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-01 P02 | 10min | 2 tasks | 5 files |
 | Phase 1 P01 | 122min | 3 tasks | 16 files |
 | Phase idi-01 P03 | 125min | 3 tasks | 10 files |
+| Phase idi-01 P04 | 33min | 2 tasks | 9 files |
+| Phase idi-01 P04 | 33min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -78,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 1]: idi-01-02: 文法判定三态语义——起始行整行精确匹配(strip 后)、授权标记 strip 后全等(前缀后缀均不算)、PASS 结论行 startswith 前缀(尾注仍算)
 - [Phase 1]: idi-01-03: AI-04 权限回环走依赖倒置——AICaller 经 set_request_permission 注入用户征求回调(session 挂起队列 + SSE permission_request 弹窗),ai_caller 不 import session
 - [Phase 1]: idi-01-03: 用户全局 settings.json 的 Write(*) 等 allow 规则会在权限回调前自动放行、绕过 §5.4 权限门——两路线必须 setting_sources=[](SDK)/--setting-sources=(CLI);auth 不受影响(进程环境变量级)
+- [Phase 1]: idi-01-04: G1 交互形态=direct-through(点击即定稿零确认)——决策门按 orchestrator 全自动授权 + DESIGN.md §4.4 字面选规范对齐选项;不可回滚兜底=后端幂等防护(FileExistsError)
+- [Phase 1]: idi-01-04: finalize_g1 产物文法 = draft rstrip + 空行 + 标记行——draft 尾部多余空白不破坏完整轮判据;发散调用不落 [user] transcript(它是后台自主指令,产物走 brainstorm.md)
+- [Phase 1]: idi-01-04: 入口判定后端化(divergence_available/g1_available 纯磁盘函数)——/api/enter 载荷返回供前端显隐,触发端点服务端强制防绕过;Phase 3 AUTHORIZATION.md 后端写入可复用 G1 纯函数+幂等防护形态
 
 ### Pending Todos
 
@@ -97,6 +102,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-09T07:56:31.474Z
-Stopped at: Completed idi-01-03-PLAN.md
+Last session: 2026-09-09T08:39:20.479Z
+Stopped at: Completed idi-01-04-PLAN.md
 Resume file: None

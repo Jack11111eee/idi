@@ -84,6 +84,7 @@ Recent decisions affecting current work:
 - [Phase 1]: idi-01-04: G1 交互形态=direct-through(点击即定稿零确认)——决策门按 orchestrator 全自动授权 + DESIGN.md §4.4 字面选规范对齐选项;不可回滚兜底=后端幂等防护(FileExistsError)
 - [Phase 1]: idi-01-04: finalize_g1 产物文法 = draft rstrip + 空行 + 标记行——draft 尾部多余空白不破坏完整轮判据;发散调用不落 [user] transcript(它是后台自主指令,产物走 brainstorm.md)
 - [Phase 1]: idi-01-04: 入口判定后端化(divergence_available/g1_available 纯磁盘函数)——/api/enter 载荷返回供前端显隐,触发端点服务端强制防绕过;Phase 3 AUTHORIZATION.md 后端写入可复用 G1 纯函数+幂等防护形态
+- [Phase 2]: plan-checker 收口通过(iteration 2,0 blockers/0 warnings/1 advisory)——B1(idi-02-04 verify 尾部 `;echo` 掩蔽退出码,改 && 链)、W1(annotations 路由 busy-409 与 D-P2-22 两条件契约矛盾,按契约收敛)、W2(before 计算改 selection.getRangeAt(0).start 方向无关)全修于 a8ecc20;advisory:annotations append 与 writeback 的毫秒级交错窗口可由模块级锁收口(执行期可选);6/6 REQ、24/24 D-P2、30/30 gap 项全覆盖
 
 ### Pending Todos
 

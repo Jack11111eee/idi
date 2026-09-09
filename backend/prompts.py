@@ -35,6 +35,71 @@ _PHASE12_INSTRUCTIONS = (
     "本阶段不讨论实现细节与代码,聚焦「要什么、为什么」。"
 )
 
+# §3.7 发散模式固定视角清单(D-16 四条之「模板要点」①;清单写死在模板)
+_DIVERGENCE_PERSPECTIVES = (
+    "- 解决谁的什么痛点",
+    "- 最省事的版本",
+    "- 最贵的版本",
+    "- 没人做但该有人做的",
+)
+
+
+def build_divergence_prompt(project_path) -> str:
+    """拼装发散模式专用提示词(§3.7 D-16;跑在同一 AICaller 链路,本函数只组装)。
+
+    四段结构:
+      一、系统段:角色(发散引擎)+ §3.8 语言红线
+      二、现况段:项目目录现状、既有 docs/brainstorm.md 全文(再次发散看得见上轮候选)
+      三、任务段:三步走——① 多视角风暴(固定视角各出 2~3 个方向,鼓励离谱);
+         ② 收敛——汇成 3~5 个候选方向,每个含一句话说明+一句为什么值得做;
+         ③ 引导用户挑选或委托 AI 挑选
+      四、落盘指令:风暴与候选全文写入 docs/brainstorm.md,整体覆盖旧文件
+    """
+    project = Path(project_path)
+    docs_dir = project / "docs"
+
+    # ---- 现况段:既有 brainstorm.md 全文注入(不存在则说明全新发散) ----
+    brainstorm_path = docs_dir / "brainstorm.md"
+    if brainstorm_path.is_file():
+        try:
+            existing = brainstorm_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            existing = ""
+        current_section = (
+            "以下是 docs/brainstorm.md 的当前内容(上一轮发散的候选,"
+            "本次发散可以推翻、重组、深化它们):\n\n"
+            f"{existing}"
+            if existing.strip()
+            else "docs/brainstorm.md 存在但为空——本次发散从空白开始。"
+        )
+    else:
+        current_section = (
+            "项目尚无任何发散记录(docs/brainstorm.md 不存在)——本次发散从空白开始。"
+        )
+
+    perspectives = "\n".join(_DIVERGENCE_PERSPECTIVES)
+
+    return (
+        "## 一、你的角色\n\n"
+        "你是本工具的 AI 发散引擎。用户现在没有明确想法,你的任务是多视角头脑风暴,"
+        "给出值得做的候选方向,让用户能挑一个往下走。\n"
+        f"{_LANGUAGE_RULES}\n\n"
+        "## 二、项目现况\n\n"
+        f"{current_section}\n\n"
+        "## 三、发散任务(三步走)\n\n"
+        "**第一步:多视角风暴。**从下列固定视角出发,每个视角各出 2~3 个方向。"
+        "鼓励离谱——风暴阶段不设可行性门槛,怪点子里常有真价值:\n\n"
+        f"{perspectives}\n\n"
+        "**第二步:收敛。**把风暴结果汇成 3~5 个候选方向。每个候选必须包含:"
+        "一句话说明(它是什么)+ 一句为什么值得做(为什么有人需要它)。\n\n"
+        "**第三步:引导挑选。**把候选方向清楚呈现在回复里,引导用户挑选一个方向,"
+        "或者明确委托你来挑(用户说「你挑吧」即由你选定并说明理由)。\n\n"
+        "## 四、落盘指令\n\n"
+        "用 Write 工具把风暴过程与候选方向全文写入 `docs/brainstorm.md`,"
+        "**整体覆盖**旧文件(它是不编号、不冻结的发散草稿,可反复覆盖)。"
+        "不要创建其他编号变体文件。\n"
+    )
+
 
 def build_phase12_prompt(project_path, user_message: str) -> str:
     """拼装阶段 1-2 的完整调用提示词(§5.1:磁盘现状 + 本次消息,四段结构)。"""

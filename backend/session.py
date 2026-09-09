@@ -26,8 +26,8 @@ from pathlib import Path
 
 from backend import config as cfg
 from backend.events import broker
-from backend.prompts import build_phase12_prompt
-from backend.state import derive_state
+from backend.prompts import build_divergence_prompt, build_phase12_prompt
+from backend.state import derive_state, list_complete_rounds
 from backend.transcript import append_message, parse_transcript
 
 logger = logging.getLogger(__name__)
@@ -132,7 +132,7 @@ def enter_project(path) -> dict:
 
 
 def _session_snapshot() -> dict:
-    """当前项目的推导状态 + transcript 历史 + draft/brainstorm 内容。"""
+    """当前项目的推导状态 + transcript 历史 + draft/brainstorm 内容 + 发散入口判定。"""
     global _current_project
     with _lock:
         project = _current_project
@@ -147,6 +147,8 @@ def _session_snapshot() -> dict:
         "transcript": parse_transcript(transcript_path),
         "draft": _read_text(project / DRAFT_FILENAME),
         "brainstorm": _read_text(project / BRAINSTORM_FILENAME),
+        "divergence_available": divergence_available(project),
+        "g1_available": g1_available(project),
     }
 
 
@@ -363,3 +365,120 @@ def busy() -> bool:
     """当前是否有在飞调用(路由层 409 判据)。"""
     with _lock:
         return _inflight is not None and not _inflight.is_set()
+
+
+# ---------------------------------------------------------------------------
+# G1 定稿(FLOW-03 / D-P1-12 / §4.4)
+# ---------------------------------------------------------------------------
+
+G1_MARKER_LINE = "> 申请授权:否"  # §6.4 授权申请标记(后端追加,strip 后全等)
+
+
+def g1_available(project_path) -> bool:
+    """G1 入口判定(纯靠磁盘):有 draft.md 且尚无完整轮 → True。
+
+    已有完整轮(已经定稿过)→ False——G1 只走一次,重开即 phase3。
+    """
+    project = Path(project_path)
+    if not (project / DRAFT_FILENAME).is_file():
+        return False
+    if list_complete_rounds(project / "docs"):
+        return False
+    return True
+
+
+def finalize_g1():
+    """G1 认可雏形:后端动作(不涉及 AI,D-P1-12)把 draft.md 定稿为 discuss-round-1.md。
+
+    委托 backend.g1.finalize_g1(project) 纯函数;当前层的职责:
+      - 校验已进入项目(RuntimeError → 路由层 400)
+      - AI 调用在飞时拒绝(锁语义同 send_message)
+      - 返回 {state, current_round, current_check}(调用方拿新 derive_state 结果)
+    """
+    from backend.g1 import finalize_g1 as _finalize  # 延迟导入避免环(置底)
+
+    with _lock:
+        project = _current_project
+        inflight_busy = _inflight is not None and not _inflight.is_set()
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    if inflight_busy:
+        raise RuntimeError("当前有 AI 调用进行中,请等它结束或先中止")
+    new_path = _finalize(project)
+    state = derive_state(project)
+    return {
+        "path": str(new_path),
+        "state": state["state"],
+        "current_round": state["current_round"],
+        "current_check": state["current_check"],
+    }
+
+
+
+
+
+def divergence_available(project_path) -> bool:
+    """入口判定(纯靠磁盘):无 draft.md 且无完整轮 → True(发散开放)。
+
+    §3.7:入口仅限阶段 1-2(雏形诞生前)——雏形(draft.md)存在或已有
+    完整轮(雏形已定稿)时发散模式关闭,后续分歧一律走批注。
+    """
+    project = Path(project_path)
+    if (project / DRAFT_FILENAME).is_file():
+        return False
+    if list_complete_rounds(project / "docs"):
+        return False
+    return True
+
+
+def trigger_divergence() -> bool:
+    """触发发散:走既有 AI 调用链(build_divergence_prompt → caller.run,事件照常出 SSE)。
+
+    入口校验(防绕过):divergence_available(current_project) 为 True 才受理,
+    否则返回 False(路由层转 4xx)。并发限制沿用会话锁(在飞中再触发 → False)。
+    与 send_message 不同:发散不落 [user] 消息——它是后台一条自主发散指令,
+    AI 说的话与写盘事件照常直播到工作面板。
+    """
+    global _inflight, _ai_texts, _aborted
+    with _lock:
+        project = _current_project
+        if project is None:
+            raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+        if _inflight is not None and _inflight.is_set() is False:
+            return False  # 在飞调用未结束:并发拒绝
+        if not divergence_available(project):
+            return False  # 雏形已存在/已定稿:发散入口关闭(防绕过)
+        caller = _ensure_caller()
+        _inflight = threading.Event()  # set = 未结束
+        _ai_texts = []
+        _aborted = False
+
+    prompt = build_divergence_prompt(project)
+
+    def _worker():
+        global _aborted
+        try:
+            _wire_permission_callback(caller)
+            for event in caller.run(project, prompt):
+                if _aborted:
+                    break
+                if event.get("kind") == "say":
+                    _ai_texts.append(event.get("content", ""))
+                _publish_for_tests(event)
+                if event.get("kind") == "done":
+                    break
+        except Exception as exc:  # 线程内兜底:流不悬空
+            _publish_for_tests(
+                {"kind": "error", "content": f"调用线程异常:{exc}", "raw": None}
+            )
+        finally:
+            # 发散产物(brainstorm.md)由 AI 的 Write 工具落盘(权限门:docs/ 内放行),
+            # 不落 transcript——发散不是会话消息。
+            _publish_for_tests({"kind": "done", "content": "发散结束", "raw": None})
+            with _lock:
+                inflight_local = _inflight
+            if inflight_local is not None:
+                inflight_local.set()
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True

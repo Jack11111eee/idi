@@ -373,3 +373,207 @@ def test_build_phase12_prompt_fresh_project(tmp_path):
     prompt = prompts_mod.build_phase12_prompt(empty_dir, "你好")
     assert "全新讨论" in prompt
     assert "你好" in prompt
+
+
+# ---------------------------------------------------------------------------
+# 发散模式(PLAN idi-01-04 Task 1,FLOW-06)——四用例
+# ---------------------------------------------------------------------------
+
+
+def test_build_divergence_prompt_three_steps(tmp_path):
+    """用例 1:发散模板三段结构(多视角风暴 N≥4 固定视角 / 收敛 3~5 候选 / 挑选引导)+ §3.8 红线 + 落盘指令。"""
+    from backend.prompts import build_divergence_prompt
+
+    empty_dir = tmp_path / "fresh"
+    empty_dir.mkdir()
+    prompt = build_divergence_prompt(empty_dir)
+
+    # 三步走指令逐项在场
+    assert "多视角风暴" in prompt       # ①风暴指令
+    assert "收敛" in prompt             # ②收敛指令
+    assert "挑选" in prompt or "委托" in prompt  # ③挑选引导
+    # 固定视角清单(N ≥ 4)
+    assert "解决谁的什么痛点" in prompt
+    assert "最省事的版本" in prompt
+    assert "最贵的版本" in prompt
+    assert "没人做但该有人做的" in prompt
+    # 每视角 2~3 个方向、鼓励离谱
+    assert "2" in prompt and "3" in prompt
+    assert "离谱" in prompt
+    # 收敛规格:3~5 候选 + 一句话说明 + 为什么值得做
+    assert "3" in prompt and "5" in prompt
+    assert "一句话说明" in prompt
+    assert "为什么值得做" in prompt
+    # §3.8 语言红线
+    assert "简洁" in prompt and "大白话" in prompt
+    # 落盘指令:整体覆盖写 docs/brainstorm.md
+    assert "docs/brainstorm.md" in prompt
+    assert "覆盖" in prompt
+
+
+def test_divergence_prompt_includes_existing_brainstorm(tmp_path):
+    """用例 4:prompt 含既有 brainstorm.md 内容(再次发散时看得见上一轮候选)。"""
+    from backend.prompts import build_divergence_prompt
+
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "brainstorm.md").write_text("# 上一轮候选\n\n候选 A:做 XX。\n", encoding="utf-8")
+    prompt = build_divergence_prompt(tmp_path)
+    assert "上一轮候选" in prompt
+    assert "候选 A" in prompt
+
+
+def test_trigger_divergence_writes_and_overwrites(tmp_path, fresh_session):
+    """用例 2:触发发散 → brainstorm.md 创建;再次触发 → 整体覆盖(无 -2 编号新文件)。
+
+    写盘者是 AI 的 Write 工具(权限门:docs/ 内自动放行)——伪造 caller 用
+    BrainstormWritingFake 模拟"AI 在调用中写盘"这一行为;session 层职责是
+    把发散 prompt 交给同一条 AICaller 链路并让事件照常出 SSE。
+    """
+    import os
+
+    class BrainstormWritingFake(FakeAICaller):
+        """run 时把风暴产物写入 docs/brainstorm.md(Write 工具语义:整体覆盖)。"""
+
+        def __init__(self, events, content):
+            super().__init__(events=events)
+            self.content = content
+
+        def run(self, project_path, prompt: str):
+            self.run_calls.append((str(project_path), prompt))
+            docs_dir = Path(project_path) / "docs"
+            docs_dir.mkdir(parents=True, exist_ok=True)
+            (docs_dir / "brainstorm.md").write_text(self.content, encoding="utf-8")
+            for ev in list(self.events):
+                yield dict(ev)
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fresh_session.enter_project(tmp_path)
+
+    fake1 = BrainstormWritingFake(
+        events=[{"kind": "say", "content": "开始发散。", "raw": None}],
+        content="# 第一轮风暴\n\n候选 1:做 XX。\n",
+    )
+    fresh_session._set_caller_for_tests(fake1)
+    ok = fresh_session.trigger_divergence()
+    assert ok is True, "入口开放时发散应被受理"
+    assert wait_idle(fresh_session), "第一次发散未在时限内结束"
+
+    brainstorm = tmp_path / "docs" / "brainstorm.md"
+    assert brainstorm.is_file(), "发散后 brainstorm.md 应被创建"
+    assert "第一轮风暴" in brainstorm.read_text(encoding="utf-8")
+    mtime_first = os.path.getmtime(brainstorm)
+
+    time.sleep(0.02)  # 保证 mtime 分辨(文件系统秒级截断的兜底)
+
+    fake2 = BrainstormWritingFake(
+        events=[{"kind": "say", "content": "再发散一轮。", "raw": None}],
+        content="# 第二轮风暴\n\n候选 A:完全不同的方向。\n",
+    )
+    fresh_session._set_caller_for_tests(fake2)
+    ok = fresh_session.trigger_divergence()
+    assert ok is True, "入口仍开放(无 draft/无轮次)时再次发散应被受理"
+    assert wait_idle(fresh_session), "第二次发散未在时限内结束"
+
+    assert "第二轮风暴" in brainstorm.read_text(encoding="utf-8")
+    assert "第一轮风暴" not in brainstorm.read_text(encoding="utf-8"), \
+        "再发散应整体覆盖旧文件,而不是追加"
+    assert os.path.getmtime(brainstorm) > mtime_first, "覆盖后 mtime 应变化"
+
+    # 无编号变体文件(brainstorm-2.md 等)
+    docs_files = [p.name for p in brainstorm.parent.iterdir()]
+    assert "brainstorm.md" in docs_files
+    assert not any(
+        n != "brainstorm.md" and n.startswith("brainstorm") for n in docs_files
+    ), f"发散产物出现编号变体: {docs_files}"
+
+    # 走的是同一 AICaller 链路:写入 caller 的 prompt 是发散模板(不是会话模板)
+    assert len(fake2.run_calls) == 1
+    _, diverge_prompt = fake2.run_calls[0]
+    assert "多视角风暴" in diverge_prompt, "发散触发的 prompt 应为发散指令模板"
+
+
+def test_divergence_available_gating(tmp_path, fresh_session):
+    """用例 3:入口判定——无 draft 且无完整轮 → True;draft.md 存在 → False;有完整轮 → False。"""
+    from backend.state import AUTH_MARKER_NO
+
+    empty_project = tmp_path / "empty"
+    empty_project.mkdir()
+    assert fresh_session.divergence_available(empty_project) is True
+
+    with_draft = tmp_path / "withdraft"
+    (with_draft / "docs").mkdir(parents=True)
+    (with_draft / "docs" / "draft.md").write_text("# 雏形\n", encoding="utf-8")
+    assert fresh_session.divergence_available(with_draft) is False
+
+    with_round = tmp_path / "withround"
+    (with_round / "docs").mkdir(parents=True)
+    (with_round / "docs" / "discuss-round-1.md").write_text(
+        "# 轮次\n\n正文。\n\n> 申请授权:否\n", encoding="utf-8"
+    )
+    assert fresh_session.divergence_available(with_round) is False
+
+    # 触发侧防绕过:雏形存在时 trigger_divergence 拒绝(不发起调用)
+    fresh_session.enter_project(with_draft)
+    rejected = fresh_session.trigger_divergence()
+    assert rejected is False, "draft.md 存在时发散应被拒绝"
+
+
+# ---------------------------------------------------------------------------
+# G1 session 层(PLAN idi-01-04 Task 2):finalize_g1 会话封装 + 在飞拒绝 + 快照字段
+# ---------------------------------------------------------------------------
+
+
+def test_session_finalize_g1_and_gating(tmp_path, fresh_session):
+    """G1 会话封装:定稿成功返回 phase3 形状;在飞调用时拒绝;重复定稿抛 FileExistsError。"""
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "draft.md").write_text("# 雏形\n\n已谈妥。\n", encoding="utf-8")
+
+    # 空闲时定稿:返回 {path, state, current_round, current_check}
+    fresh_session.enter_project(tmp_path)
+    result = fresh_session.finalize_g1()
+    assert result["state"] == "phase3"
+    assert result["current_round"] == 1
+    assert result["current_check"] is None
+    assert result["path"].endswith("discuss-round-1.md")
+
+    # 重复定稿:幂等防护(后端 409 语义)
+    with pytest.raises(FileExistsError):
+        fresh_session.finalize_g1()
+
+    # 定稿后快照:divergence/g1 双入口均关闭(雏形已定稿)
+    snap = fresh_session.snapshot()
+    assert snap["state"] == "phase3"
+    assert snap["divergence_available"] is False
+    assert snap["g1_available"] is False
+
+
+def test_session_finalize_g1_rejects_when_busy(tmp_path, fresh_session):
+    """G1 在飞拒绝(锁语义同 send_message):AI 调用进行中定稿被驳回。"""
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "draft.md").write_text("# 雏形\n", encoding="utf-8")
+    (docs / "transcript.md").write_text("", encoding="utf-8")
+
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake(FakeAICaller):
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=5)  # 模拟调用在飞
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = HangingFake(events=[])
+    fresh_session.enter_project(tmp_path)
+    fresh_session._set_caller_for_tests(fake)
+    threading.Thread(target=lambda: fresh_session.send_message("先聊"), daemon=True).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    with pytest.raises(RuntimeError, match="在飞|进行中"):
+        fresh_session.finalize_g1()
+
+    release.set()
+    assert wait_idle(fresh_session), "调用未收尾"

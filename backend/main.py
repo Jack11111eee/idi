@@ -131,6 +131,61 @@ def get_draft() -> JSONResponse:
     return JSONResponse({"status": "ok", "draft": snapshot["draft"]})
 
 
+@app.post("/api/divergence")
+def trigger_divergence() -> JSONResponse:
+    """触发发散模式(FLOW-06):同一 AI 调用链,产物 brainstorm.md 由 AI 落盘。
+
+    入口关闭(雏形已存在/已定稿,防绕过)→ 409;在飞调用 → 409(锁语义同发消息)。
+    """
+    try:
+        accepted = session.trigger_divergence()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if not accepted:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": "发散入口已关闭(雏形已存在或已定稿)或当前有调用进行中",
+            },
+            status_code=409,
+        )
+    return JSONResponse({"status": "accepted"}, status_code=202)
+
+
+@app.get("/api/brainstorm")
+def get_brainstorm() -> JSONResponse:
+    """当前 brainstorm.md 内容(前端渲染发散候选);未进入项目 → null。"""
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError:
+        return JSONResponse({"status": "ok", "brainstorm": None})
+    return JSONResponse({"status": "ok", "brainstorm": snapshot["brainstorm"]})
+
+
+@app.post("/api/g1")
+def finalize_g1() -> JSONResponse:
+    """G1 认可雏形(FLOW-03 / §4.4):后端定稿 draft.md → docs/discuss-round-1.md。
+
+    交互形态 = 前置决策门 direct-through(DESIGN.md §4.4 字面:点击即 G1 通过,零确认)。
+    失败语义:无 draft.md → 400;已定稿(discuss-round-1.md 已存在)→ 409 幂等防护;
+    AI 调用在飞 → 409。成功 → 新 derive_state 结果(前端据此切轮次视图)。
+    """
+    try:
+        result = session.finalize_g1()
+    except RuntimeError as exc:
+        message = str(exc)
+        if "在飞" in message or "进行中" in message:
+            return JSONResponse(
+                {"status": "error", "message": message}, status_code=409
+            )
+        return JSONResponse({"status": "error", "message": message}, status_code=400)
+    except FileNotFoundError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    except FileExistsError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=409)
+    return JSONResponse({"status": "ok", **result})
+
+
 @app.get("/api/transcript")
 def get_transcript() -> JSONResponse:
     """全量消息列表(备用拉;重启恢复也走 /api/enter 的同一组装)。"""

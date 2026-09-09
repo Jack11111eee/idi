@@ -1,6 +1,6 @@
 ---
 phase: idi-01-1-2
-verified: 2026-09-09T09:32:56Z
+verified: 2026-09-09T12:14:41Z(初验 09:18:23Z;复审一 09:32:56Z;复审二 12:14:41Z——staleness 复验,指纹刷新至 381aa33+31deefb 后现行树)
 status: passed
 score: 8/8 must-haves verified
 re_verification:
@@ -10,6 +10,9 @@ re_verification:
     - "点「中止」按钮随时能杀掉当前调用且不留损坏状态(会话路径)— 修复于 381aa33(/api/abort 接入 session.abort()),本验证者复审确认(diff 审读 + test_route_abort.py 2 用例 + 全量 64/2 + 原始 spot-check 复测 killed:true/busy 释放/中止后可再发)"
   gaps_remaining: []
   regressions: []
+  post_gap_fix_passes:
+    - "复审一(381aa33):/api/abort 会话路径中止——diff 审读 + test_route_abort.py 2 passed + 全量 64/2 + 失败复现脚本重放(killed:true/busy 释放/中止后 202)。结果:SC4 闭合,gaps_found → human_needed。"
+    - "复审二(31deefb + 2ba44f1,本 staleness 复验):UAT 双 gap 修复——diff 审读 + test_route_session.py 2 passed + 全量 66 passed + 2 skipped + node --check + TestClient 亲测 /api/session 契约(未进入 400;draft 落盘后不重进门控翻转);浏览器行为 = 01-UAT.md 6/6 pass(2ba44f1 复测记录:门控就地翻转、CLI 自检加载即检零 TypeError、G1 全链落盘 + 8 张截图取证)。结果:行为级人检项全部收口,状态 → passed(ecb5bd5),本次复核指纹并确认。"
 covered_files:
 
   - .planning/phases/idi-01-1-2/01-CONTEXT.md
@@ -41,6 +44,7 @@ covered_files:
   - backend/tests/test_state.py
   - backend/tests/test_transcript.py
   - backend/tests/test_route_abort.py
+  - backend/tests/test_route_session.py
   - frontend/app.js
   - frontend/index.html
   - frontend/style.css
@@ -49,29 +53,35 @@ covered_files:
   - pytest.ini
   - requirements.txt
   - run.sh
-
-covered_digest: "v1:sha256:b7261b595d76a828fcb4e47440dda4ce68d57c9ea8d726cf4bebec94c9671d30"
+covered_digest: "v1:sha256:1ff0293918bfe75d961cc840815822df0ee0077fec1adc5ef88cedcb93fbcbdc"
 behavior_unverified: 6
 overrides_applied: 0
 gaps: []
 gap_resolution:
-
   - truth: "点「中止」按钮随时能杀掉当前调用且不留损坏状态(会话路径)— ROADMAP 成功判据 4 / AI-02 / Plan 01 must-have 真值 4"
     status: resolved
     resolution: "fixed in 381aa33 — /api/abort 路由接入 session.abort()(会话在飞时优先中止并释放 busy/挂起权限),dev/ping 探针 _current_caller 中止保留;补经 HTTP 路由的测试 backend/tests/test_route_abort.py(2 用例)"
     artifacts: []
     missing: []
+  - truth: "会话轮产出雏形草稿后,「认可雏形」按钮应就地解禁、发散入口就地关闭(goal 链「草稿出来 → 认可雏形」);CLI 自检在页面加载时应真实执行 — UAT G-idi01-7 / G-idi01-8(SC1/§4.4/§7.1)"
+    status: resolved
+    resolution: "fixed in 31deefb — ① 新增只读 GET /api/session(与 /api/enter 同构返回 snapshot);前端 applySessionView 拆分 applySessionGates + renderTranscript,done 后 refreshGatesAfterStream() 拉新门控(不整页重渲染,保流式气泡);② index.html 两枚 script 标签移至 body 末尾(cli-check-overlay 之后),app.js 顶层 recheck-btn 绑定不再 null 抛 TypeError,runCliCheck() 真实执行。补 backend/tests/test_route_session.py(2 用例)"
+    artifacts: []
+    missing: []
 gap_resolution_evidence: >-
-  本验证者独立复审(不采信修复者叙述):① git show 381aa33 diff 审读——路由 session.busy() →
+  复审一(381aa33,/api/abort 会话路径中止):git show diff 审读——路由 session.busy() →
   session.abort() 接入真实,dev/ping _current_caller 路径保留,killed 真值语义正确;
-  ② .venv/bin/python -m pytest backend/tests/test_route_abort.py -q → 2 passed;
-  ③ 全量 → 64 passed, 2 skipped(基线 62 + 新增 2,零回归);
-  ④ 原始失败 spot-check(TestClient + 挂起 caller)复测:在飞 POST /api/abort 现返回
-  {killed: true},fake.aborted=True,busy 释放,中止后再发消息 202,空闲 abort killed:false。
-gaps: []
-behavior_unverified: 6
-behavior_unverified_items:
-
+  pytest test_route_abort.py 2 passed;全量 64 passed + 2 skipped 零回归;初验失败
+  复现脚本重放:在飞 POST /api/abort 返回 {killed: true},caller 被杀,busy 释放,
+  中止后再发消息 202,空闲 abort killed:false。
+  复审二(31deefb,G-idi01-7/8):git show diff 审读——GET /api/session 真实挂载
+  (未进入 400 / 进入后与 /api/enter 同构);前端拆分 applySessionGates + renderTranscript
+  且 done 后 refreshGatesAfterStream 拉新门控;script 标签移至 body 末尾(时序修复);
+  pytest test_route_session.py 2 passed;全量 66 passed + 2 skipped 零回归;node --check 过;
+  TestClient 亲测 /api/session 契约(未进入 400;draft 落盘后不重进 g1_available 翻 True、
+  divergence_available 翻 False)。浏览器行为证据 = 01-UAT.md 6/6(2ba44f1 浏览器复测记录:
+  门控就地翻转、CLI 自检加载即检零 TypeError、G1 全链落盘)。
+behavior_unverified_items:  # 初验/复审记录;全部 6 项已由 01-UAT.md(2ba44f1,6/6 pass)完成浏览器验证收口
   - truth: "浏览器端到端用户流(goal 全句):打开应用 → 进目录 → (没想法→发散→挑方向) → 阶段 1-2 会话直播 → 认可雏形 → 轮次视图"
     test: "bash run.sh 后浏览器走 Plan 04 verification 第 5 条的完整 UAT 路径(空目录 → 没想法 → 看 brainstorm → 发方向 → 认可雏形 → 轮次占位)"
     expected: "每一步界面按 DESIGN.md §3.2/§4.1/§4.4 呈现;最终 discuss-round-1.md 落盘且界面切「已进入轮次阶段…当前轮:第 1 轮」"
@@ -96,8 +106,7 @@ behavior_unverified_items:
     test: "走一段会话后关闭页面,重开浏览器进同一目录"
     expected: "会话流与草稿从磁盘全量恢复,无需任何恢复操作"
     why_human: "浏览器会话语境下的恢复体验;数据层恢复已由 E2E test_restart_recovery(真实 CLI + importlib.reload)行为验证"
-human_verification:
-
+human_verification:  # 已收口:以下 6 项全部由 01-UAT.md(2ba44f1)以自动化浏览器 UAT 完成——6/6 pass,含截图与磁盘 ground truth 核对;记录保留供审计
   - test: "浏览器端到端 UAT(主批次):bash run.sh 后,空白临时目录进入 →「没想法」发散 → 看 brainstorm 候选 → 会话流发所选方向 → 草稿出来 → 点「认可雏形」→ 界面切「已进入轮次阶段…当前轮:第 1 轮」(Plan 01/03/04 verification 人检条合并为主链)"
     expected: "每步按 DESIGN.md §3.2/§4.1/§4.4 呈现;最终 discuss-round-1.md 落盘且界面切轮次占位;过程中点「中止」能即时杀掉在飞调用(修复后已机器验证,浏览器手感待人检)"
     why_human: "点击交互与视觉呈现只有浏览器能确认;全部后端链路已机器验证"
@@ -315,7 +324,22 @@ human_verification:
 
 本验证者独立复审(不采信修复叙述):① `git show 381aa33` diff 审读——`session.busy()` → `session.abort()` 接入真实,dev/ping `_current_caller` 路径在锁下保留,`killed` 真值(任一路径真杀才 true,双空闲 false);② `pytest backend/tests/test_route_abort.py -q` → 2 passed;③ 全量 64 passed + 2 skipped,零回归;④ 初验的失败复现脚本重放:在飞 POST /api/abort 返回 `{killed: true}`,caller 的 abort() 被调,busy 释放,中止后再发消息 202,空闲 abort `killed:false`。**SC4 闭合:gap resolved,verified 8/8。** 剩余唯一未验证面 = 6 项浏览器人检项(视觉/交互),状态定为 human_needed;人检通过后即可收口。
 
+### Staleness Re-verification(第三次过闸,2026-09-09T12:14:41Z)
+
+**触发:** gap 修复两连提交(381aa33、31deefb)与 UAT 记录/状态翻转(2ba44f1、ecb5bd5)落地后,本报告 `verification.status` 读为 `stale`(指纹不再匹配现行树)。本次复核只覆盖两次 gap 修复增量 + 指纹刷新,已验证行为不重跑(测试套件全量重跑作为回归)。
+
+**本验证者独立复核(不采信修复叙述):**
+
+1. **`git show 31deefb` diff 审读:** ① `GET /api/session` 真实挂载于 `backend/main.py`(未进入项目 400;进入后返回 `session.snapshot()` 全量字段,与 `/api/enter` 同构);② 前端 `applySessionView` 拆分为 `applySessionGates` + `renderTranscript`,`refreshDraftAfterStream` 追加 `refreshGatesAfterStream()`(done 后拉 `/api/session` 只刷门控,不整页重渲染——保流式气泡,路线选择说明合理);③ `index.html` 两枚 script 标签移至 `#cli-check-overlay` 之后、body 末尾——app.js 顶层 `recheckBtn` 绑定时 DOM 已就绪,`runCliCheck()` 真实可达。
+2. **测试:** `pytest backend/tests/test_route_session.py -q` → 2 passed(未进入 400;门控随磁盘翻转:draft 出现 g1 开/发散关,定稿后 phase3 双关)。
+3. **全量回归:** `.venv/bin/python -m pytest backend/tests/ -q` → **66 passed + 2 skipped**(基线 64+2 + 新 2,零回归)。`node --check frontend/app.js` 过。
+4. **TestClient 亲测 `/api/session` 契约:** 未进入 400 + status=error;进入后 draft 落盘(不重进)再拉 → `g1_available: true`、`divergence_available: false`、draft 内容正确——G-idi01-7 的核心断言第一手复核通过。
+5. **浏览器行为证据:** 采信已提交的 `01-UAT.md`(2ba44f1,自动化浏览器 UAT,CDP 驱动隔离 Chrome + 磁盘文件 ground truth + 8 张截图):6/6 pass,含 G-idi01-7(修复后同流程逐字段反证:done 后不重进按钮就地解禁、发散入口就地隐藏、请求序 /api/draft → /api/brainstorm → /api/session)与 G-idi01-8(零未捕获 TypeError、/api/cli-check 加载即请求、重检接线活)。UAT 前后两次 gap(G-idi01-7/8)均为 resolved。
+6. **covered 完整性:** `allCurrentArtifactsCovered` 只要求现行 `*-PLAN.md`/`*-SUMMARY.md` 全覆盖——本报告 covered_files 37 → 38 个文件(补 `backend/tests/test_route_session.py`),包含全部 8 个 PLAN/SUMMARY + CONTEXT;01-UAT.md、01-DISCUSSION-LOG.md、SKELETON.md 不属必需覆盖集(新增的 test_route_session.py 已补入)。`covered_digest` 重算为 `v1:sha256:1ff02939…`,并与检查器 `computeCoveredDigest` 直接求值交叉核对一致。
+
+**裁定:** 指纹刷新,`gaps: []`,8/8 保持 VERIFIED,浏览器人检 6 项经 01-UAT.md 收口——最终状态 **passed**。
+
 ---
 
-_Verified: 2026-09-09T09:32:56Z(初验 09:18:23Z;同日 gap 修复后复审)_
+_Verified: 2026-09-09T12:14:41Z(初验 09:18:23Z → 复审一 09:32:56Z → 复审二/staleness 复验 12:14:41Z)_
 _Verifier: Claude (gsd-verifier)_

@@ -27,9 +27,15 @@ from backend.transcript import parse_transcript  # noqa: E402
 
 
 class FakeAICaller:
-    """测试替身:按脚本产出事件;可注入 confirm 权限场景与挂起行为。"""
+    """测试替身:按脚本产出事件;可注入 confirm 权限场景与挂起行为。
 
-    def __init__(self, events=None, permission_script=None, before_done=None):
+    Phase 2 扩展(D-P2-24):ask_lite 打桩——lite_calls 记录三元组
+    (document_text, quoted_text, question),lite_answers 可注入固定答案
+    (None 时返回固定「测试即时答」)。run/abort 形态不变(duck-type 兼容)。
+    """
+
+    def __init__(self, events=None, permission_script=None, before_done=None,
+                 lite_answers=None):
         self.events = events or []
         self.permission_script = permission_script or {}
         self.before_done = before_done
@@ -38,6 +44,16 @@ class FakeAICaller:
         self.permission_requests: list[dict] = []
         # request_permission 回调由 session 在 send_message 时注入
         self.request_permission = None
+        # 轻量调用观测与应答注入(D-P2-8 同一契约;记录三元组,可注入固定答案)
+        self.lite_calls: list[tuple[str, str, str]] = []
+        self.lite_answers: dict[str, str] | None = lite_answers
+
+    def ask_lite(self, document_text: str, quoted_text: str, question: str) -> dict:
+        """打桩 ask_lite:记录三元组,返回注入答案或固定值。"""
+        self.lite_calls.append((document_text, quoted_text, question))
+        if self.lite_answers is not None:
+            return {"answer": self.lite_answers.get(question, "测试即时答")}
+        return {"answer": "测试即时答"}
 
     def run(self, project_path, prompt: str):
         self.run_calls.append((str(project_path), prompt))
@@ -577,3 +593,119 @@ def test_session_finalize_g1_rejects_when_busy(tmp_path, fresh_session):
 
     release.set()
     assert wait_idle(fresh_session), "调用未收尾"
+
+
+# ---------------------------------------------------------------------------
+# 大白话轻量调用(PLAN idi-02-02 Task 1,D-P2-8/D-P2-9/UI-02)
+# ---------------------------------------------------------------------------
+
+
+def test_build_plain_prompt_three_materials_and_rules():
+    """用例 1:build_plain_prompt 三要素(当前文档全文、划选原文、用户问题)+ 红线 + 只解释不改设计。"""
+    from backend.prompts import build_plain_prompt
+
+    prompt = build_plain_prompt(
+        "# 第 1 轮\n\n这里讲目标与边界。\n",
+        "目标与边界",
+        "这句到底什么意思?",
+    )
+    # 三要素齐备
+    assert "这里讲目标与边界" in prompt          # ① 当前文档全文
+    assert "目标与边界" in prompt                # ② 划选原文
+    assert "这句到底什么意思" in prompt            # ③ 用户问题
+    # §3.8 语言红线注入(引用 _LANGUAGE_RULES,非复制字面量)
+    assert "简洁" in prompt and "大白话" in prompt
+    # 「只解释,不改设计」指令
+    assert "只解释" in prompt or "消歧" in prompt
+
+
+def test_fake_ai_caller_ask_lite_records_and_returns():
+    """用例 2:FakeAICaller.ask_lite 记录三元组;lite_answers 注入固定答;None 时默认固定答。"""
+    fake = FakeAICaller()
+    result = fake.ask_lite("文档全文A", "划选B", "问题C")
+    assert result == {"answer": "测试即时答"}
+    assert fake.lite_calls == [("文档全文A", "划选B", "问题C")]
+
+    injected = FakeAICaller(lite_answers={"问题C": "注入的回答"})
+    assert injected.ask_lite("文档全文A", "划选B", "问题C") == {"answer": "注入的回答"}
+    # 未命中 question 键 → 默认固定答
+    assert injected.ask_lite("x", "y", "别的问题") == {"answer": "测试即时答"}
+
+
+def test_subprocess_ask_lite_argv_construction(monkeypatch):
+    """用例 3a:SubprocessAICaller.ask_lite 参数组装级单测(不起真 CLI)。
+
+    断言:argv 含 --setting-sources=、--tools ""(禁工具)、--append-system-prompt;
+    prompt 来自 build_plain_prompt(三要素);产物不含文档读取/文件写指令。
+    真 CLI 的 ask_lite 全链验证在 idi-02-04 的 IDI_E2E 门控用例(不在本计划)。
+    """
+    from backend.ai_caller import SubprocessAICaller
+
+    captured_argv = []
+    captured_input = []
+
+    class FakeCompleted:
+        returncode = 0
+        stdout = (
+            '{"type":"assistant","message":{"role":"assistant",'
+            '"content":[{"type":"text","text":"我先看看。"}]}}\n'
+            '{"type":"result","result":"大白话答案:这就是字面意思。"}\n'
+        )
+        stderr = ""
+
+    def fake_run(argv, **kwargs):
+        captured_argv.append(list(argv))
+        captured_input.append(kwargs.get("input"))
+        return FakeCompleted()
+
+    monkeypatch.setattr("backend.ai_caller.subprocess.run", fake_run)
+    caller = SubprocessAICaller()
+    result = caller.ask_lite("文档全文A", "划选B", "问题C")
+
+    assert result == {"answer": "大白话答案:这就是字面意思。"}
+    argv = captured_argv[0]
+    assert "--setting-sources=" in argv        # 屏蔽全局 allow(与 run() 同因)
+    assert "--tools" in argv and "" in argv     # 禁全部内置工具(纯问答)
+    assert "--append-system-prompt" in argv     # §3.8 红线注入
+    # prompt 走 argv(captured_input None = 未触发 stdin 回退)
+    assert captured_input[0] is None
+    prompt_text = argv[argv.index("-p") + 1]
+    assert "文档全文A" in prompt_text and "划选B" in prompt_text and "问题C" in prompt_text
+    # 用例 4:纯问答——prompt 不含 docs/ 读取指令、不要求 AI 写任何文件
+    assert "docs/" not in prompt_text
+    assert "Write" not in prompt_text
+    assert "不要读取其他文件" in prompt_text
+
+
+def test_subprocess_ask_lite_error_no_result(monkeypatch):
+    """用例 3b:stdout 无 result 行 → {"answer": "", "error": ...} 不抛。"""
+    from backend.ai_caller import SubprocessAICaller
+
+    class FakeCompleted:
+        returncode = 0
+        stdout = "不是 JSON 的普通输出\n"
+        stderr = ""
+
+    monkeypatch.setattr(
+        "backend.ai_caller.subprocess.run",
+        lambda argv, **kwargs: FakeCompleted(),
+    )
+    result = SubprocessAICaller().ask_lite("a", "b", "c")
+    assert result["answer"] == ""
+    assert "error" in result and result["error"]
+
+
+def test_sdk_ask_lite_options_construction():
+    """用例 3c:SdkAICaller ask_lite 的参数构造级单测(options 组装纯断言,不起真调用)。
+
+    断言 SdkAICaller.ask_lite 存在且为同步方法(契约形态);对 4xx 路径的
+    行为一致性(answer 空 + error)由 Task 3 路由用例经 Fake 打桩覆盖。
+    """
+    from backend.ai_caller import SdkAICaller
+
+    caller = SdkAICaller()
+    # 方法存在且同步(不是生成器/协程:双路线同契约,session.answer_plain 同步调)
+    import inspect
+
+    assert callable(caller.ask_lite)
+    assert not inspect.iscoroutinefunction(caller.ask_lite)

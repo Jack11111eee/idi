@@ -220,11 +220,21 @@ class AICaller(ABC):
         """在 project_path 目录上执行一次无头调用,逐条产出统一事件。"""
 
     def ask_lite(self, document_text: str, quoted_text: str, question: str) -> dict:
-        """大白话轻量调用(§3.4,Phase 2 的 UI-02 实现)。
+        """大白话轻量调用(§3.4 D-05 / D-P2-8):纯问答,双路线同契约。
 
-        只定义签名不实现逻辑(D-P1-6)——避免 Phase 2 改接口。
+        入参仅 document_text / quoted_text / question 三项(不收 project_path);
+        prompt 由 build_plain_prompt 组装(仅当前文档 + 划选原文,不读全量
+        docs/、不给工具能力、不走逐轮四步,保证秒级)。
+        不产 SSE 事件(轻量调用是用户查询,不代表用户主动任务,不进工作面板)。
+        返回 {"answer": str};两条真实路线约定:调用失败不抛——返回
+        {"answer": "", "error": 原因}(上层路由转 4xx/5xx 文案)。
+
+        实现在各子类(SdkAICaller / SubprocessAICaller 各自 override,
+        D-P2-24:行为一致);基类默认拒绝,防未实现路线悄悄走错路径。
         """
-        raise NotImplementedError("ask_lite 将在 Phase 2 实现(D-P1-6 接口预定义)")
+        raise NotImplementedError(
+            f"{type(self).__name__} 尚未实现 ask_lite(双路线各自 override)"
+        )
 
     @abstractmethod
     def abort(self) -> None:
@@ -407,6 +417,101 @@ class SubprocessAICaller(AICaller):
                 proc.terminate()
             except ProcessLookupError:
                 pass
+
+    def ask_lite(self, document_text: str, quoted_text: str, question: str) -> dict:
+        """大白话轻量调用(§3.4 D-05):一次性无工具纯问答,非流式,同步返回。
+
+        调用形态(D-P2-8/D-P2-9,与 run() 的差异):
+          - prompt = build_plain_prompt(仅当前文档 + 划选原文,不读全量 docs/)
+          - 禁工具:--tools ""(纯问答,无文件读写工具)
+          - 非流式单向:无 --input-format stream-json、无 --permission-prompt-tool
+            (不起控制协议,stdin 只作 E2BIG 回退的 prompt 通道)
+          - 保留 --output-format stream-json + --verbose(stdout 仍逐行 JSON,
+            收 result 行取答案)
+          - 保留 --setting-sources=(屏蔽全局 allow 规则,与 run() 同因)
+          - 保留 --append-system-prompt(§3.8 红线 + 只解释不改设计)
+          - timeout=120(秒级响应的上限护栏)
+
+        prompt 传递方式(E2BIG 回退,T-idi02-08):优先命令行参数;遇
+        OSError(E2BIG,文档全文拼进 argv 超 OS 参数上限)时回退 stdin——
+        `claude -p` 从 stdin 读入 prompt(subprocess.run(..., input=prompt))。
+        本实现取其一并固定:argv 优先,捕获 OSError 后整体改走 stdin 形态。
+
+        解析:stdout 逐行找 JSON 的 result 行取 result 字段文本为 answer
+        (normalize_stream_line 的 result 分支同语义,此处同步直读);
+        无 result 行或 returncode != 0 → {"answer": "", "error": 原因}(不抛,
+        上层路由转 4xx/5xx 文案)。
+        """
+        from backend.prompts import build_plain_prompt
+
+        prompt = build_plain_prompt(document_text, quoted_text, question)
+        argv = [
+            self._cli_path,
+            "-p",
+            prompt,
+            "--output-format", "stream-json",
+            "--verbose",
+            "--tools", "",
+            "--setting-sources=",
+            "--append-system-prompt",
+            build_system_prompt(),
+        ]
+        try:
+            try:
+                proc = subprocess.run(
+                    argv, capture_output=True, text=True, timeout=120
+                )
+            except OSError:
+                # E2BIG 等 argv 超限:prompt 改走 stdin(命令行参数不带了)
+                argv_fallback = [
+                    self._cli_path,
+                    "-p",
+                    "--output-format", "stream-json",
+                    "--verbose",
+                    "--tools", "",
+                    "--setting-sources=",
+                    "--append-system-prompt",
+                    build_system_prompt(),
+                ]
+                proc = subprocess.run(
+                    argv_fallback,
+                    input=prompt,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                )
+        except subprocess.TimeoutExpired:
+            return {"answer": "", "error": "大白话调用超时(120 秒未返回)"}
+        except OSError as exc:
+            return {"answer": "", "error": f"大白话调用启动失败:{exc}"}
+
+        if proc.returncode != 0:
+            stderr_tail = (proc.stderr or "").strip()[:200]
+            return {
+                "answer": "",
+                "error": f"大白话调用失败(退出码 {proc.returncode}):{stderr_tail}",
+            }
+        # 逐行找 result 行(JSON)取 result 字段;result 未出现时兜底给确定 error
+        answer: str = ""
+        result_error: str = ""
+        for line in (proc.stdout or "").splitlines():
+            text = line.strip()
+            if not text:
+                continue
+            try:
+                obj = json.loads(text)
+            except json.JSONDecodeError:
+                continue
+            if obj.get("type") == "result":
+                if bool(obj.get("is_error")):
+                    result_error = str(obj.get("result") or "") or "调用出错"
+                else:
+                    answer = str(obj.get("result") or "")
+                break
+        if answer:
+            return {"answer": answer}
+        detail = result_error or (proc.stdout or "").strip()[:200] or "无输出"
+        return {"answer": "", "error": f"大白话调用未返回结果:{detail}"}
 
     def abort(self) -> bool:
         """终止当前子进程:先 terminate 再 kill(两段, §5.5)。"""
@@ -628,6 +733,51 @@ class SdkAICaller(AICaller):
         elif not saw_done:
             # ResultMessage 未出现时(异常早退)补一条 done 收尾流
             yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    def ask_lite(self, document_text: str, quoted_text: str, question: str) -> dict:
+        """大白话轻量调用(§3.4 D-05):单轮 query 纯问答,同步返回(不产事件)。
+
+        与 run() 的差异(D-P2-8/D-P2-9):
+          - options:tools=[](SDK 禁全部内置工具,纯问答无文件读写)、
+            setting_sources=[](屏蔽全局 allow,同因)、无 can_use_tool
+            (没有工具就没有权限回环;cwd 不设——不读项目文件);
+          - system_prompt 仍是 build_system_prompt(§3.8 红线注入每个 prompt);
+          - 直接耗尽 claude_agent_sdk.query() 异步迭代器,收 ResultMessage
+            的 result 文本为 answer(照 run() 的 asyncio.run 形态裁剪,
+            不走后台线程——调用本身就在调用方线程上同步阻塞);
+          - 异常路径同 subprocess 路线:返回 {"answer": "", "error": ...} 不抛。
+        """
+        from backend.prompts import build_plain_prompt
+
+        prompt = build_plain_prompt(document_text, quoted_text, question)
+
+        async def _ask() -> str:
+            from claude_agent_sdk import ClaudeAgentOptions, query
+            from claude_agent_sdk.types import ResultMessage
+
+            options = ClaudeAgentOptions(
+                system_prompt=build_system_prompt(),
+                tools=[],
+                setting_sources=[],
+            )
+            if self._cli_path:
+                options.cli_path = self._cli_path
+            if self._model:
+                options.model = self._model
+            async for message in query(prompt=prompt, options=options):
+                if isinstance(message, ResultMessage):
+                    if message.is_error:
+                        return ""
+                    return str(message.result or "")
+            return ""
+
+        try:
+            answer = asyncio.run(_ask())
+        except Exception as exc:
+            return {"answer": "", "error": f"大白话调用异常:{exc}"}
+        if answer:
+            return {"answer": answer}
+        return {"answer": "", "error": "大白话调用未返回结果"}
 
     def abort(self) -> bool:
         """设置中止标志:迭代器侧提前 break;尽力断开底层 CLI 子进程。"""

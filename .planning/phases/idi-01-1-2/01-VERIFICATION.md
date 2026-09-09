@@ -45,7 +45,8 @@ behavior_unverified: 6
 overrides_applied: 0
 gaps:
   - truth: "点「中止」按钮随时能杀掉当前调用且不留损坏状态(会话路径)— ROADMAP 成功判据 4 / AI-02 / Plan 01 must-have 真值 4"
-    status: failed
+    status: resolved
+    resolution: "fixed in 381aa33 — /api/abort 路由接入 session.abort()(会话在飞时优先中止并释放 busy/挂起权限),dev/ping 探针 _current_caller 中止保留;补经 HTTP 路由的测试 backend/tests/test_route_abort.py(2 用例)"
     reason: >-
       POST /api/abort 路由只中止 main._current_caller(仅 /api/dev/ping 探针线程会设置它);
       会话流水线(send_message / trigger_divergence,即浏览器「发送」按钮的真实链路)的 caller
@@ -271,6 +272,15 @@ behavior_unverified_items:
 - **根因:** `backend/main.py` 的 `/api/abort` 路由只查 `main._current_caller`(只有 `/api/dev/ping` 探针线程会设置它),从不调 `session.abort()`。而 `backend/session.py` 的 `abort()` 本身完备(caller.abort + 挂起权限强制释放 + inflight 解锁——我直调实测全部生效)。**这是 Plan 03 会话层接管 caller 管理后遗留的接线缺口**:Plan 01 时代 caller 归 main 管(探针路径中止 PASS 是真的),Plan 03 把 caller 挪进 session 后 `/api/abort` 没跟着改;现有 `test_abort_leaves_no_dirty_ai_entry` 直调 `session.abort()` 不经 HTTP 路由,所以测试全绿但接线断了——正是 SUMMARY CLAIMS ≠ CODE 的典型形态。
 - **修复(供 /gsd-plan-phase --gaps 直接消费):** main.py `/api/abort` 接入 `session.abort()`(会话在飞时优先;dev/ping 路径保持 _current_caller 中止);补一条经 HTTP 路由的会话中止行为测试(FakeAICaller 在飞 → POST /api/abort → caller.abort 被调 + busy 释放 + transcript 无脏 [ai])。
 - **其余全部干净:** 除此外 7/8 真值、10/10 需求的机器可验部分、15 决策、9 工件、9 链路、全部测试(含真实 CLI E2E)均验证通过;浏览器视觉/交互 6 项按计划转人检。
+
+## Gap Remediation
+
+**唯一 BLOCKER(会话路径中止接线)已修复(auto-fix,executor)。**
+
+- **原损坏:** `backend/main.py` 的 `/api/abort` 路由只查 `main._current_caller`(仅 dev/ping 探针线程设置),从不调 `session.abort()`——会话调用(浏览器「发送」触发的 `send_message`/`trigger_divergence`)在飞时点「中止」返回 `{killed: false}`,caller 不被杀、busy 锁不释放,后续 message/divergence/g1 全部 409。
+- **修复提交:** `381aa33`(`fix(idi-01-1-2)`):路由先判 `session.busy()` → 调 `session.abort()`(杀 caller + 强制释放挂起权限 + 解 busy 锁);dev/ping 探针的 `_current_caller` 中止路径保留;`killed` 字段保持真实(任一路径真杀才 true,双空闲 false)。
+- **路由级测试:** `backend/tests/test_route_abort.py` — `test_route_abort_kills_inflight_session_call`(FakeAICaller 在飞 → POST /api/abort → `killed=true` + caller.abort() 被调 + busy 释放可再发 + transcript 无脏 `[ai]`)与 `test_route_abort_idle_returns_killed_false`(空闲时 killed=false)。RED 先行复现了验证报告的失败形态(killed:false、caller 存活),修复后转 GREEN。
+- **回归结果:** `.venv/bin/python -m pytest backend/tests/ -q` → **64 passed + 2 skipped**(基线 62 passed + 2 skipped + 新增 2),全绿。
 
 ---
 

@@ -128,6 +128,7 @@ def normalize_stream_line(line: str) -> dict | None:
     - assistant 消息里的 message 文本 → kind=say
     - tool_use 的 Read/Write/Edit/Bash → 对应 kind,目标路径进 content
     - tool_result → kind=result
+    - result 行(CLI 收尾)→ kind=done(content = 最终结果文本)
     - 其余已知类型(system 等)→ None(不产出事件,由调用方跳过)
     - 解析失败 → kind=error 的单条事件
 
@@ -178,6 +179,12 @@ def normalize_stream_line(line: str) -> dict | None:
                     )
                 return {"kind": "result", "content": str(content or ""), "raw": obj}
         return None
+    if msg_type == "result":
+        # CLI 收尾行 → done(is_error 时 error;content = 最终结果文本)
+        is_error = bool(obj.get("is_error"))
+        kind = "error" if is_error else "done"
+        content = str(obj.get("result") or ("调用结束" if not is_error else "调用出错"))
+        return {"kind": kind, "content": content, "raw": obj}
     return None
 
 

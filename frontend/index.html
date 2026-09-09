@@ -110,10 +110,6 @@
     </div>
   </div>
 
-  <!-- vendored 单文件 markdown 渲染库(无 CDN 网络依赖) -->
-  <script src="vendor/marked.min.js"></script>
-  <script src="app.js"></script>
-
   <!-- claude CLI 自检浮层(§7.1:只挡第一次;通过或重检通过即隐藏) -->
   <div id="cli-check-overlay" class="overlay hidden">
     <div class="overlay-card">
@@ -122,5 +118,12 @@
       <button id="cli-recheck-btn">我已装好,重新检测</button>
     </div>
   </div>
+
+  <!-- vendored 单文件 markdown 渲染库(无 CDN 网络依赖) -->
+  <!-- 脚本必须在全部 DOM(含 cli-check-overlay)之后执行:app.js 顶层就绑定
+       recheck-btn / 发起 runCliCheck,先于 DOM 加载会让 getElementById 取到
+       null 而抛 TypeError(G-idi01-8),脚本尾部从此不再执行。 -->
+  <script src="vendor/marked.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
   POST /api/message     发消息(异步起,立即 202;在飞时 409)
   POST /api/permission  回答挂起权限确认(未知 id 404)
   GET  /api/draft       当前 draft.md 内容(前端流后拉新)
+  GET  /api/session     当前会话只读快照(前端流后拉新门控;与 /api/enter 同构)
   GET  /api/transcript  全量消息列表(备用拉)
 静态:frontend/ 目录挂在根路径。
 """
@@ -129,6 +130,22 @@ def get_draft() -> JSONResponse:
     except RuntimeError:
         return JSONResponse({"status": "ok", "draft": None})
     return JSONResponse({"status": "ok", "draft": snapshot["draft"]})
+
+
+@app.get("/api/session")
+def get_session() -> JSONResponse:
+    """当前会话只读快照:与 POST /api/enter 同构(state/transcript/draft/门控)。
+
+    供前端在会话流收尾(done)后拉新门控(g1_available / divergence_available /
+    状态徽标)——不重进目录,会话流不必整页重渲染;已进入项目是前提(400)。
+    """
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError as exc:
+        return JSONResponse(
+            {"status": "error", "message": str(exc)}, status_code=400
+        )
+    return JSONResponse({"status": "ok", **snapshot})
 
 
 @app.post("/api/divergence")

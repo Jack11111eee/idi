@@ -221,6 +221,12 @@ async function enterProject(path) {
 }
 
 function applySessionView(data) {
+  // 状态徽标 + 门控 + 文档渲染 + 会话流恢复(进入项目 / G1 定稿后整页重建视图)
+  applySessionGates(data);
+  renderTranscript(data.transcript);
+}
+
+function applySessionGates(data) {
   // 状态徽标(中文名,右上角)
   stateBadge.textContent = STATE_LABELS[data.state] || data.state;
   stateBadge.classList.remove('hidden');
@@ -239,7 +245,6 @@ function applySessionView(data) {
 
   renderDraft(data.draft);
   renderBrainstorm(data.brainstorm);
-  renderTranscript(data.transcript);
 
   // 发散入口(§3.7:仅阶段 1-2 且雏形诞生前开放)
   if (
@@ -299,6 +304,19 @@ async function refreshDraftAfterStream() {
   } catch { /* 拉不到保持现状 */ }
   // 发散结束后 brainstorm.md 就绪——同拍拉新(Wave 3:发散产物呈现)
   await refreshBrainstormAfterStream();
+  // 拉新门控(G-idi01-7):门控全部由磁盘推导,流结束后视磁盘现状重判——
+  // 草稿出来了「认可雏形」就地解禁、发散入口就地关闭,无需手动重进目录。
+  await refreshGatesAfterStream();
+}
+
+async function refreshGatesAfterStream() {
+  if (currentProject == null) return;
+  try {
+    const resp = await fetch('/api/session');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (data.status === 'ok') applySessionGates(data);
+  } catch { /* 拉不到保持现状 */ }
 }
 
 async function refreshBrainstormAfterStream() {

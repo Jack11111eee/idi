@@ -66,47 +66,218 @@ _PENDING_OPEN = "待决"
 _VERDICT_PENDING = "待裁决"
 _VERDICT_ANSWERED = "裁决"
 
+# 二级标题前缀(表格定位用)
+_HEADING_PREFIX = "## "
+
+
+def _extract_table(md_text: str, heading_keyword: str) -> list[list[str]]:
+    """共通表格解析:定位首个标题含关键词的二级标题,取其下连续表格行。
+
+    扫 splitlines:找到首个 line.startswith("## ") 且 heading_keyword in 标题文本
+    的二级标题;其后逐行:表格首行尚未出现时空行跳过(markdown 标题与表间
+    的空行惯例)、首个 | 行 = 表头丢弃、markdown 分隔行(|---|---|)不收;
+    表格已开始后遇到任何非 | 行(空行/正文/新标题)即终止该表。同名标题
+    多现取第一处(DESIGN.md 每轮一份的结构假设)。
+    无标题 / 标题下无表格 → 返回 [](畸形输入给确定判定,T-idi02-01)。
+    """
+    lines = md_text.splitlines()
+    rows: list[list[str]] = []
+    in_target = False
+    seen_row = False  # in_target 下是否已见到表格行(表头)
+    for line in lines:
+        if line.startswith(_HEADING_PREFIX):
+            if in_target:
+                break  # 目标表已定位(或已判定无表),同名标题再出现不重开
+            in_target = heading_keyword in line
+            continue
+        if not in_target:
+            continue
+        body = line.strip()
+        if not body.startswith("|"):
+            if seen_row:
+                break  # 表格已开始,遇到非表格行即终止该表
+            if body:
+                break  # 标题与表格之间出现非空的非表格正文 → 该标题下无表
+            continue  # 表格开始前的空行跳过
+        columns = [cell.strip() for cell in body.strip("|").split("|")]
+        if not seen_row:
+            seen_row = True  # 首个表格行 = 表头,丢弃
+            continue
+        if _is_separator_row(columns):
+            continue  # markdown 分隔行(|---|---|)不是数据行
+        rows.append(columns)
+    return rows
+
+
+def _is_separator_row(columns: list[str]) -> bool:
+    """markdown 表格分隔行:非空 cell 全部只由 -/: 构成(如 ------)。"""
+    non_empty = [cell for cell in columns if cell]
+    return bool(non_empty) and all(set(cell) <= {"-", ":"} for cell in non_empty)
+
+
+# ---------- 1. 维度表(§6.4:二级标题含「覆盖维度表」) ----------
 
 def parse_dimension_table(md_text: str) -> list[dict]:
-    """解析维度表为 [{"dimension", "status", "note"}](RED 骨架:未实现)。"""
-    raise NotImplementedError("parse_dimension_table 尚未实现(Task 2 GREEN 阶段实现)")
+    """解析维度表为 [{"dimension", "status", "note"}] 行列表。
+
+    列 = 维度/状态/说明(§6.4 字面);表头丢弃、各列 strip;无表返回 []。
+    """
+    rows = _extract_table(md_text, "覆盖维度表")
+    result: list[dict] = []
+    for columns in rows:
+        dimension = columns[0] if len(columns) > 0 else ""
+        status = columns[1] if len(columns) > 1 else ""
+        note = columns[2] if len(columns) > 2 else ""
+        result.append({"dimension": dimension, "status": status, "note": note})
+    return result
 
 
 def is_dimension_table_green(md_text: str) -> bool:
-    """维度表全绿判定(RED 骨架:未实现)。"""
-    raise NotImplementedError("is_dimension_table_green 尚未实现(Task 2 GREEN 阶段实现)")
+    """维度表全绿判定:状态列无 ◐ 与 ✗(§6.4 字面:全绿 ⇔ 无 ◐ 与 ✗)。
 
+    空表 = 无行动 = 绿(表不存在或无数据行均返回 True——锁定 §6.4 判定式
+    字面,按钮点亮条件由调用方另行组合)。
+    deliberate deviation from §6.4 letter, fail-closed:状态列值不在
+    {✓,◐,✗} 的脏值行(如「待定」)判非绿——比字面「无 ◐ 与 ✗」更保守,
+    为后端防脏输入的显式设计选择。
+    """
+    for row in parse_dimension_table(md_text):
+        status = row["status"]
+        if status == _STATUS_HALF or status == _STATUS_CROSS:
+            return False
+        if status not in _KNOWN_DIM_STATUSES:
+            return False  # 脏值 fail-closed(见 docstring)
+    return True
+
+
+# ---------- 2. 未决清单(§6.4:二级标题含「未决问题清单」) ----------
 
 def parse_pending_list(md_text: str) -> list[dict]:
-    """解析未决清单为 [{"number", "question", "status"}](RED 骨架:未实现)。"""
-    raise NotImplementedError("parse_pending_list 尚未实现(Task 2 GREEN 阶段实现)")
+    """解析未决清单为 [{"number", "question", "status"}] 行列表。
+
+    列 = 编号/问题/状态;表头丢弃、各列 strip;无表返回 []。
+    """
+    rows = _extract_table(md_text, "未决问题清单")
+    result: list[dict] = []
+    for columns in rows:
+        number = columns[0] if len(columns) > 0 else ""
+        question = columns[1] if len(columns) > 1 else ""
+        status = columns[2] if len(columns) > 2 else ""
+        result.append({"number": number, "question": question, "status": status})
+    return result
 
 
 def is_pending_list_clear(md_text: str) -> bool:
-    """未决清单清零判定(RED 骨架:未实现)。"""
-    raise NotImplementedError("is_pending_list_clear 尚未实现(Task 2 GREEN 阶段实现)")
+    """未决清单清零判定:无任何 status == 待决 的行(§6.4 字面)。
 
+    脏值行(非「待决」)不算待决——清单判定照 §6.4 字面只找「待决」;
+    与维度表的 fail-closed 刻意不同(清单脏值如实呈现给用户更合理,
+    这里的「清零 ⇔ 无待决」是 DESIGN.md 判定式原文)。
+    无表 = 清零 = True。
+    """
+    return all(row["status"] != _PENDING_OPEN for row in parse_pending_list(md_text))
+
+
+# ---------- 3. 授权申请标记(§6.4:末非空行恰为两串之一) ----------
 
 def parse_auth_marker(md_text: str) -> str | None:
-    """授权申请标记三态解析:"yes"/"no"/None(RED 骨架:未实现)。"""
-    raise NotImplementedError("parse_auth_marker 尚未实现(Task 2 GREEN 阶段实现)")
+    """授权申请标记三态解析:"yes" / "no" / None。
 
+    state.is_complete_round 的三分化语义重组(合法两态 + None),底层复用
+    state.last_nonempty_line 与 AUTH_MARKER_YES/NO;不复判 is_complete_round
+    (后者继续留给 derive_state 用,两者共享底层常量,D-P2-16)。
+    末非空行恰为 AUTH_MARKER_YES → "yes";恰为 AUTH_MARKER_NO → "no";
+    其余(前缀/后缀/无标记/空文档)→ None。
+    """
+    last = last_nonempty_line(md_text)
+    if last == AUTH_MARKER_YES:
+        return "yes"
+    if last == AUTH_MARKER_NO:
+        return "no"
+    return None
+
+
+# ---------- 4. 批注回应表(§6.4:二级标题含「批注回应」) ----------
 
 def parse_annotation_responses(md_text: str) -> list[dict]:
-    """解析批注回应表为 [{"id", "quote", "response"}](RED 骨架:未实现)。"""
-    raise NotImplementedError("parse_annotation_responses 尚未实现(Task 2 GREEN 阶段实现)")
+    """解析批注回应表为 [{"id", "quote", "response"}] 行列表。
+
+    列 = 批注id/原文摘录/回应(§6.4/§6.3 字面);id 列 strip 后为空的行
+    跳过(不抛);表头丢弃;无表返回 []。解析器只负责提取——命中/未命中
+    的配对是 writeback 的职责(D-P2-13:回写以 id 配对为唯一依据)。
+    """
+    rows = _extract_table(md_text, "批注回应")
+    result: list[dict] = []
+    for columns in rows:
+        item_id = columns[0] if len(columns) > 0 else ""
+        if not item_id.strip():
+            continue  # id 空 → 跳过该行
+        quote = columns[1] if len(columns) > 1 else ""
+        response = columns[2] if len(columns) > 2 else ""
+        result.append(
+            {"id": item_id.strip(), "quote": quote.strip(), "response": response.strip()}
+        )
+    return result
+
+
+# ---------- 5. PASS 结论行(锚点取末一处) + 6. 裁决追加行 ----------
+
+def _last_conclusion_index(md_text: str) -> int | None:
+    """找最后一处以 "> 核查结论:" 开头(strip 后 startswith)的行号;无 → None。"""
+    last_index: int | None = None
+    for index, line in enumerate(md_text.splitlines()):
+        if line.strip().startswith(_CONCLUSION_LINE_PREFIX):
+            last_index = index
+    return last_index
 
 
 def is_pass_conclusion(md_text: str) -> bool:
-    """PASS 结论行判定(锚点取末一处,RED 骨架:未实现)。"""
-    raise NotImplementedError("is_pass_conclusion 尚未实现(Task 2 GREEN 阶段实现)")
+    """PASS 结论行判定:末锚点行以 state.PASS_PREFIX 开头(前缀匹配)。
+
+    锚点 = 最后一处 `> 核查结论:` 行(§6.4:宽松档含裁决轮的报告可有双
+    结论行,锚点取末一处);无结论行 → False。
+    等价于 state 的最新报告末行 PASS 判定,但按"末一处锚点"语义重新表述。
+    """
+    anchor = _last_conclusion_index(md_text)
+    if anchor is None:
+        return False
+    lines = md_text.splitlines()
+    return lines[anchor].strip().startswith(PASS_PREFIX)
 
 
 def parse_verdict_lines(md_text: str) -> list[dict]:
-    """解析结论行之后的裁决追加行(RED 骨架:未实现)。"""
-    raise NotImplementedError("parse_verdict_lines 尚未实现(Task 2 GREEN 阶段实现)")
+    """解析结论行之后的裁决追加行为 [{"kind", "number"}] 列表。
+
+    仅扫描末锚点行(`> 核查结论:` 取最后一处)之后的行;行 strip 后匹配
+    _VERDICT_RE(r"^>\s*(待裁决|裁决):#(\d+):")的才收;报告头部(锚点之前)
+    的同形态行一概不进配对空间(§6.4 扫描范围与排他);无锚点 → []。
+    """
+    anchor = _last_conclusion_index(md_text)
+    if anchor is None:
+        return []
+    result: list[dict] = []
+    for line in md_text.splitlines()[anchor + 1:]:
+        match = _VERDICT_RE.match(line.strip())
+        if match:
+            result.append({"kind": match.group(1), "number": int(match.group(2))})
+    return result
 
 
 def unpaired_verdicts(md_text: str) -> list[int]:
-    """未配对的待裁决编号列表(RED 骨架:未实现)。"""
-    raise NotImplementedError("unpaired_verdicts 尚未实现(Task 2 GREEN 阶段实现)")
+    """未配对的待裁决编号列表:待裁决的 number 存在、同号裁决不存在。
+
+    同号(待裁决 #K + 裁决 #K)即配对——配对的不出现;多组问答共存时各自
+    配对;返回按出现顺序去重。供 §6.4 判定式①「存在未配对待裁决 → 暂停态」。
+    """
+    verdicts = parse_verdict_lines(md_text)
+    pending_numbers = [
+        v["number"] for v in verdicts if v["kind"] == _VERDICT_PENDING
+    ]
+    answered_numbers = {
+        v["number"] for v in verdicts if v["kind"] == _VERDICT_ANSWERED
+    }
+    unpaired: list[int] = []
+    for number in pending_numbers:
+        if number not in answered_numbers and number not in unpaired:
+            unpaired.append(number)
+    return unpaired

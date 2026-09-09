@@ -991,3 +991,95 @@ def test_process_round_empty_annotations_ok(tmp_path, fresh_session):
     # 轮次照常前进 + done 正常收尾
     state = fresh_session.snapshot()
     assert state["current_round"] == 2
+
+
+# ---------------------------------------------------------------------------
+# answer_plain 同步封装 / add_annotation(PLAN idi-02-02 Task 3,D-P2-7/D-P2-10)
+# ---------------------------------------------------------------------------
+
+
+def test_answer_plain_records_and_persists(tmp_path, fresh_session):
+    """用例 1:answer_plain 同步调 ask_lite → lite_calls 记录三元组 → plain 落盘 answered。"""
+    from backend import annotations as annotations_mod
+
+    docs = _enter_phase3(fresh_session, tmp_path)
+
+    fake = FakeAICaller(lite_answers={"这段什么意思": "即时答:字面意思即可。"})
+    fresh_session._set_caller_for_tests(fake)
+
+    # 观察事件:answer_plain 不 publish 任何 SSE 事件(D-P2-8:不进工作面板)
+    published = []
+    orig_publish = fresh_session._publish_for_tests
+    fresh_session._publish_for_tests = lambda ev: published.append(ev)
+
+    entry = fresh_session.answer_plain(
+        1, quote="目标与边界", before="第 1 轮", question="这段什么意思"
+    )
+
+    #FakeAICaller 未走 run → 不 publish;直接断言无事件
+    assert published == [], "answer_plain 不应发 SSE 事件"
+
+    # ask_lite 记录了三元组(当前文档全文 / 划选原文 / 用户问题)
+    assert len(fake.lite_calls) == 1
+    document_text, quoted_text, question = fake.lite_calls[0]
+    assert "第 1 轮" in document_text  # 当前轮文档全文进 payload
+    assert quoted_text == "目标与边界"
+    assert question == "这段什么意思"
+
+    # 落盘条目:type=plain、status=answered、answer 有值
+    assert entry["type"] == "plain"
+    assert entry["status"] == "answered"
+    assert entry["answer"] == "即时答:字面意思即可。"
+    persisted = annotations_mod.load(tmp_path, 1)
+    assert persisted["items"], "plain 条目应已落盘"
+    assert persisted["items"][-1]["id"] == entry["id"]
+
+    # plain 不计 pending(快照 pending_annotations 只数 comment+pending,D-P2-15)
+    snap = fresh_session.snapshot()
+    assert snap["pending_annotations"] == 0
+
+
+def test_answer_plain_busy_rejects(tmp_path, fresh_session):
+    """在飞主调用进行中再发起大白话 → 拒绝(RuntimeError,路由层 409 语义)。"""
+    docs = _enter_phase3(fresh_session, tmp_path)
+
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake(FakeAICaller):
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=10)
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = HangingFake(events=[])
+    fresh_session._set_caller_for_tests(fake)
+    threading.Thread(target=lambda: fresh_session.send_message("先聊"), daemon=True).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    with pytest.raises(RuntimeError, match="在飞|进行中"):
+        fresh_session.answer_plain(1, quote="x", before="", question="y")
+
+    release.set()
+    assert wait_idle(fresh_session), "调用未收尾"
+
+
+def test_add_annotation_creates_pending_comment(tmp_path, fresh_session):
+    """用例 2(session 侧):add_annotation 建条目落盘(pending + comment)。"""
+    from backend import annotations as annotations_mod
+
+    docs = _enter_phase3(fresh_session, tmp_path)
+
+    entry = fresh_session.add_annotation(1, "目标与边界", "第 1 轮", "这里没看懂")
+    assert entry["type"] == "comment"
+    assert entry["status"] == "pending"
+    assert entry["answer"] is None
+
+    # 非当前轮 → RuntimeError(路由层 409)
+    with pytest.raises(RuntimeError, match="仅当前轮可批注"):
+        fresh_session.add_annotation(2, "x", "", "y")
+
+    # 计数:1 条 pending comment → snapshot pending_annotations == 1
+    snap = fresh_session.snapshot()
+    assert snap["pending_annotations"] == 1

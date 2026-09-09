@@ -75,6 +75,18 @@ class PermissionBody(BaseModel):
     approved: bool
 
 
+class AnnotationBody(BaseModel):
+    quote: str
+    before: str = ""
+    note: str
+
+
+class PlainBody(BaseModel):
+    quote: str
+    before: str = ""
+    question: str
+
+
 # ---------------------------------------------------------------------------
 # 会话路由(FLOW-01 / FLOW-02 / AI-04)
 # ---------------------------------------------------------------------------
@@ -211,6 +223,131 @@ def get_transcript() -> JSONResponse:
     except RuntimeError:
         return JSONResponse({"status": "ok", "transcript": []})
     return JSONResponse({"status": "ok", "transcript": snapshot["transcript"]})
+
+
+# ---------------------------------------------------------------------------
+# 轮次路由族(PLAN idi-02-02 Task 3,D-P2-22:FLOW-04/UI-02 的 HTTP 面)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/rounds")
+def get_rounds() -> JSONResponse:
+    """轮次列表 + 当前轮号(完整轮列表来自 list_complete_rounds)。"""
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    return JSONResponse(
+        {
+            "status": "ok",
+            "rounds": snapshot["rounds"],
+            "current_round": snapshot["current_round"],
+        }
+    )
+
+
+@app.get("/api/rounds/{round_n}")
+def get_round(round_n: int) -> JSONResponse:
+    """单轮视图:轮次文档全文 + annotations 合并(非完整轮 404)。"""
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if round_n not in snapshot["rounds"]:
+        return JSONResponse(
+            {"status": "error", "message": "该轮不存在或不完整"}, status_code=404
+        )
+    from backend import annotations as annotations_mod
+
+    project = session.current_project_path()
+    doc_path = project / "docs" / f"discuss-round-{round_n}.md"
+    try:
+        document = doc_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        document = ""
+    return JSONResponse(
+        {
+            "status": "ok",
+            "round": round_n,
+            "document": document,
+            "annotations": annotations_mod.load(project, round_n),
+        }
+    )
+
+
+@app.post("/api/rounds/{round_n}/annotations")
+def post_annotation(round_n: int, body: AnnotationBody) -> JSONResponse:
+    """建实质批注(type=comment,pending 落盘)。
+
+    409 仅两条件(D-P2-22):非当前轮 / 非 phase3 —— 服务端强制(T-idi02-06,
+    前端只是显示约束 D-P2-21);ValueError(quote 空等)→ 400。
+    不做 busy 检查(写当前轮文件与 AI 回写上一轮不同对象,无竞态)。
+    """
+    if not body.quote.strip():
+        return JSONResponse(
+            {"status": "error", "message": "quote 不能为空(划选原文是必填项)"},
+            status_code=400,
+        )
+    try:
+        entry = session.add_annotation(round_n, body.quote, body.before, body.note)
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=409)
+    except ValueError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    return JSONResponse({"status": "ok", "annotation": entry})
+
+
+@app.post("/api/rounds/{round_n}/plain")
+def post_plain(round_n: int, body: PlainBody) -> JSONResponse:
+    """大白话即时答:同步 ask_lite + plain 条目落盘,返回 answer(§3.4/D-P2-10)。
+
+    在飞 → 409;非当前轮/非 phase3 → 409;AI 调用失败 → 502;成功 200
+    (answer 在条目的 answer 字段,前端可直读)。
+    """
+    if not body.quote.strip():
+        return JSONResponse(
+            {"status": "error", "message": "quote 不能为空(划选原文是必填项)"},
+            status_code=400,
+        )
+    try:
+        entry = session.answer_plain(
+            round_n, body.quote, body.before, body.question
+        )
+    except RuntimeError as exc:
+        message = str(exc)
+        if message.startswith("大白话调用失败"):
+            return JSONResponse(
+                {"status": "error", "message": message}, status_code=502
+            )
+        if "在飞" in message or "进行中" in message:
+            return JSONResponse(
+                {"status": "error", "message": message}, status_code=409
+            )
+        return JSONResponse({"status": "error", "message": message}, status_code=409)
+    except FileNotFoundError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    return JSONResponse({"status": "ok", "annotation": entry})
+
+
+@app.post("/api/rounds/process")
+def post_round_process() -> JSONResponse:
+    """处理本轮批注(FLOW-04 / §4.4 G2):session.process_round,202 受理。
+
+    非当前轮语义不适用(处理永远作用于当前轮);非 phase3 / 在飞 → 409。
+    """
+    try:
+        accepted = session.process_round()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if not accepted:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": "轮次处理入口已关闭(非阶段 3 或当前有调用进行中)",
+            },
+            status_code=409,
+        )
+    return JSONResponse({"status": "accepted"}, status_code=202)
 
 
 # ---------------------------------------------------------------------------

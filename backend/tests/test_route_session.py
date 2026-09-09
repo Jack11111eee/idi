@@ -78,3 +78,201 @@ def test_route_session_mirrors_enter_payload_and_tracks_disk(route_env):
     assert body3["current_round"] == 1
     assert body3["g1_available"] is False
     assert body3["divergence_available"] is False
+
+
+# ---------------------------------------------------------------------------
+# 轮次路由族 + 快照轮次字段(PLAN idi-02-02 Task 3,D-P2-15/D-P2-22)
+# ---------------------------------------------------------------------------
+
+
+def _enter_phase3_route(env, with_annotations=False):
+    """直造 phase3:完整第 1 轮;可选补两条批注(1 pending comment + 1 plain)。"""
+    from backend import annotations as annotations_mod
+
+    docs = env["docs"]
+    docs.mkdir(parents=True, exist_ok=True)
+    (docs / "discuss-round-1.md").write_text(
+        "# 第 1 轮\n\n讲了目标与边界。\n\n> 申请授权:否\n", encoding="utf-8"
+    )
+    if with_annotations:
+        annotations_mod.append_item(
+            env["project"], 1,
+            quote="目标与边界", before="", type="comment", note="这里没看懂",
+        )
+        annotations_mod.append_item(
+            env["project"], 1,
+            quote="讲了", before="",
+            type="plain", note="随便问", answer="即时答一条",
+        )
+    entered = env["client"].post("/api/enter", json={"path": str(env["project"])})
+    assert entered.status_code == 200
+    return docs
+
+
+def test_route_rounds_list_and_current(route_env):
+    """用例 3:GET /api/rounds → {"rounds": [1], "current_round": 1}。"""
+    _enter_phase3_route(route_env)
+    resp = route_env["client"].get("/api/rounds")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "ok"
+    assert body["rounds"] == [1]
+    assert body["current_round"] == 1
+
+
+def test_route_round_single_and_404(route_env):
+    """用例 4:GET /api/rounds/1 → 文档 + annotations;不存在的轮 5 → 404。"""
+    _enter_phase3_route(route_env, with_annotations=True)
+    client = route_env["client"]
+
+    ok_resp = client.get("/api/rounds/1")
+    assert ok_resp.status_code == 200
+    body = ok_resp.json()
+    assert body["status"] == "ok"
+    assert body["round"] == 1
+    assert "讲了目标与边界" in body["document"]
+    assert "items" in body["annotations"]
+    assert len(body["annotations"]["items"]) == 2
+
+    not_found = client.get("/api/rounds/5")
+    assert not_found.status_code == 404
+    assert not_found.json()["status"] == "error"
+
+
+def test_route_post_annotation_creates_and_409s(route_env):
+    """用例 2:POST annotations 建条目(200 pending comment);非当前轮轮号 2 → 409。"""
+    _enter_phase3_route(route_env)
+    client = route_env["client"]
+
+    ok_resp = client.post(
+        "/api/rounds/1/annotations",
+        json={"quote": "目标与边界", "before": "讲了", "note": "这里没看懂"},
+    )
+    assert ok_resp.status_code == 200
+    body = ok_resp.json()
+    assert body["status"] == "ok"
+    entry = body["annotation"]
+    assert entry["type"] == "comment"
+    assert entry["status"] == "pending"
+
+    # 非当前轮(轮号 2)→ 409(服务端强制,T-idi02-06)
+    resp409 = client.post(
+        "/api/rounds/2/annotations",
+        json={"quote": "x", "before": "", "note": "y"},
+    )
+    assert resp409.status_code == 409
+
+    # 空 quote → 400
+    resp400 = client.post(
+        "/api/rounds/1/annotations",
+        json={"quote": " ", "before": "", "note": "y"},
+    )
+    assert resp400.status_code == 400
+
+
+def test_route_post_plain_answers(route_env):
+    """POST plain(路由级):同构 answer_plain —— Fake 打桩返回即时答落盘 200。"""
+    _enter_phase3_route(route_env)
+
+    class StubFake:
+        def __init__(self):
+            self.lite_calls = []
+
+        def ask_lite(self, document_text, quoted_text, question):
+            self.lite_calls.append((document_text, quoted_text, question))
+            return {"answer": "即时答:字面意思。"}
+
+    from backend import session as session_mod
+
+    stub = StubFake()
+    session_mod._set_caller_for_tests(stub)
+
+    resp = route_env["client"].post(
+        "/api/rounds/1/plain",
+        json={"quote": "目标与边界", "before": "讲了", "question": "这段什么意思"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "ok"
+    entry = body["annotation"]
+    assert entry["type"] == "plain"
+    assert entry["status"] == "answered"
+    assert entry["answer"] == "即时答:字面意思。"
+    assert len(stub.lite_calls) == 1
+
+
+def test_route_post_plain_502_on_ai_error(route_env):
+    """用例 5 补:AI 调用失败(answer 空 + error)→ 502。"""
+    _enter_phase3_route(route_env)
+
+    class FailingFake:
+        def ask_lite(self, document_text, quoted_text, question):
+            return {"answer": "", "error": "大白话调用未返回结果"}
+
+    from backend import session as session_mod
+
+    session_mod._set_caller_for_tests(FailingFake())
+
+    resp = route_env["client"].post(
+        "/api/rounds/1/plain",
+        json={"quote": "x", "before": "", "question": "y"},
+    )
+    assert resp.status_code == 502
+    body = resp.json()
+    assert body["status"] == "error"
+
+
+def test_route_process_round_202_or_409(route_env):
+    """用例 6:POST /api/rounds/process → 202 受理(不真跑完,更轻的入口级验证)。"""
+    _enter_phase3_route(route_env)
+
+    class NoRunFake:
+        def run(self, project_path, prompt):
+            self.run_calls = [(str(project_path), prompt)]
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    from backend import session as session_mod
+    import threading
+
+    no_run = NoRunFake()
+    session_mod._set_caller_for_tests(no_run)
+
+    resp = route_env["client"].post("/api/rounds/process")
+    assert resp.status_code == 202
+    assert resp.json()["status"] == "accepted"
+    assert resp.json().get("accepted") or resp.json()["status"] == "accepted"
+
+    # 等后台线程收流(避免状态泄漏下一个用例)
+    deadline = threading.Event()
+    import time as _time
+    t0 = _time.time()
+    while session_mod.busy() and _time.time() - t0 < 5:
+        _time.sleep(0.05)
+    deadline.set()
+
+
+def test_route_process_round_409_non_phase3(route_env):
+    """非 phase3(纯会话目录)→ 409。"""
+    docs = route_env["docs"]
+    docs.mkdir(parents=True, exist_ok=True)
+    (docs / "transcript.md").write_text("", encoding="utf-8")
+    entered = route_env["client"].post("/api/enter", json={"path": str(route_env["project"])})
+    assert entered.status_code == 200
+
+    resp = route_env["client"].post("/api/rounds/process")
+    assert resp.status_code == 409
+
+
+def test_route_session_snapshot_rounds_fields(route_env):
+    """用例 6(快照):GET /api/session 新增 rounds 与 pending_annotations;plain 不计。"""
+    _enter_phase3_route(route_env, with_annotations=True)
+    client = route_env["client"]
+
+    resp = client.get("/api/session")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "ok"
+    # rounds 字段 = 完整轮列表
+    assert body["rounds"] == [1]
+    # pending_annotations = 1(1 条 pending comment;plain 不计,D-P2-15)
+    assert body["pending_annotations"] == 1

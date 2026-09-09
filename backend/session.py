@@ -24,6 +24,7 @@ import threading
 import uuid
 from pathlib import Path
 
+from backend import annotations as annotations_mod
 from backend import config as cfg
 from backend.events import broker
 from backend.prompts import build_divergence_prompt, build_phase12_prompt
@@ -132,7 +133,8 @@ def enter_project(path) -> dict:
 
 
 def _session_snapshot() -> dict:
-    """当前项目的推导状态 + transcript 历史 + draft/brainstorm 内容 + 发散入口判定。"""
+    """当前项目的推导状态 + transcript 历史 + draft/brainstorm 内容 + 发散入口判定
+    + 轮次字段(rounds 完整轮列表 / pending_annotations 当前轮待处理数,D-P2-15)。"""
     global _current_project
     with _lock:
         project = _current_project
@@ -140,10 +142,20 @@ def _session_snapshot() -> dict:
         raise RuntimeError("尚未进入任何项目(先调 enter_project)")
     state = derive_state(project)
     transcript_path = project / TRANSCRIPT_FILENAME
+
+    # 轮次字段(仅 phase3/current_round 有 pending 计数,其余 0;plain 不计 D-P2-15)
+    if state["state"] == STATE_PHASE3 and state["current_round"] is not None:
+        ann = annotations_mod.load(project, state["current_round"])
+        pending_count = len(annotations_mod.select_pending(ann))
+    else:
+        pending_count = 0
+
     return {
         "state": state["state"],
         "current_round": state["current_round"],
         "current_check": state["current_check"],
+        "rounds": list_complete_rounds(project / "docs"),
+        "pending_annotations": pending_count,
         "transcript": parse_transcript(transcript_path),
         "draft": _read_text(project / DRAFT_FILENAME),
         "brainstorm": _read_text(project / BRAINSTORM_FILENAME),
@@ -155,6 +167,19 @@ def _session_snapshot() -> dict:
 def snapshot() -> dict:
     """对外只读视图(main.py /api/enter 复用 enter_project 内部同一组装)。"""
     return _session_snapshot()
+
+
+def current_project_path() -> Path:
+    """当前项目路径只读访问器(未进入项目时 RuntimeError,路由层转 4xx)。
+
+    供 main.py 轮次路由读当前轮文档/annotations 用——不加新全局,
+    从 session 既有对外函数就近取(D-P2-22)。
+    """
+    with _lock:
+        project = _current_project
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    return project
 
 
 def _read_text(path: Path) -> str | None:
@@ -525,7 +550,6 @@ def process_round() -> bool:
     global _inflight, _ai_texts, _aborted
     from backend.grammar import parse_annotation_responses
     from backend.prompts import build_round_prompt
-    from backend import annotations as annotations_mod
 
     with _lock:
         project = _current_project
@@ -603,3 +627,95 @@ def process_round() -> bool:
 
     threading.Thread(target=_worker, daemon=True).start()
     return True
+
+
+# ---------------------------------------------------------------------------
+# 批注建条目 + 大白话即时答(D-P2-7/D-P2-10/D-P2-22,idi-02-02 Task 3)
+# ---------------------------------------------------------------------------
+
+
+def _current_round_guard(round_n: int) -> Path:
+    """建条目/大白话共用的入口校验:当前项目 + phase3 + round_n 为当前轮。
+
+    通过 → 返回当前项目路径(调用方继续读文档/落盘);
+    未进入项目 → RuntimeError(路由层 400);非当前轮或非 phase3 →
+    RuntimeError「仅当前轮可批注」(路由层 409,T-idi02-06 服务端强制)。
+    """
+    with _lock:
+        project = _current_project
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    state = derive_state(project)
+    if not (
+        state["state"] == STATE_PHASE3
+        and state["current_round"] is not None
+        and round_n == state["current_round"]
+    ):
+        raise RuntimeError(f"仅当前轮可批注(当前轮:{state['current_round']},请求轮:{round_n})")
+    return project
+
+
+def add_annotation(round_n: int, quote: str, before: str, note: str) -> dict:
+    """建一条实质批注:type=comment,pending 落盘(D-P2-7:仅后端经 API 创建)。
+
+    校验 = _current_round_guard(未进项目 400 / 非当前轮或非 phase3 → 409)。
+    **不加 busy 检查**:annotations 的写入目标是当前轮文件,与 AI 回写的
+    上一轮文件不同对象,无竞态(D-P2-22:409 仅「非当前轮/非 phase3」两条件,
+    与 answer_plain 不同——AI 实时读文件不会写 annotations,busy 不构成冲突)。
+    quote 由前端划词算好精确文本(APPLE);空 quote 由 append_item 语义兜底。
+    返回新建条目 dict。
+    """
+    project = _current_round_guard(round_n)
+    return annotations_mod.append_item(
+        project, round_n, quote=quote, before=before, type="comment", note=note
+    )
+
+
+def answer_plain(round_n: int, quote: str, before: str, question: str) -> dict:
+    """大白话即时答(§3.4 D-05 / D-P2-10):同步 caller.ask_lite → plain 落盘。
+
+    同步执行(不起后台线程:单机单人,秒级响应无并发压力);
+    单飞检查(busy → RuntimeError「当前有调用进行中」供路由层 409);
+    不产 SSE 事件(轻量调用是用户查询,不代表用户主动任务,D-P2-8);
+    结果 append_item(type=plain, answer=即时答, status=answered)落盘
+    (D-P2-7:后端落盘;plain 不计未处理数 D-P2-15)。
+    """
+    with _lock:
+        project = _current_project
+        caller = _ensure_caller()
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    if busy():
+        raise RuntimeError("当前有调用进行中,请等它结束或先中止")
+
+    state = derive_state(project)
+    if not (
+        state["state"] == STATE_PHASE3
+        and state["current_round"] is not None
+        and round_n == state["current_round"]
+    ):
+        raise RuntimeError(f"仅当前轮可批注(当前轮:{state['current_round']},请求轮:{round_n})")
+
+    # 读当前轮文档全文(不存在 FileNotFoundError → 路由层 400)
+    round_doc_path = project / "docs" / f"discuss-round-{round_n}.md"
+    if not round_doc_path.is_file():
+        raise FileNotFoundError(f"当前轮文档不存在:{round_doc_path}")
+    document_text = _read_text(round_doc_path) or ""
+
+    result = caller.ask_lite(
+        document_text=document_text, quoted_text=quote, question=question
+    )
+    answer = result.get("answer", "")
+    if not answer:
+        # AI 调用失败(answer 空 + error 键):落盘缺答案无意义,交路由层 502
+        raise RuntimeError(f"大白话调用失败:{result.get('error', '未知原因')}")
+
+    return annotations_mod.append_item(
+        project,
+        round_n,
+        quote=quote,
+        before=before,
+        type="plain",
+        note=question,
+        answer=answer,
+    )

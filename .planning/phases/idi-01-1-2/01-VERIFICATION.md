@@ -1,7 +1,7 @@
 ---
 phase: idi-01-1-2
 verified: 2026-09-09T09:32:56Z
-status: human_needed
+status: passed
 score: 8/8 must-haves verified
 re_verification:
   previous_status: gaps_found
@@ -11,6 +11,7 @@ re_verification:
   gaps_remaining: []
   regressions: []
 covered_files:
+
   - .planning/phases/idi-01-1-2/01-CONTEXT.md
   - .planning/phases/idi-01-1-2/idi-01-01-PLAN.md
   - .planning/phases/idi-01-1-2/idi-01-01-SUMMARY.md
@@ -48,11 +49,13 @@ covered_files:
   - pytest.ini
   - requirements.txt
   - run.sh
+
 covered_digest: "v1:sha256:b7261b595d76a828fcb4e47440dda4ce68d57c9ea8d726cf4bebec94c9671d30"
 behavior_unverified: 6
 overrides_applied: 0
 gaps: []
 gap_resolution:
+
   - truth: "点「中止」按钮随时能杀掉当前调用且不留损坏状态(会话路径)— ROADMAP 成功判据 4 / AI-02 / Plan 01 must-have 真值 4"
     status: resolved
     resolution: "fixed in 381aa33 — /api/abort 路由接入 session.abort()(会话在飞时优先中止并释放 busy/挂起权限),dev/ping 探针 _current_caller 中止保留;补经 HTTP 路由的测试 backend/tests/test_route_abort.py(2 用例)"
@@ -68,6 +71,7 @@ gap_resolution_evidence: >-
 gaps: []
 behavior_unverified: 6
 behavior_unverified_items:
+
   - truth: "浏览器端到端用户流(goal 全句):打开应用 → 进目录 → (没想法→发散→挑方向) → 阶段 1-2 会话直播 → 认可雏形 → 轮次视图"
     test: "bash run.sh 后浏览器走 Plan 04 verification 第 5 条的完整 UAT 路径(空目录 → 没想法 → 看 brainstorm → 发方向 → 认可雏形 → 轮次占位)"
     expected: "每一步界面按 DESIGN.md §3.2/§4.1/§4.4 呈现;最终 discuss-round-1.md 落盘且界面切「已进入轮次阶段…当前轮:第 1 轮」"
@@ -93,6 +97,7 @@ behavior_unverified_items:
     expected: "会话流与草稿从磁盘全量恢复,无需任何恢复操作"
     why_human: "浏览器会话语境下的恢复体验;数据层恢复已由 E2E test_restart_recovery(真实 CLI + importlib.reload)行为验证"
 human_verification:
+
   - test: "浏览器端到端 UAT(主批次):bash run.sh 后,空白临时目录进入 →「没想法」发散 → 看 brainstorm 候选 → 会话流发所选方向 → 草稿出来 → 点「认可雏形」→ 界面切「已进入轮次阶段…当前轮:第 1 轮」(Plan 01/03/04 verification 人检条合并为主链)"
     expected: "每步按 DESIGN.md §3.2/§4.1/§4.4 呈现;最终 discuss-round-1.md 落盘且界面切轮次占位;过程中点「中止」能即时杀掉在飞调用(修复后已机器验证,浏览器手感待人检)"
     why_human: "点击交互与视觉呈现只有浏览器能确认;全部后端链路已机器验证"

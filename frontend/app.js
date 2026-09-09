@@ -28,6 +28,14 @@ const permissionMessage = document.getElementById('permission-message');
 const permissionAllowBtn = document.getElementById('btn-permission-allow');
 const permissionDenyBtn = document.getElementById('btn-permission-deny');
 
+// 发散与 G1 句柄(FLOW-06 / FLOW-03)
+const divergenceEntry = document.getElementById('divergence-entry');
+const divergenceBtn = document.getElementById('btn-divergence');
+const brainstormView = document.getElementById('brainstorm-view');
+const brainstormContent = document.getElementById('brainstorm-content');
+const approveDraftBtn = document.getElementById('btn-approve-draft');
+const approveHint = document.getElementById('approve-hint');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
@@ -230,7 +238,32 @@ function applySessionView(data) {
   }
 
   renderDraft(data.draft);
+  renderBrainstorm(data.brainstorm);
   renderTranscript(data.transcript);
+
+  // 发散入口(§3.7:仅阶段 1-2 且雏形诞生前开放)
+  if (
+    (data.state === 'phase1_new' || data.state === 'phase12_in_progress') &&
+    data.divergence_available
+  ) {
+    divergenceEntry.classList.remove('hidden');
+  } else {
+    divergenceEntry.classList.add('hidden');
+  }
+
+  // 「认可雏形」按钮(§4.4 常驻草稿区末尾):有雏形且未定稿才可点
+  if (data.g1_available) {
+    approveDraftBtn.disabled = false;
+    approveDraftBtn.title = '点击即定稿为 discuss-round-1.md,进入轮次阶段(不可回退)';
+    approveHint.textContent = '定稿后进入轮次阶段,不可退回阶段 1-2 会话;draft.md 保留。';
+    approveHint.classList.remove('hidden');
+  } else {
+    approveDraftBtn.disabled = true;
+    approveHint.classList.add('hidden');
+    approveDraftBtn.title = data.draft
+      ? '已定稿——项目已在轮次阶段'
+      : '先要有雏形草稿才能认可';
+  }
 }
 
 function renderDraft(draft) {
@@ -244,6 +277,18 @@ function renderDraft(draft) {
   }
 }
 
+function renderBrainstorm(brainstorm) {
+  // 发散候选区:brainstorm.md 有内容才显示(流后拉新 GET /api/brainstorm 也走这里)
+  if (brainstorm == null || brainstorm === '') {
+    brainstormView.classList.add('hidden');
+    brainstormContent.innerHTML = '';
+  } else {
+    brainstormContent.innerHTML = '';
+    brainstormContent.appendChild(renderMarkdown(brainstorm));
+    brainstormView.classList.remove('hidden');
+  }
+}
+
 async function refreshDraftAfterStream() {
   // done 后拉新草稿(AI 可能在调用中写了 draft.md)
   if (currentProject == null) return;
@@ -251,6 +296,17 @@ async function refreshDraftAfterStream() {
     const resp = await fetch('/api/draft');
     const data = await resp.json();
     if (data.status === 'ok') renderDraft(data.draft);
+  } catch { /* 拉不到保持现状 */ }
+  // 发散结束后 brainstorm.md 就绪——同拍拉新(Wave 3:发散产物呈现)
+  await refreshBrainstormAfterStream();
+}
+
+async function refreshBrainstormAfterStream() {
+  if (currentProject == null) return;
+  try {
+    const resp = await fetch('/api/brainstorm');
+    const data = await resp.json();
+    if (data.status === 'ok') renderBrainstorm(data.brainstorm);
   } catch { /* 拉不到保持现状 */ }
 }
 
@@ -310,6 +366,74 @@ messageInput.addEventListener('keydown', (e) => {
     messageInput.value = '';
     appendChatMessage('user', text);
     sendMessage(text);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 发散模式(FLOW-06 §3.7):「没想法」入口 → POST /api/divergence,过程走 SSE 直播
+// ---------------------------------------------------------------------------
+
+divergenceBtn.addEventListener('click', async () => {
+  if (!currentProject) {
+    renderEvent({ kind: 'error', content: '请先进入项目目录', raw: null });
+    return;
+  }
+  divergenceBtn.disabled = true;
+  renderEvent({
+    kind: 'say',
+    content: '已发起发散模式,多视角风暴进行中(事件照常直播)……',
+    raw: null,
+  });
+  try {
+    const resp = await fetch('/api/divergence', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      renderEvent({
+        kind: 'error',
+        content: `发散发起失败:${err.message || resp.status}`,
+        raw: null,
+      });
+    }
+  } catch {
+    renderEvent({ kind: 'error', content: '发散发起失败(网络)', raw: null });
+  } finally {
+    // 解禁在收到终止事件时进行(done/error 后);两拍防连点
+    setTimeout(() => { divergenceBtn.disabled = false; }, 1500);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// G1 认可雏形(FLOW-03 §4.4):direct-through 交互形态——点击即 POST /api/g1,零确认
+// (前置决策门已定:DESIGN.md §4.4 字面 = 常驻按钮、点击即 G1 通过;不可回滚门由
+//  后端幂等防护承担——已定稿时后端 409)
+// ---------------------------------------------------------------------------
+
+approveDraftBtn.addEventListener('click', async () => {
+  if (approveDraftBtn.disabled) return;
+  approveDraftBtn.disabled = true;
+  try {
+    const resp = await fetch('/api/g1', { method: 'POST' });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      renderEvent({
+        kind: 'error',
+        content: `定稿失败:${data.message || resp.status}`,
+        raw: null,
+      });
+      // 已定稿(409 幂等防)以外的失败:按钮恢复,让用户处理后再点
+      approveDraftBtn.disabled = data.message && data.message.includes('已定稿');
+      return;
+    }
+    renderEvent({
+      kind: 'say',
+      content: '雏形已定稿为 discuss-round-1.md,进入轮次阶段。draft.md 已保留。',
+      raw: null,
+    });
+    // 定稿成功:重进(POST /api/enter)刷新状态,切到轮次视图
+    await enterProject(currentProject);
+  } catch {
+    renderEvent({ kind: 'error', content: '定稿请求失败(网络)', raw: null });
+    approveDraftBtn.disabled = false;
   }
 });
 

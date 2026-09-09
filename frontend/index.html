@@ -22,14 +22,32 @@
       <!-- 状态徽标(页面右上角,当前推导状态中文名) -->
       <div id="state-badge" class="hidden"></div>
 
-      <!-- 子视图:draft-view(阶段 1-2:草稿 markdown 渲染 + 认可雏形按钮位) -->
+      <!-- 子视图:draft-view(阶段 1-2:草稿 markdown 渲染 + 认可雏形按钮) -->
       <div id="draft-view" class="doc-subview hidden">
         <h2>雏形草稿(draft.md)</h2>
+
+        <!-- 发散入口(FLOW-06 §3.7:仅阶段 1-2 雏形诞生前;JS 控制显隐) -->
+        <div id="divergence-entry" class="hidden">
+          <button id="btn-divergence">没想法?让 AI 发散出候选方向</button>
+          <p class="hint">发散模式:多视角风暴出 3~5 个候选方向写入 docs/brainstorm.md,可反复覆盖。挑中方向后在会话流告诉 AI即可(它会深化为雏形)。</p>
+        </div>
+
         <div id="draft-content" class="markdown-body"><!-- markdown 渲染区 --></div>
         <div class="draft-empty hidden" id="draft-empty">
           <p class="hint">尚无草稿——和 AI 讨论出实质进展后,它会写入 docs/draft.md。</p>
         </div>
-        <button id="btn-approve-draft" disabled title="Plan 04 实现">认可雏形(下阶段开放)</button>
+
+        <!-- 发散产物区(FLOW-06:brainstorm.md 候选列表渲染;有内容才显示) -->
+        <div id="brainstorm-view" class="hidden">
+          <h2>发散候选(brainstorm.md)</h2>
+          <div id="brainstorm-content" class="markdown-body"></div>
+        </div>
+
+        <!-- §4.4:草稿区末尾常驻「认可雏形」;交互形态 = 决策门 direct-through(点击即定稿,零确认) -->
+        <div id="approve-row">
+          <button id="btn-approve-draft" disabled title="先要有雏形草稿才能认可">认可雏形</button>
+          <p class="hint" id="approve-hint"></p>
+        </div>
       </div>
 
       <!-- 子视图:rounds-placeholder(阶段 3+:最小轮次占位) -->

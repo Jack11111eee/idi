@@ -251,6 +251,36 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   font-weight: 600;
 }
 #btn-approve-draft:disabled { opacity: 0.55; cursor: not-allowed; }
+#approve-row .hint { margin: 6px 0 0; }
+#approve-row .hint.hidden { display: none; }
+
+/* 发散入口(§3.7:仅阶段 1-2 雏形诞生前) */
+#divergence-entry { margin: 0 0 14px; }
+#divergence-entry.hidden { display: none; }
+#btn-divergence {
+  padding: 8px 16px;
+  background: #fdf6ec;
+  border-color: #b8860b;
+  color: #8a6508;
+  font-weight: 600;
+}
+#btn-divergence:disabled { opacity: 0.55; cursor: not-allowed; }
+#divergence-entry .hint { margin: 6px 0 0; }
+
+/* 发散产物区(brainstorm.md 候选渲染) */
+#brainstorm-view {
+  margin-top: 22px;
+  padding: 12px 14px;
+  border: 1px dashed #d9c58a;
+  border-radius: 6px;
+  background: #fffdf5;
+}
+#brainstorm-view.hidden { display: none; }
+#brainstorm-view h2 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #8a6508;
+}
 
 /* 会话流:消息气泡(用户右对齐、AI 左对齐) */
 #session-panel { display: flex; flex-direction: column; min-height: 320px; }

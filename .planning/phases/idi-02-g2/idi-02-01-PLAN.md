@@ -189,7 +189,7 @@ DESIGN.md 权威依据:
 
 (1)表格共通解析 _extract_table(md_text, heading_keyword) -> list[list[str]]:扫 splitlines,定位 line.startswith("## ") 且 heading_keyword in 标题文本 的首个二级标题;其后连续 startswith("|") 的行按 "|" split → strip 各列 → 首个表头行丢弃;遇到非表格行(不以 | 开头)即终止该表。两次连续的二维标题定位(若同名标题多现,取第一处,DESIGN.md 每轮一份的结构假设)。
 
-(2)维度表:parse_dimension_table(md_text) -> list[dict](列 维度/状态/说明 → {"dimension","status","note"});is_dimension_table_green(md_text) -> bool:无 ◐ 且无 ✗(空表 = 无行动 = 绿,判定写进 docstring 并给用例)。heading_keyword = "覆盖维度表"。
+(2)维度表:parse_dimension_table(md_text) -> list[dict](列 维度/状态/说明 → {"dimension","status","note"});is_dimension_table_green(md_text) -> bool:无 ◐ 且无 ✗(空表 = 无行动 = 绿,判定写进 docstring 并给用例)。heading_keyword = "覆盖维度表"。**故意偏离记录(fail-closed 取向)**:状态列值不在 {✓,◐,✗} 的脏值行(如「待定」)判非绿——比 §6.4 字面(全绿 ⇔ 无 ◐ 与 ✗)更保守;此偏离为准后端防脏输入的显式设计选择,须写进 is_dimension_table_green 的 docstring 一行注明(deliberate deviation from §6.4 letter, fail-closed)。
 
 (3)未决清单:parse_pending_list(md_text) -> list[dict]({"number","question","status"});is_pending_list_clear(md_text) -> bool:无任何 status == "待决" 的行。heading_keyword = "未决问题清单"。
 

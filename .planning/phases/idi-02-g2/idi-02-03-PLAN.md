@@ -174,9 +174,10 @@ DESIGN.md 权威依据:
     - 选「批注」:弹轻量输入框(原生 prompt 或小 modal,实现取简)收 note → POST annotations {quote, before, note} → 成功后拉新侧栏(新条目 pending 徽标)→ 菜单消失;409(非当前轮) → toast/中文提示
     - 选「用大白话讲这段」:同样收 question(或直接「用大白话讲这段」就是 question 本身——形态:菜单第二项直接发送固定 question「用大白话讲讲这段」;实现取简并可加输入,记 SUMMARY)→ POST plain → 期待数秒返回 → 新 plain 条目灰斜体插入侧栏(answer 显示)→ 菜单消失
     - quote = 选区 toString() 精确文本;before = 选区起点在其文本节点中的前文字取末尾 40 字(String.prototype.slice(-40),字符计数)
+    - 反向划选(从右往左拖拽)取到的 before 与正向划选同一结果(取选区真正起点前的 40 字,不因拖拽方向变化)
     - 阶段 1-2 的 draft 渲染区划选无菜单弹(not-round-doc 容器不绑事件——D-P2-2)
     </behavior>
-  <action>(1)frontend/app.js 新增 initSelectionMenu():(a)round-doc 容器 mouseup 监听:event 后 200ms 内读 window.getSelection();selection.isCollapsed(空选区)或 selection.toString() trim 为空 → 清除菜单返回;(b)判定选区是否落在 round-doc 内(selection.anchorNode 用 compareDocumentPosition 或 contains 判定——实现取简:menu 只在 round-doc mouseup 时出现);(c)菜单元素 = 预建 div#selection-menu(两个 button:「批注」「用大白话讲这段」),绝对定位在选区 getBoundingClientRect 附近(向右下偏移若干像素,不越视口边界——简单 clamp);document click 空白处隐藏;(d)分支动作:「批注」→ 收 note(原生 prompt(title「写批注」)——零依赖形态;若用小 modal 则照 permission-modal 结构建,实现者取简并记录)→ roundApi.postAnnotations(currentRound, {quote, before, note}) → 200 成功 → loadRoundView 刷新侧栏;409 → alertWarn(中文文案「仅当前轮可批注」;照既有错误提示形态);「用大白话讲这段」→ roundApi.postPlain(currentRound, {quote, before, question: "用大白话讲讲这段"}) → 200 → 把返回条目插入侧栏(灰斜体 answer);502 → 中文错误提示。(e)before 计算:定位选区起点的文本节点(anchorNode 为 text node 时取 anchorOffset 前的 data;取 .slice(-40);anchorNode 非文本(元素节点)时取空串 before=""(配对靠 quote 唯一性,合法降级,注释说明);(f)**冻结轮禁用**:当前视图的轮 < 当前轮(round_frozen)→ mouseup 不绑/直接返回(D-P2-21:历史轮不可批注)。
+  <action>(1)frontend/app.js 新增 initSelectionMenu():(a)round-doc 容器 mouseup 监听:event 后 200ms 内读 window.getSelection();selection.isCollapsed(空选区)或 selection.toString() trim 为空 → 清除菜单返回;(b)判定选区是否落在 round-doc 内(selection.anchorNode 用 compareDocumentPosition 或 contains 判定——实现取简:menu 只在 round-doc mouseup 时出现);(c)菜单元素 = 预建 div#selection-menu(两个 button:「批注」「用大白话讲这段」),绝对定位在选区 getBoundingClientRect 附近(向右下偏移若干像素,不越视口边界——简单 clamp);document click 空白处隐藏;(d)分支动作:「批注」→ 收 note(原生 prompt(title「写批注」)——零依赖形态;若用小 modal 则照 permission-modal 结构建,实现者取简并记录)→ roundApi.postAnnotations(currentRound, {quote, before, note}) → 200 成功 → loadRoundView 刷新侧栏;409 → alertWarn(中文文案「仅当前轮可批注」;照既有错误提示形态);「用大白话讲这段」→ roundApi.postPlain(currentRound, {quote, before, question: "用大白话讲讲这段"}) → 200 → 把返回条目插入侧栏(灰斜体 answer);502 → 中文错误提示。(e)before 计算:取 selection.getRangeAt(0).startContainer/startOffset 定位选区**真正起点**(方向无关——反向拖拽时 anchorNode 是选区**终点**,locate_quote 的 before 二次定位会被反向起点败掉,故不用 anchor 取 before;Range 起点在两种拖拽方向下同为选区起点):startContainer 为 text node 时取 startOffset 前的 data;取 .slice(-40);startContainer 非文本(元素节点)时取空串 before=""(配对靠 quote 唯一性,合法降级,注释说明);(f)**冻结轮禁用**:当前视图的轮 < 当前轮(round_frozen)→ mouseup 不绑/直接返回(D-P2-21:历史轮不可批注)。
 
 (2)frontend/index.html:body 尾(permission-modal 旁)加 div#selection-menu.hidden(两个按钮,结构照 modal-buttons)。
 
@@ -224,7 +225,7 @@ DESIGN.md 权威依据:
 
 (4)frontend/style.css:补 mark 高亮背景(浅黄 amber 系)、round-frozen 灰化(opacity .55 或 saturate(0))、处理中按钮态。
 
-(5)人检准备:真实浏览器 UAT 在 verification 步骤 3 记录清单(划词弹菜单/批注落盘侧栏/plain 灰斜体秒级回/处理直播/新旧轮冻结只读/已回应灰化不消失——六个观察点)。完成后自查:done 拉新链无轮询(纯事件驱动一拉);btn-process-round 在 phase4+ 状态被 applySessionGates 禁用(boundary:仅 phase3 开);高亮不产生页面重排循环(单次)。
+(5)人检准备:真实浏览器 UAT 在 verification 步骤 3 记录清单(划词弹菜单/批注落盘侧栏/plain 灰斜体秒级回/处理直播/新旧轮冻结只读/已回应灰化不消失——六个观察点;外加「反向划选(从右往左拖拽)批注绑定与高亮正确」——from-right-to-left 拖拽的 before/高亮,检验 startContainer 取起点的方向无关性)。完成后自查:done 拉新链无轮询(纯事件驱动一拉);btn-process-round 在 phase4+ 状态被 applySessionGates 禁用(boundary:仅 phase3 开);高亮不产生页面重排循环(单次)。
   </action>
   <verify>
     <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && node --check frontend/app.js && (.venv/bin/uvicorn backend.main:app --port 8766 &) && n=0 && until curl -sf http://127.0.0.1:8766/api/health >/dev/null 2>&1; do n=$((n+1)); if [ $n -gt 120 ]; then lsof -ti:8766 | xargs kill 2>/dev/null; exit 1; fi; sleep 0.5; done && D=$(mktemp -d) && mkdir -p $D/docs && printf "# 第 1 轮\n\n目标文字甲。\n\n> 申请授权:否\n" > $D/docs/discuss-round-1.md && printf "{\"round\":1,\"items\":[{\"id\":\"a1-01\",\"quote\":\"目标文字甲\",\"before\":\"\",\"type\":\"comment\",\"note\":\"问\",\"status\":\"pending\",\"answer\":null,\"created_at\":\"2026-09-09T00:00:00Z\"}]}" > $D/docs/discuss-round-1.annotations.json && printf "# 第 2 轮\n\n新内容。\n\n## 批注回应表\n\n| 批注id | 原文摘录 | 回应 |\n|------|------|------|\n| a1-01 | 目标文字甲 | 已解释 |\n\n> 申请授权:否\n" > $D/docs/discuss-round-2.md && curl -sf -X POST http://127.0.0.1:8766/api/enter -H "Content-Type: application/json" -d "{\"path\": \"$D\"}" >/dev/null && curl -sf http://127.0.0.1:8766/api/session | grep -o "current_round[^,}]*" | grep -q 2 && curl -sf http://127.0.0.1:8766/api/rounds/1 | grep -q "a1-01"; rc=$?; lsof -ti:8766 | xargs kill 2>/dev/null; [ $rc -eq 0 ] && echo "freeze-view-ok"'</automated>
@@ -267,7 +268,7 @@ DESIGN.md 权威依据:
 <verification>
 1. Task 1-3 automated:node --check + uvicorn 造盘冒烟(rounds-view-ok / annotation-post-ok / freeze-view-ok 三条对账输出)
 2. 全量后端回归在 idi-02-02 完成后的基线上不变(本计划零后端改动;若执行者动了后端文件属越权)
-3. 人检(UAT,浏览器一次走完六点):进入 phase3 项目 → ①划选弹两菜单项 ②点批注写 note 落盘、侧栏出现 pending ③点大白话拿到灰斜体即时答(数秒)④文档区被批注段落高亮 ⑤点处理本轮批注看直播、done 后新轮出现、上一轮灰化只读(切换器切回验证)⑥上一轮 answered 条目变灰含 AI 回答(answer 展示)。真 CLI 链(⑤ 的 AI 真实产出)在 idi-02-04 的 IDI_E2E 用例验证,人检可 Faker 造盘(挖空:⑤ 的 done 由收流模拟或下次真跑)
+3. 人检(UAT,浏览器一次走完六点):进入 phase3 项目 → ①划选弹两菜单项 ②点批注写 note 落盘、侧栏出现 pending ③点大白话拿到灰斜体即时答(数秒)④文档区被批注段落高亮 ⑤点处理本轮批注看直播、done 后新轮出现、上一轮灰化只读(切换器切回验证)⑥上一轮 answered 条目变灰含 AI 回答(answer 展示)。补充观察点:反向划选(从右往左拖拽)一段文字 → 批注绑定与高亮仍正确(before 取的是选区真正起点,不因拖拽方向变化)。真 CLI 链(⑤ 的 AI 真实产出)在 idi-02-04 的 IDI_E2E 用例验证,人检可 Faker 造盘(挖空:⑤ 的 done 由收流模拟或下次真跑)
 4. 浏览器人检 checklist 落 .planning/phases/idi-02-g2/idi-02-03-SUMMARY.md(UAT 结果逐项打钩)
 </verification>
 

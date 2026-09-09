@@ -114,7 +114,7 @@ DESIGN.md 权威依据:
 
 (2)pytest.ini:确认 slow marker 已注册(Phase 1 已建,通常零改动;若需加 description 前缀仅作文案补,不改语义——本 files 列它作为「可能不动」项,执行者确认后写 SUMMARY「pytest.ini 未动」或补丁差异)。
 
-(3)执行本任务时把两条 slow 用例真正跑一遍:IDI_E2E=1 .venv/bin/python -m pytest backend/tests/test_e2e_rounds.py -q -m slow(需 CLI 已登录;发现真实缺陷——AI 不按文法、回写漏 id、秒级超时——按缺陷所在文件回修:prompt 模板贴字不全 → 补 prompts._ROUND_INSTRUCTIONS 的正例;解析边界 → 修 grammar;UI 不在范围。修复 commit 留在本计划分支并在 SUMMARY 记录缺陷→修复对照)。
+(3)执行本任务时把两条 slow 用例真正跑一遍:IDI_E2E=1 .venv/bin/python -m pytest backend/tests/test_e2e_rounds.py -q -m slow(需 CLI 已登录;发现真实缺陷——AI 不按文法、回写漏 id、秒级超时——按缺陷所在文件回修:prompt 模板贴字不全 → 补 prompts._ROUND_INSTRUCTIONS 的正例;解析边界 → 修 grammar;UI 不在范围。修复 commit 留在本计划分支并在 SUMMARY 记录缺陷→修复对照)。**路由覆盖度记录**：E2E 只跑 config.ai_caller 当前配置的那条路线——另一条(如配置为 subprocess 时 SubprocessAICaller.ask_lite / process_round 从未被真调用)须在 SUMMARY 里一行注明真实 E2E 覆盖路线与未覆盖路线,不冒充双路线均已真验(双路线契约一致性由 Wave 2 的同形单测承担,此处仅记覆盖事实)。
   </action>
   <verify>
     <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && IDI_E2E=1 .venv/bin/python -m pytest backend/tests/test_e2e_rounds.py -q -m slow 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
@@ -155,8 +155,8 @@ DESIGN.md 权威依据:
 (4)SUMMARY 按模板产出:REQ 覆盖(FLOW-04/FLOW-07/UI-01/UI-02/UI-04/DATA-01 六条全勾)+ 7 判据对账 + UAT 六点 + 实测数据(大白话秒数、E2E 耗时)+ 缺陷修复对照(若有)。
   </action>
   <verify>
-    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1 && grep -c "成功判据\|UAT" .planning/phases/idi-02-g2/idi-02-04-SUMMARY.md 2>/dev/null; echo "summary-check-done"'</automated>
-    <fails_when>全量回归含 failed/error;SUMMARY 文件不存在(grep -c 无输出路径错误时输出 0);SUMMARY 中无判据对账章节(grep 计数为 0——收口表缺失);无 summary-check-done。</fails_when>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1 && grep -c "成功判据\|UAT" .planning/phases/idi-02-g2/idi-02-04-SUMMARY.md 2>/dev/null && echo "summary-check-done"'</automated>
+    <fails_when>整体命令退非零的三条路径(全在 && 链上,任一阻断即末尾 echo 不吐出):全量回归 failed/error(退出码经 pipefail + && 链直达整体);SUMMARY 文件不存在(grep 退 2,stderr 已抑制);判据对账章节缺失(grep -c 计数为 0 → grep 退出 1——收口表缺失)。成功仅当 pytest 绿且 grep 计数 ≥ 1,末尾 summary-check-done 才会吐出。</fails_when>
   </verify>
   <acceptance_criteria>
   - 全量回归输出 "N passed, 2 skipped"(N ≥ 66 + 所有 Wave 新增;无 failed)

@@ -234,10 +234,22 @@ def dev_ping(body: PingBody) -> JSONResponse:
 
 @app.post("/api/abort")
 def abort() -> JSONResponse:
-    """中止当前调用:杀进程,不留损坏状态(孤儿半成品由重跑覆盖)。"""
+    """中止当前调用:杀进程,不留损坏状态(孤儿半成品由重跑覆盖)。
+
+    两条在飞路径都要杀(D-P1-8 中止语义;Phase 1 验证 gap 修复):
+      ① 会话流水线(send_message / trigger_divergence)—— session.abort():
+        杀 caller + 强制释放挂起权限 + 解 busy 锁
+      ② dev/ping 探针线程 —— main._current_caller.abort()
+    killed 为真值:任一路径真的杀了在飞调用才为 true;两边都空闲时 false。
+    """
+    killed = False
+    if session.busy():
+        result = session.abort()
+        killed = bool(result.get("killed"))
     with _caller_lock:
         caller = _current_caller
-    killed = caller.abort() if caller is not None else False
+    if caller is not None and caller.abort():
+        killed = True
     return JSONResponse({"status": "aborted", "killed": killed})
 
 

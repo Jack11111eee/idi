@@ -19,6 +19,7 @@ from backend.annotations import (  # noqa: E402
     annotations_path,
     append_item,
     load,
+    locate_quote,
     select_pending,
     writeback,
 )
@@ -190,3 +191,88 @@ def test_select_pending_filters_plain_and_answered(tmp_path):
 def test_select_pending_empty_shape():
     # 空形态入参 → 空列表(纯内存,无 IO)
     assert select_pending({"round": 1, "items": []}) == []
+
+
+# ---------- locate_quote 定位算法(D-P2-6:quote + before 精确匹配四分支 + 防呆) ----------
+
+def test_locate_quote_unique_match():
+    # 用例 10(唯一命中):quote 全文唯一 → 返回该匹配起点(首字符 index)
+    full = "第一段落说了一件事。第二段落说了另一件事。第三段收尾。"
+    assert locate_quote(full, "第二段落说了另一件事。", "") == 10
+
+
+def test_locate_quote_multiple_uses_before_suffix():
+    # 用例 11(多命中 + before 辅助):quote 出现两次,某匹配点前文以 before 结尾 → 取那一处
+    full = "先说一遍甲乙丙。中间插叙。再说一遍甲乙丙。"
+    # "甲乙丙" 出现两处(起点 4 与 17);匹配点前文以 "先说一遍" 结尾的是起点 4
+    assert locate_quote(full, "甲乙丙", "先说一遍") == 4
+    # 匹配点前文以 "再说一遍" 结尾的是起点 17
+    assert locate_quote(full, "甲乙丙", "再说一遍") == 17
+
+
+def test_locate_quote_multiple_no_before_match_takes_first():
+    # 用例 12(多命中、before 均不匹配):取第一处(0 号起点的 tie-break)
+    full = "重复词。中间。重复词。结尾。"
+    assert locate_quote(full, "重复词。", "不存在的前文") == 0
+
+
+def test_locate_quote_no_match_returns_none():
+    # 用例 13(无命中):None 是合法返回,不是异常
+    assert locate_quote("全文没有这个词", "不存在的引用", "") is None
+
+
+def test_locate_quote_empty_quote_returns_none():
+    # 用例 14(防呆):空 quote 无语义 → None
+    assert locate_quote("任何全文", "", "任何 before") is None
+
+
+# ---------- 闭环:grammar 回应表 → annotations.writeback 回写(D-P2-12/D-P2-13) ----------
+
+def test_grammar_response_table_to_writeback_closure(tmp_path):
+    # 用例 15(闭环):手造上一轮 annotations(两条 pending)→ 手造新一轮文档
+    # (回应表只含第一条 id)→ parse_annotation_responses 转 answers →
+    # writeback 回写后:第一条 answered + answer 有值、第二条仍 pending、返回 1
+    from backend.grammar import parse_annotation_responses
+
+    # 前置:第 1 轮 annotations(两条 pending,§6.2 八字段直写盘)
+    ann_path = annotations_path(tmp_path, 1)
+    ann_path.parent.mkdir(parents=True, exist_ok=True)
+    ann_path.write_text(
+        '{"round": 1, "items": ['
+        '{"id": "a1-01", "quote": "「范围太大」", "before": "", "type": "comment",'
+        ' "note": "收窄一点", "status": "pending", "answer": null, "created_at": "2026-01-01T00:00:00+00:00"},'
+        '{"id": "a1-02", "quote": "「没有失败处理」", "before": "", "type": "comment",'
+        ' "note": "补上", "status": "pending", "answer": null, "created_at": "2026-01-01T00:01:00+00:00"}'
+        ']}',
+        encoding="utf-8",
+    )
+
+    # 手造第 2 轮文档:批注回应表只含 a1-01(表头逐字 §6.4 字面)
+    round2_text = (
+        "# 第 2 轮讨论\n\n"
+        "## 1. 批注回应\n\n"
+        "| 批注id | 原文摘录 | 回应 |\n"
+        "|------|------|------|\n"
+        "| a1-01 | 「范围太大」 | 已收窄到单机单人 |\n\n"
+        f"> 申请授权:否\n"
+    )
+
+    # 解析 → 组 answers dict → 回写上一轮(第 1 轮)
+    responses = parse_annotation_responses(round2_text)
+    answers = {row["id"]: row["response"] for row in responses}
+    assert answers == {"a1-01": "已收窄到单机单人"}
+
+    hits = writeback(tmp_path, 1, answers)
+
+    # 断言:命中回写、未命中保持 pending、返回命中数 1
+    assert hits == 1
+    after = load(tmp_path, 1)
+    by_id = {item["id"]: item for item in after["items"]}
+    assert by_id["a1-01"]["status"] == "answered"
+    assert by_id["a1-01"]["answer"] == "已收窄到单机单人"
+    assert by_id["a1-02"]["status"] == "pending"
+    assert by_id["a1-02"]["answer"] is None
+
+    # 闭环用例的两个文件名都走 ANNOTATIONS_TEMPLATE 模板(自查三条之二)
+    assert ann_path.name == ANNOTATIONS_TEMPLATE.format(n=1)
+    assert (tmp_path / "docs" / ANNOTATIONS_TEMPLATE.format(n=2)).name == "discuss-round-2.annotations.json"

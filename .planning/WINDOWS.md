@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 2
 waived_count: 0
 fixed_count: 0
-total_count: 1
-last_updated: 2026-09-09T03:35:41.900Z
+total_count: 2
+last_updated: 2026-09-09T05:29:43.842Z
 ---
 
 # Broken Windows Ledger
@@ -16,6 +16,7 @@ last_updated: 2026-09-09T03:35:41.900Z
 | id | phase | kind | file | line | description | status | reason | recorded_at | resolved_at |
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | idi-01 | deviation | backend/transcript.py |  | append_message 父目录自举:计划称 a 模式不存在会建,但新讨论首条消息时 docs/ 尚不存在,已补 mkdir(parents=True) | open |  | 2026-09-09T03:35:41.900Z |  |
+| 2 | 1 | deviation | frontend/index.html |  | D4/AI-05: claude CLI 未装/未登录两分支浮层交互需浏览器人检(本机已装已登录无法真实触发失败分支) | open |  | 2026-09-09T05:29:43.842Z |  |
 
 ````json
 [
@@ -29,6 +30,18 @@ last_updated: 2026-09-09T03:35:41.900Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-09T03:35:41.900Z",
+    "resolved_at": null
+  },
+  {
+    "id": 2,
+    "kind": "deviation",
+    "phase": "1",
+    "file": "frontend/index.html",
+    "line": null,
+    "description": "D4/AI-05: claude CLI 未装/未登录两分支浮层交互需浏览器人检(本机已装已登录无法真实触发失败分支)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-09T05:29:43.842Z",
     "resolved_at": null
   }
 ]

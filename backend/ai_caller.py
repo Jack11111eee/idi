@@ -1,6 +1,6 @@
 """AICaller:AI 调用抽象接口 + 权限路由层(DESIGN.md §5.3/§5.4)。
 
-双轨契约(D-P1-5/D-06):SDK 路线( Task 2 接入)与子进程路线实现同一接口,
+双轨契约(D-P1-5/D-06):SDK 路线与子进程路线实现同一接口,
 事件归一化到统一 kind 枚举,前端与上层零改动切换。
 
 统一事件字典(字段命名前端可见,本阶段内自洽):
@@ -9,6 +9,11 @@
     "content": str,               # 人类可读正文(事件内容摘要)
     "raw": object,                # 原始 JSON(SDK 消息对象或 CLI stream-json 行)
   }
+
+权限确认回环(AI-04,依赖倒置):
+  confirm 处置不降级为拒绝——经 set_request_permission(fn) 注入的回调征求用户:
+    fn(tool_name, tool_input) -> bool  (True=放行,False=驳回)
+  回调由上层(session)注入;ai_caller 不 import session。
 """
 
 import asyncio
@@ -184,6 +189,25 @@ def normalize_stream_line(line: str) -> dict | None:
 class AICaller(ABC):
     """AI 调用统一接口:两条实现路线(SDK / 子进程)的共同契约。"""
 
+    def __init__(self):
+        # confirm 处置的用户征求回调(AI-04 依赖倒置:上层注入,不 import session)。
+        # 为 None 时按 False 处理(最保守,不悄悄放行)。
+        self._request_permission = None
+
+    def set_request_permission(self, fn) -> None:
+        """注入权限确认回调:fn(tool_name, tool_input) -> bool。
+
+        confirm 处置的工具调用将通过它征求用户决定;True 放行 / False 驳回。
+        """
+        self._request_permission = fn
+
+    def _ask_user_permission(self, tool_name: str, tool_input: dict) -> bool:
+        """执行注入的权限回调;未注入时按 False(保守)。"""
+        fn = self._request_permission
+        if fn is None:
+            return False
+        return bool(fn(tool_name, tool_input))
+
     @abstractmethod
     def run(self, project_path, prompt: str) -> Iterator[dict]:
         """在 project_path 目录上执行一次无头调用,逐条产出统一事件。"""
@@ -201,59 +225,181 @@ class AICaller(ABC):
 
 
 class SubprocessAICaller(AICaller):
-    """子进程兜底路线:claude -p --output-format stream-json(§5.3)。"""
+    """子进程兜底路线:claude -p 双向 stream-json + 权限控制协议(§5.3)。
 
-    def __init__(self):
+    CLI 按双向 stream-json 跑(与 SDK 同一进程协议):
+      - stdin 送 {"type":"user"} 行后保持打开,应答 CLI 发来的 control_request
+      - stdout 逐行读事件;control_request(can_use_tool)→ §5.4 判定:
+          allow → control_response allow
+          reject → control_response deny
+          confirm → 注入的 request_permission 回调回环(阻塞等用户),按结果答
+      - setting-sources 置空:用户全局 ~/.claude/settings.json 的 allow 规则
+        (如 Write(*))会在权限回调前自动放行、绕过权限门,必须屏蔽
+        (SDK 路线同因 setting_sources=[])。
+    """
+
+    def __init__(self, cli_path: str = "claude"):
+        super().__init__()
+        self._cli_path = cli_path
         self._process: subprocess.Popen | None = None
+        self._reader_thread: threading.Thread | None = None
+
+    def _classify_tool_action(self, tool_name: str, tool_input: dict):
+        """工具名 + 参数 → §5.4 矩阵的 (action, target)。"""
+        if tool_name in ("Bash",):
+            return "command", tool_input.get("command", "")
+        if tool_name in ("Write", "Edit", "NotebookEdit"):
+            return "write", tool_input.get("file_path") or tool_input.get("notebook_path") or ""
+        return "read", tool_input.get("file_path") or tool_input.get("path") or ""
+
+    def _handle_control_request(self, obj: dict, project: Path, q) -> None:
+        """应答 CLI 的 can_use_tool 控制请求(§5.4 矩阵 + 用户回环)。"""
+        req = obj.get("request", {})
+        if req.get("subtype") != "can_use_tool":
+            return  # 其余控制请求(如 initialize)不在此处理
+        request_id = obj.get("request_id")
+        tool_name = req.get("tool_name", "")
+        tool_input = req.get("input", {})
+        action, target = self._classify_tool_action(tool_name, tool_input)
+        decision = make_permission_decision(project, action, target)
+        if decision == "allow":
+            behavior = {"behavior": "allow", "updatedInput": tool_input}
+        elif decision == "reject":
+            behavior = {"behavior": "deny", "message": f"权限拒绝:目标 {target}"}
+        else:  # confirm → 用户回环(AI-04;无降级)
+            approved = self._ask_user_permission(tool_name, tool_input)
+            behavior = (
+                {"behavior": "allow", "updatedInput": tool_input}
+                if approved
+                else {"behavior": "deny", "message": f"用户驳回:{action} {target}"}
+            )
+            q.put(
+                {
+                    "kind": "command" if action == "command" else action,
+                    "content": f"权限确认({action} {target}):{'同意' if approved else '驳回'}",
+                    "raw": None,
+                }
+            )
+        response = {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": request_id,
+                "response": behavior,
+            },
+        }
+        proc = self._process
+        try:
+            if proc is not None and proc.stdin is not None:
+                proc.stdin.write(json.dumps(response) + "\n")
+                proc.stdin.flush()
+        except (OSError, ValueError):  # 进程已收流/关闭
+            pass
 
     def run(self, project_path, prompt: str) -> Iterator[dict]:
-        """起 claude CLI 子进程(stream-json),逐行归一化后 yield。
+        """起 claude CLI 子进程(双向 stream-json),逐行归一化后 yield。
 
         工作目录 = project_path;system prompt 段落声明权限约定与语言红线。
         进程退出后按 returncode 产 done 或 error;stderr 逐行归 kind=error。
         """
+        project = Path(project_path)
         argv = [
-            "claude",
+            self._cli_path,
             "-p",
-            prompt,
-            "--output-format",
-            "stream-json",
+            "--input-format", "stream-json",
+            "--output-format", "stream-json",
             "--verbose",
+            "--permission-prompt-tool", "stdio",
+            "--setting-sources=",
             "--append-system-prompt",
             build_system_prompt(),
         ]
         self._process = subprocess.Popen(
             argv,
             cwd=str(project_path),
+            stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             bufsize=1,
         )
         proc = self._process
-        # 逐行读 stdout;stderr 在退出后统一读(避免双流竞态)
-        assert proc.stdout is not None
-        for line in proc.stdout:
-            event = normalize_stream_line(line)
-            if event is not None:
-                yield event
-        proc.wait()
-        stderr_text = proc.stderr.read() if proc.stderr else ""
-        for err_line in [ln for ln in stderr_text.splitlines() if ln.strip()]:
-            yield {"kind": "error", "content": err_line, "raw": {"stderr": True}}
-        if proc.returncode == 0:
-            yield {
-                "kind": "done",
-                "content": "调用结束",
-                "raw": {"returncode": proc.returncode},
-            }
-        else:
-            yield {
-                "kind": "error",
-                "content": f"claude CLI 退出码 {proc.returncode}",
-                "raw": {"returncode": proc.returncode},
-            }
-        self._process = None
+
+        # 送用户消息(双向 stream-json 输入格式)
+        user_msg = {"type": "user", "message": {"role": "user", "content": prompt}}
+        try:
+            assert proc.stdin is not None
+            proc.stdin.write(json.dumps(user_msg) + "\n")
+            proc.stdin.flush()
+        except (OSError, ValueError) as exc:
+            yield {"kind": "error", "content": f"发送消息失败:{exc}", "raw": None}
+            self._process = None
+            return
+
+        import queue as _queue
+
+        out_q: _queue.Queue = _queue.Queue()
+
+        def _read_stdout():
+            """读 stdout:事件行入队;控制请求即时应答。"""
+            assert proc.stdout is not None
+            for line in proc.stdout:
+                text = line.strip()
+                if not text:
+                    continue
+                try:
+                    obj = json.loads(text)
+                except json.JSONDecodeError:
+                    out_q.put({"kind": "error", "content": f"行解析失败:{text[:120]}", "raw": None})
+                    continue
+                if obj.get("type") == "control_request":
+                    self._handle_control_request(obj, project, out_q)
+                    continue
+                event = normalize_stream_line(text)
+                if event is not None:
+                    out_q.put(event)
+
+        self._reader_thread = threading.Thread(target=_read_stdout, daemon=True)
+        self._reader_thread.start()
+
+        FIN = object()
+        watcher_killed = threading.Event()
+
+        def _stderr_reader():
+            """stderr 收集(退出后统一入队,避免双流竞态)。"""
+            assert proc.stderr is not None
+            text = proc.stderr.read()
+            for err_line in [ln for ln in text.splitlines() if ln.strip()]:
+                out_q.put({"kind": "error", "content": err_line, "raw": {"stderr": True}})
+
+        stderr_thread = threading.Thread(target=_stderr_reader, daemon=True)
+        stderr_thread.start()
+        # stderr 线程会阻塞到 EOF;主 yield 循环从队列取,done 判据看 result 行。
+
+        def _wait_exit():
+            proc.wait()
+            out_q.put(FIN)
+
+        exit_thread = threading.Thread(target=_wait_exit, daemon=True)
+        exit_thread.start()
+
+        try:
+            while True:
+                item = out_q.get(timeout=600)
+                if item is FIN:
+                    break
+                yield item
+                if item.get("kind") == "done":
+                    break
+        except _queue.Empty:
+            yield {"kind": "error", "content": "调用超时(600s 无事件)", "raw": None}
+        finally:
+            # 收流:杀进程 & 关 stdin(队列后续条目随之 EOF)
+            self._process = None
+            try:
+                proc.terminate()
+            except ProcessLookupError:
+                pass
 
     def abort(self) -> bool:
         """终止当前子进程:先 terminate 再 kill(两段, §5.5)。"""
@@ -337,11 +483,14 @@ class SdkAICaller(AICaller):
 
     事件枚举与 SubprocessAICaller 完全同构(§5.3 双轨契约);
     can_use_tool 回调接入 make_permission_decision:
-    allow 放行 / reject 拒绝 / confirm 按 reject 处理并打日志
-    (默认 deny 更安全;完整 SSE 弹窗闭环在后续计划完成)。
+    allow 放行 / reject 拒绝 / confirm 经注入的 request_permission 回调
+    征求用户(AI-04 完整闭环;回调未注入时保守驳回,不降级为静默放行)。
+    setting_sources=[]:屏蔽用户全局 settings.json 的 allow 规则——它们会在
+    can_use_tool 之前自动放行工具调用、绕过权限门(与子进程路线同因)。
     """
 
     def __init__(self, cli_path: str | None = None, model: str | None = None):
+        super().__init__()
         self._cli_path = cli_path
         self._model = model
         self._abort_flag = threading.Event()
@@ -374,13 +523,20 @@ class SdkAICaller(AICaller):
                 return PermissionResultAllow()
             if decision == "reject":
                 return PermissionResultDeny(message=f"权限拒绝:目标 {target}")
-            # confirm:Phase 1 按 reject 处理(默认 deny 更安全,SSE 弹窗后续计划接)
-            return PermissionResultDeny(message=f"需确认(暂按拒绝):{action} {target}")
+            # confirm(AI-04):注入的回调回环征求用户(阻塞至用户决定);
+            # 回调未注入时保守驳回——不悄悄放行。
+            approved = self._ask_user_permission(tool_name, tool_input)
+            if approved:
+                return PermissionResultAllow()
+            return PermissionResultDeny(
+                message=f"用户驳回:{action} {target}"
+            )
 
         options = ClaudeAgentOptions(
             cwd=str(project),
             system_prompt=build_system_prompt(),
             can_use_tool=_can_use_tool,
+            setting_sources=[],
         )
         if self._cli_path:
             options.cli_path = self._cli_path

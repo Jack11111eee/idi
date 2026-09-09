@@ -73,6 +73,14 @@ def fresh_session(tmp_path, monkeypatch):
     session._reset_for_tests()
 
 
+def wait_idle(sess, timeout: float = 10.0) -> bool:
+    """等在飞调用结束(后台线程是异步的;断言前必须先收流)。"""
+    deadline = time.time() + timeout
+    while sess.busy() and time.time() < deadline:
+        time.sleep(0.05)
+    return not sess.busy()
+
+
 # ---------------------------------------------------------------------------
 # 用例 1:send_message 流水线——[user] 先落盘、prompt 含 docs/ 全部文档、[ai] 收尾
 # ---------------------------------------------------------------------------
@@ -97,6 +105,7 @@ def test_send_message_pipeline(tmp_path, fresh_session):
 
     ok = fresh_session.send_message("帮我把目标写清楚一点")
     assert ok is True or ok is None  # 返回形状:不抛异常即可
+    assert wait_idle(fresh_session), "后台调用未在时限内结束"
 
     transcript_path = docs / "transcript.md"
     messages = parse_transcript(transcript_path)
@@ -139,6 +148,7 @@ def test_multi_segment_say_single_ai_entry(tmp_path, fresh_session):
     fresh_session.enter_project(tmp_path)
     fresh_session._set_caller_for_tests(fake)
     fresh_session.send_message("继续")
+    assert wait_idle(fresh_session), "后台调用未在时限内结束"
 
     messages = parse_transcript(docs / "transcript.md")
     assert len(messages) == 2
@@ -179,13 +189,6 @@ def test_confirm_pends_until_resolved(tmp_path, fresh_session):
     # §5.4:写项目内 docs/ 外 → confirm
     assert make_permission_decision(proj, "write", target) == "confirm"
 
-    released = threading.Event()
-
-    def slow_permission(tool_name, tool_input):
-        # 模拟用户未決:阻塞直到 resolve
-        released.wait(timeout=10)
-        return True
-
     fake = FakeAICaller(
         events=[{"kind": "say", "content": "我要写项目根的文件了。", "raw": None}],
         permission_script={
@@ -200,7 +203,7 @@ def test_confirm_pends_until_resolved(tmp_path, fresh_session):
     orig_publish = fresh_session._publish_for_tests
     fresh_session._publish_for_tests = lambda ev: (published.append(ev), orig_publish(ev))
 
-    # send_message 在后台线程跑;权限回调先挂起
+    # send_message 在后台线程跑;权限回调由 session 注入 fake,先挂起等用户
     send_thread = threading.Thread(target=lambda: fresh_session.send_message("写个文件"))
     send_thread.start()
 
@@ -220,14 +223,15 @@ def test_confirm_pends_until_resolved(tmp_path, fresh_session):
     assert perm_event.get("tool") == "Write"
     assert str(target) in str(perm_event.get("summary", ""))
 
-    # AI 调用线程此刻仍被阻塞(未收到决定)
-    assert send_thread.is_alive()
+    # AI 调用线程仍在跑(worker 还阻塞在权限等待,send 的外层线程也还在)
+    assert fresh_session.busy(), "权限未决时调用应仍被阻塞(busy)"
 
     # 放行:resolve_permission(id, True)
-    released.set()
     fresh_session.resolve_permission(perm_event["id"], True)
-    send_thread.join(timeout=10)
-    assert not send_thread.is_alive()
+    deadline = time.time() + 10
+    while fresh_session.busy() and time.time() < deadline:
+        time.sleep(0.05)
+    assert not fresh_session.busy(), "放行后调用未在时限内结束"
 
     # 放行后 AI 回复正常落盘
     messages = parse_transcript(docs / "transcript.md")
@@ -255,47 +259,27 @@ def test_resolve_permission_deny_reaches_caller(tmp_path, fresh_session):
     fresh_session.enter_project(tmp_path)
     fresh_session._set_caller_for_tests(fake)
 
-    pending_perm = {}
+    # send_message 注入 session.request_permission 给 fake(worker 内 wiring);
+    # fake 脚本触发真实回环 → pending 登记 → 阻塞。主线程等登记后拒绝。
+    send_thread = threading.Thread(target=lambda: fresh_session.send_message("写个文件"))
+    send_thread.start()
 
-    def hanging_permission(tool_name, tool_input):
-        pid = fresh_session._wait_for_pending_for_tests(timeout=5)
-        assert pid is not None, "5 秒内未出现挂起权限"
-        pending_perm["id"] = pid
-        decision = fresh_session.resolve_permission(pid, False)
-        return decision
+    pid = fresh_session._wait_for_pending_for_tests(timeout=5)
+    assert pid is not None, "5 秒内未出现挂起权限"
+    # 拒绝路径:决定传回 False 给 AICaller 的回环
+    decision = fresh_session.resolve_permission(pid, False)
+    assert decision is False
 
-    # 直接驱动:用注入的回调路径(fake.request_permission 在 run 内被调)
-    fake.request_permission = None
+    deadline = time.time() + 10
+    while fresh_session.busy() and time.time() < deadline:
+        time.sleep(0.05)
+    assert not fresh_session.busy(), "拒绝后调用未在时限内结束"
 
-    # 简化路径:monkeypatch session.request_permission 内部等待逻辑由线程驱动
-    # 这里测 resolve 的直接语义:伪造一个挂起,然后拒绝
-    registered = {}
-
-    orig_register = fresh_session._register_pending_for_tests
-    fresh_session._register_pending_for_tests = lambda tool, summary: registered.setdefault(
-        "id", orig_register(tool, summary)
-    )
-
-    send_thread = threading.Thread(
-        target=lambda: fresh_session.send_message_with_permission_for_tests(
-            hanging_permission
-        )
-    )
-    try:
-        send_thread.start()
-        deadline = time.time() + 5
-        while "id" not in registered and time.time() < deadline:
-            time.sleep(0.05)
-        assert "id" in registered, "未登记 pending 权限"
-        # 拒绝路径:decision 传回 False
-        pid = registered["id"]
-        decision = fresh_session.resolve_permission(pid, False)
-        assert decision is False
-        send_thread.join(timeout=10)
-        assert fake.permission_requests, "AICaller 权限回环未被调用"
-        assert fake.permission_requests[-1]["decision"] is False
-    finally:
-        send_thread.join(timeout=5)
+    assert fake.permission_requests, "AICaller 权限回环未被调用"
+    assert fake.permission_requests[-1]["decision"] is False
+    # 拒绝后 pending 队列清空;未知 id 二次 resolve 返回 None(T-idi03-01)
+    assert fresh_session.resolve_permission(pid, False) is None
+    assert not fresh_session._pending
 
 
 # ---------------------------------------------------------------------------
@@ -310,24 +294,44 @@ def test_abort_leaves_no_dirty_ai_entry(tmp_path, fresh_session):
     (docs / "transcript.md").write_text("", encoding="utf-8")
 
     mid_stream = threading.Event()
+    resume_stream = threading.Event()
 
-    def before_done_hook():
-        # 在 done 之前模拟用户点了中止
-        mid_stream.set()
+    class AbortingFakeAICaller(FakeAICaller):
+        """say 已产出但 AI 仍在生成(done 未到)的形态;abort 后收流。"""
 
-    fake = FakeAICaller(
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            for ev in list(self.events):
+                yield dict(ev)
+            mid_stream.set()  # say 全部产出,AI 仍在生成
+            resume_stream.wait(timeout=5)  # 等 abort(或超时自续)
+            if not self.aborted:
+                yield {"kind": "done", "content": "调用结束", "raw": None}
+            else:
+                # 被杀:流被切断,不再产 done(abort 语义:未完成的回复不落盘)
+                return
+
+        def abort(self):
+            self.aborted = True
+            resume_stream.set()
+            return True
+
+    fake = AbortingFakeAICaller(
         events=[
             {"kind": "say", "content": "开头说了几句,但还没说完。", "raw": None},
         ],
-        before_done=before_done_hook,
     )
     fresh_session.enter_project(tmp_path)
     fresh_session._set_caller_for_tests(fake)
 
     send_thread = threading.Thread(target=lambda: fresh_session.send_message("长回答"))
     send_thread.start()
-    mid_stream.wait(timeout=5)
+    assert mid_stream.wait(timeout=5), "未到达 AI 生成中时刻"
     fresh_session.abort()
+    deadline = time.time() + 10
+    while fresh_session.busy() and time.time() < deadline:
+        time.sleep(0.05)
+    assert not fresh_session.busy(), "abort 后调用未收尾"
     send_thread.join(timeout=10)
 
     messages = parse_transcript(docs / "transcript.md")

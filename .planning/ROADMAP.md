@@ -36,10 +36,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   7. Claude Agent SDK 路线与子进程 `claude -p --output-format stream-json` 兜底路线在界面上行为完全一致、可配置替换,无需改前端 ← AI-01, AI-03
   8. 运行全程权限门按 §5.4 矩阵处置:AI 直写 DESIGN.md 一律拒绝、写 AUTHORIZATION.md 一律拒绝、写项目外/执行命令弹窗征求用户同意 ← AI-04
 
-**Plans**: 1/4 plans executed
+**Plans**: 2/4 plans executed
 Plans:
 
-- [ ] idi-01-01-PLAN.md — 行走骨架追踪弹:服务器脚手架 + 双轨 AICaller(SDK/子进程)+ SSE 事件直播 + CLI 自检 + 中止
+- [x] idi-01-01-PLAN.md — 行走骨架追踪弹:服务器脚手架 + 双轨 AICaller(SDK/子进程)+ SSE 事件直播 + CLI 自检 + 中止
 - [x] idi-01-02-PLAN.md — 状态脊柱:derive_state() §7.4 八行推导表(完整轮判据)+ transcript.md 文法读写
 - [ ] idi-01-03-PLAN.md — 阶段 1-2 会话闭环:发消息流水线、重启恢复、权限门弹窗、UI-03 视图
 - [ ] idi-01-04-PLAN.md — 发散模式(brainstorm.md 覆盖落盘)+ G1 定稿(discuss-round-1.md + 授权标记行)
@@ -88,6 +88,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. 行走骨架——服务器、单界面与阶段 1-2 会话 | 1/4 | In Progress|  |
+| 1. 行走骨架——服务器、单界面与阶段 1-2 会话 | 2/4 | In Progress|  |
 | 2. 轮次收敛循环——划词批注、G2 与机器文法 | 0/0 | Not started | - |
 | 3. 授权、自检与终点——G3、档位、使命完成归档 | 0/0 | Not started | - |

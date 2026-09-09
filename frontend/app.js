@@ -20,6 +20,9 @@ const draftContent = document.getElementById('draft-content');
 const draftEmpty = document.getElementById('draft-empty');
 const roundsPlaceholder = document.getElementById('rounds-placeholder');
 const roundsHint = document.getElementById('rounds-hint');
+const roundTitle = document.getElementById('round-title');
+const roundSwitcher = document.getElementById('round-switcher');
+const roundDoc = document.getElementById('round-doc');
 const chatMessages = document.getElementById('chat-messages');
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('btn-send');
@@ -36,10 +39,19 @@ const brainstormContent = document.getElementById('brainstorm-content');
 const approveDraftBtn = document.getElementById('btn-approve-draft');
 const approveHint = document.getElementById('approve-hint');
 
+// 轮次批注流句柄(D-P2-20:阶段 3 侧栏切换为批注流)
+const annotationsPanel = document.getElementById('annotations-panel');
+const pendingCount = document.getElementById('pending-count');
+const annotationList = document.getElementById('annotation-list');
+const processRoundBtn = document.getElementById('btn-process-round');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
 let streamingBubble = null; // 流式中的 AI 气泡
+let currentRoundNumber = null;   // phase3 当前轮号(点击「处理本轮批注」的目标)
+let displayedRoundNumber = null; // 当前显示的轮号(切换器切历史轮时 < currentRoundNumber)
+let processInFlight = false;     // 「处理本轮批注」在飞标记(SSE done 后拉新的判据)
 
 // §7.4 状态中文名(derive_state 返回值 → 界面徽标)
 const STATE_LABELS = {
@@ -235,11 +247,21 @@ function applySessionGates(data) {
   if (data.state === 'phase1_new' || data.state === 'phase12_in_progress') {
     draftView.classList.remove('hidden');
     roundsPlaceholder.classList.add('hidden');
+    annotationsPanel.classList.add('hidden'); // 阶段 1-2 侧栏是会话流(D-P2-2)
   } else {
     draftView.classList.add('hidden');
     roundsPlaceholder.classList.remove('hidden');
     if (data.state === 'phase3' && data.current_round) {
-      roundsHint.textContent = `已进入轮次阶段(本阶段占位)。当前轮:第 ${data.current_round} 轮。`;
+      // phase3:真轮次视图(文档渲染 + 批注流侧栏 + 计数);D-P2-20
+      currentRoundNumber = data.current_round;
+      pendingCount.textContent = `本轮批注未处理 ${data.pending_annotations}`;
+      annotationsPanel.classList.remove('hidden');
+      loadRoundsView(data.current_round);
+    } else {
+      // phase4/5/mission_complete:占位文案维持现状(CODEX 边界裁决③,不触碰内容)
+      annotationsPanel.classList.add('hidden');
+      roundsHint.textContent = `当前状态:${STATE_LABELS[data.state] || data.state}(轮次阶段之后的视图在本工具后续版本呈现)。`;
+      roundDoc.innerHTML = '';
     }
   }
 
@@ -328,6 +350,165 @@ async function refreshBrainstormAfterStream() {
   } catch { /* 拉不到保持现状 */ }
 }
 
+// ---------------------------------------------------------------------------
+// 轮次视图(D-P2-20):切换器 + 文档渲染 + 批注流侧栏 + 未处理数;阶段 3 专属
+// ---------------------------------------------------------------------------
+
+// 轮次路由 fetch 封装(照 sendMessage 形态;异常统一返回 {ok, status}`)
+const roundApi = {
+  async list() {
+    const resp = await fetch('/api/rounds');
+    if (!resp.ok) return { ok: false, status: resp.status };
+    return { ok: true, data: await resp.json() };
+  },
+  async get(n) {
+    const resp = await fetch(`/api/rounds/${n}`);
+    if (!resp.ok) return { ok: false, status: resp.status };
+    return { ok: true, data: await resp.json() };
+  },
+  async postAnnotations(n, body) {
+    const resp = await fetch(`/api/rounds/${n}/annotations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json().catch(() => ({}));
+    return { ok: resp.ok, status: resp.status, data };
+  },
+  async postPlain(n, body) {
+    const resp = await fetch(`/api/rounds/${n}/plain`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json().catch(() => ({}));
+    return { ok: resp.ok, status: resp.status, data };
+  },
+};
+
+// 进入/拉新 phase3 视图:拉轮次列表 → 渲染切换器 → 渲染指定轮(默认当前轮)
+async function loadRoundsView(roundN) {
+  const result = await roundApi.list();
+  if (!result.ok) {
+    roundsHint.textContent = '轮次列表拉取失败(稍后操作会重试)。';
+    return;
+  }
+  const { rounds, current_round } = result.data;
+  roundsHint.classList.add('hidden');
+
+  // 切换器:列出全部轮,目标轮默认选中(首次进当前轮;拉新时也回当前轮)
+  const target = roundN || current_round;
+  roundSwitcher.innerHTML = '';
+  (rounds || []).forEach((n) => {
+    const opt = document.createElement('option');
+    opt.value = String(n);
+    opt.textContent = `第 ${n} 轮${n === current_round ? '(当前)' : ' (历史·只读)'}`;
+    roundSwitcher.appendChild(opt);
+  });
+  roundSwitcher.value = String(target);
+  await loadRoundView(target, current_round);
+}
+
+// 渲染指定轮:标题 + 冻结判定 + 文档 markdown + 批注流条目
+async function loadRoundView(n, currentRound) {
+  const cr = currentRound || currentRoundNumber;
+  const result = await roundApi.get(n);
+  if (!result.ok) {
+    roundDoc.innerHTML = '';
+    annotationList.innerHTML = '';
+    roundsHint.textContent = `第 ${n} 轮文档拉取失败(该轮不存在或不完整)。`;
+    roundsHint.classList.remove('hidden');
+    return;
+  }
+  displayedRoundNumber = n;
+  const isCurrent = n === cr;
+
+  roundTitle.textContent = `第 ${n} 轮${isCurrent ? '' : '(历史轮·只读)'}`;
+  renderRoundDocument(result.data.document);
+
+  // 冻结呈现(D-P2-21):仅「轮 < 当前轮」推导,无独立状态;服务端 409 是防线
+  renderAnnotations(result.data.annotations, isCurrent);
+  updateFrozenPresentation(isCurrent);
+}
+
+// 文档区 markdown 渲染(复用 Phase 1 XSS 管线,零 innerHTML 拼接)
+function renderRoundDocument(text) {
+  roundDoc.innerHTML = ''; // 清旧渲染节点(不用 += 拼接)
+  if (text) roundDoc.appendChild(renderMarkdown(text));
+}
+
+// 批注流条目渲染:quote 摘录 + note/answer + 状态徽标;plain 灰斜体;answered 灰化不删
+function renderAnnotations(annotations, isCurrentRound) {
+  annotationList.innerHTML = '';
+  const items = (annotations && annotations.items) || [];
+  if (!items.length) {
+    const empty = document.createElement('p');
+    empty.className = 'hint';
+    empty.textContent = '本轮暂无批注——在左侧文档划词即可批注。';
+    annotationList.appendChild(empty);
+    if (!isCurrentRound) empty.textContent = '该轮暂无批注。';
+    return;
+  }
+  items.forEach((item) => {
+    const li = document.createElement('div');
+    li.className = 'annotation-item'
+      + (item.type === 'plain' ? ' annotation-plain' : '')
+      + (item.status === 'answered' ? ' annotation-answered' : ' annotation-pending-item');
+    li.dataset.annotationId = item.id || '';
+
+    // quote 摘录(textContent,前 60 字截断显示)
+    const quote = document.createElement('p');
+    quote.className = 'annotation-quote';
+    const qt = String(item.quote || '');
+    quote.textContent = `「${qt.length > 60 ? qt.slice(0, 60) + '…' : qt}」`;
+    li.appendChild(quote);
+
+    // note(用户批注 / plain 的提问)——markdown 渲染(经 stripUnsafeNodes)
+    if (item.note != null && item.note !== '') {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'annotation-note';
+      noteEl.appendChild(renderMarkdown(item.note));
+      li.appendChild(noteEl);
+    }
+
+    // answer(AI 回应附在旁边,§4.2):parsed 折叠展示;plain 直接灰斜体显示
+    if (item.answer != null && item.answer !== '') {
+      const ansEl = document.createElement('details');
+      ansEl.className = 'annotation-answer';
+      const summary = document.createElement('summary');
+      summary.textContent = item.type === 'plain' ? '大白话回答' : 'AI 回应';
+      ansEl.appendChild(summary);
+      const body = document.createElement('div');
+      body.className = 'annotation-answer-body';
+      body.appendChild(renderMarkdown(item.answer));
+      ansEl.appendChild(body);
+      li.appendChild(ansEl);
+      if (item.type === 'plain') ansEl.open = true; // plain 即时答案展开可见
+    }
+
+    // 状态徽标(中文;plain 恒 answered)
+    const badge = document.createElement('span');
+    badge.className = 'annotation-badge ' + (item.status === 'answered' ? 'badge-answered' : 'badge-pending');
+    badge.textContent = item.status === 'answered' ? '已回应' : '待处理';
+    li.appendChild(badge);
+
+    annotationList.appendChild(li);
+  });
+}
+
+// 冻结轮三面呈现(D-P2-21):容器灰化 + 计数徽标隐藏 + 处理按钮禁用
+function updateFrozenPresentation(isCurrent) {
+  if (isCurrent) {
+    roundDoc.classList.remove('round-frozen');
+    pendingCount.style.display = '';
+    processRoundBtn.disabled = processInFlight;
+  } else {
+    roundDoc.classList.add('round-frozen');
+    pendingCount.style.display = 'none'; // 历史轮不显示本轮计数(D-P2-21)
+    processRoundBtn.disabled = true;
+  }
+}
+
 async function sendMessage(text) {
   if (!currentProject) {
     appendChatMessage('user', '(请先进入项目目录)');
@@ -385,6 +566,16 @@ messageInput.addEventListener('keydown', (e) => {
     appendChatMessage('user', text);
     sendMessage(text);
   }
+});
+
+// ---------------------------------------------------------------------------
+// 轮次切换器:切到历史轮 → 只读重渲染(冻结呈现由 updateFrozenPresentation 判定)
+// ---------------------------------------------------------------------------
+
+roundSwitcher.addEventListener('change', () => {
+  const n = parseInt(roundSwitcher.value, 10);
+  if (!Number.isFinite(n)) return;
+  loadRoundView(n);
 });
 
 // ---------------------------------------------------------------------------

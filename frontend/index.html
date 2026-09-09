@@ -50,10 +50,15 @@
         </div>
       </div>
 
-      <!-- 子视图:rounds-placeholder(阶段 3+:最小轮次占位) -->
+      <!-- 子视图:rounds-placeholder(阶段 3:轮次视图 = 切换器 + 文档渲染 + 冻结提示位;
+           阶段 4+ 仍为占位语义,本计划不触碰其内容) -->
       <div id="rounds-placeholder" class="doc-subview hidden">
-        <h2>轮次视图</h2>
+        <div class="round-view-header">
+          <h2 id="round-title">轮次视图</h2>
+          <select id="round-switcher" title="切换轮次(历史轮只读)"></select>
+        </div>
         <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
+        <div id="round-doc" class="markdown-body"><!-- 当前轮文档 markdown 渲染区 --></div>
       </div>
     </main>
 
@@ -70,6 +75,17 @@
             <input type="text" id="message-input" placeholder="输入消息,回车或点发送">
             <button id="btn-send">发送</button>
           </div>
+        </div>
+      </section>
+
+      <!-- 本轮批注流(阶段 3:D-P2-20 侧栏切换为批注流;阶段 1-2 由 JS 隐藏) -->
+      <section id="annotations-panel" class="hidden">
+        <header class="panel-header">
+          <h2>本轮批注流</h2>
+          <span id="pending-count" class="badge-pending"></span>
+        </header>
+        <div class="panel-body">
+          <div id="annotation-list"><!-- 批注条目动态追加 --></div>
         </div>
       </section>
 
@@ -90,6 +106,7 @@
             </select>
             <input type="text" id="project-path-input" placeholder="输入临时项目目录绝对路径">
             <button id="btn-ping">发起测试调用</button>
+            <button id="btn-process-round" disabled title="仅阶段 3 当前轮可用">处理本轮批注</button>
             <button id="btn-abort" class="danger">中止</button>
           </div>
           <div id="ai-events" class="event-list"><!-- 事件条目动态追加 --></div>

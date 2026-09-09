@@ -8,7 +8,7 @@
 
 ### 流程支撑(FLOW)
 
-- [ ] **FLOW-01**: 用户可选择或输入项目目录进入单界面,所选目录的流程状态由磁盘现状按 §7.4 推导表(8 行、自上而下首条命中)得出 — §7.1
+- [x] **FLOW-01**: 用户可选择或输入项目目录进入单界面,所选目录的流程状态由磁盘现状按 §7.4 推导表(8 行、自上而下首条命中)得出 — §7.1
 - [ ] **FLOW-02**: 阶段 1-2 为一段连续会话,产出 `docs/transcript.md`(逐条追加式转录,`[user]`/`[ai]` 起始行文法)与 `docs/draft.md` 草稿;重启后由 transcript 恢复 — §6.1, §4.2
 - [ ] **FLOW-03**: G1:草稿区末尾常驻「认可雏形」按钮,点击后**后端**将 draft.md 定稿为 `discuss-round-1.md` 并追加合规的 `> 申请授权:否` 标记行 — §4.4, §6.4
 - [ ] **FLOW-04**: G2:用户点「处理本轮批注」后,AI 批量回应全部批注、产出 `discuss-round-(N+1).md`;上轮文档与 annotations 冻结只读 — §3.5, §4.4
@@ -61,7 +61,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FLOW-01 | Phase 1 | Pending |
+| FLOW-01 | Phase 1 | Complete |
 | FLOW-02 | Phase 1 | Pending |
 | FLOW-03 | Phase 1 | Pending |
 | FLOW-04 | Phase 2 | Pending |

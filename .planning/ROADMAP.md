@@ -64,10 +64,20 @@ Plans:
 
 **Plans**: 4/4 plans planned
 Plans:
+**Wave 1**
 
 - [ ] idi-02-01-PLAN.md — 数据脊柱:annotations.py(§6.2 读写+定位)+ grammar.py(§6.4 六条文法解析)+ 正反例测试矩阵
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] idi-02-02-PLAN.md — G2 后端全层:ask_lite 双路线、build_round_prompt、process_round 回写、五条轮次路由
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] idi-02-03-PLAN.md — 前端轮次视图:划词弹菜单、批注流侧栏、高亮、未处理数、冻结只读
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] idi-02-04-PLAN.md — 端到端收口:真 CLI E2E(plain 秒回+新轮回写)+ 7 判据对账 + 人检 UAT 六点
 
 **UI hint**: yes

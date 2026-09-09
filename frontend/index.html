@@ -8,18 +8,60 @@
 </head>
 <body>
   <div id="app">
-    <!-- 左:文档区(Phase 1 为占位;文字内容后续阶段接入) -->
+    <!-- 左:文档区(阶段 1-2 = 草稿视图;阶段 3+ = 轮次占位) -->
     <main id="doc-pane">
       <h1>文档区</h1>
-      <p class="hint">讨论文档将在此渲染(当前为行走骨架占位)。</p>
+
+      <!-- 进入表单(FLOW-01:目录路径输入 + 进入按钮) -->
+      <div id="enter-form">
+        <input type="text" id="enter-path-input" placeholder="输入项目目录绝对路径(如 /Users/you/my-project)">
+        <button id="btn-enter">进入</button>
+        <p class="hint">讨论文档由 AI 直接读写该目录下的 docs/ 子目录。</p>
+      </div>
+
+      <!-- 状态徽标(页面右上角,当前推导状态中文名) -->
+      <div id="state-badge" class="hidden"></div>
+
+      <!-- 子视图:draft-view(阶段 1-2:草稿 markdown 渲染 + 认可雏形按钮位) -->
+      <div id="draft-view" class="doc-subview hidden">
+        <h2>雏形草稿(draft.md)</h2>
+        <div id="draft-content" class="markdown-body"><!-- markdown 渲染区 --></div>
+        <div class="draft-empty hidden" id="draft-empty">
+          <p class="hint">尚无草稿——和 AI 讨论出实质进展后,它会写入 docs/draft.md。</p>
+        </div>
+        <button id="btn-approve-draft" disabled title="Plan 04 实现">认可雏形(下阶段开放)</button>
+      </div>
+
+      <!-- 子视图:rounds-placeholder(阶段 3+:最小轮次占位) -->
+      <div id="rounds-placeholder" class="doc-subview hidden">
+        <h2>轮次视图</h2>
+        <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
+      </div>
     </main>
 
-    <!-- 右:侧栏(AI 工作面板 + 会话流占位,§4.1) -->
+    <!-- 右:侧栏(会话流 + AI 工作面板,§4.1) -->
     <aside id="sidebar">
+      <!-- 会话流(阶段 1-2:消息列表 + 输入框) -->
+      <section id="session-panel">
+        <header class="panel-header">
+          <h2>会话流</h2>
+        </header>
+        <div class="panel-body">
+          <div id="chat-messages"><!-- 消息气泡动态追加 --></div>
+          <div id="chat-input-row">
+            <input type="text" id="message-input" placeholder="输入消息,回车或点发送">
+            <button id="btn-send">发送</button>
+          </div>
+        </div>
+      </section>
+
       <section id="ai-panel">
         <header id="ai-panel-header" class="panel-header">
           <h2>AI 工作面板</h2>
-          <span class="collapse-indicator">▾</span>
+          <div class="panel-header-right">
+            <span id="abort-inline-hint"></span>
+            <span class="collapse-indicator">▾</span>
+          </div>
         </header>
         <div id="ai-panel-body" class="panel-body">
           <!-- 探针控制:路线选择 + 项目目录输入 + 发起 + 中止(Task 3 双轨可切换) -->
@@ -35,16 +77,19 @@
           <div id="ai-events" class="event-list"><!-- 事件条目动态追加 --></div>
         </div>
       </section>
-
-      <section id="session-panel">
-        <header class="panel-header">
-          <h2>会话流占位</h2>
-        </header>
-        <div class="panel-body">
-          <p class="hint">阶段 1-2 会话流将在后续计划接入(transcript.md 落盘)。</p>
-        </div>
-      </section>
     </aside>
+  </div>
+
+  <!-- 权限确认弹窗(AI-04:confirm 处置征求用户) -->
+  <div id="permission-modal" class="overlay hidden">
+    <div class="overlay-card">
+      <h3>权限确认</h3>
+      <p id="permission-message"></p>
+      <div class="modal-buttons">
+        <button id="btn-permission-allow" class="primary">同意</button>
+        <button id="btn-permission-deny" class="danger">拒绝</button>
+      </div>
+    </div>
   </div>
 
   <!-- vendored 单文件 markdown 渲染库(无 CDN 网络依赖) -->

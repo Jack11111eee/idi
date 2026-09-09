@@ -1,10 +1,15 @@
-"""FastAPI 应用:健康检查、SSE 事件流、中止、开发探针(D-P1-1/D-P1-7)。
+"""FastAPI 应用:会话路由 + 健康检查、SSE 事件流、中止、开发探针。
 
-路由(本任务):
-  GET  /api/health    健康检查
-  GET  /api/events    SSE 流(text/event-stream)
-  POST /api/abort     杀当前调用(§5.5)
-  POST /api/dev/ping  开发探针:起一次真实 AI 调用并直播事件(Task 1 版)
+路由(Plan idi-01-03):
+  GET  /api/health      健康检查
+  GET  /api/events      SSE 流(text/event-stream)
+  POST /api/abort       杀当前调用(§5.5)
+  POST /api/dev/ping    开发探针(Plan 01 自证通道,保留)
+  POST /api/enter       进入项目目录(FLOW-01):derive_state + transcript + draft
+  POST /api/message     发消息(异步起,立即 202;在飞时 409)
+  POST /api/permission  回答挂起权限确认(未知 id 404)
+  GET  /api/draft       当前 draft.md 内容(前端流后拉新)
+  GET  /api/transcript  全量消息列表(备用拉)
 静态:frontend/ 目录挂在根路径。
 """
 
@@ -16,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from backend import config as cfg
+from backend import session
 from backend.ai_caller import AICaller
 from backend.cli_check import check_claude_cli
 from backend.events import broker
@@ -53,6 +59,91 @@ class PingBody(BaseModel):
 
 class ConfigBody(BaseModel):
     ai_caller: str  # "sdk" | "subprocess"
+
+
+class EnterBody(BaseModel):
+    path: str
+
+
+class MessageBody(BaseModel):
+    text: str
+
+
+class PermissionBody(BaseModel):
+    id: str
+    approved: bool
+
+
+# ---------------------------------------------------------------------------
+# 会话路由(FLOW-01 / FLOW-02 / AI-04)
+# ---------------------------------------------------------------------------
+
+
+@app.post("/api/enter")
+def enter_project(body: EnterBody) -> JSONResponse:
+    """进入项目:derive_state + transcript 历史 + draft/brainstorm 内容。"""
+    try:
+        snapshot = session.enter_project(body.path)
+    except FileNotFoundError as exc:
+        return JSONResponse(
+            {"status": "error", "message": str(exc)}, status_code=400
+        )
+    return JSONResponse({"status": "ok", **snapshot})
+
+
+@app.post("/api/message")
+def send_message(body: MessageBody) -> JSONResponse:
+    """发消息:全流水线后台跑;在飞调用中 → 409(T-idi03-04)。"""
+    if session.busy():
+        return JSONResponse(
+            {"status": "error", "message": "当前有调用进行中,请等它结束或先中止"},
+            status_code=409,
+        )
+    try:
+        accepted = session.send_message(body.text)
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if not accepted:
+        return JSONResponse(
+            {"status": "error", "message": "当前有调用进行中"}, status_code=409
+        )
+    return JSONResponse({"status": "accepted"}, status_code=202)
+
+
+@app.post("/api/permission")
+def resolve_permission(body: PermissionBody) -> JSONResponse:
+    """回答挂起的权限确认;id 必须来自后端生成的挂起队列(未知一律 404)。"""
+    decision = session.resolve_permission(body.id, body.approved)
+    if decision is None:
+        return JSONResponse(
+            {"status": "error", "message": "未知或已处理的权限请求"}, status_code=404
+        )
+    return JSONResponse({"status": "ok", "approved": decision})
+
+
+@app.get("/api/draft")
+def get_draft() -> JSONResponse:
+    """当前 draft.md 内容(供前端在会话流收尾后拉新);未进入项目 → null。"""
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError:
+        return JSONResponse({"status": "ok", "draft": None})
+    return JSONResponse({"status": "ok", "draft": snapshot["draft"]})
+
+
+@app.get("/api/transcript")
+def get_transcript() -> JSONResponse:
+    """全量消息列表(备用拉;重启恢复也走 /api/enter 的同一组装)。"""
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError:
+        return JSONResponse({"status": "ok", "transcript": []})
+    return JSONResponse({"status": "ok", "transcript": snapshot["transcript"]})
+
+
+# ---------------------------------------------------------------------------
+# Plan 01 骨架路由(保留)
+# ---------------------------------------------------------------------------
 
 
 @app.post("/api/config")

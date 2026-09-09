@@ -1,4 +1,4 @@
-// 前端最小逻辑:EventSource 订阅 SSE、事件渲染进工作面板、探针控制(§4.1)。
+// 前端逻辑:进入项目 / 会话流 / SSE 事件分发 / 权限弹窗 / 草稿区渲染(§4.1/§4.2)。
 // 原生 JS,无框架无构建(D-P1-1);注释一律中文,遵守简单优先。
 
 // DOM 句柄
@@ -10,8 +10,73 @@ const routeSelect = document.getElementById('ai-route-select');
 const panelHeader = document.getElementById('ai-panel-header');
 const panelBody = document.getElementById('ai-panel-body');
 
+// 会话相关句柄
+const enterForm = document.getElementById('enter-form');
+const enterPathInput = document.getElementById('enter-path-input');
+const enterBtn = document.getElementById('btn-enter');
+const stateBadge = document.getElementById('state-badge');
+const draftView = document.getElementById('draft-view');
+const draftContent = document.getElementById('draft-content');
+const draftEmpty = document.getElementById('draft-empty');
+const roundsPlaceholder = document.getElementById('rounds-placeholder');
+const roundsHint = document.getElementById('rounds-hint');
+const chatMessages = document.getElementById('chat-messages');
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('btn-send');
+const permissionModal = document.getElementById('permission-modal');
+const permissionMessage = document.getElementById('permission-message');
+const permissionAllowBtn = document.getElementById('btn-permission-allow');
+const permissionDenyBtn = document.getElementById('btn-permission-deny');
+
+// 当前会话状态(前端侧;权威判定在后端 derive_state)
+let currentProject = null;
+let currentState = null;
+let streamingBubble = null; // 流式中的 AI 气泡
+
+// §7.4 状态中文名(derive_state 返回值 → 界面徽标)
+const STATE_LABELS = {
+  phase1_new: '新讨论(阶段 1)',
+  phase12_in_progress: '阶段 1-2 讨论中',
+  phase3: '轮次阶段(阶段 3)',
+  phase4: '撰写中(阶段 4)',
+  phase5_awaiting_tier: '待选自检档(阶段 5)',
+  phase5_checking: '自检进行中(阶段 5)',
+  mission_complete: '使命完成',
+};
+
 // ---------------------------------------------------------------------------
-// SSE 订阅:事件 → 工作面板条目
+// markdown 渲染(XSS 安全:关闭 raw HTML,标签转义后渲染 —— T-idi03-02)
+// ---------------------------------------------------------------------------
+
+function renderMarkdown(text) {
+  if (!window.marked) return document.createTextNode(text || '');
+  // marked v12:配置禁用原始 HTML 注入(sanitize 双保险)
+  marked.setOptions({ mangle: false, headerIds: false });
+  const html = marked.parse(String(text || ''));
+  // 解析后仍剥离 script/style/iframe/on* 属性(AI 内容不可信)
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  stripUnsafeNodes(tpl.content);
+  const frag = document.createDocumentFragment();
+  frag.appendChild(tpl.content.cloneNode(true));
+  return frag;
+}
+
+function stripUnsafeNodes(root) {
+  const banned = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK'];
+  root.querySelectorAll(banned.join(',')).forEach((n) => n.remove());
+  root.querySelectorAll('*').forEach((el) => {
+    [...el.attributes].forEach((attr) => {
+      // 事件处理器属性与 javascript: 链接一律剥离
+      if (attr.name.startsWith('on') || (attr.name === 'href' && attr.value.trim().startsWith('javascript:'))) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// SSE 订阅:事件 → 会话气泡 / 工作面板 / 权限弹窗
 // ---------------------------------------------------------------------------
 
 function initEventSource() {
@@ -24,14 +89,35 @@ function initEventSource() {
       renderEvent({ kind: 'error', content: '事件解析失败', raw: msg.data });
       return;
     }
-    renderEvent(event);
+    dispatchEvent_(event);
   };
+}
+
+function dispatchEvent_(event) {
+  // 会话流侧:kind=say 流式进 AI 气泡;permission_request 弹确认框
+  if (event.kind === 'say') {
+    appendSayToChat(event.content || '');
+  }
+  if (event.kind === 'permission_request') {
+    showPermissionModal(event);
+  }
+  // 工作面板:全部事件原样展示(透明优先,§4.3)
+  renderEvent(event);
+  // done:收尾会话气泡 + 拉新草稿
+  if (event.kind === 'done' || event.kind === 'error') {
+    if (streamingBubble) {
+      streamingBubble = null;
+    }
+    refreshDraftAfterStream();
+    pingBtn.disabled = false;
+  }
 }
 
 // kind → 标签(与后端统一事件枚举一一对应)
 const KIND_LABELS = {
   say: '说话', read: '读文件', write: '写文件',
   command: '执行', result: '结果', error: '错误', done: '结束',
+  permission_request: '权限', permission_resolved: '权限',
 };
 
 // 渲染一条事件到工作面板
@@ -47,10 +133,9 @@ function renderEvent(event) {
   const content = document.createElement('div');
   content.className = 'event-content';
   if (event.kind === 'say' && window.marked) {
-    // AI 说话内容按 markdown 渲染
-    content.innerHTML = window.marked.parse(event.content || '');
+    // AI 说话内容按 markdown 渲染(经 stripUnsafeNodes 防 XSS)
+    content.appendChild(renderMarkdown(event.content || ''));
   } else {
-    // 工具事件显示目标路径/命令;结果与错误折行展示
     content.textContent = event.content || '';
   }
   item.appendChild(content);
@@ -66,6 +151,169 @@ function renderEvent(event) {
 }
 
 // ---------------------------------------------------------------------------
+// 会话流:消息气泡(用户右对齐、AI 左对齐、AI markdown 渲染)
+// ---------------------------------------------------------------------------
+
+function makeBubble(role) {
+  const bubble = document.createElement('div');
+  bubble.classList.add('chat-bubble', role === 'user' ? 'chat-user' : 'chat-ai');
+  chatMessages.appendChild(bubble);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return bubble;
+}
+
+function appendChatMessage(role, content) {
+  const bubble = makeBubble(role);
+  if (role === 'ai' && window.marked) {
+    bubble.appendChild(renderMarkdown(content));
+  } else {
+    bubble.textContent = content;
+  }
+  return bubble;
+}
+
+function appendSayToChat(text) {
+  if (!streamingBubble) {
+    streamingBubble = makeBubble('ai');
+    streamingBubble.classList.add('streaming-ai');
+  }
+  const p = document.createElement('div');
+  p.className = 'say-chunk';
+  p.appendChild(renderMarkdown(text));
+  streamingBubble.appendChild(p);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function renderTranscript(transcript) {
+  chatMessages.innerHTML = '';
+  (transcript || []).forEach((m) => appendChatMessage(m.role, m.content));
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// ---------------------------------------------------------------------------
+// 进入项目(FLOW-01)/ 发消息(FLOW-02)/ 权限(AI-04):fetch 封装
+// ---------------------------------------------------------------------------
+
+async function enterProject(path) {
+  const resp = await fetch('/api/enter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path }),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    renderEvent({ kind: 'error', content: `进入失败:${err.message || resp.status}`, raw: null });
+    return null;
+  }
+  const data = await resp.json();
+  currentProject = path;
+  currentState = data.state;
+  applySessionView(data);
+  return data;
+}
+
+function applySessionView(data) {
+  // 状态徽标(中文名,右上角)
+  stateBadge.textContent = STATE_LABELS[data.state] || data.state;
+  stateBadge.classList.remove('hidden');
+
+  // 子视图切换:阶段 1-2 → draft-view;阶段 3+ → rounds-placeholder
+  if (data.state === 'phase1_new' || data.state === 'phase12_in_progress') {
+    draftView.classList.remove('hidden');
+    roundsPlaceholder.classList.add('hidden');
+  } else {
+    draftView.classList.add('hidden');
+    roundsPlaceholder.classList.remove('hidden');
+    if (data.state === 'phase3' && data.current_round) {
+      roundsHint.textContent = `已进入轮次阶段(本阶段占位)。当前轮:第 ${data.current_round} 轮。`;
+    }
+  }
+
+  renderDraft(data.draft);
+  renderTranscript(data.transcript);
+}
+
+function renderDraft(draft) {
+  if (draft == null || draft === '') {
+    draftContent.innerHTML = '';
+    draftEmpty.classList.remove('hidden');
+  } else {
+    draftContent.innerHTML = '';
+    draftContent.appendChild(renderMarkdown(draft));
+    draftEmpty.classList.add('hidden');
+  }
+}
+
+async function refreshDraftAfterStream() {
+  // done 后拉新草稿(AI 可能在调用中写了 draft.md)
+  if (currentProject == null) return;
+  try {
+    const resp = await fetch('/api/draft');
+    const data = await resp.json();
+    if (data.status === 'ok') renderDraft(data.draft);
+  } catch { /* 拉不到保持现状 */ }
+}
+
+async function sendMessage(text) {
+  if (!currentProject) {
+    appendChatMessage('user', '(请先进入项目目录)');
+    return;
+  }
+  const resp = await fetch('/api/message', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (resp.status === 202) return true;
+  const err = await resp.json().catch(() => ({}));
+  appendChatMessage('ai', `(发送被拒:${err.message || resp.status})`);
+  return false;
+}
+
+function showPermissionModal(event) {
+  permissionMessage.textContent = event.summary || `AI 请求使用工具 ${event.tool}`;
+  permissionModal.classList.remove('hidden');
+  const respond = async (approved) => {
+    permissionModal.classList.add('hidden');
+    await fetch('/api/permission', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: event.id, approved }),
+    }).catch(() => { /* 网络失败:后端 abort 时会强制释放 */ });
+  };
+  permissionAllowBtn.onclick = () => respond(true);
+  permissionDenyBtn.onclick = () => respond(false);
+}
+
+// ---------------------------------------------------------------------------
+// 绑定:进入 / 发送(含回车)/ 权限按钮
+// ---------------------------------------------------------------------------
+
+enterBtn.addEventListener('click', () => enterProject(enterPathInput.value.trim()));
+
+enterPathInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') enterProject(enterPathInput.value.trim());
+});
+
+sendBtn.addEventListener('click', () => {
+  const text = messageInput.value.trim();
+  if (!text) return;
+  messageInput.value = '';
+  appendChatMessage('user', text);
+  sendMessage(text);
+});
+
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const text = messageInput.value.trim();
+    if (!text) return;
+    messageInput.value = '';
+    appendChatMessage('user', text);
+    sendMessage(text);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // 面板折叠(点击标题切换)
 // ---------------------------------------------------------------------------
 
@@ -75,7 +323,7 @@ panelHeader.addEventListener('click', () => {
 });
 
 // ---------------------------------------------------------------------------
-// 探针控制:路线切换(POST /api/config) / 发起测试调用 / 中止
+// 探针控制:路线切换(POST /api/config) / 发起测试调用 / 中止(Plan 01 保留)
 // ---------------------------------------------------------------------------
 
 // 路线下拉:切换即写回 config.json 的 ai_caller 键(运行时换线,不重进程)

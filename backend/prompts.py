@@ -8,6 +8,11 @@ build_phase12_prompt(project_path, user_message) -> str:
 build_plain_prompt(document_text, quoted_text, question) -> str(§3.4 D-05):
 大白话轻量调用——仅携带当前文档 + 划选原文,不读全量 docs/(秒级响应,D-P2-8)。
 
+build_round_prompt(project_path, current_round) -> str(G2 / §4.4 / D-P2-11):
+「处理本轮批注」的服务端提示词——资料段读全量 docs/(当前轮文档全文 +
+当前轮 annotations 逐条 + transcript/draft),任务段注入 §3.3 四步 +
+§6.3 五件套 + §6.4 文法模板逐字。
+
 四段结构(PLAN idi-01-03 Task 1):
   一、系统段:角色(项目开工前的讨论搭档)+ §3.8 语言红线原文要义
   二、资料段:docs/ 下各文档(transcript.md 历史、draft.md 现状、brainstorm.md 若存在),
@@ -104,7 +109,7 @@ def build_divergence_prompt(project_path) -> str:
     )
 
 
-# 大白话解释器角色指令(§3.4 D-05/D-P2-9:只解释,不改设计)
+# §3.4 大白话解释器角色指令(D-05/D-P2-9:只解释,不改设计)
 _PLAIN_ROLE = (
     "大白话解释是消歧不是新决定:你只负责把划选原文讲明白,"
     "不提出设计修改、不更新任何文档、不开新讨论线。"
@@ -191,4 +196,153 @@ def build_phase12_prompt(project_path, user_message: str) -> str:
         f"{_PHASE12_INSTRUCTIONS}\n\n"
         "## 四、用户消息\n\n"
         f"{user_message}\n"
+    )
+
+
+# ---------------------------------------------------------------------------
+# 轮次收敛(G2「处理本轮批注」,PLAN idi-02-02 Task 2,D-P2-11/D-P2-18)
+# ---------------------------------------------------------------------------
+
+# 轮次文档文件名模板(§6.1;与 state._ROUND_TEMPLATE 同一字面)
+_ROUND_TEMPLATE = "discuss-round-{n}.md"
+
+# §6.3/§6.4 文法模板正例(逐字贴入 prompt——工具按此解析,改列名即解析失败)
+_GRAMMAR_EXAMPLES = (
+    "批注回应表(二级标题含「批注回应」,表格列头逐字如下):",
+    "",
+    "| 批注id | 原文摘录 | 回应 |",
+    "|---|---|---|",
+    "",
+    "维度表(二级标题含「覆盖维度表」,表格列头逐字如下,状态仅 ✓ ◐ ✗):",
+    "",
+    "| 维度 | 状态 | 说明 |",
+    "|---|---|---|",
+    "",
+    "未决清单(二级标题含「未决问题清单」,表格列头逐字如下,状态仅 待决/已决):",
+    "",
+    "| 编号 | 问题 | 状态 |",
+    "|---|---|---|",
+    "",
+    "授权申请标记(文档最后一个非空行,恰为以下两串之一):",
+    "",
+    "> 申请授权:是",
+    "> 申请授权:否",
+    "",
+    "切勿改列名、切勿改标记行格式——工具按此逐字解析,改动即解析失败。",
+)
+
+# 任务段常量(§3.3 四步 + §6.3 五件套 + §6.4 逐字模板 + 落盘指令;D-P2-11/D-P2-18)
+_ROUND_INSTRUCTIONS = (
+    "任务:处理本轮批注,产出下一轮轮次文档。四步走(§3.3 原文):\n"
+    "1. 逐条回应上轮全部实质批注(批注逐条见下方资料段;大白话请求在产生时"
+    "已即时回答,不进入本轮);\n"
+    "2. 更新文档(本轮版次),已定决策标注「已对齐」;\n"
+    "3. 追问新的更深层细节问题,进入清单;\n"
+    "4. 文末公开当前未决清单。\n"
+    "每轮文档必须全部包含五件套(§6.3):批注回应表、决策登记、覆盖维度表、"
+    "未决问题清单、文末授权申请标记——缺一不可。\n"
+    "收敛判据(满足才写「是」):上轮批注已全部被回应 + 未决清单清零 + "
+    "覆盖维度表全绿;未满足写「否」并开启下一轮。\n"
+    "批注回应表的批注id 必须与资料段中列出的上一轮批注 id 一一对应,"
+    "每条实质批注都要有一行回应。\n"
+    "结果落盘:用 Write 工具产出 {target_filename}(按 Markdown 全文整体写入,"
+    "不要写其他文件)。批注记录(annotations 文件)由本工具后端管理,"
+    "你不要写、不要改。\n"
+    "写完后在回复里简述本轮改动。"
+)
+
+
+def build_round_prompt(project_path, current_round: int) -> str:
+    """拼装 G2「处理本轮批注」的服务端提示词(D-P2-11/D-P2-18)。
+
+    四段结构(照 build_phase12_prompt 骨架,资料段读全量 docs/,§5.1):
+      一、系统段:角色(轮次收敛引擎)+ §3.8 语言红线
+      二、资料段:当前轮文档全文(含半成品原文——重跑场景照读)+
+                 当前轮全部 annotations 逐条(id/quote/note,无批注时显式说明
+                 「当前轮暂无待处理批注」)+ transcript/draft/brainstorm 照
+                 _KNOWN_DOCS 既有循环注入
+      三、任务段:_ROUND_INSTRUCTIONS(§3.3 四步 + §6.3 五件套 +
+                 §6.4 文法模板逐字 + 落盘指令)
+      四、文法模板:_GRAMMAR_EXAMPLES 逐字贴入(表头行/标记行正例 +
+                 切勿改列名硬指令)
+    """
+    project = Path(project_path)
+    docs_dir = project / "docs"
+    from backend import annotations as annotations_mod  # 延迟导入防环
+
+    target_round = current_round + 1
+    current_doc_name = _ROUND_TEMPLATE.format(n=current_round)
+    target_filename = f"docs/{_ROUND_TEMPLATE.format(n=target_round)}"
+
+    # ---- 资料段①:当前轮文档全文(半成品原文照读——重跑覆盖场景) ----
+    current_doc_path = docs_dir / current_doc_name
+    if current_doc_path.is_file():
+        try:
+            current_doc_text = current_doc_path.read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            current_doc_text = ""
+        current_doc_section = (
+            f"### 当前轮文档:docs/{current_doc_name}(全文)\n\n{current_doc_text}"
+            if current_doc_text.strip()
+            else f"### 当前轮文档:docs/{current_doc_name}\n\n(文件为空)"
+        )
+    else:
+        current_doc_section = (
+            f"### 当前轮文档:docs/{current_doc_name}\n\n(尚不存在)"
+        )
+
+    # ---- 资料段②:当前轮全部 annotations 逐条(id/quote/note) ----
+    ann = annotations_mod.load(project, current_round)
+    items = ann.get("items") or []
+    if items:
+        anno_lines = []
+        for item in items:
+            anno_lines.append(
+                f"- id: {item.get('id', '')} | 原文摘录: {item.get('quote', '')} "
+                f"| 用户批注: {item.get('note', '')} | 类型: {item.get('type', '')}"
+            )
+        annotations_section = (
+            f"### 当前轮批注(discuss-round-{current_round}.annotations.json,"
+            f"逐条;type=plain 的已即时回答,只需回应 type=comment 的实质批注)\n\n"
+            + "\n".join(anno_lines)
+        )
+    else:
+        annotations_section = "### 当前轮批注\n\n当前轮暂无待处理批注。"
+
+    # ---- 资料段③:transcript / draft / brainstorm(_KNOWN_DOCS 既有形态) ----
+    doc_sections: list[str] = []
+    for name in _KNOWN_DOCS:
+        path = docs_dir / name
+        if path.is_file():
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = ""
+            if text.strip():
+                doc_sections.append(f"### 文件:docs/{name}\n\n{text}")
+        else:
+            if name in ("draft.md", "brainstorm.md"):
+                doc_sections.append(f"### 文件:docs/{name}\n\n(尚不存在)")
+    known_docs_section = (
+        "\n\n".join(doc_sections) if doc_sections else "(无其他文档)"
+    )
+
+    grammar_examples = "\n".join(_GRAMMAR_EXAMPLES)
+    instructions = _ROUND_INSTRUCTIONS.replace("{target_filename}", target_filename)
+
+    return (
+        "## 一、你的角色\n\n"
+        "你是本工具的轮次收敛引擎。用户已对当前轮文档写好批注,"
+        "你的任务是逐条回应这些批注并产出下一轮文档。\n"
+        f"{_LANGUAGE_RULES}\n\n"
+        "## 二、项目资料(docs/ 全量,§5.1)\n\n"
+        f"{current_doc_section}\n\n"
+        f"{annotations_section}\n\n"
+        f"{known_docs_section}\n\n"
+        "## 三、本次任务\n\n"
+        f"{instructions}\n\n"
+        "## 四、文法模板(逐字遵守,§6.4)\n\n"
+        f"{grammar_examples}\n"
     )

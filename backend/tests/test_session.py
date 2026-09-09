@@ -709,3 +709,285 @@ def test_sdk_ask_lite_options_construction():
 
     assert callable(caller.ask_lite)
     assert not inspect.iscoroutinefunction(caller.ask_lite)
+
+
+# ---------------------------------------------------------------------------
+# G2 处理流水线(PLAN idi-02-02 Task 2,FLOW-04)——七用例
+# ---------------------------------------------------------------------------
+
+# 合规第 N 轮文档样本(五件套齐;末行 = 合规授权申请标记)
+def _round_doc_text(round_n: int, marker: str = "> 申请授权:否") -> str:
+    return (
+        f"# 第 {round_n} 轮讨论\n\n"
+        "## 批注回应\n\n"
+        "| 批注id | 原文摘录 | 回应 |\n"
+        "|---|---|---|\n"
+        "| a1-01 | 目标与边界 | 已补充说明边界范围。 |\n"
+        "\n"
+        "## 决策登记\n\n"
+        "- D1:边界按补充后的版本执行。\n"
+        "\n"
+        "## 覆盖维度表\n\n"
+        "| 维度 | 状态 | 说明 |\n"
+        "|---|---|---|\n"
+        "| 目标与边界 | ✓ | 已对齐 |\n"
+        "\n"
+        "## 未决问题清单\n\n"
+        "| 编号 | 问题 | 状态 |\n"
+        "|---|---|---|\n"
+        "| 1 | 用户画像是否需要细化 | 待决 |\n"
+        "\n"
+        f"{marker}\n"
+    )
+
+
+class RoundWritingFake(FakeAICaller):
+    """AI 在调用中写盘新轮文档(Write 工具语义:整体覆盖)。
+
+    照 BrainstormWritingFake 同构;content 末行不合规时即"半成品"形态
+    (is_complete_round 判不存在,derive_state 仍回原轮)。
+    """
+
+    def __init__(self, events, content: str):
+        super().__init__(events=events)
+        self.content = content
+
+    def run(self, project_path, prompt: str):
+        self.run_calls.append((str(project_path), prompt))
+        docs_dir = Path(project_path) / "docs"
+        docs_dir.mkdir(parents=True, exist_ok=True)
+        (docs_dir / "discuss-round-2.md").write_text(self.content, encoding="utf-8")
+        for ev in list(self.events):
+            yield dict(ev)
+        yield {"kind": "done", "content": "调用结束", "raw": None}
+
+
+def _enter_phase3(sess, tmp_path, round_text: str | None = "# 第 1 轮\n\n正文。\n\n> 申请授权:否\n"):
+    """直造 phase3 目录:完整第 1 轮 + 进入项目;round_text=None 时不写轮文档。"""
+    docs = tmp_path / "docs"
+    docs.mkdir(parents=True, exist_ok=True)
+    if round_text is not None:
+        (docs / "discuss-round-1.md").write_text(round_text, encoding="utf-8")
+    sess.enter_project(tmp_path)
+    return docs
+
+
+def test_round_process_available(tmp_path, fresh_session):
+    """用例 1:入口判定三态——phase3+完整轮 True;phase12_in_progress / phase1_new False。"""
+    from backend.state import STATE_PHASE12_IN_PROGRESS, STATE_PHASE1_NEW, STATE_PHASE3
+
+    # phase3:完整第 1 轮存在
+    phase3_dir = tmp_path / "p3"
+    (phase3_dir / "docs").mkdir(parents=True)
+    (phase3_dir / "docs" / "discuss-round-1.md").write_text(
+        "# 第 1 轮\n\n正文。\n\n> 申请授权:否\n", encoding="utf-8"
+    )
+    assert fresh_session.round_process_available(phase3_dir) is True
+
+    # phase12_in_progress:有 docs/ 无完整轮
+    phase12_dir = tmp_path / "p12"
+    (phase12_dir / "docs").mkdir(parents=True)
+    (phase12_dir / "docs" / "draft.md").write_text("# 雏形\n", encoding="utf-8")
+    assert fresh_session.round_process_available(phase12_dir) is False
+
+    # phase1_new:无 docs/
+    phase1_dir = tmp_path / "p1"
+    phase1_dir.mkdir()
+    assert fresh_session.round_process_available(phase1_dir) is False
+
+    # 半成品轮(末行非合规标记)→ 无完整轮 → False(derive_state 已判)
+    half_dir = tmp_path / "half"
+    (half_dir / "docs").mkdir(parents=True)
+    (half_dir / "docs" / "discuss-round-1.md").write_text(
+        "# 第 1 轮\n\n半成品,没写完\n", encoding="utf-8"
+    )
+    assert fresh_session.round_process_available(half_dir) is False
+
+
+def test_process_round_prompt_contains(tmp_path, fresh_session):
+    """用例 2:prompt 组装——当前轮文档全文、批注行、§3.3 四步、三表头原文、目标文件名。"""
+    from backend import annotations as annotations_mod
+
+    docs = _enter_phase3(fresh_session, tmp_path)
+    annotations_mod.append_item(
+        tmp_path, 1,
+        quote="目标与边界", before="", type="comment", note="这里没看懂",
+    )
+
+    fake = RoundWritingFake(
+        events=[{"kind": "say", "content": "我来处理批注。", "raw": None}],
+        content=_round_doc_text(2),
+    )
+    fresh_session._set_caller_for_tests(fake)
+    ok = fresh_session.process_round()
+    assert ok is True, "phase3 当前轮应受理"
+    assert wait_idle(fresh_session), "处理未在时限内结束"
+
+    assert len(fake.run_calls) == 1
+    _, prompt = fake.run_calls[0]
+    # 当前轮文档全文
+    assert "第 1 轮" in prompt and "正文" in prompt
+    # 批注逐条(id/quote/note)
+    assert "a1-01" in prompt
+    assert "目标与边界" in prompt
+    assert "这里没看懂" in prompt
+    # §3.3 四步关键词
+    assert "逐条回应" in prompt
+    assert "已对齐" in prompt
+    assert "未决清单" in prompt or "清单" in prompt
+    # §6.4 三表头行原文(逐字)
+    assert "| 批注id | 原文摘录 | 回应 |" in prompt
+    assert "| 维度 | 状态 | 说明 |" in prompt
+    assert "| 编号 | 问题 | 状态 |" in prompt
+    # 标记行正例
+    assert "> 申请授权:是" in prompt
+    assert "> 申请授权:否" in prompt
+    # 目标文件名(N+1:当前轮 1 → discuss-round-2.md)
+    assert "docs/discuss-round-2.md" in prompt
+
+
+def test_process_round_writeback(tmp_path, fresh_session):
+    """用例 3:回写闭环——新轮文档含回应表(a1-01)→ a1-01 answered、a1-02 保持 pending、current_round 前进。"""
+    from backend import annotations as annotations_mod
+
+    docs = _enter_phase3(fresh_session, tmp_path)
+    annotations_mod.append_item(
+        tmp_path, 1,
+        quote="目标与边界", before="", type="comment", note="这里没看懂",
+    )
+    annotations_mod.append_item(
+        tmp_path, 1,
+        quote="另一段", before="", type="comment", note="这里也没懂",
+    )
+
+    fake = RoundWritingFake(
+        events=[{"kind": "say", "content": "处理批注中。", "raw": None}],
+        content=_round_doc_text(2),  # 回应表只含 a1-01
+    )
+    fresh_session._set_caller_for_tests(fake)
+    ok = fresh_session.process_round()
+    assert ok is True
+    assert wait_idle(fresh_session), "处理未在时限内结束"
+
+    # 轮次前进:current_round 1 → 2
+    state = fresh_session.snapshot()
+    assert state["state"] == "phase3"
+    assert state["current_round"] == 2
+
+    # 回写:a1-01 answered + answer 有值;a1-02 保持 pending(answer None)
+    obj = annotations_mod.load(tmp_path, 1)
+    items = {item["id"]: item for item in obj["items"]}
+    assert items["a1-01"]["status"] == "answered"
+    assert items["a1-01"]["answer"]
+    assert "边界" in items["a1-01"]["answer"]
+    assert items["a1-02"]["status"] == "pending"
+    assert items["a1-02"]["answer"] is None
+
+    # done 收尾事件只有一条 kind=done 进 broker(事件照常直播;回写不发第二条)
+    # (此处只验证流水线正常收尾——事件数断言在 published 观察器版本)
+    assert not fresh_session.busy()
+
+
+def test_process_round_incomplete_new_round(tmp_path, fresh_session):
+    """用例 4:半成品——新文档末行非合规标记 → current_round 不变、批注未动、可重跑。"""
+    from backend import annotations as annotations_mod
+
+    docs = _enter_phase3(fresh_session, tmp_path)
+    annotations_mod.append_item(
+        tmp_path, 1,
+        quote="目标与边界", before="", type="comment", note="这里没看懂",
+    )
+
+    # 新文档末行不合规(缺授权申请标记)→ 半成品
+    fake = RoundWritingFake(
+        events=[{"kind": "say", "content": "写废了。", "raw": None}],
+        content=(_round_doc_text(2) + "后面还没写完\n"),
+    )
+    fresh_session._set_caller_for_tests(fake)
+    ok = fresh_session.process_round()
+    assert ok is True
+    assert wait_idle(fresh_session), "处理未在时限内结束"
+
+    # current_round 仍为 1(半成品视为不存在)
+    state = fresh_session.snapshot()
+    assert state["state"] == "phase3"
+    assert state["current_round"] == 1
+
+    # 上一轮批注未被回写(a1-01 保持 pending)
+    obj = annotations_mod.load(tmp_path, 1)
+    assert obj["items"][0]["status"] == "pending"
+    assert obj["items"][0]["answer"] is None
+
+    # 可重跑受理(重跑覆盖语义:入口仍开)
+    fake2 = RoundWritingFake(
+        events=[{"kind": "say", "content": "重来。", "raw": None}],
+        content=_round_doc_text(2),
+    )
+    fresh_session._set_caller_for_tests(fake2)
+    ok2 = fresh_session.process_round()
+    assert ok2 is True, "半成品后重跑应被受理"
+    assert wait_idle(fresh_session), "重跑未在时限内结束"
+    state2 = fresh_session.snapshot()
+    assert state2["current_round"] == 2, "重跑产物合规后轮次前进"
+    obj2 = annotations_mod.load(tmp_path, 1)
+    assert obj2["items"][0]["status"] == "answered", "重跑后批注被回写"
+
+
+def test_process_round_busy_rejects(tmp_path, fresh_session):
+    """用例 5:在飞拒绝——HangingFake 挂住在飞主调用 → process_round 返回 False。"""
+    docs = _enter_phase3(fresh_session, tmp_path)
+
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake(FakeAICaller):
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=10)  # 模拟调用在飞
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = HangingFake(events=[])
+    fresh_session._set_caller_for_tests(fake)
+    threading.Thread(target=lambda: fresh_session.send_message("先聊"), daemon=True).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    # 在飞中触发处理本轮批注 → 单飞锁拒绝
+    accepted = fresh_session.process_round()
+    assert accepted is False, "在飞中 process_round 应被拒绝(单飞)"
+
+    release.set()
+    assert wait_idle(fresh_session), "调用未收尾"
+    assert len(fake.run_calls) == 1, "process_round 不应另起调用"
+
+
+def test_process_round_non_phase3_rejects(tmp_path, fresh_session):
+    """用例 6:非 phase3 拒绝——phase12 目录直接调 process_round → False(入口校验)。"""
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "transcript.md").write_text("", encoding="utf-8")
+    (docs / "draft.md").write_text("# 雏形\n", encoding="utf-8")
+    fresh_session.enter_project(tmp_path)
+
+    accepted = fresh_session.process_round()
+    assert accepted is False, "非 phase3 时 process_round 应被拒绝"
+
+
+def test_process_round_empty_annotations_ok(tmp_path, fresh_session):
+    """用例 7:空批注轮合法——零 annotations 时照常受理 + prompt 含「当前轮暂无待处理批注」。"""
+    docs = _enter_phase3(fresh_session, tmp_path)  # 不建任何批注
+
+    fake = RoundWritingFake(
+        events=[{"kind": "say", "content": "本轮无批注,直接更新文档。", "raw": None}],
+        content=_round_doc_text(2),
+    )
+    fresh_session._set_caller_for_tests(fake)
+    ok = fresh_session.process_round()
+    assert ok is True, "空批注轮也应受理(D-P2-15:不设「有批注才可处理」门槛)"
+    assert wait_idle(fresh_session), "处理未在时限内结束"
+
+    _, prompt = fake.run_calls[0]
+    assert "当前轮暂无待处理批注" in prompt
+    # 轮次照常前进 + done 正常收尾
+    state = fresh_session.snapshot()
+    assert state["current_round"] == 2

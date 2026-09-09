@@ -27,7 +27,7 @@ from pathlib import Path
 from backend import config as cfg
 from backend.events import broker
 from backend.prompts import build_divergence_prompt, build_phase12_prompt
-from backend.state import derive_state, list_complete_rounds
+from backend.state import STATE_PHASE3, derive_state, list_complete_rounds
 from backend.transcript import append_message, parse_transcript
 
 logger = logging.getLogger(__name__)
@@ -475,6 +475,127 @@ def trigger_divergence() -> bool:
             # 发散产物(brainstorm.md)由 AI 的 Write 工具落盘(权限门:docs/ 内放行),
             # 不落 transcript——发散不是会话消息。
             _publish_for_tests({"kind": "done", "content": "发散结束", "raw": None})
+            with _lock:
+                inflight_local = _inflight
+            if inflight_local is not None:
+                inflight_local.set()
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True
+
+
+# ---------------------------------------------------------------------------
+# G2 轮次收敛:「处理本轮批注」(FLOW-04 / §4.4 / D-P2-12~15,idi-02-02 Task 2)
+# ---------------------------------------------------------------------------
+
+
+def round_process_available(project_path) -> bool:
+    """入口判定(纯靠磁盘,防绕过):derive_state == phase3 且当前轮非空。
+
+    照 divergence_available/g1_available 的"纯磁盘"先例——只在推导结果为
+    phase3 且存在完整轮(current_round 非 None)时受理「处理本轮批注」;
+    其余(phase12_in_progress / phase1_new / 阶段 4+)一律关闭。
+    """
+    state = derive_state(Path(project_path))
+    return state["state"] == STATE_PHASE3 and state["current_round"] is not None
+
+
+def process_round() -> bool:
+    """处理本轮批注(FLOW-04 / §4.4 G2):build_round_prompt → 后台线程 caller.run
+    → AI 产出 docs/discuss-round-(N+1).md(权限门:写 docs/ 内放行)→ done 后
+    后端回写上一轮 annotations(answer/status)。
+
+    入口三查(照 trigger_divergence 模子):
+      ① 未进入项目 → RuntimeError(路由层 400)
+      ② 在飞调用中 → False(单飞锁,路由层 409)
+      ③ round_process_available 为 False(非 phase3 / 无完整轮)→ False(409)
+    事件照常 SSE 直播(§5.2:从用户点「处理本轮批注」起全程可见);
+    不落 transcript(G2 不是会话消息,与 divergence 同)。
+
+    done 后回写(D-P2-12/D-P2-13,重拉磁盘不依赖内存):
+      - 重拉 derive_state:current_round 前进(新轮文档存在)→ 读新轮文档文本
+        → grammar.parse_annotation_responses 解析批注回应表 → 组 answers dict
+        {id: response} → annotations.writeback 回写上一轮(prev_round)条目的
+        answer/status。回写异常发 error 事件,不悬空进度;不发第二条 done
+        (本流水线的 done 收尾事件仍由 finally 常规发,唯一一条);
+      - current_round 未前进(AI 写废/中止的半成品)→ 不回写、不报错——
+        derive_state 已按完整轮判据把它视作不存在,process_round 可重跑
+        (§7.3 重跑覆盖自愈,D-P2-13,零新增判错分支)。
+    """
+    global _inflight, _ai_texts, _aborted
+    from backend.grammar import parse_annotation_responses
+    from backend.prompts import build_round_prompt
+    from backend import annotations as annotations_mod
+
+    with _lock:
+        project = _current_project
+        if project is None:
+            raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+        if _inflight is not None and _inflight.is_set() is False:
+            return False  # 在飞调用未结束:并发拒绝
+        if not round_process_available(project):
+            return False  # 非 phase3 或无完整轮:入口关闭(防绕过)
+        caller = _ensure_caller()
+        _inflight = threading.Event()  # set = 未结束
+        _ai_texts = []
+        _aborted = False
+
+    state = derive_state(project)
+    prev_round = state["current_round"]
+    prompt = build_round_prompt(project, prev_round)
+
+    def _worker():
+        global _aborted
+        try:
+            _wire_permission_callback(caller)
+            for event in caller.run(project, prompt):
+                if _aborted:
+                    break
+                _publish_for_tests(event)
+                if event.get("kind") == "done":
+                    break
+        except Exception as exc:  # 线程内兜底:流不悬空
+            _publish_for_tests(
+                {"kind": "error", "content": f"调用线程异常:{exc}", "raw": None}
+            )
+        else:
+            # ---- done 后回写(prev_round 在线程外闭包捕获,build 前的值)----
+            try:
+                new_state = derive_state(project)
+                new_round = new_state["current_round"]
+                if new_round is not None and new_round > prev_round:
+                    round_doc_path = (
+                        project / "docs" / f"discuss-round-{new_round}.md"
+                    )
+                    try:
+                        new_doc_text = round_doc_path.read_text(
+                            encoding="utf-8", errors="replace"
+                        )
+                    except OSError:
+                        new_doc_text = ""
+                    responses = parse_annotation_responses(new_doc_text)
+                    answers = {r["id"]: r["response"] for r in responses}
+                    if answers:
+                        hits = annotations_mod.writeback(
+                            project, prev_round, answers
+                        )
+                        logger.info(
+                            "G2 回写:第 %d 轮批注命中 %d 条(回应表 %d 条)",
+                            prev_round,
+                            hits,
+                            len(responses),
+                        )
+            except Exception as exc:  # 回写失败:发 error 事件,不悬空进度
+                _publish_for_tests(
+                    {
+                        "kind": "error",
+                        "content": f"批注回写异常:{exc}",
+                        "raw": None,
+                    }
+                )
+        finally:
+            # done 收尾事件:本流水线唯一一条 kind=done(回写动作不发第二条)
+            _publish_for_tests({"kind": "done", "content": "本轮处理结束", "raw": None})
             with _lock:
                 inflight_local = _inflight
             if inflight_local is not None:

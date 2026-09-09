@@ -62,7 +62,7 @@ Plans:
   6. 工具能按 §6.4 文法机械解析 AI 产出的维度表、未决清单、授权申请标记、批注回应表、PASS 结论行与裁决追加行(构造正反例轮次文档验证解析与判定,含结论行锚点取末一处、配对同号等边界) ← FLOW-07
   7. 目录结构按 §6.1 落盘齐全(transcript/draft/轮次文档/annotations/brainstorm/check 报告),annotations.json 字段与 §6.2 完全一致 ← DATA-01
 
-**Plans**: 2/4 plans executed planned
+**Plans**: 3/4 plans executed planned
 Plans:
 **Wave 1**
 
@@ -74,7 +74,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] idi-02-03-PLAN.md — 前端轮次视图:划词弹菜单、批注流侧栏、高亮、未处理数、冻结只读
+- [x] idi-02-03-PLAN.md — 前端轮次视图:划词弹菜单、批注流侧栏、高亮、未处理数、冻结只读
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -106,5 +106,5 @@ Phases execute in numeric order: 1 → 2 → 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 行走骨架——服务器、单界面与阶段 1-2 会话 | 4/4 | Complete    | 2026-09-09 |
-| 2. 轮次收敛循环——划词批注、G2 与机器文法 | 2/4 | In Progress|  |
+| 2. 轮次收敛循环——划词批注、G2 与机器文法 | 3/4 | In Progress|  |
 | 3. 授权、自检与终点——G3、档位、使命完成归档 | 0/0 | Not started | - |

@@ -479,3 +479,17 @@ button.primary {
   white-space: nowrap;
 }
 #selection-menu button:hover { background: #eef4ff; }
+
+/* mark 高亮(§4.1「高亮 = 有批注」:浅黄 amber 系) */
+#round-doc mark,
+.markdown-body mark {
+  background: #fff3c4;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* 冻结轮只读灰化(D-P2-21:轮 < 当前轮的呈现服务端 409 是防线) */
+#round-doc.round-frozen {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}

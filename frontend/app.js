@@ -134,6 +134,15 @@ function dispatchEvent_(event) {
       streamingBubble = null;
     }
     refreshDraftAfterStream();
+    // 处理本轮批注在飞时 done/error 都收尾:拉新轮次链(新当前轮+上轮冻结)+
+    // 恢复按钮(refreshRoundsAfterStream 内 applySessionGates 会重算按钮态,
+    // 这里补保险恢复文案)
+    if (processInFlight) {
+      processInFlight = false;
+      processRoundBtn.textContent = '处理本轮批注';
+      processRoundBtn.title = '仅阶段 3 当前轮可用';
+      refreshRoundsAfterStream();
+    }
     pingBtn.disabled = false;
   }
 }
@@ -431,17 +440,81 @@ async function loadRoundView(n, currentRound) {
   const isCurrent = n === cr;
 
   roundTitle.textContent = `第 ${n} 轮${isCurrent ? '' : '(历史轮·只读)'}`;
-  renderRoundDocument(result.data.document);
+  renderRoundDocument(result.data.document, result.data.annotations);
 
   // 冻结呈现(D-P2-21):仅「轮 < 当前轮」推导,无独立状态;服务端 409 是防线
   renderAnnotations(result.data.annotations, isCurrent);
   updateFrozenPresentation(isCurrent);
 }
 
-// 文档区 markdown 渲染(复用 Phase 1 XSS 管线,零 innerHTML 拼接)
-function renderRoundDocument(text) {
+// 文档区 markdown 渲染(复用 Phase 1 XSS 管线,零 innerHTML 拼接)+ 本轮批注高亮
+function renderRoundDocument(text, annotations) {
   roundDoc.innerHTML = ''; // 清旧渲染节点(不用 += 拼接)
   if (text) roundDoc.appendChild(renderMarkdown(text));
+  if (annotations) highlightAnnotations(roundDoc, annotations);
+}
+
+// 高亮(§4.1「高亮 = 有批注」/D-P2-4/D-P2-23):渲染后 DOM 的文本节点中
+// 定位 quote 精确匹配并包 <mark>。createElement/textNode 拆分包 mark,
+// 零 innerHTML 拼接(T-idi02-12);quote 空或找不到 → 跳过该条不抛(防呆,
+// T-idi02-16 定位错段不如不标)。定位语义与 backend.annotations.locate_quote
+// 同思路:多处匹配时优先"匹配前文以 before 结尾"的那一处(D-P2-6 前后端共用)。
+function highlightAnnotations(roundDocEl, annotations) {
+  const items = (annotations && annotations.items) || [];
+  items.forEach((item) => {
+    const quote = String(item.quote || '');
+    if (!quote) return;
+
+    // 遍历段落类元素,在其文本内容中找 quote(实现取简:首个命中即可)
+    const blocks = roundDocEl.querySelectorAll('p, li, td, h1, h2, h3, h4, blockquote');
+    for (const block of blocks) {
+      const textNode = firstTextNodeContaining(block, quote);
+      if (!textNode) continue;
+
+      // 定位:本节点内多处匹配时用 before 辅助(匹配点前文以 before 结尾优先)
+      const data = String(textNode.data || '');
+      const starts = findAllIndexes(data, quote);
+      if (!starts.length) break; // 防御:textNodeContaining 已保证含 quote
+      let target = starts[0];
+      if (starts.length > 1) {
+        const before = String(item.before || '');
+        const hit = before
+          ? starts.find((s) => data.slice(Math.max(0, s - before.length), s) === before)
+          : undefined;
+        if (hit !== undefined) target = hit;
+      }
+
+      // 拆分文本节点包 mark(纯 DOM 操作,无 innerHTML)
+      const afterNode = textNode.splitText(target);
+      afterNode.splitText(quote.length); // 截出 quote 段独立文本节点
+      const mark = document.createElement('mark');
+      mark.className = 'annotation-quote-mark';
+      mark.textContent = quote; // textContent 赋值,零注入面
+      afterNode.parentNode.replaceChild(mark, afterNode);
+      break; // 每条 annotation 一个 mark(首个命中即可)
+    }
+  });
+}
+
+// 找出 block 内第一个包含 quote 的文本节点(TreeWalker 实现取简)
+function firstTextNodeContaining(block, quote) {
+  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+  let node;
+  while ((node = walker.nextNode())) {
+    if (String(node.data || '').includes(quote)) return node;
+  }
+  return null;
+}
+
+// 全部匹配起点(照 locate_quote 的多匹配枚举语义)
+function findAllIndexes(text, quote) {
+  const indexes = [];
+  let pos = text.indexOf(quote);
+  while (pos !== -1) {
+    indexes.push(pos);
+    pos = text.indexOf(quote, pos + 1);
+  }
+  return indexes;
 }
 
 // 批注流条目渲染:quote 摘录 + note/answer + 状态徽标;plain 灰斜体;answered 灰化不删
@@ -755,6 +828,66 @@ async function refreshPendingCount() {
     if (data.status === 'ok' && data.state === 'phase3') {
       pendingCount.textContent = `本轮批注未处理 ${data.pending_annotations}`;
     }
+  } catch { /* 拉不到保持现状 */ }
+}
+
+// ---------------------------------------------------------------------------
+// 处理本轮批注(FLOW-04 / §4.4 G2):点击 → POST process(202)→ SSE 直播
+// → done 后拉新 refreshRoundsAfterStream → 新当前轮 + 上一轮自动冻结。
+// 按钮:仅 phase3 且显示当前轮时可用;busy(process_in_flight)禁用防重复。
+// ---------------------------------------------------------------------------
+
+processRoundBtn.addEventListener('click', async () => {
+  if (processRoundBtn.disabled || processInFlight) return; // busy 防重复
+  if (currentState !== 'phase3') {
+    renderEvent({ kind: 'error', content: '仅阶段 3 可处理本轮批注', raw: null });
+    return;
+  }
+  processInFlight = true;
+  processRoundBtn.disabled = true;
+  const originalText = processRoundBtn.textContent;
+  processRoundBtn.textContent = '处理中…';
+  processRoundBtn.title = 'AI 正在批量回应批注,AI 工作面板可见全过程';
+  renderEvent({
+    kind: 'say',
+    content: '已发起处理本轮批注,读文件/写文件过程在下方工作面板全程直播……',
+    raw: null,
+  });
+  try {
+    const resp = await fetch('/api/rounds/process', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      renderEvent({
+        kind: 'error',
+        content: `处理发起失败:${err.message || resp.status}`,
+        raw: null,
+      });
+      // 202 未受理(非 phase3/在飞):恢复按钮;done 链不会来
+      processInFlight = false;
+      processRoundBtn.disabled = false;
+      processRoundBtn.textContent = originalText;
+      return;
+    }
+    // 202 受理:保持处理中禁用态直至 SSE done(refreshRoundsAfterStream 收尾)
+  } catch {
+    renderEvent({ kind: 'error', content: '处理请求失败(网络)', raw: null });
+    processInFlight = false;
+    processRoundBtn.disabled = false;
+    processRoundBtn.textContent = originalText;
+  }
+});
+
+// done 后拉新链(G-idi01-7 先例扩展到双端点):串行 fetch /api/session →
+// applySessionGates(新 current_round/rounds/pending_annotations)→ 其 phase3
+// 分支内的 loadRoundsView 已拉新当前轮文档+annotations;上一轮冻结随
+// n < current_round 的呈现自然成立。纯事件驱动一拉,无轮询。
+async function refreshRoundsAfterStream() {
+  if (currentProject == null) return;
+  try {
+    const resp = await fetch('/api/session');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    if (data.status === 'ok') applySessionGates(data);
   } catch { /* 拉不到保持现状 */ }
 }
 

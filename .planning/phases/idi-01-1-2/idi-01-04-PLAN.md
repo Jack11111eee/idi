@@ -85,26 +85,33 @@ DESIGN.md 权威依据:
 - §4.4 G1:草稿区末尾常驻「认可雏形」按钮;点击 = 后端将当前草稿定稿为 discuss-round-1.md、**后端**追加合规 `> 申请授权:否` 末行;draft.md 保留;阶段 1-2 的 AI 不要求 §6.3 模板,草稿格式自由
 - §6.4 授权申请标记:文档最后一个非空行恰为 `> 申请授权:否`
 - §3.8 语言红线注入发散 prompt
+
+分支纪律(per 仓库 CLAUDE.md §5):本计划属多文件大改动——执行者从当前分支 HEAD 切出 phase-01/idi-01-04 工作分支,plan 完成后合回原分支(工作分支生命周期与 plan 对齐,不引入 worktree)。
 </context>
 
 <tasks>
 
 <task type="checkpoint:decision" gate="blocking-human">
   <decision>G1「认可雏形」是不可回滚门,确认交互形态</decision>
-  <context>按 reversibility 规则,one-way 决策须由人确认后才走过。本任务要定的是:点「认可雏形」后,除前端一次性确认对话框外,是否再加一道后端硬闸(见选项)。选 A 走默认实现,选 B 加一层防护。选项各自满足 DESIGN.md §4.4(G1 由用户点击驱动、默认即认可)。</context>
+  <context>按 reversibility 规则,one-way 决策须由人确认后才走过。本任务要定的是:点「认可雏形」后的交互形态(见选项)。DESIGN.md §4.4 字面 = 按钮常驻、点击即 G1 通过(无任何二次确认要求)。选项 A 即规范对齐形态;选 B/C 属交互增强,若选带确认的形态,须在 SUMMARY 记录为「记录在案的偏差」。</context>
   <options>
+    <option id="direct-through">
+      <name>A:点击即定稿(规范对齐,零确认)</name>
+      <pros>逐字对齐 §4.4「点击即 G1 通过」原文;无多余交互</pros>
+      <cons>误触即走到不可回滚门(单机自用,个人风险偏好可接受)</cons>
+    </option>
     <option id="confirm-dialog-only">
-      <name>A:仅前端一次性确认对话框</name>
-      <pros>实现最简,交互符合「常驻按钮,点击即通过」原文语义,§4.4 无二次确认要求</pros>
-      <cons>理论上一条 curl 可绕过对话框直打后端(单机自用可接受)</cons>
+      <name>B:前端一次性确认对话框</name>
+      <pros>防误触;偏离 §4.4 字面(增加了它未要求的确认框)</pros>
+      <cons>在 §4.4 之上追加交互步骤,属记录在案的偏差</cons>
     </option>
     <option id="require-recheck">
-      <name>B:后端加二次确认参数</name>
-      <pros>防误触更强,任何客户端都须显式带确认意图参数</pros>
-      <cons>在 §4.4 之上追加未在 DESIGN.md 出现的交互协议</cons>
+      <name>C:后端加二次确认参数</name>
+      <pros>防误触最强,任何客户端都须显式带确认意图参数</pros>
+      <cons>在 §4.4 之上追加未在 DESIGN.md 出现的交互协议,偏离最大</cons>
     </option>
   </options>
-  <resume-signal>Select: confirm-dialog-only 或 require-recheck</resume-signal>
+  <resume-signal>Select: direct-through 或 confirm-dialog-only 或 require-recheck</resume-signal>
 </task>
 
 <task type="auto" tdd="true">
@@ -124,7 +131,7 @@ DESIGN.md 权威依据:
 
 (4)backend/tests/test_session.py 扩四个用例(behavior 列表):用 FakeAICaller 产伪事件,assert 落盘 / 覆盖 / 判定 / prompt 结构(greps marker)。先红后绿。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
   </verify>
   <fails_when>任一 pytest 输出含 failed/error;session 用例数 < 10(既有 6 + 新 4);全量回归基线(25+)下降。</fails_when>
   <done>发散条链路(Fake 级)全绿:模板三段、覆盖落盘、入口关闭逻辑、再发散可见旧候选。</done>
@@ -132,7 +139,7 @@ DESIGN.md 权威依据:
 
 <task type="auto" tdd="true">
   <name>Task 2: G1 定稿——finalize_g1 纯函数 + 「认可雏形」按钮 + 界面接线</name>
-  <reversibility rating="one-way">任意一次合法 G1 后,产出的 discuss-round-1.md 与其末行标记被 derive_state 永久消费为"阶段 3 已进入"——误触发走的是用户文件系统的不可回滚状态变更(需删文件才能退出轮次),故前置确认对话框。</reversibility>
+  <reversibility rating="one-way">任意一次合法 G1 后,产出的 discuss-round-1.md 与其末行标记被 derive_state 永久消费为"阶段 3 已进入"——误触发走的是用户文件系统的不可回滚状态变更(需删文件才能退出轮次),故前置决策门确认交互形态(选择项含"零确认直通"选项)。</reversibility>
   <behavior>
     - 用例 1:临时目录含 docs/draft.md(多行内容),finalize_g1(project_path) 后 docs/discuss-round-1.md 存在,内容 = draft 全文 + 末行恰为 `> 申请授权:否`(strip 后全等,前缀不算)
     - 用例 2:draft.md 原 file 保留、内容不变(定稿不改草稿)
@@ -145,13 +152,13 @@ DESIGN.md 权威依据:
 
 (2)backend/main.py:POST /api/g1 → session 转调 finalize_g1(current_project),成功后返回新 derive_state 结果;失败(无 draft/已定稿)返回 4xx 与中文原因。session 层:若 AI 调用在飞,拒绝(锁语义同 send_message)。
 
-(3)前端:Task 2/Plan 03 预留的「认可雏形」按钮从禁用态转正——常驻 draft-view 末尾(§4.4 常驻,不是弹窗确认式):点击先弹一次性确认对话框(因 G1 是不可逆动作,文案:「定稿后进入轮次阶段,不可退回阶段 1-2 会话」),确认后 POST /api/g1,返回后重进(POST /api/enter)刷新状态,界面切到轮次占位视图(Plan 03 的 rounds-placeholder,显示当前轮号 1)。「没想法」入口:进入 phase1_new 且 divergence_available 时,空草稿区上方显示「没想法?让 AI 发散出候选方向」按钮 → POST /api/divergence,过程中工作面板照常直播,brainstorm.md 就绪后 GET /api/brainstorm 渲染候选(markdown)。「挑选候选后」交互 = 用户在会话流发消息告知所选方向(轻实现:说明文案引导,无专门 UI)——发散出口即回到主干深化。
+(3)前端:「认可雏形」按钮从禁用态转正,常驻 draft-view 末尾(§4.4 常驻,不是弹窗确认式)。交互形态按前置决策门(checkpoint)所选选项实现:direct-through = 点击即 POST /api/g1,零确认;confirm-dialog-only = 点击先弹一次性确认对话框(文案:「定稿后进入轮次阶段,不可退回阶段 1-2 会话」)再 POST;require-recheck = 后端 /api/g1 加确认意图参数,前端带参调用。POST /api/g1 成功后返回新 derive_state 结果,界面重进(POST /api/enter)刷新状态,切到轮次占位视图(Plan 03 的 rounds-placeholder,显示当前轮号 1)。「没想法」入口:进入 phase1_new 且 divergence_available 时,空草稿区上方显示「没想法?让 AI 发散出候选方向」按钮 → POST /api/divergence,过程中工作面板照常直播,brainstorm.md 就绪后 GET /api/brainstorm 渲染候选(markdown)。「挑选候选后」交互 = 用户在会话流发消息告知所选方向(轻实现:说明文案引导,无专门 UI)——发散出口即回到主干深化。
 
 (4)backend/tests/test_g1.py:五用例(behavior 列表)先红后绿,其中用例 5 断言跨模块闭环(finalize 后 derive_state = phase3)。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_g1.py backend/tests/test_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1 && (.venv/bin/uvicorn backend.main:app --port 8767 &) && sleep 2 && D=$(mktemp -d) && mkdir -p $D/docs && printf "# 雏形\n内容\n" > $D/docs/draft.md && curl -sf -X POST http://localhost:8767/api/enter -H "Content-Type: application/json" -d "{\"path\": \"$D\"}" >/dev/null && curl -sf -X POST http://localhost:8767/api/g1 >/dev/null && tail -1 $D/docs/discuss-round-1.md && grep -c "draft" $D/docs/draft.md && lsof -ti:8767 | xargs kill; echo "g1-e2e-ok"'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_g1.py backend/tests/test_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1 && (.venv/bin/uvicorn backend.main:app --port 8767 &) && n=0 && until curl -sf http://127.0.0.1:8767/api/health >/dev/null 2>&1; do n=$((n+1)); if [ $n -gt 120 ]; then lsof -ti:8767 | xargs kill 2>/dev/null; exit 1; fi; sleep 0.5; done && D=$(mktemp -d) && mkdir -p $D/docs && printf "# 雏形\n内容\n" > $D/docs/draft.md && DRAFT_MD5=$(md5 -q $D/docs/draft.md) && curl -sf -X POST http://127.0.0.1:8767/api/enter -H "Content-Type: application/json" -d "{\"path\": \"$D\"}" >/dev/null && curl -sf -X POST http://127.0.0.1:8767/api/g1 >/dev/null && grep -qx "> 申请授权:否" <(tail -1 $D/docs/discuss-round-1.md) && [ "$DRAFT_MD5" = "$(md5 -q $D/docs/draft.md)" ]; rc=$?; lsof -ti:8767 | xargs kill 2>/dev/null; [ $rc -eq 0 ] && echo "g1-e2e-ok"'</automated>
   </verify>
-  <fails_when>任一 pytest 含 failed/error;g1 用例 < 5;curl -sf 任一步失败;tail 输出行非授权标记行(无 > 申请授权:否);draft.md 被删或空(grep -c 返回 0);无 g1-e2e-ok。</fails_when>
+  <fails_when>任一 pytest 含 failed/error(pipefail 保证 tail 不吞退出码);g1 用例 < 5;curl -sf 任一步失败;discuss-round-1.md 末行非恰为 > 申请授权:否(grep -qx 全等断言,前缀/后缀不算);draft.md 内容变化(md5 前后不一致 = 草稿被改动或删除);uvicorn 起不来(等待循环 60s 上限)或失败路径 uvicorn 未清理;无 g1-e2e-ok(echo 仅在 rc=0 时发出)。
   <done>G1 后端纯函数五用例全绿;真实 HTTP 链路冒烟过(draft→discuss-round-1.md、标记行、draft 保留);「没想法」与「认可雏形」前端入口可用;Phase 1 全部 10 个 REQ 落地。</done>
 </task>
 

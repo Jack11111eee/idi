@@ -6,11 +6,14 @@ wave: 1
 depends_on: []
 files_modified:
   - requirements.txt
+  - config.json
   - run.sh
   - .gitignore
   - backend/__init__.py
   - backend/config.py
   - backend/cli_check.py
+  - backend/tests/__init__.py
+  - backend/tests/test_ai_caller.py
   - backend/ai_caller.py
   - backend/events.py
   - backend/main.py
@@ -97,6 +100,7 @@ DESIGN.md 权威依据:
 - 工具自身仓库的 docs/、DESIGN.md、CLAUDE.md、.planning/ 为既有产物,严禁触碰(D-P1-4)
 - 代码标识符、命令、路径用英文;面向用户(prose/界面文案)用中文
 - 本阶段不引入任何后续阶段的功能(无批注、无轮次循环);骨架允许的功能空缺仅限"后续可无架构变更地填入"
+- 分支纪律(per 仓库 CLAUDE.md §5):执行者从当前分支 HEAD 切出 phase-01/idi-01-01 工作分支,plan 完成后合回原分支(工作分支生命周期与 plan 对齐,不引入 worktree)
 </context>
 
 <tasks>
@@ -105,7 +109,7 @@ DESIGN.md 权威依据:
   <name>Task 1: 端到端追踪弹——服务器启动→页面呈现→一次子进程 AI 调用的 SSE 事件直播</name>
   <reversibility rating="costly">目录布局(backend/+frontend/)与 SSE 事件通道形态被 Phase 2/3 全部叠加使用,变更需协调多调用点。</reversibility>
   <precondition>本机已装 claude CLI 且已登录(命令 claude --version 能出版本号)——AI-05 自检目标即此事实,运行时用户可按指引补装。</precondition>
-  <files>requirements.txt, run.sh, .gitignore, backend/__init__.py, backend/config.py, backend/ai_caller.py, backend/events.py, backend/main.py, frontend/index.html, frontend/app.js, frontend/style.css, frontend/vendor/marked.min.js</files>
+  <files>requirements.txt, run.sh, .gitignore, backend/__init__.py, backend/config.py, backend/ai_caller.py, backend/events.py, backend/main.py, config.json, frontend/index.html, frontend/app.js, frontend/style.css, frontend/vendor/marked.min.js</files>
   <behavior>
     - GET /api/health 返回 200 与 JSON(status: ok)
     - AICaller 子进程路线对临时目录里一个真实任务发起调用,产出的事件流被 SSE 逐条转发
@@ -114,7 +118,7 @@ DESIGN.md 权威依据:
   </behavior>
   <action>搭通最薄端到端路径,一次 Write 每文件、不可中途留桩。分五个部分:
 
-(1)脚手架(per D-P1-1/D-P1-2/D-P1-3):创建 requirements.txt(fastapi、uvicorn、claude-agent-sdk 三项,固定到当前可用版本——依赖面即此三项,venv + requirements.txt 管理,不引入 poetry/uv),创建 run.sh:检查 .venv 存在与否(不存在则 python3 -m venv .venv 并 pip install -r requirements.txt),然后 exec .venv/bin/uvicorn backend.main:app --port 8765(端口可按序换用,仅此一个自定义值)。把 .venv/ 追加进 .gitignore。工具代码全部落在 backend/(FastAPI app)与 frontend/(静态文件)两目录,前端不引框架、无构建步骤。
+(1)脚手架(per D-P1-1/D-P1-2/D-P1-3):创建 requirements.txt(fastapi、uvicorn、claude-agent-sdk、pytest 四项,固定到当前可用版本——三个运行依赖 + pytest 为验证工具,后续全部 verify 命令直接依赖它,一并纳入;venv + requirements.txt 管理,不引入 poetry/uv),创建 run.sh:检查 .venv 存在与否(不存在则 python3 -m venv .venv 并 pip install -r requirements.txt),然后 exec .venv/bin/uvicorn backend.main:app --port 8765(端口可按序换用,仅此一个自定义值)。把 .venv/ 追加进 .gitignore。工具代码全部落在 backend/(FastAPI app)与 frontend/(静态文件)两目录,前端不引框架、无构建步骤。
 
 (2)backend/config.py(实现 per D-P1-4:仓库根 = 工具源代码仓,代码只进 backend/ + frontend/ + 顶层配置文件,不触碰工具自身的讨论产物 docs/、DESIGN.md、CLAUDE.md、.planning/;工具运行时操作的项目目录一律由用户另选):定义 make_ai_caller() 工厂与 read_config()。配置来源 = 仓库根 config.json(新增文件属骨架,提供默认 {"ai_caller": "sdk"}),字段 ai_caller ∈ {sdk, subprocess},另定义 AI_MODEL 等后续阶段可扩展键。配置读取失败时回落默认 sdk,并在日志注明。
 
@@ -126,7 +130,7 @@ DESIGN.md 权威依据:
 
 写完后自查:这条路径 = 启动 run.sh → curl /api/health 得 ok → 浏览器页面加载 → 点发起测试调用 → SSE 事件逐条出现在面板 → 点中止进程死、流收尾。这是后续所有阶段的唯一架构基线。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt && .venv/bin/python -c "import backend.main; import backend.ai_caller; print(\"imports-ok\")" && .venv/bin/python - <<PYEOF
+    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && python3 -m venv .venv && .venv/bin/pip install -q -r requirements.txt && .venv/bin/python -c "import backend.main; import backend.ai_caller; print(\"imports-ok\")" && cat > /tmp/idi01_perm_check.py <<"PYEOF"
 import sys
 sys.path.insert(0, ".")
 from backend.ai_caller import make_permission_decision
@@ -143,16 +147,17 @@ assert make_permission_decision(p, "read", Path("/tmp/outside.txt")) == "confirm
 assert make_permission_decision(p, "write", Path("/tmp/outside.txt")) == "confirm"
 assert make_permission_decision(p, "command", "git status") == "confirm"
 print("perm-matrix-ok")
-PYEOF'</automated>
+PYEOF
+.venv/bin/python /tmp/idi01_perm_check.py && rm -f /tmp/idi01_perm_check.py && echo "verify1-ok"'</automated>
   </verify>
-  <fails_when>任一 assert 失败(python 进程非零退出、无 perm-matrix-ok / imports-ok 输出行)、requirements 装不上、或 backend.main 不可导入。</fails_when>
+  <fails_when>任一 assert 失败(python 进程非零退出、无 perm-matrix-ok / imports-ok / verify1-ok 输出行)、requirements 装不上、或 backend.main 不可导入(链式 && 任一步断即整体失败)。</fails_when>
   <done>骨架五部分全部就位:/api/health 返回 ok;权限矩阵九个断言全过;AICaller 双文件(接口 + SubprocessAICaller + make_permission_decision)可导入并有单测脚本验证;frontend 三文件 + vendored 渲染库存在;run.sh 可重复执行。本任务代码被 commit。</done>
 </task>
 
 <task type="auto">
   <name>Task 2: Claude Agent SDK 路线 + claude CLI 启动自检</name>
   <reversibility rating="costly">AICaller 接口是全部后续阶段的调用面,Phase 2 轻量调用直接叠在 ask_lite 签名上。</reversibility>
-  <files>backend/ai_caller.py, backend/cli_check.py, backend/main.py, backend/config.py, config.json, backend/tests/test_ai_caller.py</files>
+  <files>backend/ai_caller.py, backend/cli_check.py, backend/main.py, backend/config.py, config.json, backend/tests/__init__.py, backend/tests/test_ai_caller.py</files>
   <action>(1)backend/cli_check.py:check_claude_cli() 用 shutil.which("claude") 检查已装;再跑 subprocess.run(["claude", "-p", "ping", "--output-format", "json"], capture_output=True, timeout=30) 验证可登录可调用(退出码 0 即视为通过;登录失败/超时返回结构化失败信息)。返回 dict {ok: bool, installed: bool, logged_in: bool, guidance: str};guidance 为中文指引文案,按失败原因两分支:未装 → 「安装 Claude Code CLI:npm install -g @anthropic-ai/claude-code」;未登录 → 「在终端运行 claude 完成登录后回到此页」。
 
 (2)backend/main.py 挂 GET /api/cli-check,调用上述函数;**只挡第一次的语义(:AI-05)**不在后端记忆——前端收到 ok=false 显示指引浮层与「我已装好,重新检测」按钮,用户点重检通过即进;后端不缓存失败、不拒绝后续请求。注意 §7.1「未满足给出指引,只挡第一次进入」。
@@ -161,13 +166,13 @@ PYEOF'</automated>
 
 (4)vendored 渲染库不动。写 backend/tests/test_ai_caller.py(pytest):三个纯函数级测试——make_permission_decision 的 DESIGN.md reject / docs allow / command confirm 三个代表断言(权限矩阵在 Task 1 已布遍 9 例,这里只保回归);make_ai_caller 在 ai_caller=config.json 为 "subprocess" 时返回 SubprocessAICaller 类型、为 "sdk" 时返回 SdkAICaller;SubprocessAICaller 的事件归一化:用一个喂人造 JSON 行的辅助函数(把行解析逻辑拆出来,便于纯测)断言 assistant 文本行归 kind=say、tool_use Read 行归 kind=read。归一化逻辑拆成独立函数 normalize_stream_line(line) -> dict 以便测试,不真实起 claude 进程。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_ai_caller.py -q 2>&1 | tail -3 && .venv/bin/python -c "
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_ai_caller.py -q 2>&1 | tail -3 && .venv/bin/python -c "
 import sys; sys.path.insert(0, \".\")
 from backend.cli_check import check_claude_cli
 r = check_claude_cli()
-print(\"cli-check-returned\", r[\"ok\"], r[\"installed\"])"'</automated>
+print(\"cli-check-returned\", r[\"ok\"], r[\"installed\"])" && echo "verify2-ok"'</automated>
   </verify>
-  <fails_when>pytest 输出含 failed / error(退出码非零),或 cli_check 调用抛异常(无 cli-check-returned 输出行),本机 CLI 正常但 ok=False。</fails_when>
+  <fails_when>pytest 输出含 failed / error(退出码非零,pipefail 保证 tail 不吞),或 cli_check 调用抛异常(无 cli-check-returned 输出行),或无 verify2-ok,本机 CLI 正常但 ok=False。
   <done>config.json 切 ai_caller=sdk / subprocess 时 make_ai_caller 返回不同实现类;SDK 路线与子进程路线事件枚举同构;CLI 自检未装/未登录两分支文案就位;pytest 全绿。已 commit。</done>
 </task>
 
@@ -176,9 +181,9 @@ print(\"cli-check-returned\", r[\"ok\"], r[\"installed\"])"'</automated>
   <files>frontend/index.html, frontend/app.js, frontend/style.css, backend/main.py</files>
   <action>扩展 Task 1 的前端探针为可切换双轨的真实界面:(1)index.html 增加路线选择下拉(「Claude Agent SDK / 子进程兜底」)与项目目录输入框;选择 POST 到一个新端点 POST /api/config(backend/main.py 挂载,写回 config.json 的 ai_caller 键并重建 caller 工厂——运行时换线不重进程)。(2)/api/dev/ping 语义升级为 dev/demo 调用:prompt 固定为「读取本目录下任意一个文件并向我说明它的内容」——在目标项目目录(用户输入的临时目录,建议测试时用 mktemp -d 预先造一个含 markdown 文件的目录)真实执行,事件流(SDK 与子进程两路线均验证)经 SSE 渲染进面板。(3)「中止」按钮绑定既存 /api/abort,并在前端把正在流式中的面板标记为「已中止」。三个文件按既有风格改,不重写。注意 app.js 中 EventSource 重连属浏览器默认行为,可保留。dev 探针端点在本任务保留——它是骨架的自证通道,Phase 2 正式会话上线后由后续计划拆除或保留为调试功能,不属本计划职责。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && (.venv/bin/uvicorn backend.main:app --port 8765 &) && sleep 2 && curl -sf http://localhost:8765/api/health && curl -sf -X POST http://localhost:8765/api/config -H "Content-Type: application/json" -d "{\"ai_caller\": \"subprocess\"}" && curl -sf http://localhost:8765/ | grep -c "index" && lsof -ti:8765 | xargs kill; echo "e2e-ok"'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && cp config.json /tmp/idi01_config_backup.json && (.venv/bin/uvicorn backend.main:app --port 8765 &) && n=0 && until curl -sf http://127.0.0.1:8765/api/health >/dev/null 2>&1; do n=$((n+1)); if [ $n -gt 120 ]; then echo "uvicorn-timeout"; lsof -ti:8765 | xargs kill 2>/dev/null; exit 1; fi; sleep 0.5; done && curl -sf -X POST http://127.0.0.1:8765/api/config -H "Content-Type: application/json" -d "{\"ai_caller\": \"subprocess\"}" && curl -sf http://127.0.0.1:8765/ | grep -q "<html"; rc=$?; lsof -ti:8765 | xargs kill 2>/dev/null; cp /tmp/idi01_config_backup.json config.json && rm -f /tmp/idi01_config_backup.json; [ $rc -eq 0 ] && echo "e2e-ok"'</automated>
   </verify>
-  <fails_when>任意 curl -sf 失败(非零退出,页面拉取失败或 grep 计数为 0),或 uvicorn 起不来(无 e2e-ok 输出)。</fails_when>
+  <fails_when>任意 curl -sf 失败(非零退出,页面拉取失败或首页无 <html> 标记),uvicorn 起不来(until 等待循环 60s 上限后 shell 报错),或 config.json 恢复失败——rc 捕获在 kill/恢复之前,失败路径同样先杀进程再恢复配置,无 e2e-ok 即失败。
   <done>服务器可起、/api/health 与 /api/config 均应答、静态页可达;配置切线在运行时生效。真实双轨端到端(浏览器中看到子进程路线与 SDK 路线各跑一次直播)留给人检步骤(见计划 verification):执行者已用 curl 证明链路。已 commit。</done>
 </task>
 

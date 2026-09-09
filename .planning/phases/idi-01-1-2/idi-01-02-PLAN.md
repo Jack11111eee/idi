@@ -72,7 +72,7 @@ DESIGN.md 权威依据(逐行实现,不得简化):
 - §6.1 transcript.md 文法:每条消息 = 起始行 [user] 或 [ai](独占一行)+ 任意多行消息体,以下一条起始行或文件末尾为界
 - PASS 结论行前缀(`> 核查结论:PASS 开头`,报告最后一行以之开头即使命完成)
 
-工程约定:pytest 已由 Plan 01 引入依赖环境(.venv);本计划不新增任何第三方依赖(纯 pathlib + 标准库)。
+工程约定:本计划不新增任何第三方依赖(纯 pathlib + 标准库);与 Plan 01 同 Wave 并行执行,verify 命令自带 venv 自举(.venv 不存在时先建并装 pytest),不假设 Plan 01 已跑过。分支纪律(per 仓库 CLAUDE.md §5):执行者从当前分支 HEAD 切出 phase-01/idi-01-02 工作分支,plan 完成后合回原分支(工作分支生命周期与 plan 对齐,不引入 worktree)。
 </context>
 
 <tasks>
@@ -105,7 +105,7 @@ DESIGN.md 权威依据(逐行实现,不得简化):
 
 (5)derive_state 主函数按 §7.4 八行表**自上而下**逐行判(行间条件已互斥化——严格照抄表条件,不要自行改写条件组合):行 1 无 docs/ → phase1_new;行 2 有 docs/ 且完整轮列表为空且无 DESIGN.md 且无 AUTHORIZATION.md → phase12_in_progress;行 3 完整轮列表非空且无 DESIGN.md 且无 AUTHORIZATION.md → phase3(current_round = max(完整轮列表));行 4 有 AUTHORIZATION.md 且无 DESIGN.md 且无 DESIGN-check 文件 → phase4(注意:DESIGN.md.tmp 残留不影响本行,DESIGN.md 半成品不可能存在——tmp 改名是原子操作);行 5 有 DESIGN.md 且无 DESIGN-check 文件 → phase5_awaiting_tier;行 6 有 DESIGN.md 且有 DESIGN-check 文件且最新一份末行非以 `> 核查结论:PASS` 开头 → phase5_checking(current_check = max 编号);行 7 最新 DESIGN-check 末行以 `> 核查结论:PASS` 开头 → mission_complete。current_round/current_check 只在 phase3/phase5_checking 下有值,其余为 None。先写 test_state.py 的 10 个用例(上面 behavior 列表即断言依据,用 pytest 的 tmp_path 构造目录),先跑红再实现转绿。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_state.py -q 2>&1 | tail -2'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && if [ ! -d .venv ]; then python3 -m venv .venv && .venv/bin/pip install -q pytest; fi && .venv/bin/python -m pytest backend/tests/test_state.py -q 2>&1 | tail -2'</automated>
   </verify>
   <fails_when>pytest 输出含 failed 或 error,或用例数 < 10(collected 少于预期)。</fails_when>
   <done>test_state.py 10 用例全绿;derive_state 对八行表每行各有一个命中用例。已 commit。</done>
@@ -125,7 +125,7 @@ DESIGN.md 权威依据(逐行实现,不得简化):
   <files>backend/transcript.py, backend/tests/test_transcript.py</files>
   <action>在 backend/transcript.py 实现三个函数,全部纯 pathlib 无状态(per D-P1-10:落盘动作由后端在用户发送/AI 事件回落时执行,本模块即该落地件):(1)parse_transcript(path: Path) -> list[dict],每条 {role: "user"|"ai", content: str};按行扫描,遇到恰等于 [user] 或 [ai] 的整行(strip 后比较)即开新条目,其余行累积为当前条目体,直到下一起始行或文件末尾;条目体首尾 strip。起始行之前若出现非空内容(脏头,正常不出现)丢弃并打 warning 日志。(2)append_message(path: Path, role: str, content: str):以 a 模式打开(不存在会建),写入一行 [role] 换行,再写 content 尾换行(role 只接受 user/ai,别的抛 ValueError);若文件已存在且非空且末字符非换行,先补一个换行再追加。(3)transcript_exists(path) -> bool。先写 test_transcript.py 六个用例(behavior 即断言依据,tmp_path 起目录),跑红转绿。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_transcript.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/test_state.py -q 2>&1 | tail -1'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && if [ ! -d .venv ]; then python3 -m venv .venv && .venv/bin/pip install -q pytest; fi && .venv/bin/python -m pytest backend/tests/test_transcript.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/test_state.py -q 2>&1 | tail -1'</automated>
   </verify>
   <fails_when>任一 pytest 输出含 failed 或 error,用例数 < 6(transcript)/< 10(state)。</fails_when>
   <done>两套测试全绿;transcript 文法与 §6.1 逐字一致(机器可解析、多行体不需转义);append 特性幂等可重入(每次调用只追加新条目)。已 commit。</done>

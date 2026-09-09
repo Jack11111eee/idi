@@ -9,12 +9,15 @@ files_modified:
   - backend/session.py
   - backend/ai_caller.py
   - backend/prompts.py
+  - pytest.ini
   - backend/tests/test_session.py
+  - backend/tests/test_e2e_smoke.py
   - frontend/index.html
   - frontend/app.js
   - frontend/style.css
 autonomous: true
 requirements:
+  - FLOW-01
   - FLOW-02
   - UI-03
   - AI-04
@@ -27,7 +30,7 @@ estimate:
 
 must_haves:
   truths:
-    - "用户选中项目目录进入后,界面按 derive_state 结果呈现对的状态与视图:阶段 1-2 显示草稿区 + 会话流,阶段 3+ 显示轮次最小占位"
+    - "用户在目录输入框输入项目目录进入(FLOW-01 交互端)后,界面按 derive_state 结果呈现对的状态与视图:阶段 1-2 显示草稿区 + 会话流,阶段 3+ 显示轮次最小占位"
     - "用户在会话流发一条消息,后端先追加 [user] 到 transcript.md,再发起一次全新无头 AI 调用(读 docs/ 全部文档),AI 每条回复段落在结束后追加 [ai] 落盘"
     - "浏览器/进程杀掉重启后重进同一目录,会话流从 transcript.md 完整恢复,草稿区继续显示 draft.md 内容"
     - "权限门三态闭环:AI 尝试写 docs/ 内文件自动放行;AI 直写 DESIGN.md 或 AUTHORIZATION.md 被拒绝;写项目内 docs/ 外路径时前端弹同意对话框,点同意放行、点拒绝驳回"
@@ -62,9 +65,9 @@ must_haves:
 **As a** 讨论中的用户,**I want to** 在阶段 1-2 连续会话里发消息、看 AI 回复与草稿实时演进,并在 AI 要越权写文件时被弹窗拦下,**so that** 我与 AI 的完整讨论可追溯、可重启恢复,且我的文件系统不暴露危险面。
 
 <objective>
-把 Plan 01 骨架与 Plan 02 脊柱接线成真正的阶段 1-2 会话:进入项目端点(状态推导)、发消息流水线(transcript 追加 + 无头调用 + AI 回复落盘 + 草稿演进)、前端会话流与草稿区渲染、权限门 confirm 弹窗闭环(UI-03 的阶段 1-2 视图 + 最小轮次占位)。重启恢复:重进目录,会话流与草稿从磁盘完整读出。
+把 Plan 01 骨架与 Plan 02 脊柱接线成真正的阶段 1-2 会话:进入项目端点(FLOW-01 目录进入交互 + 状态推导)、发消息流水线(transcript 追加 + 无头调用 + AI 回复落盘 + 草稿演进)、前端会话流与草稿区渲染、权限门 confirm 弹窗闭环(UI-03 的阶段 1-2 视图 + 最小轮次占位)。重启恢复:重进目录,会话流与草稿从磁盘完整读出。
 
-Purpose: FLOW-02 是本阶段核心交互闭环;AI-04 的完整矩阵在真实调用上闭合(含用户弹窗),保护的是用户文件系统(D-P1-9)。
+Purpose: FLOW-01(目录进入)的交互端由本计划 /api/enter + 前端接线落地;FLOW-02 是本阶段核心交互闭环;AI-04 的完整矩阵在真实调用上闭合(含用户弹窗),保护的是用户文件系统(D-P1-9)。
 Output: 可用浏览器走一段真实阶段 1-2 会话的工具(含重启恢复)。
 </objective>
 
@@ -79,7 +82,7 @@ Output: 可用浏览器走一段真实阶段 1-2 会话的工具(含重启恢复
 @.planning/phases/idi-01-1-2/01-CONTEXT.md
 @.planning/phases/idi-01-1-2/idi-01-01-SUMMARY.md
 
-依赖接口(来自 Wave 1,直接使用,不重定义):
+依赖接口(来自 Wave 1,直接使用,不重定义;若本计划先于 Plan 01 执行,verify 命令按 Plan 01 Task 1 的 venv 自举形态处理):
 - backend/ai_caller.py:make_ai_caller(config) → AICaller;caller.run(project_path, prompt) 生成器产 {kind, content, ...} 事件(kind ∈ say/read/write/command/result/error/done);caller.abort();make_permission_decision(project_path, action, target) → allow/reject/confirm;事件经 events.EventBroker publish
 - backend/state.py:derive_state(path) → {state, current_round, current_check}
 - backend/transcript.py:parse_transcript(path)、append_message(path, role, content)
@@ -91,6 +94,8 @@ DESIGN.md 权威依据:
 - §6.1 transcript.md(后端在用户发送 / AI 回复时追加)
 - §3.8 语言红线(注入 system prompt)
 - §4.4 G1 前的 draft.md 格式自由(阶段 1-2 的 AI 不要求按 §6.3 模板维护 draft)
+
+分支纪律(per 仓库 CLAUDE.md §5):本计划涉及多文件大改动——执行者从当前分支 HEAD 切出 phase-01/idi-01-03 工作分支,plan 完成后合回原分支(工作分支生命周期与 plan 对齐,不引入 worktree)。
 </context>
 
 <tasks>
@@ -111,11 +116,11 @@ DESIGN.md 权威依据:
 
 (2)backend/session.py:模块级会话管理(单机单人,一个当前项目足矣)。current_project: Path|None 与 threading.Lock;enter_project(path) 校验目录存在后 Set,返回 derive_state 结果;send_message(user_text):完整流水线——append_message(transcript, "user", user_text) → build_phase12_prompt → 后台线程起 caller.run(current_project, prompt):事件逐条 publish 到 broker(前端在 SSE 上收);调用期间累积 say 文本;调用 done 且非 abort 时把累积文本 append_message(transcript, "ai", 累积文本)(多段合一条,多行体文法);abort() 委托 caller.abort()。权限确认队列:pending 字典 {id: threading.Event + decision};AICaller 的 confirm 分支调用 request_permission(tool, params) → publish 一个 kind=permission_request 事件(带 id 与工具参数摘要)并阻塞等待 Event;POST 侧 resolve_permission(id, approved) 设置 Event 与决定,函数返回决定给 AICaller;超时策略 = 无超时(用户慢慢看,阻塞保留),但 abort 流程会强制 release 所有 pending 为 False。
 
-(3)backend/ai_caller.py 扩展confirm 分支(替换 Plan 01 的"默认 reject + 日志"过渡实现):SdkAICaller 的权限回调接入 session 提供的 request_permission(经构造函数注入回调,保持 ai_caller 不直接 import session——依赖倒置,主模块注入);SubprocessAICaller 的 confirm 分支:claude CLI 的权限模式跑 --permission-mode ask 或等效(按 CLI 实际支持情况;若 CLI 无每操作回调形态,则用 --allowedTools 不含危险工具 + 拒绝清单模式实现 etc——实现时查 CLI 文档,把 confirm 类操作默认排除在 allowed 外、经 request_permission 用户同意后重试单条命令的实现路径不必须:子进程路线可简化为"confirm 一律拒绝并附中文说明事件",但 SDK 路线必须完整闭环)。若走此简化,必须在 SUMMARY 记录限制与理由。
+(3)backend/ai_caller.py 扩展confirm 分支(替换 Plan 01 的"默认 reject + 日志"过渡实现):SdkAICaller 的权限回调接入 session 提供的 request_permission(经构造函数注入回调,保持 ai_caller 不直接 import session——依赖倒置,主模块注入);SubprocessAICaller 的 confirm 分支同样必须走 request_permission 回环,不允许降级为"一律拒绝"(§5.4 权限矩阵规定 confirm 处置 = 弹窗征求用户,D-P1-9 锁定,与实现路线无关)。子进程路线接回环的调研方向:claude CLI 的 --permission-mode ask / hooks 的 canUseTool 拦截形态(默认弹问、程序代答)来接 request_permission;实施时先查 CLI 文档确认可用形态。若实施中发现 CLI 确实无任何可行拦截形态接回环,必须作为 Deviation 上报并获用户批准后方可偏离——计划不预授权任何降级。
 
 (4)backend/tests/test_session.py:用 FakeAICaller(伪造 caller,产固定事件序列,含 say/read/write 事件与可注入的 confirm 场景)测六个 behavior 用例,所有用例不起真 claude 进程。send_message 全流水线用直接调(不 via FastAPI)。先红后绿。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
   </verify>
   <fails_when>任一 pytest 输出含 failed 或 error;用例数 < 6(session);全量测试回归少于 state(10)+ transcript(6)+ ai_caller(3)+ session(6)基线。</fails_when>
   <done>六用例全绿 + 全量回归绿;权限弹窗回路后端语义完备(confirm 阻塞 → resolve → 放行/拒绝;abort 强制释放)。</done>
@@ -128,21 +133,21 @@ DESIGN.md 权威依据:
 
 (2)frontend 三文件扩展(不重写骨架结构;阶段 1-2 界面形态 per D-P1-15 = 草稿区 draft.md 渲染 + 会话流输入框与消息列表,轮次视图仅最小占位显示推导状态):index.html——进入表单(目录路径输入 + 进入按钮 + CLI 指引浮层位置);文档区拆两个子视图容器「draft-view」(markdown 渲染区 + 底部「认可雏形」按钮位——按钮禁用态,Task 3/Plan 04 才实现点击)与「rounds-placeholder」(阶段 3+ 时显示「已进入轮次阶段(本阶段占位)」+ 当前轮号,导自 derive_state);侧栏会话流区:消息列表(用户右对齐气泡、AI 左对齐、AI 文本过 marked.parse)+ 底部输入框 + 发送按钮;工作面板保持 Plan 01 形态;页面右上角显示当前推导状态中文名。app.js——initEventSource 扩展消息分派:kind=say 流式插到工作中的会话气泡;kind=permission_request 弹模态确认框(说明工具与目标路径,同意/拒绝两按钮,点后 POST /api/permission);kind=done 收尾会话气泡并可轮询 /api/draft 刷新草稿区;enterProject()/sendMessage() 两个 fetch 封装;进入后按返回 state 切换 doc 区子视图与侧栏会话流(将 transcript 历史渲染出来)。style.css 增加:会话气泡样式、模态确认框样式、子视图切换的 hidden 类。(3)重启恢复语义:重新 POST /api/enter 同一目录,transcript 与 draft 从磁盘全量重渲染——不需要专门"恢复"按钮(文件即状态)。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && (.venv/bin/uvicorn backend.main:app --port 8766 &) && sleep 2 && D=$(mktemp -d) && mkdir -p $D/docs && printf "[user]\n你好\n" > $D/docs/transcript.md && curl -sf -X POST http://localhost:8766/api/enter -H "Content-Type: application/json" -d "{\"path\": \"$D\"}" | grep -o "\"state\": \"phase12_in_progress\"" && lsof -ti:8766 | xargs kill; echo "enter-ok"'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && (.venv/bin/uvicorn backend.main:app --port 8766 &) && n=0 && until curl -sf http://127.0.0.1:8766/api/health >/dev/null 2>&1; do n=$((n+1)); if [ $n -gt 120 ]; then lsof -ti:8766 | xargs kill 2>/dev/null; exit 1; fi; sleep 0.5; done && D=$(mktemp -d) && mkdir -p $D/docs && printf "[user]\n你好\n" > $D/docs/transcript.md && curl -sf -X POST http://127.0.0.1:8766/api/enter -H "Content-Type: application/json" -d "{\"path\": \"$D\"}" | grep -o "phase12_in_progress"; rc=$?; lsof -ti:8766 | xargs kill 2>/dev/null; [ $rc -eq 0 ] && echo "enter-ok"'</automated>
   </verify>
-  <fails_when>curl -sf 失败或响应含非 phase12_in_progress 的 state(grep -o 无输出返回非零),uvicorn 起不来,无 enter-ok。</fails_when>
+  <fails_when>curl -sf 失败或响应含非 phase12_in_progress 的 state(grep -o 无输出返回非零;裸词匹配兼容 JSON 紧凑/带空格两种序列化形态),uvicorn 起不来(等待循环 60s 上限,超时杀进程退 1),或无 enter-ok——rc 捕获在 kill 之前,失败路径同样先杀 uvicorn 再以失败退出,echo 只在 rc=0 时发出。
   <done>构造磁盘现状(有 docs/ 无完整轮)→ /api/enter 正确返回 phase12_in_progress + transcript 列表;前端视图切换与会话流可用;权限弹窗与同意/拒绝按钮存在。已 commit。</done>
 </task>
 
 <task type="auto">
   <name>Task 3: 端到端冒烟——真实会话一次 + 重启恢复 + 权限闭环</name>
   <precondition>/api/enter 已可用(Task 2 automated 过)且 claude CLI 已登录(Plan 01 自检过)。</precondition>
-  <files>backend/tests/test_e2e_smoke.py</files>
-  <action>新建 backend/tests/test_e2e_smoke.py 两个标记为 slow 的 pytest 用例(测试函数头加 @pytest.mark.slow,并在 pytest 配置注册 marker;环境变量 IDI_E2E 未设时 skip——常规跑不依赖真 AI):(1)test_full_conversation_roundtrip:mktemp 造项目目录,调 session.enter_project + send_message(消息:「请向我介绍你自己,一句话即可」,不要求写 draft),轮询 transcript 文件出现 [ai] 条目后断言 parse_transcript 得 [user, ai] 序列;(2)test_restart_recovery:上一用例后新起一枚 session 实例(模拟重启:重建 session 模块状态),重进同目录,断言 transcript 恢复且 draft(若产生)可读。权限闭环以 FakeAICaller 在 test_session.py 中覆盖(单元级),本任务不重复。执行本任务时把两用例真正跑一遍(IDI_E2E=1),确认通过。</action>
+  <files>pytest.ini, backend/tests/test_e2e_smoke.py</files>
+  <action>新建 backend/tests/test_e2e_smoke.py 两个标记为 slow 的 pytest 用例(测试函数头加 @pytest.mark.slow;环境变量 IDI_E2E 未设时 skip——常规跑不依赖真 AI)。同时新建仓库根 pytest.ini 注册 markers(注册 slow = 端到端真 AI 用例,避免自定义 marker 告警/泄漏):内容含 [pytest] 段与 markers 声明行 slow: end-to-end tests requiring real claude CLI login。(1)test_full_conversation_roundtrip:mktemp 造项目目录,调 session.enter_project + send_message(消息:「请向我介绍你自己,一句话即可」,不要求写 draft),轮询 transcript 文件出现 [ai] 条目后断言 parse_transcript 得 [user, ai] 序列(轮询自带 180s deadline,超时即测试失败);(2)test_restart_recovery:上一用例后新起一枚 session 实例(模拟重启:重建 session 模块状态),重进同目录,断言 transcript 恢复且 draft(若产生)可读。权限闭环以 FakeAICaller 在 test_session.py 中覆盖(单元级),本任务不重复。执行本任务时把两用例真正跑一遍(IDI_E2E=1),确认通过。</action>
   <verify>
-    <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && IDI_E2E=1 .venv/bin/python -m pytest backend/tests/test_e2e_smoke.py -q -m slow 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
+    <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && IDI_E2E=1 .venv/bin/python -m pytest backend/tests/test_e2e_smoke.py -q -m slow 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
   </verify>
-  <fails_when>slow 用例 failed/error,或在 IDI_E2E=1 下输出含 skipped(真实依赖链路未验证),或全量回归非绿。</fails_when>
+  <fails_when>slow 用例 failed/error,或在 IDI_E2E=1 下输出含 skipped(真实依赖链路未验证),或单用例超时(真实 CLI 登录+网络调用时长不受控,超时上限 180s:测试函数内以 deadline 循环轮询,超过断言失败并输出已等待时长),或全量回归非绿。</fails_when>
   <done>真实 claude 依赖端到端链条经一次真调用验证;重启恢复经新会话实例验证;suite 全绿。</done>
 </task>
 

@@ -9,7 +9,7 @@
 ### 流程支撑(FLOW)
 
 - [x] **FLOW-01**: 用户可选择或输入项目目录进入单界面,所选目录的流程状态由磁盘现状按 §7.4 推导表(8 行、自上而下首条命中)得出 — §7.1
-- [ ] **FLOW-02**: 阶段 1-2 为一段连续会话,产出 `docs/transcript.md`(逐条追加式转录,`[user]`/`[ai]` 起始行文法)与 `docs/draft.md` 草稿;重启后由 transcript 恢复 — §6.1, §4.2
+- [x] **FLOW-02**: 阶段 1-2 为一段连续会话,产出 `docs/transcript.md`(逐条追加式转录,`[user]`/`[ai]` 起始行文法)与 `docs/draft.md` 草稿;重启后由 transcript 恢复 — §6.1, §4.2
 - [ ] **FLOW-03**: G1:草稿区末尾常驻「认可雏形」按钮,点击后**后端**将 draft.md 定稿为 `discuss-round-1.md` 并追加合规的 `> 申请授权:否` 标记行 — §4.4, §6.4
 - [ ] **FLOW-04**: G2:用户点「处理本轮批注」后,AI 批量回应全部批注、产出 `discuss-round-(N+1).md`;上轮文档与 annotations 冻结只读 — §3.5, §4.4
 - [ ] **FLOW-05**: G3:「授权撰写总设计文档」按钮点亮条件 = 四处机械校验全过(annotations 无 pending + 未决清单清零 + 维度表全绿 + 授权申请标记为「是」);点击后确认框输入「确认授权」;默认拒绝;拒绝 = 一条普通批注 — §4.4, §8.1
@@ -20,7 +20,7 @@
 
 - [ ] **UI-01**: 划词弹出小菜单:「批注」或「用大白话讲这段」;批注与被选原文绑定(quote + before 前 40 字辅助定位),已解决批注变灰不删除 — §4.2, §6.2
 - [ ] **UI-02**: 大白话问答走轻量无头调用(仅携带当前文档与划选原文,秒级响应),即时答落盘为 type=plain、样式灰色斜体、不计入未决清单 — §3.4, §6.2
-- [ ] **UI-03**: 单一界面走完五阶段(文档区左/主 + 侧栏右:批注流 + AI 工作面板可折叠);阶段 1-2 显示草稿与会话流,进入轮次后切换为轮次文档 + 批注流 — §3.2, §4.1, §4.2
+- [x] **UI-03**: 单一界面走完五阶段(文档区左/主 + 侧栏右:批注流 + AI 工作面板可折叠);阶段 1-2 显示草稿与会话流,进入轮次后切换为轮次文档 + 批注流 — §3.2, §4.1, §4.2
 - [ ] **UI-04**: 每轮侧栏显示"本轮批注未处理数";文档区高亮 = 有批注 — §4.2
 
 ### AI 集成(AI)
@@ -28,7 +28,7 @@
 - [x] **AI-01**: 无状态文件驱动:每次任务 = 一次全新无头调用,启动时自磁盘读取 docs/ 全部文档与批注,产出写回磁盘;失败重跑同一条任务可复现 — §5.1
 - [x] **AI-02**: 事件直播:无头调用的事件流(每句话、每次读写)由后端原样转发到浏览器渲染进工作面板;「中止」按钮随时杀掉当前调用 — §5.2, §5.5
 - [x] **AI-03**: 实现路线双轨:Claude Agent SDK 首选,子进程 `claude -p --output-format stream-json` 兜底,两路线界面契约完全一致可替换 — §5.3, §9
-- [ ] **AI-04**: 权限门完整矩阵落地:按 §5.4 表(自上而下首条命中)处置读/写/执行;DESIGN.md 直写一律拒绝、AUTHORIZATION.md 仅后端在确认词通过瞬间写入、AI 写 tmp 合法 — §5.4
+- [x] **AI-04**: 权限门完整矩阵落地:按 §5.4 表(自上而下首条命中)处置读/写/执行;DESIGN.md 直写一律拒绝、AUTHORIZATION.md 仅后端在确认词通过瞬间写入、AI 写 tmp 合法 — §5.4
 - [x] **AI-05**: 启动自检 claude CLI(已装 + 已登录),不满足给出指引,只挡第一次 — §7.1
 
 ### 数据与状态(DATA)
@@ -62,7 +62,7 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | FLOW-01 | Phase 1 | Complete |
-| FLOW-02 | Phase 1 | Pending |
+| FLOW-02 | Phase 1 | Complete |
 | FLOW-03 | Phase 1 | Pending |
 | FLOW-04 | Phase 2 | Pending |
 | FLOW-05 | Phase 3 | Pending |
@@ -70,12 +70,12 @@
 | FLOW-07 | Phase 2 | Pending |
 | UI-01 | Phase 2 | Pending |
 | UI-02 | Phase 2 | Pending |
-| UI-03 | Phase 1 | Pending |
+| UI-03 | Phase 1 | Complete |
 | UI-04 | Phase 2 | Pending |
 | AI-01 | Phase 1 | Complete |
 | AI-02 | Phase 1 | Complete |
 | AI-03 | Phase 1 | Complete |
-| AI-04 | Phase 1 | Pending |
+| AI-04 | Phase 1 | Complete |
 | AI-05 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 3 | Pending |

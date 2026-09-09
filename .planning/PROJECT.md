@@ -12,7 +12,8 @@
 
 ### Validated
 
-(尚未有——设计已完成,实施待启动)
+- ✓ 行走骨架(阶段 1-2 全链路:进入/会话/发散/G1/恢复/权限门/双轨 AICaller/中止)— Phase 1
+- ✓ FLOW-01/02/03/06、UI-03、AI-01~05 共 10 条需求 — Phase 1(见 .planning/phases/idi-01-1-2/01-VERIFICATION.md,8/8 真值 + UAT 6/6)
 
 ### Active
 
@@ -46,6 +47,10 @@
 |----------|-----------|---------|
 | 实施框架选用 GSD Core 1.13.0(open-gsd) | 五步循环 Discuss→Plan→Execute→Verify→Ship 与本项目"先讨论后动手"哲学同构;DESIGN.md 22 条决策直接充当 Discuss 阶段输入 | ✓ Good |
 | GSD 安装为 local 模式(.claude/ 入库) | 项目自含,依赖可追溯;用户全局 gitignore 对 `**/.claude/` 有忽略,已 `git add -f` 破例入库 | ✓ Good |
+| Phase 1:SDK/子进程两路线均强制 setting_sources=[](SDK)/--setting-sources=(CLI) | 用户全局 ~/.claude/settings.json 的 Write(*)/Bash(*) allow 规则会在权限回调前自动放行、绕过 §5.4 权限门;屏蔽来源不掩蔽 auth(环境变量级) | ✓ Good(实测双路线权限矩阵 9/9) |
+| Phase 1:/api/abort 会话接线 = session.busy() 时优先 session.abort() | Plan 03 把 caller 挪进 session 后路由需跟随;dev/ping 探针的 _current_caller 路径保留 | ✓ Good(路由级测试 + UAT 实证) |
+| Phase 1:会话后门控刷新走 GET /api/session 端点 + applySessionGates/renderTranscript 拆分 | done 后原地刷新 g1_available/divergence_available 门控,不重渲染 transcript(避免清掉刚流完的气泡,且 [ai] 落盘晚于 done) | ✓ Good(UAT G-idi01-7 复测) |
+| Phase 1:app.js 脚本移到 body 末尾(#cli-check-overlay 之后) | DOM 先于脚本执行,CLI 自检浮层才能真跑(原顺序 recheckBtn 为 null 抛 TypeError) | ✓ Good(UAT G-idi01-8 复测) |
 
 ---
-*Last updated: 2026-09-09 after GSD new-project --auto (idea document = DESIGN.md)*
+*Last updated: 2026-09-09 after Phase 1(行走骨架收口:验证 passed + UAT 6/6)*

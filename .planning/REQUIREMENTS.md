@@ -25,11 +25,11 @@
 
 ### AI 集成(AI)
 
-- [ ] **AI-01**: 无状态文件驱动:每次任务 = 一次全新无头调用,启动时自磁盘读取 docs/ 全部文档与批注,产出写回磁盘;失败重跑同一条任务可复现 — §5.1
-- [ ] **AI-02**: 事件直播:无头调用的事件流(每句话、每次读写)由后端原样转发到浏览器渲染进工作面板;「中止」按钮随时杀掉当前调用 — §5.2, §5.5
-- [ ] **AI-03**: 实现路线双轨:Claude Agent SDK 首选,子进程 `claude -p --output-format stream-json` 兜底,两路线界面契约完全一致可替换 — §5.3, §9
+- [x] **AI-01**: 无状态文件驱动:每次任务 = 一次全新无头调用,启动时自磁盘读取 docs/ 全部文档与批注,产出写回磁盘;失败重跑同一条任务可复现 — §5.1
+- [x] **AI-02**: 事件直播:无头调用的事件流(每句话、每次读写)由后端原样转发到浏览器渲染进工作面板;「中止」按钮随时杀掉当前调用 — §5.2, §5.5
+- [x] **AI-03**: 实现路线双轨:Claude Agent SDK 首选,子进程 `claude -p --output-format stream-json` 兜底,两路线界面契约完全一致可替换 — §5.3, §9
 - [ ] **AI-04**: 权限门完整矩阵落地:按 §5.4 表(自上而下首条命中)处置读/写/执行;DESIGN.md 直写一律拒绝、AUTHORIZATION.md 仅后端在确认词通过瞬间写入、AI 写 tmp 合法 — §5.4
-- [ ] **AI-05**: 启动自检 claude CLI(已装 + 已登录),不满足给出指引,只挡第一次 — §7.1
+- [x] **AI-05**: 启动自检 claude CLI(已装 + 已登录),不满足给出指引,只挡第一次 — §7.1
 
 ### 数据与状态(DATA)
 
@@ -72,11 +72,11 @@
 | UI-02 | Phase 2 | Pending |
 | UI-03 | Phase 1 | Pending |
 | UI-04 | Phase 2 | Pending |
-| AI-01 | Phase 1 | Pending |
-| AI-02 | Phase 1 | Pending |
-| AI-03 | Phase 1 | Pending |
+| AI-01 | Phase 1 | Complete |
+| AI-02 | Phase 1 | Complete |
+| AI-03 | Phase 1 | Complete |
 | AI-04 | Phase 1 | Pending |
-| AI-05 | Phase 1 | Pending |
+| AI-05 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Pending |
 | DATA-02 | Phase 3 | Pending |
 | DATA-03 | Phase 3 | Pending |

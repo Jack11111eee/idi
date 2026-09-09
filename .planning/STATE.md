@@ -4,11 +4,11 @@ milestone: v1.13
 current_phase: 2
 current_phase_name: 轮次收敛循环——划词批注、G2 与机器文法
 status: planning
-stopped_at: Phase 1 complete, ready to plan Phase 2
-last_updated: "2026-09-09T12:25:56.783Z"
+stopped_at: Phase 2 context gathered
+last_updated: "2026-09-09T12:52:05.205Z"
 last_activity: 2026-09-09
 last_activity_desc: Phase 1 complete, transitioned to Phase 2
-state_head: fef19591aa37a67d215bcd15100a63a4d9884a4e
+state_head: bb54c06922ec6b2960ce785656184a00f323c39e
 progress:
   total_phases: 3
   completed_phases: 1
@@ -103,6 +103,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-09T08:39:20.479Z
-Stopped at: Phase 1 complete, ready to plan Phase 2
-Resume file: None
+Last session: 2026-09-09T12:52:05.085Z
+Stopped at: Phase 2 context gathered
+Resume file: .planning/phases/idi-02-g2/02-CONTEXT.md

@@ -1,0 +1,7 @@
+fastapi==0.141.1
+uvicorn==0.52.4
+claude-agent-sdk==0.2.152
+pytest==9.1.1
+# claude-agent-sdk 传递依赖 mcp 需要 cryptography;
+# 50.x 在 macOS 26 上因系统 libcrypto 缺符号而 dlopen 失败,固定 44.0.2(自带 OpenSSL 静态链接)
+cryptography==44.0.2

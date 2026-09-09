@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>交互式讨论迭代系统</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 左:文档区(Phase 1 为占位;文字内容后续阶段接入) -->
+    <main id="doc-pane">
+      <h1>文档区</h1>
+      <p class="hint">讨论文档将在此渲染(当前为行走骨架占位)。</p>
+    </main>
+
+    <!-- 右:侧栏(AI 工作面板 + 会话流占位,§4.1) -->
+    <aside id="sidebar">
+      <section id="ai-panel">
+        <header id="ai-panel-header" class="panel-header">
+          <h2>AI 工作面板</h2>
+          <span class="collapse-indicator">▾</span>
+        </header>
+        <div id="ai-panel-body" class="panel-body">
+          <!-- 测试调用控制:项目目录输入 + 发起 + 中止(Task 3 起换线下拉在此处扩展) -->
+          <div id="probe-controls">
+            <input type="text" id="project-path-input" placeholder="输入临时项目目录绝对路径">
+            <button id="btn-ping">发起测试调用</button>
+            <button id="btn-abort" class="danger">中止</button>
+          </div>
+          <div id="ai-events" class="event-list"><!-- 事件条目动态追加 --></div>
+        </div>
+      </section>
+
+      <section id="session-panel">
+        <header class="panel-header">
+          <h2>会话流占位</h2>
+        </header>
+        <div class="panel-body">
+          <p class="hint">阶段 1-2 会话流将在后续计划接入(transcript.md 落盘)。</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- vendored 单文件 markdown 渲染库(无 CDN 网络依赖) -->
+  <script src="vendor/marked.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

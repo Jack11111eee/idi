@@ -58,6 +58,15 @@ html, body {
   margin-bottom: 12px;
 }
 
+#ai-route-select {
+  flex: 0 0 auto;
+  padding: 6px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+}
+
 #project-path-input {
   flex: 1;
   padding: 6px 8px;
@@ -90,7 +99,8 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   background: #fdfdfd;
   transition: background-color 0.3s;
 }
-.event-list.aborted { background: #fdecea; } /* 已中止的瞬时标记 */
+.event-list.streaming { background: #f0f7ff; } /* 流式进行中 */
+.event-list.aborted { background: #fdecea; }   /* 已中止标记 */
 
 .event-item {
   display: flex;
@@ -129,3 +139,32 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 .kind-done .event-kind { background: #000; }       /* 结束:黑 */
 
 .kind-error .event-content { color: #c0392b; }
+
+/* claude CLI 自检浮层(只挡第一次) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.overlay.hidden { display: none; }
+
+.overlay-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 28px 32px;
+  max-width: 420px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.overlay-card h3 { margin-top: 0; font-size: 16px; }
+.overlay-card p { color: #444; font-size: 14px; line-height: 1.6; }
+.overlay-card button {
+  margin-top: 10px;
+  background: #2c7be5;
+  color: #fff;
+  border-color: #2c7be5;
+}

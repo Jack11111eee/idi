@@ -22,8 +22,12 @@
           <span class="collapse-indicator">▾</span>
         </header>
         <div id="ai-panel-body" class="panel-body">
-          <!-- 测试调用控制:项目目录输入 + 发起 + 中止(Task 3 起换线下拉在此处扩展) -->
+          <!-- 探针控制:路线选择 + 项目目录输入 + 发起 + 中止(Task 3 双轨可切换) -->
           <div id="probe-controls">
+            <select id="ai-route-select" title="AICaller 实现路线">
+              <option value="sdk">Claude Agent SDK</option>
+              <option value="subprocess">子进程兜底</option>
+            </select>
             <input type="text" id="project-path-input" placeholder="输入临时项目目录绝对路径">
             <button id="btn-ping">发起测试调用</button>
             <button id="btn-abort" class="danger">中止</button>
@@ -46,5 +50,14 @@
   <!-- vendored 单文件 markdown 渲染库(无 CDN 网络依赖) -->
   <script src="vendor/marked.min.js"></script>
   <script src="app.js"></script>
+
+  <!-- claude CLI 自检浮层(§7.1:只挡第一次;通过或重检通过即隐藏) -->
+  <div id="cli-check-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h3>启动前自检</h3>
+      <p id="cli-check-message"></p>
+      <button id="cli-recheck-btn">我已装好,重新检测</button>
+    </div>
+  </div>
 </body>
 </html>

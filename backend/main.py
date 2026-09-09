@@ -51,6 +51,30 @@ class PingBody(BaseModel):
     prompt: str = "读取本目录下任意一个文件并向我说明它的内容"
 
 
+class ConfigBody(BaseModel):
+    ai_caller: str  # "sdk" | "subprocess"
+
+
+@app.post("/api/config")
+def set_config(body: ConfigBody) -> JSONResponse:
+    """运行时换线:写回 config.json 的 ai_caller 键(Task 3)。
+
+    不重进程——下一次 /api/dev/ping 读最新配置重建 caller。
+    """
+    if body.ai_caller not in ("sdk", "subprocess"):
+        return JSONResponse(
+            {"status": "error", "message": f"非法 ai_caller:{body.ai_caller}"},
+            status_code=400,
+        )
+    merged = cfg.write_config({"ai_caller": body.ai_caller})
+    return JSONResponse({"status": "ok", "config": merged})
+
+
+@app.get("/api/config")
+def get_config() -> JSONResponse:
+    return JSONResponse({"status": "ok", "config": cfg.read_config()})
+
+
 @app.post("/api/dev/ping")
 def dev_ping(body: PingBody) -> JSONResponse:
     """开发探针:在后台线程起一次真实调用,事件走 SSE 直播。"""
@@ -88,17 +112,24 @@ def cli_check() -> JSONResponse:
 
 @app.get("/api/events")
 async def events() -> StreamingResponse:
-    """SSE 流:订阅 broker,把事件按 SSE data 行逐条 yield(单向推送)。"""
+    """SSE 流:订阅 broker,把事件按 SSE data 行逐条 yield(单向推送)。
+
+    注意:queue.get 必须放线程池——直接在事件循环里阻塞 get 会把
+    整个 loop 冻住(T-idi01-04,健康检查也会无响应)。
+    """
+    import asyncio
+
     q = broker.register()
 
     async def stream():
         try:
             while True:
                 try:
-                    payload = q.get(timeout=15)  # 心跳窗口
+                    # 阻塞 get 放 executor(超时 = 心跳窗口)
+                    payload = await asyncio.to_thread(q.get, True, 15)
                     yield f"data: {payload}\n\n"
                 except Exception:
-                    # 队列空超时:发 SSE 注释行作心跳,保连接(T-idi01-04)
+                    # 队列空超时:发 SSE 注释行作心跳,保连接
                     yield ": keep-alive\n\n"
         finally:
             broker.unregister(q)

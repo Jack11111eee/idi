@@ -49,7 +49,7 @@ must_haves:
 **As a** 本工具的使用者,**I want to** 选中任何项目目录后界面自动呈现正确的流程状态(空目录 = 新讨论、有轮次 = 接续阶段),**so that** 我不需要任何手工"恢复"操作——状态永远从磁盘现状推导出来。
 
 <objective>
-实现工具的脊柱:derive_state() 纯函数(DESIGN.md §7.4 八行推导表,含完整轮判据)与 transcript.md 文法读写(§6.1,`[user]`/`[ai]` 起始行)。这两个纯后端模块零框架依赖、可独立于 Wave 1 其他计划并行开发,由 pytest 覆盖全部行为分支。
+实现工具的脊柱(D-P1-11,D-19 文件即状态):derive_state() 纯函数(DESIGN.md §7.4 八行推导表,含完整轮判据)与 transcript.md 文法读写(§6.1,`[user]`/`[ai]` 起始行,per D-P1-10——追加式落盘由后端在用户发送/AI 回复时执行,文法 = 起始行独占一行 + 任意多行消息体)。这两个纯后端模块零框架依赖、可独立于 Wave 1 其他计划并行开发,由 pytest 覆盖全部行为分支。
 
 Purpose: D-P1-11 明确本阶段就要全表实现——Phase 2/3 的所有按钮逻辑都叠在它上面;transcript 文法是会话恢复(FLOW-02,Plan 03)的唯一依据。
 Output: backend/state.py、backend/transcript.py + 配套测试,全部纯函数式,不碰 FastAPI 层。
@@ -123,7 +123,7 @@ DESIGN.md 权威依据(逐行实现,不得简化):
     - 用例 6(无尾换行容错):既有文件末行无换行符时 append 仍产出正确结构(先补换行再追加)
   </behavior>
   <files>backend/transcript.py, backend/tests/test_transcript.py</files>
-  <action>在 backend/transcript.py 实现三个函数,全部纯 pathlib 无状态:(1)parse_transcript(path: Path) -> list[dict],每条 {role: "user"|"ai", content: str};按行扫描,遇到恰等于 [user] 或 [ai] 的整行(strip 后比较)即开新条目,其余行累积为当前条目体,直到下一起始行或文件末尾;条目体首尾 strip。起始行之前若出现非空内容(脏头,正常不出现)丢弃并打 warning 日志。(2)append_message(path: Path, role: str, content: str):以 a 模式打开(不存在会建),写入一行 [role] 换行,再写 content 尾换行(role 只接受 user/ai,别的抛 ValueError);若文件已存在且非空且末字符非换行,先补一个换行再追加。(3)transcript_exists(path) -> bool。先写 test_transcript.py 六个用例(behavior 即断言依据,tmp_path 起目录),跑红转绿。</action>
+  <action>在 backend/transcript.py 实现三个函数,全部纯 pathlib 无状态(per D-P1-10:落盘动作由后端在用户发送/AI 事件回落时执行,本模块即该落地件):(1)parse_transcript(path: Path) -> list[dict],每条 {role: "user"|"ai", content: str};按行扫描,遇到恰等于 [user] 或 [ai] 的整行(strip 后比较)即开新条目,其余行累积为当前条目体,直到下一起始行或文件末尾;条目体首尾 strip。起始行之前若出现非空内容(脏头,正常不出现)丢弃并打 warning 日志。(2)append_message(path: Path, role: str, content: str):以 a 模式打开(不存在会建),写入一行 [role] 换行,再写 content 尾换行(role 只接受 user/ai,别的抛 ValueError);若文件已存在且非空且末字符非换行,先补一个换行再追加。(3)transcript_exists(path) -> bool。先写 test_transcript.py 六个用例(behavior 即断言依据,tmp_path 起目录),跑红转绿。</action>
   <verify>
     <automated>bash -c 'cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_transcript.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/test_state.py -q 2>&1 | tail -1'</automated>
   </verify>

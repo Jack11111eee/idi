@@ -116,7 +116,7 @@ DESIGN.md 权威依据:
     - 用例 4:prompt 含既有 brainstorm.md 内容(再次发散时看得见上一轮候选)
   </behavior>
   <files>backend/prompts.py, backend/session.py, backend/main.py, backend/tests/test_session.py</files>
-  <action>(1)backend/prompts.py 增 build_divergence_prompt(project_path) -> str:系统段(角色 + §3.8 红线);现况段(项目目录现状、既有 docs/brainstorm.md 全文若有);任务段(三步走:① 多视角风暴——从固定视角各出 2~3 个方向、鼓励离谱;视角清单写死在模板:解决谁的什么痛点 / 最省事的版本 / 最贵的版本 / 没人做但该有人做的;② 收敛——汇成 3~5 个候选方向,每个含一句话说明 + 一句为什么值得做;③ 引导用户挑选或委托 AI 挑选);落盘指令(把风暴与候选全文写入 docs/brainstorm.md,整体覆盖旧文件)。
+  <action>(1)backend/prompts.py 增 build_divergence_prompt(project_path) -> str(发散模板要点 per D-P1-13/D-16:跑在同一 AICaller 链路;视角清单与三步结构按 §3.7):系统段(角色 + §3.8 红线);现况段(项目目录现状、既有 docs/brainstorm.md 全文若有);任务段(三步走:① 多视角风暴——从固定视角各出 2~3 个方向、鼓励离谱;视角清单写死在模板:解决谁的什么痛点 / 最省事的版本 / 最贵的版本 / 没人做但该有人做的;② 收敛——汇成 3~5 个候选方向,每个含一句话说明 + 一句为什么值得做;③ 引导用户挑选或委托 AI 挑选);落盘指令(把风暴与候选全文写入 docs/brainstorm.md,整体覆盖旧文件)。
 
 (2)backend/session.py 增 trigger_divergence():校验 divergence_available(current_project) 为 True(不满足返回错误给前端,防绕过),走既有 AI 调用链(build_divergence_prompt → caller.run,事件照常出 SSE);并发限制沿用会话锁。增 divergence_available(project_path) 判定函数(逻辑见 behavior 用例 3——判定纯靠磁盘)。
 

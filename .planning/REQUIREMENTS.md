@@ -61,4 +61,23 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (roadmap 创建后由 roadmapper 回填) | | |
+| FLOW-01 | Phase 1 | Pending |
+| FLOW-02 | Phase 1 | Pending |
+| FLOW-03 | Phase 1 | Pending |
+| FLOW-04 | Phase 2 | Pending |
+| FLOW-05 | Phase 3 | Pending |
+| FLOW-06 | Phase 1 | Pending |
+| FLOW-07 | Phase 2 | Pending |
+| UI-01 | Phase 2 | Pending |
+| UI-02 | Phase 2 | Pending |
+| UI-03 | Phase 1 | Pending |
+| UI-04 | Phase 2 | Pending |
+| AI-01 | Phase 1 | Pending |
+| AI-02 | Phase 1 | Pending |
+| AI-03 | Phase 1 | Pending |
+| AI-04 | Phase 1 | Pending |
+| AI-05 | Phase 1 | Pending |
+| DATA-01 | Phase 2 | Pending |
+| DATA-02 | Phase 3 | Pending |
+| DATA-03 | Phase 3 | Pending |
+| DATA-04 | Phase 3 | Pending |

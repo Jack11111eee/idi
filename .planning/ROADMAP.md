@@ -96,7 +96,28 @@ Plans:
   4. 宽松档:一次核查 + 修复 + 报告追加 PASS 即止。严格档:核查者/修复者两角色自动循环至零问题轮 PASS 中途无需用户点击;遇纯 P2 轮进入残余裁决制——问题逐条在界面抛给用户裁决「修/接受现状」,修复者抛 `> 待裁决:` 后端截存暂停并落盘磁盘签名,用户裁决落盘后续跑「继续修复」,全部处理完收口 ← DATA-04
   5. 最新 check 报告末行以 `> 核查结论:PASS` 开头时,界面弹出「使命完成」;此后再打开项目呈现只读归档态(轮次/批注/DESIGN.md/核查报告全部可浏览,划词批注、「处理本轮批注」、授权按钮均不可用) ← DATA-03
 
-**Plans**: TBD
+**Plans**: 5/5 plans planned
+Plans:
+
+**Wave 1**
+
+- [ ] idi-03-01-PLAN.md — 数据脊柱:g3.py(四查+授权写入)+ checks.py(tier/裁决/PASS 磁盘签名)+ grammar.py 增量解析器(档位行/问题分级/纯 P2/待裁决扫描)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-03-02-PLAN.md — 后端全层:authorize/set_tier/verdict/三 start 流水线(tmp 原子改名+两跳自动循环+抛问截存)+ prompt 三族 + 六路由 + snapshot 扩展
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] idi-03-03-PLAN.md — 路由补口:POST /api/writing、/api/checks/start、/api/checks/repair 三条受理路由 + route 全分支用例(八路由族收口)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] idi-03-04-PLAN.md — 前端阶段 3-5 视图:G3 确认词模态+拒绝转批注、档位模态、报告视图与三 mode 裁决控件、使命完成欢呼+只读归档
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] idi-03-05-PLAN.md — 端到端收口:真 CLI E2E(authorize→撰写→选档→核查→PASS→mission_complete)+ 五判据对账 + 人检 UAT + milestone 交接
 
 ## Progress
 
@@ -107,4 +128,4 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. 行走骨架——服务器、单界面与阶段 1-2 会话 | 4/4 | Complete    | 2026-09-09 |
 | 2. 轮次收敛循环——划词批注、G2 与机器文法 | 4/4 | Complete    | 2026-09-10 |
-| 3. 授权、自检与终点——G3、档位、使命完成归档 | 0/0 | Not started | - |
+| 3. 授权、自检与终点——G3、档位、使命完成归档 | 0/5 | In progress | - |

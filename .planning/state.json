@@ -1,0 +1,28 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v1.13",
+  "phases": [
+    {
+      "number": "1",
+      "name": "行走骨架——服务器、单界面与阶段 1-2 会话",
+      "status": "complete"
+    },
+    {
+      "number": "2",
+      "name": "轮次收敛循环——划词批注、G2 与机器文法",
+      "status": "complete"
+    },
+    {
+      "number": "3",
+      "name": "授权、自检与终点——G3、档位、使命完成归档",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step (plan phase 3)",
+    "reason": "Phase 3 of 3 — needs a plan"
+  },
+  "updated_at": "2026-09-10T09:50:35.107Z"
+}

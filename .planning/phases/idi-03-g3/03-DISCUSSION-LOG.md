@@ -82,7 +82,7 @@
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| 暂停态 / 裁决待续跑态 / 意外中断三态,严格照 §6.4 判定式①②(check-14 互斥锁定版),consume grammar 已有函数 | 文法已交付,判定勿再自造/重复实现、冲突处一律手动 overrides | ✓ |
+| 暂停态 / 裁决待续跑态 / 意外中断三态,严格照 §6.4 判定式①②(check-14 互斥锁定版),consume grammar 已有函数 | 文法已交付;判定式勿再自造或重复实现,语义冲突以 DESIGN.md 为准 | ✓ |
 | 把三态做成 derive_state 新状态值 | state.py 七常量已覆盖;snapshot 层组装 selfcheck 子状态即可(推导表不动) | |
 
 **User's choice:** [auto] 三态 = 判定式 + derive 层组装(D-P3-20/D-P3-23)

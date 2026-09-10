@@ -14,6 +14,8 @@
 
 - ✓ 行走骨架(阶段 1-2 全链路:进入/会话/发散/G1/恢复/权限门/双轨 AICaller/中止)— Phase 1
 - ✓ FLOW-01/02/03/06、UI-03、AI-01~05 共 10 条需求 — Phase 1(见 .planning/phases/idi-01-1-2/01-VERIFICATION.md,8/8 真值 + UAT 6/6)
+- ✓ 轮次收敛循环(划词批注/大白话即时答/处理本轮批注 G2/轮次冻结/批注回应回写/§6.4 机器文法全解析)— Phase 2
+- ✓ FLOW-04/07、UI-01/02/04、DATA-01 共 6 条需求 — Phase 2(见 .planning/phases/idi-02-g2/02-VERIFICATION.md,7/7 SC + UAT 7/7 零 gap)
 
 ### Active
 
@@ -51,6 +53,10 @@
 | Phase 1:/api/abort 会话接线 = session.busy() 时优先 session.abort() | Plan 03 把 caller 挪进 session 后路由需跟随;dev/ping 探针的 _current_caller 路径保留 | ✓ Good(路由级测试 + UAT 实证) |
 | Phase 1:会话后门控刷新走 GET /api/session 端点 + applySessionGates/renderTranscript 拆分 | done 后原地刷新 g1_available/divergence_available 门控,不重渲染 transcript(避免清掉刚流完的气泡,且 [ai] 落盘晚于 done) | ✓ Good(UAT G-idi01-7 复测) |
 | Phase 1:app.js 脚本移到 body 末尾(#cli-check-overlay 之后) | DOM 先于脚本执行,CLI 自检浮层才能真跑(原顺序 recheckBtn 为 null 抛 TypeError) | ✓ Good(UAT G-idi01-8 复测) |
+| Phase 2:PASS/裁决行文法解析归 P2、消费归 P3 | FLOW-07 措辞"文法全部由工具可靠解析" + ROADMAP 判据 6 明确 P2 验期;解析器(backend/grammar.py)P2 交付,Phase 3 按钮逻辑消费 | ✓ Good(47 live 边界抽检) |
+| Phase 2:ask_lite 同步调用、事件不进工作面板 | §3.4"数秒内…"不打断阅读 + 单机单人;走 SSE 直播面板的是用户驱动的批处理任务(§4.3),轻量问答不属此列 | ✓ Good(UAT 真调 55s 灰斜体秒级感) |
+| Phase 2:冻结 = 纯磁盘推导(轮号 < current_round 即只读),非当前轮批注 API 层拒绝 409 | 不新增后端状态;§7.4 文件即状态的直接推论 | ✓ Good(路由 19 契约 + UAT 冻结检查点) |
+| Phase 2:annotations 写回(AI 不碰 JSON)与标记脏变体免疫 | §6.2 字段写回职责——后端解析响应表统一回写 answer/status,格式漂移归零 | ✓ Good(UAT a1-01 回写 answered) |
 
 ---
-*Last updated: 2026-09-09 after Phase 1(行走骨架收口:验证 passed + UAT 6/6)*
+*Last updated: 2026-09-10 after Phase 2(轮次收敛循环收口:验证 passed 7/7 + UAT 7/7 零 gap)*

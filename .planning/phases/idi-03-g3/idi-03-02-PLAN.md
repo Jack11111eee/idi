@@ -30,9 +30,9 @@ must_haves:
     - "session.start_check():三查(check_available = phase5_awaiting_tier 或 phase5_checking 且无在飞)→ 后台线程 caller.run(build_check_prompt(project, check_n, tier)) + SSE 直播;check_n = _next_check_n(project)(接入点后算好注入 prompt 防编号错——半份判定=最新报告缺结论行 → 同轮覆盖重跑;完整 → max+1,D-P3-21);done 后 else = 循环驱动判定:①最新报告末行 PASS → 自然结束(mission_complete 由 derive_state 推导,Wave 4 呈现);②报告含 P0/P1(非纯 P2、非 PASS)→ 自动链入 start_repair(**done-回调直排,无 scheduler**);③纯 P2 报告 → 不修复,结束(残余裁决 UI 态由 Wave 4 呈现,D-P3-17);④修复者抛问扫描未命中不影响本函数 ← DATA-04 / D-P3-13 / D-P3-16 / D-P3-21"
     - "session.start_repair():三查(repair 入口 = repair_available 双条件:phase5_checking + 判定式②命中——unpaired 为空且报告含配对裁决行且末行非 PASS;running 态(报告刚落盘未跑修复)与 unpaired 非空(paused 态)均拒绝 409,D-P3-20 与「继续自检」互斥单一路径放行)→ caller.run(build_repair_prompt) + SSE;done 后 else:全文本扫描 `> 待裁决:` 前缀(say 事件流 + 最终文本,先流后文本)→ 命中 → checks.append_pending_question 截存到当轮报告 + error/暂停语义的事件(不启动下一跳);无命中且 tmp 已写 → tmp 改名 DESIGN.md → 宽松档:改完即结束(修复者已在报告追加 PASS 或由收口动作处理);严格档:自动链入 start_check(check_n+1,同轮驱动器)← DATA-04 / D-P3-14 / D-P3-16 / D-P3-18 / D-P3-20 / ROADMAP 判据 4"
     - "session.verdict_append(number, decision, note):入口 = phase5_checking + 最新报告存在 → checks.append_user_verdict 落盘 `> 裁决:#K:`(同号 FileExistsError 转路由 409);**残余问题全部处理完时**同一调用内判定:追加后重读报告,问题表每个问题 number 均有同号裁决行(配对数 == 问题数)且 unpaired_verdicts 为空 → checks.append_pass_conclusion 立即收口(D-P3-17「全部处理完即视为收敛收口」的后端动作;纯 P2 残余与修复者抛问两源问题同判);宽松档同通道复用(同一函数)← DATA-04 / D-P3-17 / D-P3-19"
-    - "build_check_prompt(project, check_n, tier) 与 build_repair_prompt(project, check_n) 四段结构:check 资料段 = DESIGN.md 全文 + 全部轮次文档 + 全部 annotations + 已有全部 DESIGN-check 报告(严格档趋势照读);角色段「干净的眼睛」+ **绝不修改 DESIGN.md(只写自家报告)明禁**;问题分级表头 `| 编号 | 级别 | 位置 | 问题 | 建议修法 |` 逐字贴入 + TIER_LINE 头部行逐字 + 末行结论行文法(;repair 资料段 = DESIGN.md + 最新报告全文(含裁决行)+ 其他报告 + 轮次文档/批注;任务段 = 报告问题按裁决逐条修复、用 Write 写 DESIGN.md.tmp 整体落盘、用户职权问题发 `> 待裁决:#K:<问题>` 停下、宽松档在报告末追加 PASS ← D-P3-13 / D-P3-14 / D-P3-15 / D-P3-29"
+    - "build_check_prompt(project, check_n, tier) 与 build_repair_prompt(project, check_n, tier) 四段结构(两函数三参同签,以 Task 2 action 规格为准):check 资料段 = DESIGN.md 全文 + 全部轮次文档 + 全部 annotations + 已有全部 DESIGN-check 报告(严格档趋势照读);角色段「干净的眼睛」+ **绝不修改 DESIGN.md(只写自家报告)明禁**;问题分级表头 `| 编号 | 级别 | 位置 | 问题 | 建议修法 |` 逐字贴入 + TIER_LINE 头部行逐字 + 末行结论行文法(;repair 资料段 = DESIGN.md + 最新报告全文(含裁决行)+ 其他报告 + 轮次文档/批注;任务段 = 报告问题按裁决逐条修复、用 Write 写 DESIGN.md.tmp 整体落盘、用户职权问题发 `> 待裁决:#K:<问题>` 停下、宽松档在报告末追加 PASS ← D-P3-13 / D-P3-14 / D-P3-15 / D-P3-29"
     - "_session_snapshot 扩三字段(既有字段不动不重命名):g3_available(bool,phase3 态四查)、writing_tmp_exists(bool,phase4 态 (DESIGN.md.tmp).is_file()——D-P3-10「继续撰写」二态文案的纯磁盘判定,前端按钮文案消费)、selfcheck({tier, mode}——mode ∈ running/paused/resumed/p2/done,由 derive_state + latest_check_content + unpaired_verdicts/配对/is_pure_p2 判定组装;paused.questions = scan_pending_questions 的 {number,text} 抛问卡数据、p2.questions = parse_problem_grades 的 {number,location,issue,suggestion} 残余裁决卡数据——两形态按 mode 二值区分;不新增 derive_state 状态值,不缓存)← D-P3-23 / D-P3-26 / D-P3-17 / D-P3-10"
-    - "四条新路由:POST /api/authorize(g3:成功 200 返回新 derive_state / 四查不过或已授权 → 409 / 未进项目 → 400)、POST /api/checks/tier(白名单外 → 400 / 非 phase5_awaiting_tier → 409)、POST /api/writing(202 受理 / busy 或非 phase4 → 409)、POST /api/checks/start(202 / 409)、POST /api/checks/repair(202 / 409)、POST /api/checks/verdict(200 追加 / 同号 FileExistsError → 409 / 400)← D-P3-27"
+    - "四条新路由(POST /api/writing 与 /api/checks/start、/api/checks/repair 三条 202 受理路由的交付权归 idi-03-03,本计划不建):POST /api/authorize(g3:成功 200 返回新 derive_state / 四查不过或已授权 → 409 / 未进项目 → 400)、POST /api/checks/tier(白名单外 → 400 / 非 phase5_awaiting_tier → 409)、POST /api/checks/verdict(200 追加 / 同号 FileExistsError → 409 / 400)← D-P3-27"
     - "AI 无任何直写 AUTHORIZATION.md 或 DESIGN.md 的路径:权限矩阵规则 1/2 零改动消费(test_ai_caller 补 AUTHORIZATION.md reject 断言);后半程所有 DESIGN.md 落盘均走 tmp → 后端 rename ← FLOW-05 / §5.4 / ROADMAP 判据 2"
     - "全量 pytest 回归基线 143 + 新增全绿(见 verify)"
   artifacts:
@@ -43,7 +43,7 @@ must_haves:
       provides: "build_writing_prompt / build_check_prompt / build_repair_prompt 三族四段 prompt + _CHECK_GRAMMAR_EXAMPLES 报告文法模板(_ROUND_INSTRUCTIONS 同族常量)"
       contains: "def build_check_prompt"
     - path: "backend/main.py(扩展)"
-      provides: "POST /api/authorize、POST /api/checks/tier、POST /api/writing、POST /api/checks/start、POST /api/checks/repair、POST /api/checks/verdict、GET /api/design、GET /api/checks 八路由 + AuthorizeBody/TierBody/VerdictBody"
+      provides: "POST /api/authorize、POST /api/checks/tier、POST /api/checks/verdict、GET /api/design、GET /api/checks 五路由(POST /api/writing、/api/checks/start、/api/checks/repair 三条 202 受理路由归 idi-03-03)+ TierBody/VerdictBody"
     - path: "backend/tests/test_session.py(扩展)"
       provides: "WritingFake / CheckWritingFake / RepairWritingFake / 待裁决 ThrowingFake + start_writing 改名与 error 分支 + start_check 循环驱动四分支 + verdict_append 截存与收口 + 入口判定与单飞用例"
   key_links:
@@ -98,7 +98,7 @@ must_haves:
 Wave 1 纯函数接进 Phase 1/2 的调用链,交付阶段 4/5 的后端全层。
 
 Purpose: FLOW-05 的授权语义(G3 服务端防绕过 + AUTHORIZATION.md 唯一凭证)、DATA-02 的撰写侧(tmp 原子落盘 + 继续撰写自愈)、DATA-04 的流程侧(档位落盘、两角色自动循环、抛问截存暂停、裁决续跑、纯 P2 残余裁决收口)全部在本计划落地;Wave 4 视图按固定 HTTP 契约消费即得完整阶段 4/5/归档界面。
-Output: session 六函数 + prompt 三族 + 八路由(Fake 级测试全绿);DERIVATION 链:四查通过 → AUTHORIZATION.md → tmp → DESIGN.md → check-N → PASS → mission_complete。
+Output: session 六函数 + prompt 三族 + 五路由(authorize/tier/verdict 三 POST + design/checks 两 GET;writing/start/repair 三条 202 受理路由归 idi-03-03,合成 D-P3-27 八条完整族);DERIVATION 链:四查通过 → AUTHORIZATION.md → tmp → DESIGN.md → check-N → PASS → mission_complete。
 </objective>
 
 <execution_context>
@@ -156,7 +156,7 @@ DESIGN.md 权威依据:
     - 用例 start_writing 入口:phase3 造盘 → False;busy 在飞 → False
     - 用例 build_writing_prompt:产物含全部完整轮文档正文片段 + annotations 逐条(id/quote/note)+ transcript 片段 + 「DESIGN.md.tmp」落盘指令 + 明禁直写 DESIGN.md/AUTHORIZATION.md 语句 + 语言红线
     - 用例 build_writing_prompt 资料段不含 tmp/授权文件:造盘加半份 DESIGN.md.tmp 后组装 → 产物不含 tmp 内容片段(半份不入资料)
-    - 用例路 409:POST /api/authorize 对 phase3 四查不过项目 → 409;POST /api/checks/tier 白名单外 → 400;POST /api/writing 非 phase4 → 409
+    - 用例路 409:POST /api/authorize 对 phase3 四查不过项目 → 409;POST /api/checks/tier 白名单外 → 400(POST /api/writing 路由级用例归 idi-03-03,本计划 session 级 writing_available/start_writing 已测)
   </behavior>
   <action>(1)backend/session.py 顶部 import 区扩展:from backend.state import 增 STATE_PHASE4、STATE_PHASE5_AWAITING_TIER, STATE_PHASE5_CHECKING, STATE_MISSION_COMPLETE(照既有 import 形态);from backend import g3、from backend import checks 模块引入(函数用点号,防命名冲突)。
 
@@ -176,7 +176,7 @@ DESIGN.md 权威依据:
 
 (4)backend/session.py 新增 writing_available(project) -> bool(照 round_process_available 纯磁盘风格:derive_state == STATE_PHASE4)+ start_writing() -> bool(照 process_round 模子逐段:三查(authorize 风格 + writing_available)→ prompt = build_writing_prompt(project) → 后台 _worker(事件循环照 process_round,支持中止)→ **done-else 分支后端动作**:重拉 derive_state → tmp = project/DESIGN.md.tmp、design = project/DESIGN.md;tmp.is_file() 且 design 未存在 → tmp.replace(design)(Path.replace 同 inode 原子改名,D-P3-8:改名前不校验 tmp 内容)→ 发信息性 say 事件「总设计文档已落盘」;tmp 不存在 → error 事件「撰写未产出 tmp,可重跑」(状态自然留 phase4,state 不变即可重跑)→ finally 解锁照抄。
 
-(5)backend/main.py:Body 类 AuthorizeBody/TierBody(tier: str)加在 PlainBody 之后;路由加在 rounds 族之后、config 分节之前(新分节注释「阶段 3/4/5 路由族(PLAN idi-03-02)」):POST /api/authorize(RuntimeError→400 / 返回 False→409 / FileExistsError→409 / 成功 → 200 {"status":"ok", "state": 新 derive_state dict})、POST /api/checks/tier(set_tier:RuntimeError→409 / ValueError→400 / 成功 200)、POST /api/writing(start_writing True→202 accepted / False→409 / RuntimeError→400)。
+(5)backend/main.py:Body 类 TierBody(tier: str)/VerdictBody(number: int, decision: str, note: str)加在 PlainBody 之后(**POST /api/authorize 无请求体**——确认词在前端模态完成,后端防线是四查再查 + authorize_write 动作本身,D-P3-3;无体路由直接 @app.post 不挂 Body 类,否则 FastAPI 对无体 POST 返回 422 断 04 冒烟链);路由加在 rounds 族之后、config 分节之前(新分节注释「阶段 3/4/5 路由族(PLAN idi-03-02)」):POST /api/authorize(RuntimeError→400 / 返回 False→409 / FileExistsError→409 / 成功 → 200 {"status":"ok", "state": 新 derive_state dict})、POST /api/checks/tier(set_tier:RuntimeError→409 / ValueError→400 / 成功 200)。**POST /api/writing 不在本计划**(与 /api/checks/start、/api/checks/repair 三条 202 受理路由统一归 idi-03-03,session 层 start_writing 已在本 Task 交付)。
 
 (6)backend/tests/test_session.py 扩用例(造盘 helper:_enter_phase3_compliant——四查合规轮 + _enter_phase4 已授权 + _enter_phase5 DESIGN.md 与报告直造;WritingFake = FakeAICaller 子类照 RoundWritingFake 模子:run 时 write_text DESIGN.md.tmp):behavior 列表逐条,≥ 9 用例。route 级 409 分支入 test_route_session.py 可留 Task 3 统一补(RouteEnv 同款)——本任务先 session 级。
   </action>
@@ -278,6 +278,7 @@ DESIGN.md 权威依据:
     - 用例 snapshot(phase4 有/无 tmp):phase4 造盘写半份 DESIGN.md.tmp → writing_tmp_exists: true;删 tmp → false;phase3 盘 → false(D-P3-10 二态文案的前端判定源)
     - 用例 snapshot(phase5_checking 报告含未配对待裁决):selfcheck.mode == "paused"、selfcheck.questions 非空(裁决卡数据:repair 抛问卡 = scan_pending_questions 输出的 {number, text}——修复者抛问场景,D-P3-18/D-P3-19 通道)
     - 用例 snapshot(phase5_checking 纯 P2 报告·无待裁决·末行非 PASS):selfcheck.mode == "p2"、selfcheck.questions = parse_problem_grades(latest) 全 P2 行映射的裁决卡数据 {number, location, issue, suggestion} + level 恒 "P2"(D-P3-17 残余裁决卡三字段 位置/描述/建议修法 来自报告问题分级表——Wave 1 parse_problem_grades 已定死五键行 {number, level, location, issue, suggestion},snapshot 映射为四键卡数据;唯一可 POST 逐条裁决的通道);mode 取 "p2" 在 D-P3-23 的 {tier, mode: "running"|"paused"|"resumed"|...} 开放集内(snapshot 层组装,非 derive_state 新状态值)
+    - 用例 snapshot(半份 P2 报告·P2 表已写、无 `> 核查结论:` 锚点行):mode == "running"、questions == [](is_pure_p2 对半份 fail-closed 见 Wave 1;「继续自检」按钮呈现可重跑恢复,不进 p2 死局态——D-P3-20/§7.3② 恢复语义)
     - 用例 snapshot(phase5_checking 报告含配对裁决无未配对 + 末行非 PASS):mode == "resumed"
     - 用例 snapshot(phase5_checking 报告正常 without 裁决):mode == "running"、tier 从报告头部行恢复
     - 用例 snapshot(mission_complete):mode == "done"
@@ -289,7 +290,7 @@ DESIGN.md 权威依据:
   </behavior>
   <action>(1)backend/session.py _session_snapshot 扩展(既有字段不动、不重命名):新增 "g3_available": 条件为 phase3 态时调 g3.g3_available(project)(否则 False);新增 "writing_tmp_exists": 条件为 state==phase4 时 (project / "DESIGN.md.tmp").is_file()(其余态 False——D-P3-10 按钮二态文案的纯磁盘判定,snapshot 伪层组装不碰 derive_state);新增 "selfcheck" 子状态对象——按 state 组装:STATE_MISSION_COMPLETE → {"tier": 报告头部 parse_tier_line(latest), "mode": "done", "questions": []};STATE_PHASE5_CHECKING → latest = latest_check_content(docs);tier = parse_tier_line(latest) 或 read_tier(project) 兜底;mode:unpaired_verdicts(latest) 非空 → "paused"(questions = scan_pending_questions(latest) 输出直接作裁决卡数据,键 = {number, text})→ 有配对裁决行且无未配对且末行非 PASS → "resumed"(questions = [])→ 末行非 PASS 且 is_pure_p2(latest) → "p2"(questions = parse_problem_grades(latest) 映射的残余裁决卡数据,键 = {number, location, issue, suggestion},level 列恒 "P2" 不进卡——两 questions 形态由 mode 二值天然区分,前端按 mode 选卡渲染)→ 否则 "running"(questions = []);STATE_PHASE5_AWAITING_TIER → {"tier": read_tier(project), "mode": "running", "questions": []};其余态 → {"tier": None, "mode": "running", "questions": []}(注意:推导函数只认磁盘不缓存,不调 AI——D-P3-23)。"p2" 与 "done" 是 D-P3-23 mode 开放集 {"running"|"paused"|"resumed"|...} 的合法成员,非 derive_state 新状态值。
 
-(2)backend/main.py:GET /api/design(session.current_project_path() + DESIGN.md read_text 兜底 None;未进项目 RuntimeError → 400 照 get_draft;STYLE 上照 get_draft 138-148)——JSONResponse {"status":"ok", "design": content};GET /api/checks(checks 列表 = derive_state current_check 或 max 编号遍历、latest 报告全文 = latest_check_content、selfcheck = snapshot 的 selfcheck 透传、unpairedQuestions 可选——按 snapshot 已有字段直接组合,不重复判定)——{"status":"ok", "checks": [...], "latest": ...};**新路由 GET /api/design + GET /api/checks 与 Task 1 的 POST 六条一起归入「阶段 3/4/5 路由族」分节**;TierBody/VerdictBody(number: int, decision: str, note: str)pydantic 类;POST /api/checks/verdict 分支(RuntimeError:消息 startswith("尚未进入任何项目") → 400;否则含「仅自检进行中可裁决」或「当前有调用进行中」→ 409——判定字面按 Task 1「错误消息字面表」;FileExistsError → 409;ValueError → 400)。
+(2)backend/main.py:GET /api/design(session.current_project_path() + DESIGN.md read_text 兜底 None;未进项目 RuntimeError → 400 照 get_draft;STYLE 上照 get_draft 138-148)——JSONResponse {"status":"ok", "design": content};GET /api/checks(checks 列表 = derive_state current_check 或 max 编号遍历、latest 报告全文 = latest_check_content、selfcheck = snapshot 的 selfcheck 透传、unpairedQuestions 可选——按 snapshot 已有字段直接组合,不重复判定)——{"status":"ok", "checks": [...], "latest": ...};**新路由 GET /api/design + GET /api/checks 与 Task 1 的 POST 三条一起归入「阶段 3/4/5 路由族」分节**;TierBody/VerdictBody(number: int, decision: str, note: str)pydantic 类;POST /api/checks/verdict 分支(RuntimeError:消息 startswith("尚未进入任何项目") → 400;否则含「仅自检进行中可裁决」或「当前有调用进行中」→ 409——判定字面按 Task 1「错误消息字面表」;FileExistsError → 409;ValueError → 400)。
 
 (3)backend/tests/test_route_session.py 扩用例(≥ 8;route_env + 造盘 helper 直造各态盘:phase3/p hase4/phase5_awaiting_tier/phase5_checking 各态、带报告各分支):behavior 列表逐条(模式三态 + tier 恢复 + design/checks 组装 + 全 409 分支)。
   </action>
@@ -344,7 +345,7 @@ DESIGN.md 权威依据:
 - authorize 防绕过链(四查服务端再查 + FileExistsError 幂等)与撰写改名链(tmp→DESIGN.md→phase5_awaiting_tier)Fake 级全绿
 - 严格档两跳自动驱动全链 Fake 级证明(check-1→repair→check-2,纯 P2 停,PASS 停);抛问截存暂停 + 裁决定续跑闭环
 - set_tier/verdict_append 同步落盘动作 + snapshot 的 g3_available/selfcheck 子状态(tier + mode 三态)可被路由直接消费
-- 六 POST + 两 GET 路由契约固定,409/400/404 分支与 CONTEXT 逐条一致
+- 三 POST + 两 GET 路由契约固定(authorize/tier/verdict + design/checks;writing/start/repair 归 idi-03-03),409/400/404 分支与 CONTEXT 逐条一致
 - AI 写 AUTHORIZATION.md/DESIGN.md 被矩阵拒绝的断言在位(零改动消费)
 - 全量回归 143 基线只增不减
 </success_criteria>
@@ -353,7 +354,7 @@ DESIGN.md 权威依据:
 
 - backend/session.py:authorize() -> bool、set_tier(tier) -> bool、verdict_append(number, decision, note) -> bool、writing_available(project) -> bool、start_writing() -> bool、check_available(project) -> bool、repair_available(project) -> bool、start_check() -> bool、start_repair() -> bool、自检驱动函数(_drive_next 或等价形态)、_session_snapshot 新增 g3_available / selfcheck 字段
 - backend/prompts.py:WRITING/CHECK/REPAIR 三族——build_writing_prompt(project_path) -> str、build_check_prompt(project_path, check_n, tier) -> str、build_repair_prompt(project_path, check_n, tier) -> str、_WRITING_INSTRUCTIONS、_CHECK_GRAMMAR_EXAMPLES、_REPAIR_INSTRUCTIONS(或等价命名)
-- backend/main.py:AuthorizeBody、TierBody、VerdictBody、POST /api/authorize、POST /api/checks/tier、POST /api/writing、POST /api/checks/start、POST /api/checks/repair、POST /api/checks/verdict、GET /api/design、GET /api/checks
+- backend/main.py:TierBody、VerdictBody、POST /api/authorize(无请求体)、POST /api/checks/tier、POST /api/checks/verdict、GET /api/design、GET /api/checks(POST /api/writing、POST /api/checks/start、POST /api/checks/repair 归 idi-03-03)
 - backend/tests/test_session.py:WritingFake、CheckWritingFake、RepairWritingFake、_enter_phase3_compliant / _enter_phase4 / _enter_phase5 造盘 helper、authorize/start_writing/set_tier/verdict_append/start_check(两跳闭环/纯 P2/PASS)/抛问截存/续跑/入口/单飞用例族
 - backend/tests/test_route_session.py:snapshot 两字段 + GET design/checks + 全 409 分支用例
 

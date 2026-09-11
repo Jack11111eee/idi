@@ -21,7 +21,7 @@ estimate:
 
 must_haves:
   truths:
-    - "main.py 五条缺失路由按 Wave 2 已定的 session 契约补齐:POST /api/writing(202 受理 / busy 或非 phase4 → 409 / 未进项目 → 400)、POST /api/checks/start(202 / 409)与 POST /api/checks/repair(202 / 409)——完成 Wave 2 Task 3 检查清单上「归 Task 3 补」的 writing/start/repair 三条 route 分支 ← D-P3-27"
+    - "main.py 三条缺失路由按 Wave 2 已定的 session 契约补齐:POST /api/writing(202 受理 / busy 或非 phase4 → 409 / 未进项目 → 400)、POST /api/checks/start(202 / 409)与 POST /api/checks/repair(202 / 409)——完成 Wave 2 Task 3 检查清单上「归 idi-03-03 补」的 writing/start/repair 三条 route 分支 ← D-P3-27"
     - "「继续自检」的 check_n 计算服务端完成:start_check 内部经 _next_check_n(project) 判定重跑同轮覆盖(最新报告缺结论行 = 半份)或 max+1(完整)——半份判定逻辑在 session 层已交付(Wave 2 Task 2,含半份重跑不跳号专属用例);路由零自算,只透传受理结果 ← D-P3-21"
     - "路由层全部错误分支照 /api/rounds/process 模子:True → 202 受理响应体 status=accepted;False → 409;RuntimeError → 400 ← D-P3-27"
     - "Wave 2 遗留的路由补充与新增的 writing/start/repair 合并为一族(route 层不重复 session 判定,不新增全局)← D-P3-27"

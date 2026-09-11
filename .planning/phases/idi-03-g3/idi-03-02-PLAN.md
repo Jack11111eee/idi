@@ -277,7 +277,7 @@ DESIGN.md 权威依据:
     - 用例 snapshot(phase3 四查合规):响应含 g3_available: true;维度污染盘 → false
     - 用例 snapshot(phase4 有/无 tmp):phase4 造盘写半份 DESIGN.md.tmp → writing_tmp_exists: true;删 tmp → false;phase3 盘 → false(D-P3-10 二态文案的前端判定源)
     - 用例 snapshot(phase5_checking 报告含未配对待裁决):selfcheck.mode == "paused"、selfcheck.questions 非空(裁决卡数据:repair 抛问卡 = scan_pending_questions 输出的 {number, text}——修复者抛问场景,D-P3-18/D-P3-19 通道)
-    - 用例 snapshot(phase5_checking 纯 P2 报告·无待裁决·末行非 PASS):selfcheck.mode == "p2"、selfcheck.questions = parse_problem_grades(latest) 全 P2 行映射的裁决卡数据 {number, location, issue, suggestion} + level 恒 "P2"(D-P3-17 残余裁决卡三字段 位置/描述/建议修法 来自报告问题分级表——Wave 1 已定死七键形状,唯一可 POST 逐条裁决的通道);mode 取 "p2" 在 D-P3-23 的 {tier, mode: "running"|"paused"|"resumed"|...} 开放集内(snapshot 层组装,不新增 derive_state 状态值)
+    - 用例 snapshot(phase5_checking 纯 P2 报告·无待裁决·末行非 PASS):selfcheck.mode == "p2"、selfcheck.questions = parse_problem_grades(latest) 全 P2 行映射的裁决卡数据 {number, location, issue, suggestion} + level 恒 "P2"(D-P3-17 残余裁决卡三字段 位置/描述/建议修法 来自报告问题分级表——Wave 1 parse_problem_grades 已定死五键行 {number, level, location, issue, suggestion},snapshot 映射为四键卡数据;唯一可 POST 逐条裁决的通道);mode 取 "p2" 在 D-P3-23 的 {tier, mode: "running"|"paused"|"resumed"|...} 开放集内(snapshot 层组装,非 derive_state 新状态值)
     - 用例 snapshot(phase5_checking 报告含配对裁决无未配对 + 末行非 PASS):mode == "resumed"
     - 用例 snapshot(phase5_checking 报告正常 without 裁决):mode == "running"、tier 从报告头部行恢复
     - 用例 snapshot(mission_complete):mode == "done"

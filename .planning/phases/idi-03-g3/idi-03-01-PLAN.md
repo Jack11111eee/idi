@@ -26,7 +26,7 @@ must_haves:
   truths:
     - "backend/g3.py 的 g3_available(project) 四条机械校验全部命中才 True,且四条在同一份当前轮文档快照上判定(读一次文本复用,不跨轮):①annotations.select_pending(load(current_round)) 为空;②grammar.is_pending_list_clear;③grammar.is_dimension_table_green;④grammar.parse_auth_marker == \"yes\";current_round 取 derive_state 的最大完整轮(半成品轮视为不存在),derive_state != phase3 或四查任一不过 → False ← FLOW-05 / D-P3-1 / D-P3-2 / ROADMAP 判据 1"
     - "g3 的 authorize_write(project) 在项目根写入 AUTHORIZATION.md(不在 docs/ 下):明文 UTF-8,含「授权时间(ISO-8601)+ 操作者确认词标记行」两要素(§7.4 授权痕迹);AUTHORIZATION.md 已存在 → FileExistsError(G3 只走一次,幂等防护照 g1.py 先例);写入前调用方负责先过 g3_available 四查再查(本模块不重复查,职责单一) ← FLOW-05 / D-P3-4(纯函数半)"
-    - "backend/grammar.py 新增三个纯增量解析器,不触碰既有六条锁定语义(check-14 锁定版只消费):parse_tier_line(report_text)(返回 \"严格\"/\"宽松\"/None——首部 prefix 扫描 `> 自检档位:` 行 strip 后恰为两串之一)、parse_problem_grades(report_text)(问题分级表 → [{number, level, location, issue, suggestion}],表头 | 编号 | 级别 | 位置 | 问题 | 建议修法 |)、is_pure_p2(report_text)(全部问题 level == P2 → True;空表/无表 → False)← DATA-04 / D-P3-15 / D-P3-17(纯 P2 判据)"
+    - "backend/grammar.py 新增三个纯增量解析器,不触碰既有六条锁定语义(check-14 锁定版只消费):parse_tier_line(report_text)(返回 \"严格\"/\"宽松\"/None——首部 prefix 扫描 `> 自检档位:` 行 strip 后恰为两串之一)、parse_problem_grades(report_text)(问题分级表 → [{number(int), level, location, issue, suggestion}],表头 | 编号 | 级别 | 位置 | 问题 | 建议修法 |;number 转 int 与 scan_pending_questions/裁决行 #K 同型)、is_pure_p2(report_text)(全部问题 level == P2 → True;空表/无表 → False)← DATA-04 / D-P3-15 / D-P3-17(纯 P2 判据)"
     - "backend/grammar.py 新增 scan_pending_questions(text):无锚点全文扫 `> 待裁决:#K:` 形态行,返回 [{number, text}],供修复者输出扫描(D-P3-18 先流后文本两处均可复用)与暂停态问题呈现;报告解析复用既有 parse_verdict_lines 的 _VERDICT_RE 正则,不重复第二份正则字面量 ← D-P3-18 / D-P3-19"
     - "backend/checks.py 档位签名与报告追加三件套:write_tier(project, tier) 落盘 docs/DESIGN-check-tier.md(头部一行 `> 自检档位:严格|宽松`,覆盖式写入幂等);read_tier(project)(文件不存在/脏内容 → None);append_pending_question(report_path, number, text) 内容级幂等(同内容已存在 → 跳过返回 False);append_user_verdict(report_path, number, text) 同号拒绝(已存在同号裁决行 → 拒绝);append_pass_conclusion(report_path, note) 在报告末追加 `> 核查结论:PASS(...)` 行(成为最后一个非空行) ← DATA-04 / D-P3-11(落盘半)/ D-P3-12 / D-P3-17(收口半)/ D-P3-19"
     - "全部新增解析器配构造正反例测试(照 D-P2-17/D-P2-18 先例):tier 行 正/脏/缺、问题表 正/空表/级别脏值/混 P0P1P2、待裁决行 配对后滤除、同号裁决重复拒绝 ← D-P3-29 / FLOW-07 延续"
@@ -183,7 +183,7 @@ DESIGN.md 权威依据:
   </read_first>
   <behavior>
     - parse_tier_line:报告首部存在 strip 后恰为 `> 自检档位:严格` 的行 → "严格";恰为 `> 自检档位:宽松` → "宽松";无该行/脏变体(如「> 自检档位:超严格」或行内有尾注)→ None(H1 标题行在前不干扰——扫「首个以 `> 自检档位:` 开头的行」)
-    - parse_problem_grades:报告含二级标题「问题分级」(关键词与 prompt 注入字面一致)下的表格 → [{"number","level","location","issue","suggestion"}](列 = 编号/级别/位置/问题/建议修法,各列 strip;表头行与分隔行丢弃);无该表 → [];级别列脏值(如「高」)照读不抛(消费方 is_pure_p2 自然判 False)
+    - parse_problem_grades:报告含二级标题「问题分级」(关键词与 prompt 注入字面一致)下的表格 → [{"number"(int),"level","location","issue","suggestion"}](列 = 编号/级别/位置/问题/建议修法,各列 strip,number 列转 int——脏编号(如「一」)保留 0 + warning 不抛;表头行与分隔行丢弃);无该表 → [];级别列脏值(如「高」)照读不抛(消费方 is_pure_p2 自然判 False)
     - is_pure_p2:问题表全为 P1×2 + P2×1 → False;全 P2 → True;空表/无表 → False(零问题报告走 PASS 路径,不以纯 P2 处理,fail-closed)
     - scan_pending_questions:文本含 `> 待裁决:#3:范围问题` 行 → [{"number": 3, "text": "范围问题"}];同文本含 `> 裁决:#3:接受` 不进结果(只扫待裁决);形态不符(`> 待裁决 3:` 无冒号井号)→ 不收;多行多号全收
     - 既有六条函数与 __all__ 既有项零变化(git diff 中六函数体无改动)
@@ -192,13 +192,13 @@ DESIGN.md 权威依据:
 
 (1)parse_tier_line(md_text: str) -> str | None:splitlines 扫描,取**首个** strip 后 startswith("> 自检档位:") 的行;整行 strip 后恰为 "> 自检档位:严格" → "严格",恰为 "> 自检档位:宽松" → "宽松",其余(存在但脏)→ None;扫完全文无该前缀行 → None。模块级常量 TIER_LINE_STRICT = "> 自检档位:严格" / TIER_LINE_LOOSE = "> 自检档位:宽松"(供 Wave 3 prompt 逐字引用同一常量,不复制字面量)。
 
-(2)parse_problem_grades(md_text: str) -> list[dict]:复用 _extract_table(md_text, "问题分级")(heading_keyword = "问题分级",与 prompt 注入的二级标题字面一致——两端同字面是 D-P3-29 硬要求);列序 = 编号/级别/位置/问题/建议修法 → {"number", "level", "location", "issue", "suggestion"}(照 parse_dimension_table 的列→dict 映射模子,列不足补空串);无表 → []。挂导出。
+(2)parse_problem_grades(md_text: str) -> list[dict]:复用 _extract_table(md_text, "问题分级")(heading_keyword = "问题分级",与 prompt 注入的二级标题字面一致——两端同字面是 D-P3-29 硬要求);列序 = 编号/级别/位置/问题/建议修法 → {"number", "level", "location", "issue", "suggestion"}(照 parse_dimension_table 的列→dict 映射模子,列不足补空串);**number 列转 int**(int(cell.strip());转不动(脏值如「一」)→ 保留 0 并 warning——与 scan_pending_questions 的 int number 同型,裁决卡 number 直接可 POST /api/checks/verdict 配对 `> 裁决:#K:` 的整数 K,不做字符串/整数混型比较);无表 → []。挂导出。
 
 (3)is_pure_p2(md_text: str) -> bool:rows = parse_problem_grades(md_text);rows 为空 → False;全部 row["level"] == "P2" → True(P0/P1 任一出现即 False)。
 
 (4)scan_pending_questions(text: str) -> list[dict]:全文无锚点扫描,逐行匹配与 _VERDICT_RE 同形态的待裁决行(本模块内复用 _VERDICT_RE 或等价 group 提取,不新建第二份正则字面量):匹配 `^>\s*待裁决:#(\d+):(.*)$` → {"number": int, "text": 捕获组 strip}。**不改 parse_verdict_lines**(锁定)——新函数独立,服务于修复者输出扫描(D-P3-18:say 事件流与最终文本都能喂进来)与暂停态问题呈现。
 
-新建用例入 backend/tests/test_grammar.py(先红后绿):正反例矩阵 ≥ 12 条——tier 行 正严格/正宽松/无行/脏值/尾注脏变体、问题表 正例三行混级/空表/列脏值照读、is_pure_p2 全P2/混P1/空表False、scan_pending 多号/配对裁决不收/形态不符/文本中行内代码引用样例不误收(引用样例形如「`> 待裁决:#1:` 整段在行内代码」——按 §6.4 写作纪律行内代码引用不进配对,本扫描器对整行为行内代码包裹的形态是否误收做一个显式用例,实现按「strip 后以 ` 开头的行跳过」或等价防御,择简实现并写注释)。样本全部手造,不读本项目 docs/ 历史报告(D-P2-19 延续)。
+新建用例入 backend/tests/test_grammar.py(先红后绿):正反例矩阵 ≥ 12 条——tier 行 正严格/正宽松/无行/脏值/尾注脏变体、问题表 正例三行混级(number 断言为 int 型)/空表/列脏值照读/编号脏值(「一」→ number == 0 且不抛)、is_pure_p2 全P2/混P1/空表False、scan_pending 多号/配对裁决不收/形态不符/文本中行内代码引用样例不误收(引用样例形如「`> 待裁决:#1:` 整段在行内代码」——按 §6.4 写作纪律行内代码引用不进配对,本扫描器对整行为行内代码包裹的形态是否误收做一个显式用例,实现按「strip 后以 ` 开头的行跳过」或等价防御,择简实现并写注释)。样本全部手造,不读本项目 docs/ 历史报告(D-P2-19 延续)。
   </action>
   <verify>
     <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_grammar.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>

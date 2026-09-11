@@ -16,13 +16,13 @@
     {
       "number": "3",
       "name": "授权、自检与终点——G3、档位、使命完成归档",
-      "status": "pending"
+      "status": "in_progress"
     }
   ],
   "next": {
     "command": "/gsd:progress --next",
-    "label": "Advance to the next step (plan phase 3)",
-    "reason": "Phase 3 of 3 — needs a plan"
+    "label": "Advance to the next step",
+    "reason": "Phase 03 of 3 · executing"
   },
-  "updated_at": "2026-09-10T09:50:35.107Z"
+  "updated_at": "2026-09-11T16:16:00.915Z"
 }

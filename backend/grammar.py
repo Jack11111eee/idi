@@ -25,6 +25,7 @@ list_complete_rounds / is_complete_round 分离风格;授权标记与 PASS 前�
 """
 from __future__ import annotations
 
+import logging
 import re
 
 from backend.state import (
@@ -33,6 +34,8 @@ from backend.state import (
     PASS_PREFIX,
     last_nonempty_line,
 )
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "TIER_LINE_STRICT",
@@ -311,9 +314,16 @@ def parse_tier_line(md_text: str) -> str | None:
     扫首个以 `> 自检档位:` 开头(strip 后)的行——报告可能带 H1 标题,
     不假定首行;整行 strip 后恰为 TIER_LINE_STRICT / TIER_LINE_LOOSE 才
     返回对应值;脏变体(如「超严格」/行内尾注)与无该行 → None。
-    (RED 骨架:未实现)
     """
-    raise NotImplementedError("parse_tier_line 尚未实现(Task 2 GREEN 阶段实现)")
+    for line in md_text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(_TIER_LINE_PREFIX):
+            if stripped == TIER_LINE_STRICT:
+                return "严格"
+            if stripped == TIER_LINE_LOOSE:
+                return "宽松"
+            return None  # 存在但脏(非两串之一)
+    return None  # 无该前缀行
 
 
 def parse_problem_grades(md_text: str) -> list[dict]:
@@ -321,10 +331,32 @@ def parse_problem_grades(md_text: str) -> list[dict]:
 
     列 = 编号/级别/位置/问题/建议修法(D-P3-15 表头字面,与 prompt 注入
     逐字一致——两端同字面是 D-P3-29 硬要求);number 列转 int(脏值如「一」
-    → 保留 0 + warning 不抛);表头与分隔行丢弃;无表 → []。
-    (RED 骨架:未实现)
+    → 保留 0 + warning 不抛——与 scan_pending_questions/裁决行 #K 的整数
+    K 同型,不做字符串/整数混型比较);表头与分隔行丢弃;无表 → []。
     """
-    raise NotImplementedError("parse_problem_grades 尚未实现(Task 2 GREEN 阶段实现)")
+    rows = _extract_table(md_text, "问题分级")
+    result: list[dict] = []
+    for columns in rows:
+        raw_number = columns[0] if len(columns) > 0 else ""
+        try:
+            number = int(raw_number.strip())
+        except ValueError:
+            logger.warning("问题分级表编号脏值(%r),该行 number 落 0", raw_number)
+            number = 0
+        level = columns[1] if len(columns) > 1 else ""
+        location = columns[2] if len(columns) > 2 else ""
+        issue = columns[3] if len(columns) > 3 else ""
+        suggestion = columns[4] if len(columns) > 4 else ""
+        result.append(
+            {
+                "number": number,
+                "level": level,
+                "location": location,
+                "issue": issue,
+                "suggestion": suggestion,
+            }
+        )
+    return result
 
 
 def is_pure_p2(md_text: str) -> bool:
@@ -332,10 +364,15 @@ def is_pure_p2(md_text: str) -> bool:
 
     空表/无表 → False(零问题报告走 PASS 路径,不以纯 P2 处理,fail-closed);
     无 `> 核查结论:` 锚点行(半份 P2 报告:P2 表已写、结论行未写)→ False
-    ——不得判纯 P2 进 p2 死局态,须回落 running 走「继续自检」恢复;
-    P0/P1 任一出现 → False。(RED 骨架:未实现)
+    ——不得判纯 P2 进 p2 死局态,须回落 running 走「继续自检」恢复
+    (复用既有 _last_conclusion_index 判 None);P0/P1 任一出现 → False。
     """
-    raise NotImplementedError("is_pure_p2 尚未实现(Task 2 GREEN 阶段实现)")
+    rows = parse_problem_grades(md_text)
+    if not rows:
+        return False
+    if _last_conclusion_index(md_text) is None:
+        return False  # 半份报告 fail-closed
+    return all(row["level"] == "P2" for row in rows)
 
 
 def scan_pending_questions(text: str) -> list[dict]:
@@ -343,7 +380,18 @@ def scan_pending_questions(text: str) -> list[dict]:
 
     无锚点全文扫描(say 事件流与最终文本均可喂入)——与 parse_verdict_lines
     的「结论行之后」扫描空间不同,服务于修复者输出扫描与暂停态问题呈现;
-    number 为 int(与 parse_verdict_lines 同型);行内代码引用样例不误收。
-    (RED 骨架:未实现)
+    number 为 int(与 parse_verdict_lines 同型)。行内代码引用样例不误收:
+    strip 后以反引号开头的行是 §6.4 写作纪律要求的行内代码引用样例
+    (整行被包裹的文法讲解),不是真实抛问——跳过。
     """
-    raise NotImplementedError("scan_pending_questions 尚未实现(Task 2 GREEN 阶段实现)")
+    result: list[dict] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("`"):
+            continue  # 行内代码引用样例(§6.4 写作纪律:引用样例须置于行内代码)
+        match = _PENDING_QUESTION_RE.match(stripped)
+        if match:
+            result.append(
+                {"number": int(match.group(1)), "text": match.group(2).strip()}
+            )
+    return result

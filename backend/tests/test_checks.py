@@ -95,10 +95,9 @@ def test_append_pending_question_and_content_idempotency(tmp_path):
     verdicts = parse_verdict_lines(text)
     assert {"kind": "待裁决", "number": 3} in verdicts
 
-    # 内容级幂等:同号同内容再调 → False,文件不再多行
+    # 内容级幂等:同号同内容再调 → False,文件一字不增(与首次追加后逐字相同)
     assert checks_mod.append_pending_question(report, 3, "范围问题") is False
-    after_lines = report.read_text(encoding="utf-8").splitlines()
-    assert len(after_lines) == len(before_lines) + 1, "同内容只追加一次"
+    assert report.read_text(encoding="utf-8") == text, "同内容只追加一次"
 
     # 正文保全:追加前后正文(原内容)逐字不变(T-idi03-03)
     original = "\n".join(before_lines)

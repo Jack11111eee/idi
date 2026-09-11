@@ -51,9 +51,17 @@ def write_tier(project_path: Path, tier: str) -> Path:
 
     头部一行 = `> 自检档位:严格|宽松`(常量逐字,不手拼);tier 不在
     TIER_VALUES 白名单 → ValueError(中文消息)。覆盖写入:重选档覆盖旧值
-    (D-P3-11:选档落盘可重选,幂等非一次性)。(RED 骨架:未实现)
+    (D-P3-11:选档落盘可重选,幂等非一次性)。
     """
-    raise NotImplementedError("write_tier 尚未实现(Task 3 GREEN 阶段实现)")
+    if tier not in TIER_VALUES:
+        raise ValueError(f"档位必须是 {'/'.join(sorted(TIER_VALUES))},收到: {tier!r}")
+    project = Path(project_path)
+    tier_path = project / "docs" / TIER_FILENAME
+    tier_path.parent.mkdir(parents=True, exist_ok=True)  # docs/ 理论上已存在,防御
+    # 单行文件(头部行即全文):tier 参数选常量,不手拼字符串
+    tier_path.write_text(f"{_TIER_LINE_BY_VALUE[tier]}\n", encoding="utf-8")
+    logger.info("档位签名落盘:%s(%s)", tier_path, tier)
+    return tier_path
 
 
 def read_tier(project_path: Path) -> str | None:
@@ -61,9 +69,44 @@ def read_tier(project_path: Path) -> str | None:
 
     文件不存在 → None;脏内容 → None + warning 日志(不抛,照
     annotations.load 的「读不到给确定判定」模子,D-P3-12)。
-    (RED 骨架:未实现)
     """
-    raise NotImplementedError("read_tier 尚未实现(Task 3 GREEN 阶段实现)")
+    tier_path = Path(project_path) / "docs" / TIER_FILENAME
+    if not tier_path.is_file():
+        return None
+    try:
+        text = tier_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        logger.warning("读取 %s 失败,按无档位处理: %s", tier_path, exc)
+        return None
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        for value, line_literal in _TIER_LINE_BY_VALUE.items():
+            if stripped == line_literal:
+                return value
+        logger.warning("%s 内容脏(头部行非合法档位行),按无档位处理", tier_path)
+        return None  # 首非空行不合法即脏
+    return None  # 全空文件视为脏
+
+
+def _read_report(report_path: Path) -> str:
+    """读报告现文;不存在 → FileNotFoundError(报告必须先存在,调用方保证)。"""
+    path = Path(report_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"报告不存在({path})——先由核查调用产出报告再追加")
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        logger.warning("读取 %s 失败: %s", path, exc)
+        raise
+
+
+def _append_line(report_path: Path, current: str, line: str) -> None:
+    """在报告末尾追加一行(现文 rstrip + 空行 + 行;不改写正文任何行)。"""
+    Path(report_path).write_text(
+        f"{current.rstrip()}\n\n{line}\n", encoding="utf-8"
+    )
 
 
 def append_pending_question(report_path: Path, number: int, text: str) -> bool:
@@ -72,9 +115,14 @@ def append_pending_question(report_path: Path, number: int, text: str) -> bool:
     内容级幂等(§6.4:仅当该问题尚无同内容待裁决行时追加);同号新内容
     → 追加第二行(幂等为内容级非号级,判定式按同号配对不受影响)。
     报告不存在 → FileNotFoundError(报告必须先存在,调用方保证)。
-    (RED 骨架:未实现)
     """
-    raise NotImplementedError("append_pending_question 尚未实现(Task 3 GREEN 阶段实现)")
+    path = Path(report_path)
+    current = _read_report(path)
+    line = f"> 待裁决:#{number}:{text}"
+    if line in current.splitlines():
+        return False  # 内容级幂等:同内容行已在,跳过
+    _append_line(path, current, line)
+    return True
 
 
 def append_user_verdict(report_path: Path, number: int, text: str) -> Path:
@@ -83,9 +131,16 @@ def append_user_verdict(report_path: Path, number: int, text: str) -> Path:
     同号裁决行已存在(parse_verdict_lines 判定,锁定函数只读消费)→
     FileExistsError(中文:「#K 已有裁决,一问一答,不重复受理」——
     D-P3-19 择拒绝重复 POST 同号的纯函数层)。报告不存在 → FileNotFoundError。
-    (RED 骨架:未实现)
     """
-    raise NotImplementedError("append_user_verdict 尚未实现(Task 3 GREEN 阶段实现)")
+    path = Path(report_path)
+    current = _read_report(path)
+    for verdict in parse_verdict_lines(current):
+        if verdict["kind"] == "裁决" and verdict["number"] == number:
+            raise FileExistsError(
+                f"#{number} 已有裁决,一问一答,不重复受理"
+            )
+    _append_line(path, current, f"> 裁决:#{number}:{text}")
+    return path
 
 
 def append_pass_conclusion(report_path: Path, note: str) -> Path:
@@ -93,6 +148,11 @@ def append_pass_conclusion(report_path: Path, note: str) -> Path:
 
     追加后该行成为报告最后一个非空行(grammar.is_pass_conclusion → True
     是机器证明);报告已 PASS(is_pass_conclusion 现文 True)→ 直接返回
-    不重复追加(幂等,D-P3-17 收口半)。(RED 骨架:未实现)
+    不重复追加(幂等,D-P3-17 收口半)。
     """
-    raise NotImplementedError("append_pass_conclusion 尚未实现(Task 3 GREEN 阶段实现)")
+    path = Path(report_path)
+    current = _read_report(path)
+    if is_pass_conclusion(current):
+        return path  # 已 PASS,不重复追加
+    _append_line(path, current, f"> 核查结论:PASS({note})")
+    return path

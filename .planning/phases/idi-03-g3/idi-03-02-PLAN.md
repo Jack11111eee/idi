@@ -27,17 +27,17 @@ must_haves:
     - "session.set_tier(tier):入口 = derive_state == phase5_awaiting_tier(有 DESIGN.md、无 check 报告)→ checks.write_tier 落盘签名文件;非 phase5_awaiting_tier → RuntimeError 转 409;已是同值 → 覆盖写入幂等合法 ← DATA-04 / D-P3-11 / ROADMAP 判据 3"
     - "session.start_writing():照 process_round 模子三查(未进项目 RuntimeError / 在飞 False / writing_available = derive_state == phase4)→ 后台线程 caller.run(build_writing_prompt) + SSE 直播;done 后 else 分支后端动作:derive_state 重拉 → tmp 存在且无 DESIGN.md → (tmp_path).replace(DESIGN.md) 原子改名(改名前不校验 tmp 内容完整性)→ 撰写完成;tmp 不存在(AI 没写)→ error 事件「撰写未产出 tmp,可重跑」、状态留 phase4 可重跑 ← DATA-02 / D-P3-6 / D-P3-8 / ROADMAP 判据 2"
     - "build_writing_prompt(project) 四段结构(照 build_round_prompt 同族):角色(总设计文档撰写引擎)+_LANGUAGE_RULES → 资料段全量 docs/(全部完整轮文档 + 全部 annotations 逐条 + transcript/draft/brainstorm)——**绝不读 DESIGN.md.tmp 与 AUTHORIZATION.md(半份 tmp 是被覆盖物,D-P3-9)**→ 任务段(覆盖维度表七维度全部内容、吸收决策登记与已对齐结论、不含未决问题)+ 落盘指令(用 Write 工具写 DESIGN.md.tmp 项目根整体覆盖式写入后即结束,绝不直接写 DESIGN.md 或 AUTHORIZATION.md——权限门会拒绝,提示语写明目的与格式) ← FLOW-05 / DATA-02 / D-P3-7"
-    - "session.start_check():三查(check_available = phase5_awaiting_tier 或 phase5_checking 且无在飞)→ 后台线程 caller.run(build_check_prompt(project, check_n, tier)) + SSE 直播;check_n = max_check_number + 1(接入点后算好注入 prompt 防编号错);done 后 else = 循环驱动判定:①最新报告末行 PASS → 自然结束(mission_complete 由 derive_state 推导,Wave 4 呈现);②报告含 P0/P1(非纯 P2、非 PASS)→ 自动链入 start_repair(**done-回调直排,无 scheduler**);③纯 P2 报告 → 不修复,结束(残余裁决 UI 态由 Wave 4 呈现,D-P3-17);④修复者抛问扫描未命中不影响本函数 ← DATA-04 / D-P3-13 / D-P3-16"
-    - "session.start_repair():三查(repair 入口 = phase5_checking + 最新报告存在)→ caller.run(build_repair_prompt) + SSE;done 后 else:全文本扫描 `> 待裁决:` 前缀(say 事件流 + 最终文本,先流后文本)→ 命中 → checks.append_pending_question 截存到当轮报告 + error/暂停语义的事件(不启动下一跳);无命中且 tmp 已写 → tmp 改名 DESIGN.md → 宽松档:改完即结束(修复者已在报告追加 PASS 或由收口动作处理);严格档:自动链入 start_check(check_n+1,同轮驱动器)← DATA-04 / D-P3-14 / D-P3-16 / D-P3-18 / ROADMAP 判据 4"
-    - "session.verdict_append(number, decision, note):入口 = phase5_checking + 最新报告存在 → checks.append_user_verdict 落盘 `> 裁决:#K:`(同号 FileExistsError 转路由 409);**纯 P2 残余裁决全部处理完时**同一调用内判定:报告问题表逐条比对已配对裁决 → 全部配对 → checks.append_pass_conclusion 立即收口(D-P3-17 「全部处理完即视为收敛收口」的后端动作);宽松档同通道复用(math 同一函数)← DATA-04 / D-P3-17 / D-P3-19"
+    - "session.start_check():三查(check_available = phase5_awaiting_tier 或 phase5_checking 且无在飞)→ 后台线程 caller.run(build_check_prompt(project, check_n, tier)) + SSE 直播;check_n = _next_check_n(project)(接入点后算好注入 prompt 防编号错——半份判定=最新报告缺结论行 → 同轮覆盖重跑;完整 → max+1,D-P3-21);done 后 else = 循环驱动判定:①最新报告末行 PASS → 自然结束(mission_complete 由 derive_state 推导,Wave 4 呈现);②报告含 P0/P1(非纯 P2、非 PASS)→ 自动链入 start_repair(**done-回调直排,无 scheduler**);③纯 P2 报告 → 不修复,结束(残余裁决 UI 态由 Wave 4 呈现,D-P3-17);④修复者抛问扫描未命中不影响本函数 ← DATA-04 / D-P3-13 / D-P3-16 / D-P3-21"
+    - "session.start_repair():三查(repair 入口 = repair_available 双条件:phase5_checking + 判定式②命中——unpaired 为空且报告含配对裁决行且末行非 PASS;running 态(报告刚落盘未跑修复)与 unpaired 非空(paused 态)均拒绝 409,D-P3-20 与「继续自检」互斥单一路径放行)→ caller.run(build_repair_prompt) + SSE;done 后 else:全文本扫描 `> 待裁决:` 前缀(say 事件流 + 最终文本,先流后文本)→ 命中 → checks.append_pending_question 截存到当轮报告 + error/暂停语义的事件(不启动下一跳);无命中且 tmp 已写 → tmp 改名 DESIGN.md → 宽松档:改完即结束(修复者已在报告追加 PASS 或由收口动作处理);严格档:自动链入 start_check(check_n+1,同轮驱动器)← DATA-04 / D-P3-14 / D-P3-16 / D-P3-18 / D-P3-20 / ROADMAP 判据 4"
+    - "session.verdict_append(number, decision, note):入口 = phase5_checking + 最新报告存在 → checks.append_user_verdict 落盘 `> 裁决:#K:`(同号 FileExistsError 转路由 409);**残余问题全部处理完时**同一调用内判定:追加后重读报告,问题表每个问题 number 均有同号裁决行(配对数 == 问题数)且 unpaired_verdicts 为空 → checks.append_pass_conclusion 立即收口(D-P3-17「全部处理完即视为收敛收口」的后端动作;纯 P2 残余与修复者抛问两源问题同判);宽松档同通道复用(同一函数)← DATA-04 / D-P3-17 / D-P3-19"
     - "build_check_prompt(project, check_n, tier) 与 build_repair_prompt(project, check_n) 四段结构:check 资料段 = DESIGN.md 全文 + 全部轮次文档 + 全部 annotations + 已有全部 DESIGN-check 报告(严格档趋势照读);角色段「干净的眼睛」+ **绝不修改 DESIGN.md(只写自家报告)明禁**;问题分级表头 `| 编号 | 级别 | 位置 | 问题 | 建议修法 |` 逐字贴入 + TIER_LINE 头部行逐字 + 末行结论行文法(;repair 资料段 = DESIGN.md + 最新报告全文(含裁决行)+ 其他报告 + 轮次文档/批注;任务段 = 报告问题按裁决逐条修复、用 Write 写 DESIGN.md.tmp 整体落盘、用户职权问题发 `> 待裁决:#K:<问题>` 停下、宽松档在报告末追加 PASS ← D-P3-13 / D-P3-14 / D-P3-15 / D-P3-29"
-    - "_session_snapshot 扩两字段(既有字段不动不重命名):g3_available(bool,phase3 态四查)、selfcheck({tier, mode}——mode ∈ running/paused/resumed/done,由 derive_state + latest_check_content + unpaired_verdicts/配对 判定组装;不新增 derive_state 状态值,不缓存)← D-P3-23 / D-P3-26"
+    - "_session_snapshot 扩三字段(既有字段不动不重命名):g3_available(bool,phase3 态四查)、writing_tmp_exists(bool,phase4 态 (DESIGN.md.tmp).is_file()——D-P3-10「继续撰写」二态文案的纯磁盘判定,前端按钮文案消费)、selfcheck({tier, mode}——mode ∈ running/paused/resumed/p2/done,由 derive_state + latest_check_content + unpaired_verdicts/配对/is_pure_p2 判定组装;paused.questions = scan_pending_questions 的 {number,text} 抛问卡数据、p2.questions = parse_problem_grades 的 {number,location,issue,suggestion} 残余裁决卡数据——两形态按 mode 二值区分;不新增 derive_state 状态值,不缓存)← D-P3-23 / D-P3-26 / D-P3-17 / D-P3-10"
     - "四条新路由:POST /api/authorize(g3:成功 200 返回新 derive_state / 四查不过或已授权 → 409 / 未进项目 → 400)、POST /api/checks/tier(白名单外 → 400 / 非 phase5_awaiting_tier → 409)、POST /api/writing(202 受理 / busy 或非 phase4 → 409)、POST /api/checks/start(202 / 409)、POST /api/checks/repair(202 / 409)、POST /api/checks/verdict(200 追加 / 同号 FileExistsError → 409 / 400)← D-P3-27"
     - "AI 无任何直写 AUTHORIZATION.md 或 DESIGN.md 的路径:权限矩阵规则 1/2 零改动消费(test_ai_caller 补 AUTHORIZATION.md reject 断言);后半程所有 DESIGN.md 落盘均走 tmp → 后端 rename ← FLOW-05 / §5.4 / ROADMAP 判据 2"
     - "全量 pytest 回归基线 143 + 新增全绿(见 verify)"
   artifacts:
     - path: "backend/session.py(扩展)"
-      provides: "authorize() / set_tier() / start_writing() / start_check() / start_repair() / verdict_append() / writing_available / check_available / repair_available + _session_snapshot 新增 g3_available / selfcheck 字段"
+      provides: "authorize() / set_tier() / start_writing() / start_check() / start_repair() / verdict_append() / writing_available / check_available / repair_available + _session_snapshot 新增 g3_available / writing_tmp_exists / selfcheck 字段"
       contains: "def start_check"
     - path: "backend/prompts.py(扩展)"
       provides: "build_writing_prompt / build_check_prompt / build_repair_prompt 三族四段 prompt + _CHECK_GRAMMAR_EXAMPLES 报告文法模板(_ROUND_INSTRUCTIONS 同族常量)"
@@ -126,6 +126,8 @@ DESIGN.md 权威依据:
 分支纪律(per 仓库 CLAUDE.md §5):本计划跨 3 个既有文件大改动——执行者从当前分支 HEAD 切出 phase-03/idi-03-02 工作分支,plan 完成后合回原分支(工作分支生命周期与 plan 对齐,不引入 worktree)。
 
 测试纪律(D-P3-30):一切 pytest 必须 `.venv/bin/python -m pytest`。循环驱动实现形态已定:外层 wrapper(PATTERNS Modified Files #3 推荐方案②——else 分支短路不直接自调,由 finally 解锁后的驱动函数串调两跳)。
+
+预算边界说明(checker advisory,本计划 estimate 处 100k/100k 满额):任务按 Task 1→2→3 顺序执行,若任一任务中途 context 压力接近 70%,立即把该任务剩余未写用例记为 SUMMARY「未竟用例清单」并收口本任务(Task 间边界收口,不拆任务),下一 Wave 或 idi-03-03**只补测试不碰产品代码**——禁止为省 context 而删减 behavior 列表中的用例承诺。
 </context>
 
 <tasks>
@@ -161,7 +163,14 @@ DESIGN.md 权威依据:
 (2)同步三件(照 answer_plain 的同步 + 单飞风格,均不起线程):
 - authorize() -> bool:三查(未进项目 RuntimeError;busy → False(拒绝瞬时写授权,防在飞期间状态漂移);derive_state != phase3 或 not g3_available(project) → False 由路由层 409)→ g3.authorize_write(project)(FileExistsError 上抛——理论不可达(derive_state phase4 后 != phase3)但保留防御)→ True。docstring:四查后端再查的 D-P3-4 防绕过语义(前端按钮亮否只是呈现,服务端独立重判)。
 - set_tier(tier: str) -> bool:未进项目 RuntimeError;derive_state != STATE_PHASE5_AWAITING_TIER → RuntimeError(f"仅待选档阶段可选(当前:{state})"——供路由 409);checks.write_tier(project, tier)(ValueError 白名单冒出供 400);返回 True。
-- verdict_append(number: int, decision: str, note: str) -> bool:未进项目 RuntimeError;busy → False(单飞防双写竞态,D-P3-26);derive_state != STATE_PHASE5_CHECKING → RuntimeError→409;report_path = docs/DESIGN-check-{current_check}.md(derive_state 取)→ verdict_text = f"{decision}——{note}" → checks.append_user_verdict(report_path, number, verdict_text)(FileExistsError 冒出→409)。追加后判定残余是否清零:type=comment 的源暂为纯 P2 残余裁决场景——用 grammar.parse_problem_grades(latest) 与 parse_verdict_lines(latest) 比对:问题表全部问题均有同号裁决 → checks.append_pass_conclusion(report_path, "残余裁决收口")(D-P3-17 收口动作,单测证明)→ 返回 True。
+- verdict_append(number: int, decision: str, note: str) -> bool:未进项目 RuntimeError;busy → False(单飞防双写竞态,D-P3-26);derive_state != STATE_PHASE5_CHECKING → RuntimeError("仅自检进行中可裁决(当前:{state})")——消息字面见下方「错误消息字面表」;report_path = docs/DESIGN-check-{current_check}.md(derive_state 取)→ verdict_text = f"{decision}——{note}" → checks.append_user_verdict(report_path, number, verdict_text)(FileExistsError 冒出→409)。追加后判定残余是否清零:读追加后报告文本,用 grammar.parse_problem_grades(报告文本) 与 parse_verdict_lines(报告文本) 比对——报告问题表每个问题的 number 均有同号裁决行(配对数 == 问题数,D-P3-17「机器可判定残余清零」)且 unpaired_verdicts 为空 → checks.append_pass_conclusion(report_path, "残余裁决收口")(D-P3-17 收口动作,单测证明)→ 返回 True。收口判定同时覆盖两源问题:①纯 P2 残余裁决(mode=p2,问题来自问题分级表,`> 裁决:#K:` 同号配对);②修复者抛问暂停(paused,问题来自 `> 待裁决:#K:` 截存行)——两种情况下问题编号都落在报告尾部追加段,parse_verdict_lines 均可见,同一配对判定式收口(单测各证一条)。
+
+**错误消息字面表(路由 409/400 分流唯一依据——五条消息逐字落码,route 层按前缀 grep 分流,不自由发挥文案):**
+- set_tier 阶段不对:RuntimeError("仅待选档阶段可选(当前:{state})")——route 判 "仅待选档阶段可选" in message → 409
+- verdict_append 阶段不对:RuntimeError("仅自检进行中可裁决(当前:{state})")——route 判 "仅自检进行中可裁决" in message → 409
+- start_writing 入口不对(并入 False 路径,见 (4)):路由统一 409 消息「撰写入口已关闭(非阶段 4 或当前有调用进行中)」(照 /api/rounds/process 332-350 模子,False 不带原因,前端按 state 呈现)
+- start_check / start_repair 入口不对(同上 False → 409,消息「自检入口已关闭(非自检阶段或当前有调用进行中)」/「修复入口已关闭(无待修问题或当前有调用进行中)」)
+- 未进项目(五函数共用):RuntimeError("尚未进入任何项目(先调 enter_project)")——route 判 startswith("尚未进入任何项目") → 400(session.py 142 行既有字面,复用不改)
 
 (3)backend/prompts.py 新增 build_writing_prompt(project_path) -> str(照 build_round_prompt 四段结构,函数卡片式 docstring 登记 D-P3-7):角色段「总设计文档撰写引擎」+ _LANGUAGE_RULES;资料段——list_complete_rounds 循环注入全部完整轮文档全文 + 各轮 annotations_mod.load 逐条(id: quote: note:)+ _KNOWN_DOCS 既有循环注入 transcript/draft/brainstorm(**不读 DESIGN.md.tmp / AUTHORIZATION.md——docstring 记 D-P3-9**);任务段落盘指令常量 _WRITING_INSTRUCTIONS(照 _ROUND_INSTRUCTIONS 元组风格):产出无歧义总设计文档——覆盖维度表七个维度全部内容、吸收决策登记与已对齐结论、不含未决问题;用 Write 工具写 **DESIGN.md.tmp**(项目根,整体覆盖式写入)后即结束;**绝不直接写 DESIGN.md 或 AUTHORIZATION.md(权限门将拒绝)**——tmp 是 DESIGN.md 唯一合法落盘路径,后端会原子改名。
 
@@ -211,7 +220,9 @@ DESIGN.md 权威依据:
     - 用例 start_check PASS 报告:fake 写 PASS 末行报告 → done 后无下一跳(修复零调用)、derive_state = mission_complete
     - 用例 抛问截存:RepairFake 在 say 事件文本含 `> 待裁决:#2:范围问题` → done 后报告尾部出现 `> 待裁决:#2:范围问题` 行(checks.append_pending_question)、无下一跳 check-2(start_check 调用计数不增)、_ai_texts 已含该行(扫描源)
     - 用例 续跑:verdict_append 落盘裁决 → start_repair 再跑 → 报告含裁决行的新 prompt(资料段以磁盘为准)
+    - 用例 半份重跑不跳号(D-P3-21):phase5_checking 造盘 check-1 报告**无结论行**(半份)→ 「继续自检」起跳 → Fake 写 docs/DESIGN-check-1.md 被覆盖(编号仍 1,不出现 check-2);同盘但 check-1 完整(含结论行)→ 起跳产 check-2
     - 用例 start_check 入口拒绝:phase3/phase4 → False;busy → False;start_check 单飞在飞互斥(HangingFake)
+    - 用例 repair_available 三态互斥(D-P3-20):phase5_checking 报告刚落盘未跑修复(无裁决行无待裁决行,running)→ False(与 check_available 同时 True 违反互斥——本用例即防此盘形);unpaired 非空(paused)→ False;配对裁决 + 末行非 PASS(判定式②)→ True;纯 P2 残余(p2)→ False
     - 用例 权限矩阵回归:test_ai_caller 补 make_permission_decision(p, "write", p / "AUTHORIZATION.md") == "reject"(Specific Ideas 红线)
   </behavior>
   <action>(1)backend/prompts.py 新增两函数 + 一常量组(照 build_round_prompt 族):
@@ -220,8 +231,9 @@ DESIGN.md 权威依据:
 - build_repair_prompt(project_path, check_n: int, tier: str) -> str:资料段 = DESIGN.md 全文 + 最新报告全文(含裁决行,磁盘即状态)+ 其他既有报告 + 轮次文档/批注;任务段 = 报告问题按裁决逐条修复(如仍有未配对待裁决,先停下)+ 用户职权问题(范围与非目标类)不得替用户决定——在最终回复文本里单独一行输出 `> 待裁决:#K:<问题>` 后即结束(抛问协议正式说明)+ 用 Write 工具整体写 DESIGN.md.tmp 后结束(修复同样走 tmp 单次整体落盘纪律,绝不直写 DESIGN.md)+ 宽松档特例指令:唯一一轮修复完成后在报告末追加 PASS 结论行(用 Write 整体重写报告含原内容 + 末行 PASS,或 Edit 追加——落盘物必须末行前缀合规)。
 
 (2)backend/session.py 三入口 + 驱动器:
+- check_n 计算(「继续自检」重跑的目标轮,D-P3-21 半份自愈的实现点):模块内私有助手 _next_check_n(project) -> int——读 max_check_number(docs) 为 None → 1(首轮);有报告 → 读 latest_check_content,**半份判定**=报告缺结论行(全文无 `> 核查结论:` 行)→ 半份 → 返回 max(**同轮覆盖重跑,不跳号**);报告有结论行(完整)→ 返回 max + 1。判据简单可测:state.py max_check_number 本身不校验内容完整性(既有注释),半份判定在本函数补(「结论行缺失 = 半份」——AI 产物必含结论行,缺即崩在半途;不跳号 = D-P3-21「重跑同轮覆盖、不跳号」字面)。start_check 与驱动器起跳一律用它算 check_n 注入 prompt。
 - check_available(project) -> bool:derive_state ∈ {STATE_PHASE5_CHECKING} → True;**STATE_PHASE5_AWAITING_TIER 在起检前必须有 tier 签名文件**(checks.read_tier(project) 非 None;选档是起检前置,D-P3-11/D-P3-14 相关)→ True;其余 False。
-- repair_available(project) -> bool:derive_state == STATE_PHASE5_CHECKING(最新报告存在非 PASS)→ True(细化的判定式②暂停态约束在 UI 层由 snapshot 呈现,服务端以 409 入口判定为准——start_repair 对 unpaired 非空也放行会被 Wave 4 限制,本层守住 phase5_checking + 无在飞即可,对 D-P3-20 判定式②「裁决待续跑」的服务端强制为「unpaired_verdicts 非空时 start_repair 拒绝」加一条判定——写并用例证明)。
+- repair_available(project) -> bool:derive_state == STATE_PHASE5_CHECKING **且双条件恰一放行**(D-P3-20 判定式①②互斥的服务端强制,「继续自检」/「继续修复」单一路径放行):①判定式①命中(最新报告 unpaired_verdicts 非空 = 抛问待裁决)→ False(409);②判定式②命中(报告尾部存在配对问答行 + 无未配对待裁决行 + 末行非 PASS——即 unpaired_verdicts 为空 且 报告含 `> 裁决:#K:` 裁决行 且 非 is_pass_conclusion)→ True(「继续修复」唯一放行口);③其余(无裁决行无待裁决行的 running 态、纯 P2 残余 p2 态、PASS 尾)→ False(409)。**首轮报告刚落盘、尚未跑修复的盘(running 态)也必须 False**——否则与 check_available 的「继续自检」同时可用,违反 D-P3-20 互斥;三态各配一条正反用例证明(running False / 判定式② True / unpaired True→False)。
 - start_check() -> bool 与 start_repair() -> bool:照 process_round 模子(三查 + _worker + SSE + finally 解锁);start_check 的 done-else 分支后端动作 = 循环驱动的判定头部(重拉 derive_state → 读最新报告 → ① is_pass_conclusion(latest) → 结束(mission_complete 推导态自然出现,Wave 4 弹窗)②is_pure_p2(latest) → 结束不修复(残余裁决态)③其余 → 驱动 start_repair);start_repair 的 done-else = 全文本扫描 `> 待裁决:`(用 scan_pending_questions(_ai_texts 合并文本)——只取首个命中号,按 D-P3-18 幂等截存)命中 → checks.append_pending_question 当轮报告尾部 + error 事件「修复者抛问,已截存暂停,等待用户裁决」、不驱动下一跳;未命中 → tmp 存在则 tmp.replace 改名 → 驱动判定(宽松档:tier == "宽松" → 结束(不下一跳;PASS 由修复者已追加或残余收口动作);严格档 → start_check(check_n + 1))。
 - **驱动实现形态(定案=外层 wrapper)**:else 分支不直接自调(单飞锁未释放会自我拒绝)——两函数尾部解耦:else 分支只把「下一步动作」记为函数局部 pending_action(或驱动函数 _drive_next(project, kind)),finally 解锁后由驱动函数串调(每跳独立入栈一层,线程尾部串新线程/直接同步调——推荐 finally 后直接调 start_repair/start_check 的同步形式,每跳结束重拉磁盘判定,无 scheduler,D-P3-16 字面)。abort 语义:任何时刻 _aborted → 驱动链条断(else 不排下一跳),「继续自检/继续修复」恢复。
 - verdict 侧已在 Task 1(残余全配对 → append_pass_conclusion 收口)。unpaired_verdicts(repair 拒绝)用 grammar 既有锁定函数判定(判定式①服务端强制)。
@@ -232,15 +244,17 @@ DESIGN.md 权威依据:
   </action>
   <verify>
     <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_session.py backend/tests/test_ai_caller.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
-    <fails_when>任一 pytest 输出含 failed/error;两跳自动链用例失败(修复调用计数 0 或 check-2 未出现);抛问截存用例失败(报告尾部无 `> 待裁决:` 行或 check 计数仍推进);AUTHORIZATION reject 断言失败;全量回归 passed < 143。</fails_when>
+    <fails_when>任一 pytest 输出含 failed/error;两跳自动链用例失败(修复调用计数 0 或 check-2 未出现);抛问截存用例失败(报告尾部无 `> 待裁决:` 行或 check 计数仍推进);AUTHORIZATION reject 断言失败;repair_available 三态互斥用例任一失败(running 态误 True / 判定式②态误 False);半份重跑用例失败(半份盘出现 check-2 跳号 = D-P3-21 违反);全量回归 passed < 143。</fails_when>
   </verify>
   <acceptance_criteria>
   - backend/prompts.py 的 `grep -n "def build_check_prompt\|def build_repair_prompt" backend/prompts.py` 命中行数 ≥ 2 且源码 grep -n "| 编号 | 级别 | 位置 | 问题 | 建议修法 |" 命中(表头字面逐字)
   - backend/session.py 四函数(start_check/start_repair/check_available/repair_available)逐名 `grep -n "def <名>" backend/session.py` 各命中,且两 done-else 分支均含 derive_state 重拉判定
+  - 半份自愈:grep -n "def _next_check_n" backend/session.py 命中;用例证明半份盘(报告缺结论行)重跑同轮覆盖不跳号、完整盘取 max+1(D-P3-21 的判定承载:「结论行缺失 = 半份」)
   - backend/session.py 的自检驱动实现无 scheduler / threading.Timer / while True 轮询(grep 后两词为 0;循环只经驱动函数逐跳串调)
   - test_session.py 两跳自动链用例:check-1(非 PASS 非 P2)触发 start_repair 真被调(fake 计数 ≥ 1),纯 P2 报告后无新 check 编号
   - 抛问截存:报告尾行出现 `> 待裁决:#K:`(内容级幂等),且无下一跳推进
   - test_ai_caller.py 含 AUTHORIZATION.md reject 断言(grep "AUTHORIZATION" 命中 ≥ 2:import 行 + 断言行)
+  - repair_available 三态用例在位:running 盘(报告存在无裁决签名)False、判定式②盘 True、纯 P2 残余盘 False——「继续修复」单一路径放行,与 check_available 零重叠盘形(D-P3-20 互斥的服务端证明)
   - 全量回归零失败
   </acceptance_criteria>
   <done>两角色循环引擎 Fake 级全链证明:严格档 check→repair→check-2 的两跳自动推进、纯 P2 停在残余裁决、PASS 即 mission_complete、抛问截存暂停且不误推进;check/repair promp 字面与 grammar 解析器两端一字不差;AI 写 AUTHORIZATION.md 被矩阵拒绝的最终断言在位。</done>
@@ -261,7 +275,9 @@ DESIGN.md 权威依据:
   </read_first>
   <behavior>
     - 用例 snapshot(phase3 四查合规):响应含 g3_available: true;维度污染盘 → false
-    - 用例 snapshot(phase5_checking 报告含未配对待裁决):selfcheck.mode == "paused"、selfcheck.questions 非空(裁决卡数据:number + text)
+    - 用例 snapshot(phase4 有/无 tmp):phase4 造盘写半份 DESIGN.md.tmp → writing_tmp_exists: true;删 tmp → false;phase3 盘 → false(D-P3-10 二态文案的前端判定源)
+    - 用例 snapshot(phase5_checking 报告含未配对待裁决):selfcheck.mode == "paused"、selfcheck.questions 非空(裁决卡数据:repair 抛问卡 = scan_pending_questions 输出的 {number, text}——修复者抛问场景,D-P3-18/D-P3-19 通道)
+    - 用例 snapshot(phase5_checking 纯 P2 报告·无待裁决·末行非 PASS):selfcheck.mode == "p2"、selfcheck.questions = parse_problem_grades(latest) 全 P2 行映射的裁决卡数据 {number, location, issue, suggestion} + level 恒 "P2"(D-P3-17 残余裁决卡三字段 位置/描述/建议修法 来自报告问题分级表——Wave 1 已定死七键形状,唯一可 POST 逐条裁决的通道);mode 取 "p2" 在 D-P3-23 的 {tier, mode: "running"|"paused"|"resumed"|...} 开放集内(snapshot 层组装,不新增 derive_state 状态值)
     - 用例 snapshot(phase5_checking 报告含配对裁决无未配对 + 末行非 PASS):mode == "resumed"
     - 用例 snapshot(phase5_checking 报告正常 without 裁决):mode == "running"、tier 从报告头部行恢复
     - 用例 snapshot(mission_complete):mode == "done"
@@ -271,18 +287,18 @@ DESIGN.md 权威依据:
     - 用例路由 POST /api/checks/verdict:200 追加 / 同号 FileExistsError → 409 / busy → 409 / 非 phase5_checking → 409
     - 用例路由 POST /api/authorize:成功 200 返回新 state / 四查不过 409 / 已授权 409(phase4 造盘直接 POST → 409 幂等)
   </behavior>
-  <action>(1)backend/session.py _session_snapshot 扩展(既有字段不动、不重命名):新增 "g3_available": 条件为 phase3 态时调 g3.g3_available(project)(否则 False);新增 "selfcheck" 子状态对象——按 state 组装:STATE_MISSION_COMPLETE → {"tier": 报告头部 parse_tier_line(latest), "mode": "done", "questions": []};STATE_PHASE5_CHECKING → latest = latest_check_content(docs);tier = parse_tier_line(latest) 或 read_tier(project) 兜底;mode:unpaired_verdicts(latest) 非空 → "paused"(questions = scan_pending_questions(latest) 映射的裁决卡数据)→ 有配对裁决行且无未配对且末行非 PASS → "resumed" → 否则 "running";STATE_PHASE5_AWAITING_TIER → {"tier": read_tier(project), "mode": "running", "questions": []};其余态 → {"tier": None, "mode": "running", "questions": []}(注意:推导函数只认磁盘不缓存,不调 AI——D-P3-23)。
+  <action>(1)backend/session.py _session_snapshot 扩展(既有字段不动、不重命名):新增 "g3_available": 条件为 phase3 态时调 g3.g3_available(project)(否则 False);新增 "writing_tmp_exists": 条件为 state==phase4 时 (project / "DESIGN.md.tmp").is_file()(其余态 False——D-P3-10 按钮二态文案的纯磁盘判定,snapshot 伪层组装不碰 derive_state);新增 "selfcheck" 子状态对象——按 state 组装:STATE_MISSION_COMPLETE → {"tier": 报告头部 parse_tier_line(latest), "mode": "done", "questions": []};STATE_PHASE5_CHECKING → latest = latest_check_content(docs);tier = parse_tier_line(latest) 或 read_tier(project) 兜底;mode:unpaired_verdicts(latest) 非空 → "paused"(questions = scan_pending_questions(latest) 输出直接作裁决卡数据,键 = {number, text})→ 有配对裁决行且无未配对且末行非 PASS → "resumed"(questions = [])→ 末行非 PASS 且 is_pure_p2(latest) → "p2"(questions = parse_problem_grades(latest) 映射的残余裁决卡数据,键 = {number, location, issue, suggestion},level 列恒 "P2" 不进卡——两 questions 形态由 mode 二值天然区分,前端按 mode 选卡渲染)→ 否则 "running"(questions = []);STATE_PHASE5_AWAITING_TIER → {"tier": read_tier(project), "mode": "running", "questions": []};其余态 → {"tier": None, "mode": "running", "questions": []}(注意:推导函数只认磁盘不缓存,不调 AI——D-P3-23)。"p2" 与 "done" 是 D-P3-23 mode 开放集 {"running"|"paused"|"resumed"|...} 的合法成员,非 derive_state 新状态值。
 
-(2)backend/main.py:GET /api/design(session.current_project_path() + DESIGN.md read_text 兜底 None;未进项目 RuntimeError → 400 照 get_draft;STYLE 上照 get_draft 138-148)——JSONResponse {"status":"ok", "design": content};GET /api/checks(checks 列表 = derive_state current_check 或 max 编号遍历、latest 报告全文 = latest_check_content、selfcheck = snapshot 的 selfcheck 透传、unpairedQuestions 可选——按 snapshot 已有字段直接组合,不重复判定)——{"status":"ok", "checks": [...], "latest": ...};**新路由 GET /api/design + GET /api/checks 与 Task 1 的 POST 六条一起归入「阶段 3/4/5 路由族」分节**;TierBody/VerdictBody(number: int, decision: str, note: str)pydantic 类;POST /api/checks/verdict 分支(RuntimeError 消息含「裁决」或「阶段」→ 409;FileExistsError → 409;ValueError → 400)。
+(2)backend/main.py:GET /api/design(session.current_project_path() + DESIGN.md read_text 兜底 None;未进项目 RuntimeError → 400 照 get_draft;STYLE 上照 get_draft 138-148)——JSONResponse {"status":"ok", "design": content};GET /api/checks(checks 列表 = derive_state current_check 或 max 编号遍历、latest 报告全文 = latest_check_content、selfcheck = snapshot 的 selfcheck 透传、unpairedQuestions 可选——按 snapshot 已有字段直接组合,不重复判定)——{"status":"ok", "checks": [...], "latest": ...};**新路由 GET /api/design + GET /api/checks 与 Task 1 的 POST 六条一起归入「阶段 3/4/5 路由族」分节**;TierBody/VerdictBody(number: int, decision: str, note: str)pydantic 类;POST /api/checks/verdict 分支(RuntimeError:消息 startswith("尚未进入任何项目") → 400;否则含「仅自检进行中可裁决」或「当前有调用进行中」→ 409——判定字面按 Task 1「错误消息字面表」;FileExistsError → 409;ValueError → 400)。
 
 (3)backend/tests/test_route_session.py 扩用例(≥ 8;route_env + 造盘 helper 直造各态盘:phase3/p hase4/phase5_awaiting_tier/phase5_checking 各态、带报告各分支):behavior 列表逐条(模式三态 + tier 恢复 + design/checks 组装 + 全 409 分支)。
   </action>
   <verify>
     <automated>bash -c 'set -o pipefail; cd /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration && .venv/bin/python -m pytest backend/tests/test_session.py backend/tests/test_route_session.py -q 2>&1 | tail -2 && .venv/bin/python -m pytest backend/tests/ -q 2>&1 | tail -1'</automated>
-    <fails_when>任一 pytest 输出含 failed/error;test_route_session.py 新增 selfcheck/design/checks/authorize 用例 < 8(grep -c "def test_route_authorize\|def test_route_checks\|def test_route_design\|def test_route_verdict" 为 0);判定式①②的 mode 三分支任一失败;全量回归 passed < 143。</fails_when>
+    <fails_when>任一 pytest 输出含 failed/error;test_route_session.py 新增 selfcheck/design/checks/authorize 用例 < 8(grep -c "def test_route_authorize\|def test_route_checks\|def test_route_design\|def test_route_verdict" 为 0);判定式①②的 mode 三分支任一失败;纯 P2 盘 mode != "p2" 或 questions 键集不含 location/issue/suggestion(残余裁决卡数据断链);全量回归 passed < 143。</fails_when>
   </verify>
   <acceptance_criteria>
-  - GET /api/session 响应含 "g3_available" 键与 "selfcheck" 键(route 用例断言);selfcheck.mode 三值(running/paused/resumed)与 done 各有专属用例
+  - GET /api/session 响应含 "g3_available" 键、"writing_tmp_exists" 键与 "selfcheck" 键(route 用例断言);selfcheck.mode 四值(running/paused/resumed/p2)与 done 各有专属用例;"p2" 用例必须断言 questions 键集 = {number, location, issue, suggestion}(与 plan 04 renderVerdictCard 消费面一字不差)
   - backend/main.py 的 `grep -n "api/design\|api/checks" backend/main.py` 命中行数 ≥ 6(GET 两 + POST 四 tier/start/repair/verdict + authorize 计)
   - 自检子状态判定消费 grammar 锁定函数(grep -n "unpaired_verdicts" backend/session.py 命中,无第二份同判定重实现)
   - _session_snapshot 既有字段(rounds / pending_annotations / transcript / draft / brainstorm / divergence_available / g1_available)全部保留不动(git diff 零删除)

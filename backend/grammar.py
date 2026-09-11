@@ -35,6 +35,8 @@ from backend.state import (
 )
 
 __all__ = [
+    "TIER_LINE_STRICT",
+    "TIER_LINE_LOOSE",
     "parse_dimension_table",
     "is_dimension_table_green",
     "parse_pending_list",
@@ -44,6 +46,10 @@ __all__ = [
     "is_pass_conclusion",
     "parse_verdict_lines",
     "unpaired_verdicts",
+    "parse_tier_line",
+    "parse_problem_grades",
+    "is_pure_p2",
+    "scan_pending_questions",
 ]
 
 # §6.4 裁决追加行形态:"> (待裁决|裁决):#K:"(strip 后匹配;待裁决在前,
@@ -58,6 +64,12 @@ _STATUS_GREEN = "✓"
 _STATUS_HALF = "◐"
 _STATUS_CROSS = "✗"
 _KNOWN_DIM_STATUSES = {_STATUS_GREEN, _STATUS_HALF, _STATUS_CROSS}
+
+# 报告头部档位行字面(§8.2:档位记录于每份核查报告头部;checks.py 落盘与
+# Wave 3 prompt 注入逐字引用同一常量,不复制第二份字面量——D-P3-12/D-P3-15)
+TIER_LINE_STRICT = "> 自检档位:严格"
+TIER_LINE_LOOSE = "> 自检档位:宽松"
+_TIER_LINE_PREFIX = "> 自检档位:"
 
 # 未决清单状态列开放值(§6.4:清零 ⇔ 无状态为「待决」的行)
 _PENDING_OPEN = "待决"
@@ -281,3 +293,57 @@ def unpaired_verdicts(md_text: str) -> list[int]:
         if number not in answered_numbers and number not in unpaired:
             unpaired.append(number)
     return unpaired
+
+
+# ---------- 7. 报告头部档位行 + 8. 问题分级表 + 9. 待裁决文本扫描 ----------
+# (Phase 3 纯增量,PLAN idi-03-01 Task 2 / DATA-04 / D-P3-15 / D-P3-17 / D-P3-18;
+#  既有六条(1-6)锁定语义零触碰——check-14 锁定版,本节只新增不修改)
+
+# 形态来源 _VERDICT_RE 的待裁决分支(同前缀/分组风格派生,不复制第二份独立
+# 形态来源;_VERDICT_RE 锚定「结论行之后」,本正则全文无锚点扫描——服务
+# 修复者输出文本/事件流与暂停态问题呈现,D-P3-18)
+_PENDING_QUESTION_RE = re.compile(r"^>\s*待裁决:#(\d+):(.*)$")
+
+
+def parse_tier_line(md_text: str) -> str | None:
+    """报告头部档位行三态解析:"严格"/"宽松"/None(§8.2 / D-P3-15)。
+
+    扫首个以 `> 自检档位:` 开头(strip 后)的行——报告可能带 H1 标题,
+    不假定首行;整行 strip 后恰为 TIER_LINE_STRICT / TIER_LINE_LOOSE 才
+    返回对应值;脏变体(如「超严格」/行内尾注)与无该行 → None。
+    (RED 骨架:未实现)
+    """
+    raise NotImplementedError("parse_tier_line 尚未实现(Task 2 GREEN 阶段实现)")
+
+
+def parse_problem_grades(md_text: str) -> list[dict]:
+    """解析问题分级表为 [{"number", "level", "location", "issue", "suggestion"}]。
+
+    列 = 编号/级别/位置/问题/建议修法(D-P3-15 表头字面,与 prompt 注入
+    逐字一致——两端同字面是 D-P3-29 硬要求);number 列转 int(脏值如「一」
+    → 保留 0 + warning 不抛);表头与分隔行丢弃;无表 → []。
+    (RED 骨架:未实现)
+    """
+    raise NotImplementedError("parse_problem_grades 尚未实现(Task 2 GREEN 阶段实现)")
+
+
+def is_pure_p2(md_text: str) -> bool:
+    """纯 P2 判定:问题表全部 level == P2 且报告有结论行锚点(D-P3-17 / D-22)。
+
+    空表/无表 → False(零问题报告走 PASS 路径,不以纯 P2 处理,fail-closed);
+    无 `> 核查结论:` 锚点行(半份 P2 报告:P2 表已写、结论行未写)→ False
+    ——不得判纯 P2 进 p2 死局态,须回落 running 走「继续自检」恢复;
+    P0/P1 任一出现 → False。(RED 骨架:未实现)
+    """
+    raise NotImplementedError("is_pure_p2 尚未实现(Task 2 GREEN 阶段实现)")
+
+
+def scan_pending_questions(text: str) -> list[dict]:
+    """全文扫描 `> 待裁决:#K:` 形态行,返回 [{"number", "text"}](D-P3-18)。
+
+    无锚点全文扫描(say 事件流与最终文本均可喂入)——与 parse_verdict_lines
+    的「结论行之后」扫描空间不同,服务于修复者输出扫描与暂停态问题呈现;
+    number 为 int(与 parse_verdict_lines 同型);行内代码引用样例不误收。
+    (RED 骨架:未实现)
+    """
+    raise NotImplementedError("scan_pending_questions 尚未实现(Task 2 GREEN 阶段实现)")

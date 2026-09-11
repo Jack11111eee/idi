@@ -27,11 +27,15 @@ from backend.grammar import (  # noqa: E402
     is_dimension_table_green,
     is_pass_conclusion,
     is_pending_list_clear,
+    is_pure_p2,
     parse_annotation_responses,
     parse_auth_marker,
     parse_dimension_table,
     parse_pending_list,
+    parse_problem_grades,
+    parse_tier_line,
     parse_verdict_lines,
+    scan_pending_questions,
     unpaired_verdicts,
 )
 from backend.state import (  # noqa: E402
@@ -370,3 +374,198 @@ def test_full_sample_all_checks_pass():
     assert is_pending_list_clear(text) is True
     assert parse_auth_marker(text) == "no"
     assert len(parse_annotation_responses(text)) == 1
+
+
+# ---------- 报告头部档位行(PLAN idi-03-01 Task 2 / D-P3-15 / §8.2) ----------
+
+def _make_check_report(
+    tier_line: str | None = "> 自检档位:严格",
+    problem_table: str | None = (
+        "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|------|------|------|------|----------|\n"
+        "| 1 | P1 | §2.1 | 两处口径不一致 | 统一为单一口径 |"
+    ),
+    conclusion: str = "> 核查结论:FIX(P1×1)",
+) -> str:
+    """手造最小 check 报告样本(头部档位行 + 问题分级表 + 结论行)。
+
+    None 参数表示该段缺失(半份/无表样本)。
+    """
+    parts = ["# DESIGN-check-N 核查报告\n"]
+    if tier_line is not None:
+        parts.append(f"\n{tier_line}\n")
+    if problem_table is not None:
+        parts.append("\n## 问题分级\n\n" + problem_table + "\n")
+    parts.append(f"\n{conclusion}\n")
+    return "".join(parts)
+
+
+def test_tier_line_strict_and_loose():
+    # 用例 19(正严格/正宽松):首部档位行 strip 后恰为两串之一 → 对应值
+    assert parse_tier_line(_make_check_report(tier_line="> 自检档位:严格")) == "严格"
+    assert parse_tier_line(_make_check_report(tier_line="> 自检档位:宽松")) == "宽松"
+    # H1 标题行在前不干扰(扫「首个以前缀开头的行」,不假定首行)
+    assert parse_tier_line("# 报告\n\n> 自检档位:严格\n\n正文\n") == "严格"
+
+
+def test_tier_line_missing_returns_none():
+    # 用例 20(无行):无档位行 / 空文档 → None
+    assert parse_tier_line(_make_check_report(tier_line=None)) is None
+    assert parse_tier_line("") is None
+    assert parse_tier_line("# 无档位行报告\n\n正文\n") is None
+
+
+def test_tier_line_dirty_value_returns_none():
+    # 用例 21(脏值/尾注):「超严格」或行内有尾注 → None(存在但脏,非两串之一)
+    assert parse_tier_line(_make_check_report(tier_line="> 自检档位:超严格")) is None
+    assert parse_tier_line(_make_check_report(tier_line="> 自检档位:严格(备注)")) is None
+
+
+# ---------- 问题分级表(表头字面与 prompt 注入逐字一致,D-P3-29) ----------
+
+def test_problem_grades_parse_rows_int_number():
+    # 用例 22(正例三行混级):number 断言为 int 型;列映射五键全有;表头丢弃
+    report = _make_check_report(
+        problem_table=(
+            "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+            "|------|------|------|------|----------|\n"
+            "| 1 | P0 | §1.2 | 核心矛盾 | 重写该节 |\n"
+            "| 2 | P1 | §3.4 | 口径漂移 | 统一口径 |\n"
+            "| 3 | P2 | §9 | 术语可更白话 | 改写术语 |"
+        )
+    )
+    rows = parse_problem_grades(report)
+    assert len(rows) == 3
+    for row in rows:
+        assert isinstance(row["number"], int), "number 列必须是 int(裁决卡 number 直接配对整数 K)"
+    assert rows[0] == {
+        "number": 1, "level": "P0", "location": "§1.2",
+        "issue": "核心矛盾", "suggestion": "重写该节",
+    }
+    assert rows[2]["level"] == "P2"
+
+
+def test_problem_grades_empty_table_and_no_table():
+    # 用例 23(空表/无表):表头无数据行 / 标题缺失 → []
+    empty = _make_check_report(
+        problem_table="| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n|------|------|------|------|----------|"
+    )
+    assert parse_problem_grades(empty) == []
+    assert parse_problem_grades(_make_check_report(problem_table=None)) == []
+    assert parse_problem_grades("") == []
+
+
+def test_problem_grades_dirty_level_kept_and_dirty_number_zero():
+    # 用例 24(脏值照读不抛):级别列脏值(如「高」)照读——is_pure_p2 自然判 False;
+    # 编号脏值(「一」)→ number == 0 且不抛(与裁决行 #K 的 int 同型)
+    report = _make_check_report(
+        problem_table=(
+            "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+            "|------|------|------|------|----------|\n"
+            "| 一 | 高 | §1 | 脏值行 | 照读 |"
+        )
+    )
+    rows = parse_problem_grades(report)
+    assert len(rows) == 1
+    assert rows[0]["number"] == 0
+    assert rows[0]["level"] == "高"
+    assert is_pure_p2(report) is False
+
+
+# ---------- 纯 P2 判定(D-22 残余裁决 / D-P3-17) ----------
+
+def test_is_pure_p2_all_p2_true():
+    # 用例 25(全 P2):问题表全部 level == P2 → True
+    report = _make_check_report(
+        problem_table=(
+            "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+            "|------|------|------|------|----------|\n"
+            "| 1 | P2 | §9 | 术语可更白话 | 改写术语 |\n"
+            "| 2 | P2 | §10 | 表述冗长 | 精简 |"
+        )
+    )
+    assert is_pure_p2(report) is True
+
+
+def test_is_pure_p2_mixed_p1_false():
+    # 用例 26(混 P1):P1×2 + P2×1 → False(零 P0/P1 才纯)
+    report = _make_check_report(
+        problem_table=(
+            "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+            "|------|------|------|------|----------|\n"
+            "| 1 | P1 | §2.1 | 口径漂移 | 统一口径 |\n"
+            "| 2 | P1 | §3.4 | 术语不一致 | 统一术语 |\n"
+            "| 3 | P2 | §9 | 术语可更白话 | 改写术语 |"
+        )
+    )
+    assert is_pure_p2(report) is False
+
+
+def test_is_pure_p2_empty_table_false():
+    # 用例 27(空表/无表):→ False(零问题报告走 PASS 路径,不以纯 P2 处理,fail-closed)
+    empty = _make_check_report(
+        problem_table="| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n|------|------|------|------|----------|"
+    )
+    assert is_pure_p2(empty) is False
+    assert is_pure_p2(_make_check_report(problem_table=None)) is False
+    assert is_pure_p2("") is False
+
+
+def test_is_pure_p2_half_report_no_conclusion_false():
+    # 用例 28(半份 P2 报告):P2 表已写、结论行未写(无 `> 核查结论:` 锚点)
+    # → False(fail-closed:不得判纯 P2 进 p2 死局态,回落 running 走恢复)
+    half = (
+        "# DESIGN-check-N 核查报告\n\n"
+        "> 自检档位:严格\n\n"
+        "## 问题分级\n\n"
+        "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|------|------|------|------|----------|\n"
+        "| 1 | P2 | §9 | 术语可更白话 | 改写术语 |\n"
+    )
+    assert is_pure_p2(half) is False
+
+
+# ---------- 待裁决文本扫描(D-P3-18:先流后文本两处均可复用) ----------
+
+def test_scan_pending_questions_multiple_numbers():
+    # 用例 29(多号全收):`> 待裁决:#3:范围问题` → [{number: 3, text: "范围问题"}];
+    # 多行多号全收;number 为 int
+    text = (
+        "> 待裁决:#1:范围问题属于用户职权吗?\n"
+        "中间普通文本行\n"
+        "> 待裁决:#3:术语表要不要保留?\n"
+    )
+    assert scan_pending_questions(text) == [
+        {"number": 1, "text": "范围问题属于用户职权吗?"},
+        {"number": 3, "text": "术语表要不要保留?"},
+    ]
+
+
+def test_scan_pending_questions_answered_not_collected_and_malformed():
+    # 用例 30(配对裁决不收 / 形态不符):`> 裁决:` 不是待裁决不收;
+    # `> 待裁决 3:`(无 #/冒号形态)不收;空文本 → []
+    text = (
+        "> 裁决:#3:接受\n"
+        "> 待裁决 3:形态不符\n"
+        "> 待裁决#3:缺冒号\n"
+    )
+    assert scan_pending_questions(text) == []
+    assert scan_pending_questions("") == []
+
+
+def test_scan_pending_questions_inline_code_sample_not_collected():
+    # 用例 31(行内代码引用样例不误收):整行被行内代码包裹的文法样例
+    # (如修复者输出中引用「`> 待裁决:#1:`」讲解协议)不是真实抛问——
+    # strip 后以 ` 开头的行跳过(§6.4 写作纪律:引用样例须置于行内代码)
+    text = (
+        "协议说明:抛问格式为 `> 待裁决:#1:样例问题` 整段在行内代码。\n"
+        "> 待裁决:#2:真实抛问\n"
+    )
+    assert scan_pending_questions(text) == [{"number": 2, "text": "真实抛问"}]
+
+
+def test_scan_pending_questions_text_stripped():
+    # 用例 32(text 列 strip):问题文本尾部空白 strip 后返回
+    assert scan_pending_questions("> 待裁决:#5:  范围问题  \n") == [
+        {"number": 5, "text": "范围问题"}
+    ]

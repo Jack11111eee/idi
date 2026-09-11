@@ -105,7 +105,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] idi-03-02-PLAN.md — 后端全层:authorize/set_tier/verdict/三 start 流水线(tmp 原子改名+两跳自动循环+抛问截存)+ prompt 三族 + 六路由 + snapshot 扩展
+- [ ] idi-03-02-PLAN.md — 后端全层:authorize/set_tier/verdict/三 start 流水线(tmp 原子改名+两跳自动循环+抛问截存)+ prompt 三族 + authorize/tier/verdict/post-mortem 五路由(writing/start/repair 三条 202 归 idi-03-03)+ snapshot 扩展
 
 **Wave 3** *(blocked on Wave 2 completion)*
 

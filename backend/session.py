@@ -174,7 +174,78 @@ def _session_snapshot() -> dict:
         "brainstorm": _read_text(project / BRAINSTORM_FILENAME),
         "divergence_available": divergence_available(project),
         "g1_available": g1_available(project),
+        # ---- 阶段 3/4/5 快照扩展(PLAN idi-03-02 Task 3,D-P3-10/17/23/26)----
+        # g3_available:仅 phase3 态观察流量(四查;非 phase3 恒 False)
+        "g3_available": (
+            state["state"] == STATE_PHASE3 and g3_mod.g3_available(project)
+        ),
+        # writing_tmp_exists:phase4 态 tmp 残留判定(D-P3-10 二态文案纯磁盘源)
+        "writing_tmp_exists": (
+            state["state"] == STATE_PHASE4
+            and (project / "DESIGN.md.tmp").is_file()
+        ),
+        # selfcheck 子状态(快照伪层组装,非 derive_state 新状态值,D-P3-23)
+        "selfcheck": _selfcheck_substate(project, state),
     }
+
+
+def _selfcheck_substate(project: Path, state: dict) -> dict:
+    """组装 selfcheck 子状态({tier, mode, questions};只认磁盘不缓存,D-P3-23)。
+
+    mode 开放集(D-P3-23):running / paused(判定式①,待裁决截存卡)/
+    resumed(判定式②,配对裁决续跑)/ p2(纯 P2 残余,裁决卡)/
+    done(mission_complete)。questions 两形态按 mode 二值区分:
+      paused → scan_pending_questions 的 {number, text}(修复者抛问卡);
+      p2 → parse_problem_grades 映射的 {number, location, issue, suggestion}
+            (level 列恒 P2 不进卡,D-P3-17 残余裁决卡三字段)。
+    """
+    st = state["state"]
+    if st == STATE_MISSION_COMPLETE:
+        latest = latest_check_content_mod(project / "docs") or ""
+        return {
+            "tier": grammar_mod.parse_tier_line(latest),
+            "mode": "done",
+            "questions": [],
+        }
+    if st == STATE_PHASE5_CHECKING:
+        latest = latest_check_content_mod(project / "docs") or ""
+        tier = grammar_mod.parse_tier_line(latest) or checks_mod.read_tier(project)
+        # 判定式①:未配对待裁决非空 → paused(裁决卡 = 截存的待裁决问题)
+        if grammar_mod.unpaired_verdicts(latest):
+            return {
+                "tier": tier,
+                "mode": "paused",
+                "questions": grammar_mod.scan_pending_questions(latest),
+            }
+        # 判定式②:配对裁决 + 无未配对 + 末行非 PASS → resumed
+        verdicts = grammar_mod.parse_verdict_lines(latest)
+        has_answered = any(v["kind"] == "裁决" for v in verdicts)
+        if has_answered and not grammar_mod.is_pass_conclusion(latest):
+            return {"tier": tier, "mode": "resumed", "questions": []}
+        # 纯 P2 残余:末行非 PASS + is_pure_p2(半份 fail-closed 回落 running)
+        if not grammar_mod.is_pass_conclusion(latest) and grammar_mod.is_pure_p2(latest):
+            return {
+                "tier": tier,
+                "mode": "p2",
+                "questions": [
+                    {
+                        "number": row["number"],
+                        "location": row["location"],
+                        "issue": row["issue"],
+                        "suggestion": row["suggestion"],
+                    }
+                    for row in grammar_mod.parse_problem_grades(latest)
+                ],
+            }
+        # running(报告正常/半份 P2 回落,「继续自检」可重跑恢复)
+        return {"tier": tier, "mode": "running", "questions": []}
+    if st == STATE_PHASE5_AWAITING_TIER:
+        return {
+            "tier": checks_mod.read_tier(project),
+            "mode": "running",
+            "questions": [],
+        }
+    return {"tier": None, "mode": "running", "questions": []}
 
 
 def snapshot() -> dict:

@@ -361,8 +361,8 @@ def post_round_process() -> JSONResponse:
 
 
 # ---------------------------------------------------------------------------
-# 阶段 3/4/5 路由族(PLAN idi-03-02,D-P3-27:authorize/tier/verdict 三 POST;
-# GET /api/design、GET /api/checks 两 GET 归 Task 3;POST /api/writing、
+# 阶段 3/4/5 路由族(PLAN idi-03-02,D-P3-27:authorize/tier/verdict 三 POST +
+# design/checks 两 GET;POST /api/writing、
 # /api/checks/start、/api/checks/repair 三条 202 受理路由归 idi-03-03)
 # ---------------------------------------------------------------------------
 
@@ -429,6 +429,52 @@ def post_verdict(body: VerdictBody) -> JSONResponse:
         )
     state = session.snapshot()
     return JSONResponse({"status": "ok", "state": state["state"]})
+
+
+@app.get("/api/design")
+def get_design() -> JSONResponse:
+    """DESIGN.md 全文(阶段 5/完成态前端渲染源,D-P3-27)。
+
+    未进项目 → 400;文件不存在 → design: null(前端区分「尚未撰写」)。
+    """
+    try:
+        project = session.current_project_path()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    design_path = project / "DESIGN.md"
+    if not design_path.is_file():
+        return JSONResponse({"status": "ok", "design": None})
+    try:
+        content = design_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        content = None
+    return JSONResponse({"status": "ok", "design": content})
+
+
+@app.get("/api/checks")
+def get_checks() -> JSONResponse:
+    """check 报告列表 + 最新报告全文 + selfcheck 子状态(session snapshot 组合,
+    D-P3-27;不重复判定——selfcheck 透传快照字段)。"""
+    try:
+        snapshot = session.snapshot()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    project = session.current_project_path()
+    docs_dir = project / "docs"
+    from backend.state import latest_check_content, max_check_number
+
+    max_check = max_check_number(docs_dir)
+    checks_list = list(range(1, (max_check or 0) + 1))
+    latest = latest_check_content(docs_dir)
+    return JSONResponse(
+        {
+            "status": "ok",
+            "checks": checks_list,
+            "current_check": snapshot["current_check"],
+            "latest": latest,
+            "selfcheck": snapshot["selfcheck"],
+        }
+    )
 
 
 @app.post("/api/config")

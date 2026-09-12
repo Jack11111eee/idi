@@ -1431,3 +1431,484 @@ def test_build_writing_prompt_excludes_tmp_and_auth(tmp_path, fresh_session):
     prompt = build_writing_prompt(tmp_path)
     assert "HALF-TMP-MARKER" not in prompt, "半份 tmp 内容不得进资料段(D-P3-9)"
     assert "AUTH-MARKER" not in prompt, "AUTHORIZATION.md 内容不得进资料段"
+
+
+# ---------------------------------------------------------------------------
+# 阶段 5 两角色循环引擎(PLAN idi-03-02 Task 2 / DATA-04 / §8.2 /
+# D-P3-13 ~ D-P3-22:check→repair→check-2 两跳自动驱动 Fake 级全链)
+# ---------------------------------------------------------------------------
+
+
+def _check_report(tier: str = "严格", problems: list[tuple] | None = None,
+                  conclusion: str = "> 核查结论:FIX(P1×1)",
+                  pending_questions: list[tuple] | None = None,
+                  verdict_lines: list[tuple] | None = None) -> str:
+    """手造核查报告样本(文法与 grammar 解析器一字不差)。
+
+    problems = [(number, level, location, issue, suggestion)];
+    pending_questions = [(number, text)] → `> 待裁决:#K:…`;
+    verdict_lines = [(number, decision_text)] → `> 裁决:#K:…`(结论行之后)。
+    """
+    lines = [f"# 核查报告\n\n> 自检档位:{tier}\n\n## 问题分级\n\n"]
+    if problems:
+        lines.append("| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n")
+        lines.append("|---|---|---|---|---|\n")
+        for n, level, loc, issue, sug in problems:
+            lines.append(f"| {n} | {level} | {loc} | {issue} | {sug} |\n")
+    lines.append(f"\n{conclusion}\n")
+    if pending_questions or verdict_lines:
+        lines.append("\n")
+        for n, text in pending_questions or []:
+            lines.append(f"> 待裁决:#{n}:{text}\n")
+        for n, text in verdict_lines or []:
+            lines.append(f"> 裁决:#{n}:{text}\n")
+    return "".join(lines)
+
+
+def _target_check_n(prompt: str) -> int:
+    """从 check prompt 的落盘指令解析目标报告编号(docs/DESIGN-check-N.md,
+    编号由任务方给出,勿自定)——取「写入 docs/DESIGN-check-」而非资料段的
+    既有报告标题,防把资料段文件名误当目标。"""
+    import re as _re
+
+    m = _re.search(r"写入 docs/DESIGN-check-(\d+)\.md", prompt)
+    return int(m.group(1)) if m else 0
+
+
+class CheckWritingFake(FakeAICaller):
+    """核查执行者 fake:per-call 脚本(每次 run 消费一个 spec)写 check 报告。
+
+    specs = [report_text_1, report_text_2, ...](报告文法样本——含/不含
+    结论行、P1/P2 分级由样本控制);调用次数超脚本 → AssertionError。
+    """
+
+    def __init__(self, specs: list[str]):
+        super().__init__(events=[])
+        self.specs = list(specs)
+        self.reports_written: list[int] = []
+
+    def run(self, project_path, prompt: str):
+        self.run_calls.append((str(project_path), prompt))
+        if not self.specs:
+            raise AssertionError("CheckWritingFake 脚本耗尽(超出预期的核查跳数)")
+        report = self.specs.pop(0)
+        n = _target_check_n(prompt) or len(self.reports_written) + 1
+        docs_dir = Path(project_path) / "docs"
+        docs_dir.mkdir(parents=True, exist_ok=True)
+        (docs_dir / f"DESIGN-check-{n}.md").write_text(report, encoding="utf-8")
+        self.reports_written.append(n)
+        yield {"kind": "say", "content": f"核查第 {n} 轮完成。", "raw": None}
+        yield {"kind": "done", "content": "调用结束", "raw": None}
+
+
+class RepairWritingFake(FakeAICaller):
+    """修复者 fake:per-call 脚本写 DESIGN.md.tmp(tmp_prefill 先置盘);
+
+    pending_lines 非 None 时在 say 事件流文本含 `> 待裁决:#K:…` 行
+    (抛问形态,D-P3-18);say_texts 可额外注入。计数 repair_calls。
+    """
+
+    def __init__(self, tmp_content: str | None = "# 总设计文档\n\n修复后版本。\n",
+                 pending_lines: list[str] | None = None):
+        super().__init__(events=[])
+        self.tmp_content = tmp_content
+        self.pending_lines = pending_lines
+        self.repair_calls: list[tuple[str, str]] = []
+
+    def run(self, project_path, prompt: str):
+        self.repair_calls.append((str(project_path), prompt))
+        if self.tmp_content is not None:
+            (Path(project_path) / "DESIGN.md.tmp").write_text(
+                self.tmp_content, encoding="utf-8"
+            )
+        if self.pending_lines:
+            for line in self.pending_lines:
+                yield {"kind": "say", "content": line, "raw": None}
+        yield {"kind": "done", "content": "调用结束", "raw": None}
+
+
+class DualRoleFake:
+    """单 caller 两角色双队列 fake:session._ensure_caller 复用同一 caller,
+    check 与 repair 按调用顺序分别从 check_specs / repair_specs 消费
+    (谁先被调谁出队;真实链路 check 先 repair 后,由 prompt 内容区分)。
+
+    分派依据:prompt 含「核查执行者」→ check 脚本;含「修复引擎」→ repair 脚本。
+    """
+
+    def __init__(self, check_specs: list[str], repair_specs: list["RepairWritingFake"]):
+        self.check_specs = list(check_specs)
+        self.repair_specs = list(repair_specs)
+        self.check_calls: list[str] = []
+        self.repair_calls: list[str] = []
+        self.request_permission = None
+
+    def run(self, project_path, prompt: str):
+        if "核查执行者" in prompt:
+            self.check_calls.append(prompt)
+            report = self.check_specs.pop(0)
+            n = _target_check_n(prompt) or len(self.check_calls)
+            docs_dir = Path(project_path) / "docs"
+            docs_dir.mkdir(parents=True, exist_ok=True)
+            (docs_dir / f"DESIGN-check-{n}.md").write_text(report, encoding="utf-8")
+            yield {"kind": "say", "content": f"核查第 {n} 轮完成。", "raw": None}
+        else:
+            repair = self.repair_specs.pop(0)
+            self.repair_calls.append(prompt)
+            repair.repair_calls.append((str(project_path), prompt))
+            if repair.tmp_content is not None:
+                (Path(project_path) / "DESIGN.md.tmp").write_text(
+                    repair.tmp_content, encoding="utf-8"
+                )
+            if repair.pending_lines:
+                for line in repair.pending_lines:
+                    yield {"kind": "say", "content": line, "raw": None}
+            yield {"kind": "say", "content": "修复完成。", "raw": None}
+        yield {"kind": "done", "content": "调用结束", "raw": None}
+
+
+def _wait_chain_idle(sess, timeout: float = 15.0) -> bool:
+    """等两跳链彻底收尾(busy 可能在两跳间瞬时翻转,轮询到持续空闲)。"""
+    import time as _time
+
+    deadline = _time.time() + timeout
+    while _time.time() < deadline:
+        if not sess.busy():
+            # 再观察一小段:链式驱动可能正在解锁→下一跳窗口
+            _time.sleep(0.15)
+            if not sess.busy():
+                return True
+        _time.sleep(0.05)
+    return not sess.busy()
+
+
+def test_build_check_prompt_three_sections(tmp_path, fresh_session):
+    """用例 1:build_check_prompt 三段——DESIGN.md 全文 + tier 头部行正例(TIER_LINE 常量字面)
+    + 问题表头逐字 + 结论行文法(PASS 正例与 FIX)+ 目标文件名 + 干净的眼睛 + 明禁 + 红线。"""
+    from backend.grammar import TIER_LINE_STRICT, TIER_LINE_LOOSE
+    from backend.prompts import build_check_prompt
+
+    docs = _enter_phase5(fresh_session, tmp_path)
+    (docs / "DESIGN-check-1.md").write_text(
+        _check_report(problems=[(1, "P1", "§2", "范围含糊", "写清")],
+                      conclusion="> 核查结论:FIX(P1×1)"),
+        encoding="utf-8",
+    )
+
+    prompt = build_check_prompt(tmp_path, 2, "严格")
+    # DESIGN.md 全文片段
+    assert "# 总设计文档" in prompt
+    # tier 头部行正例(TIER_LINE 常量字面,逐字)
+    assert TIER_LINE_STRICT in prompt
+    assert TIER_LINE_LOOSE in prompt
+    # 问题表头逐字
+    assert "| 编号 | 级别 | 位置 | 问题 | 建议修法 |" in prompt
+    # 结论行文法(PASS 正例与 FIX 反例均在)
+    assert "> 核查结论:PASS" in prompt
+    assert "> 核查结论:FIX(" in prompt
+    # 目标文件名(n 参数注入)
+    assert "docs/DESIGN-check-2.md" in prompt
+    # 干净的眼睛角色句 + 绝不修改 DESIGN.md 明禁
+    assert "干净的眼睛" in prompt
+    assert "绝不修改 DESIGN.md" in prompt
+    # 语言红线
+    assert "简洁" in prompt and "大白话" in prompt
+
+
+def test_build_check_prompt_multi_round_trend(tmp_path, fresh_session):
+    """用例 2:多轮趋势照读——已有 check-1 时 prompt 资料段含 check-1 全文。"""
+    from backend.prompts import build_check_prompt
+
+    docs = _enter_phase5(fresh_session, tmp_path)
+    report1 = _check_report(
+        problems=[(1, "P1", "§2", "范围含糊", "写清")],
+        conclusion="> 核查结论:FIX(P1×1)",
+    )
+    (docs / "DESIGN-check-1.md").write_text(report1, encoding="utf-8")
+
+    prompt = build_check_prompt(tmp_path, 2, "严格")
+    assert "范围含糊" in prompt, "既有 check-1 报告全文应进资料段(趋势照读)"
+    assert "### 既有核查报告:docs/DESIGN-check-1.md(全文)" in prompt
+
+
+def test_build_repair_prompt_contains(tmp_path, fresh_session):
+    """用例 3:build_repair_prompt——最新报告全文 + 抛问协议 + tmp 落盘纪律 + DESIGN.md 全文。"""
+    from backend.prompts import build_repair_prompt
+
+    docs = _enter_phase5(fresh_session, tmp_path)
+    report1 = _check_report(
+        problems=[(1, "P1", "§2", "范围含糊", "写清")],
+        conclusion="> 核查结论:FIX(P1×1)",
+        pending_questions=[(1, "范围要不要收紧?")],
+        verdict_lines=[(1, "修——按建议")],
+    )
+    (docs / "DESIGN-check-1.md").write_text(report1, encoding="utf-8")
+
+    prompt = build_repair_prompt(tmp_path, 1, "严格")
+    # DESIGN.md 全文
+    assert "# 总设计文档" in prompt
+    # 最新报告全文(含裁决行)
+    assert "范围要不要收紧" in prompt
+    assert "> 裁决:#1:修——按建议" in prompt
+    # `> 待裁决:#K:` 抛问协议说明
+    assert "> 待裁决:#K:" in prompt
+    # tmp 落盘纪律
+    assert "DESIGN.md.tmp" in prompt
+    assert "绝不直接写 DESIGN.md" in prompt
+
+
+def test_start_check_two_hop_chain(tmp_path, fresh_session):
+    """用例 4(核心):严格档两跳自动驱动全链——check-1(P1)→ repair(1 次)
+    → check-2(纯 P2)→ 停在残余裁决态;2 份报告、1 次修复。"""
+    state = _enter_phase5(
+        fresh_session, tmp_path,
+        check_reports={}, tier="严格",
+    )
+
+    fake = DualRoleFake(
+        check_specs=[
+            _check_report(problems=[(1, "P1", "§2", "范围含糊", "写清")],
+                          conclusion="> 核查结论:FIX(P1×1)"),
+            _check_report(problems=[(2, "P2", "§5", "排版建议", "可选优化")],
+                          conclusion="> 核查结论:FIX(P2×1)"),
+        ],
+        repair_specs=[RepairWritingFake()],
+    )
+    fresh_session._set_caller_for_tests(fake)
+
+    assert fresh_session.start_check() is True
+    assert _wait_chain_idle(fresh_session), "两跳链未在时限内收尾"
+
+    docs = tmp_path / "docs"
+    # 断言核心:修复调用计数 1 + check 报告最终编号 2
+    assert len(fake.repair_calls) == 1, "应有恰好 1 次修复调用"
+    assert len(fake.check_calls) == 2, "应有恰好 2 次核查调用(check-1、check-2)"
+    assert (docs / "DESIGN-check-1.md").is_file()
+    assert (docs / "DESIGN-check-2.md").is_file(), "check-2 应出现(check-2 计数 2)"
+    assert not (tmp_path / "DESIGN.md.tmp").exists(), "tmp 应已被改名消费"
+
+    # 纯 P2 报告后循环停在残余裁决态(无第三次核查/无第二次修复)
+    snap = fresh_session.snapshot()
+    assert snap["state"] == "phase5_checking"
+    assert snap["current_check"] == 2
+
+
+def test_start_check_pass_stops(tmp_path, fresh_session):
+    """用例 5:PASS 报告——done 后无下一跳(修复零调用)、derive_state = mission_complete。"""
+    _enter_phase5(fresh_session, tmp_path, check_reports={}, tier="严格")
+
+    fake = DualRoleFake(
+        check_specs=[_check_report(conclusion="> 核查结论:PASS")],
+        repair_specs=[RepairWritingFake()],
+    )
+    fresh_session._set_caller_for_tests(fake)
+
+    assert fresh_session.start_check() is True
+    assert _wait_chain_idle(fresh_session)
+
+    assert len(fake.check_calls) == 1
+    assert len(fake.repair_calls) == 0, "PASS 报告不得触发修复"
+    snap = fresh_session.snapshot()
+    assert snap["state"] == "mission_complete"
+
+
+def test_start_check_pending_question_intercepts(tmp_path, fresh_session):
+    """用例 6:抛问截存——RepairFake say 事件含 `> 待裁决:#2:范围问题` → done 后报告尾部
+    出现截存行、无下一跳 check(check 计数不增)。"""
+    _enter_phase5(fresh_session, tmp_path, check_reports={}, tier="严格")
+
+    fake = DualRoleFake(
+        check_specs=[
+            _check_report(problems=[(1, "P1", "§2", "范围含糊", "写清")],
+                          conclusion="> 核查结论:FIX(P1×1)"),
+        ],
+        repair_specs=[
+            RepairWritingFake(pending_lines=["> 待裁决:#2:范围问题"]),
+        ],
+    )
+    fresh_session._set_caller_for_tests(fake)
+
+    assert fresh_session.start_check() is True
+    assert _wait_chain_idle(fresh_session)
+
+    docs = tmp_path / "docs"
+    report_text = (docs / "DESIGN-check-1.md").read_text(encoding="utf-8")
+    assert "> 待裁决:#2:范围问题" in report_text, "抛问应被截存到报告尾部"
+    # 无下一跳:check 调用计数 1,无 check-2
+    assert len(fake.check_calls) == 1, "抛问后不得推进下一轮核查"
+    assert not (docs / "DESIGN-check-2.md").exists()
+    # 状态:phase5_checking(unpaired 非空 → 暂停态签名在盘)
+    snap = fresh_session.snapshot()
+    assert snap["state"] == "phase5_checking"
+    import backend.grammar as grammar_mod
+
+    assert grammar_mod.unpaired_verdicts(report_text) == [2]
+
+
+def test_resume_after_verdict(tmp_path, fresh_session):
+    """用例 7:续跑——verdict_append 落盘裁决 → start_repair 再跑 → 报告含裁决行的新 prompt。"""
+    # resumed 态盘:问题表 #1 #2;#1 抛问且已裁决(配对)→ 判定式②命中;
+    # #2 在问题表但未被抛问 → 残余未清零(不收口,®§6.4 判定式②的
+    # 「配对问答行 + 无未配对 + 末行非 PASS」)
+    report = _check_report(
+        problems=[(1, "P1", "§2", "范围含糊", "写清"), (2, "P1", "§4", "措辞歧义", "直说")],
+        conclusion="> 核查结论:FIX(P1×2)",
+        pending_questions=[(1, "范围要不要收紧?")],
+        verdict_lines=[(1, "修——按建议")],
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: report}, tier="严格")
+
+    # resumed 态直接验:「继续修复」唯一放行
+    assert fresh_session.repair_available(tmp_path) is True
+
+    repair_fake = RepairWritingFake()
+    fresh_session._set_caller_for_tests(repair_fake)
+    assert fresh_session.start_repair() is True
+    assert _wait_chain_idle(fresh_session)
+
+    # 续跑 prompt 资料段含问题与裁决行(以磁盘为准,§8.2 不引入其他通道)
+    _, repair_prompt = repair_fake.repair_calls[0]
+    assert "> 裁决:#1:修——按建议" in repair_prompt
+    assert "范围要不要收紧" in repair_prompt
+    # #2 在问题表未配对 → 无收口;同轮驱动链续跑下一轮核查(check 计数为 0 增:
+    # 本 fake 只注入 repair caller 一次 —— 但驱动链会再起 check 调用同一 fake…)
+    report_after = (tmp_path / "docs" / "DESIGN-check-1.md").read_text(encoding="utf-8")
+    assert "> 核查结论:FIX(P1×2)" in report_after
+    # 证据:#2 未被裁 → 残余不清零,报告不追加 PASS(收口判定零误触发)
+
+
+def test_next_check_n_half_report_no_skip(tmp_path, fresh_session):
+    """用例 8:半份重跑不跳号(D-P3-21)——半份盘(报告缺结论行)「继续自检」
+    起跳 → Fake 写 docs/DESIGN-check-1.md 被覆盖(编号仍 1,不出现 check-2);
+    完整盘起跳产 check-2。"""
+    # 半份盘:check-1 报告无结论行
+    half_report = (
+        "# 核查报告\n\n> 自检档位:严格\n\n## 问题分级\n\n"
+        "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|---|---|---|---|---|\n"
+        "| 1 | P1 | §2 | 范围含糊 | 写清 |\n"
+    )  # 无 `> 核查结论:` 行 = 半份
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: half_report}, tier="严格")
+
+    # _next_check_n 判定:半份 → 1(同轮覆盖)
+    docs = tmp_path / "docs"
+    assert fresh_session._next_check_n(tmp_path) == 1
+
+    # 起跳(半份盘 phase5_checking,check_available True;CheckWritingFake
+    # 脚本只给一跳 P1 报告——修复跳会因 caller 脚本耗尽而断链,这正是断言
+    # 「不跳号」前需要的单跳形态;repair 跳不在本用例断言范围)
+    fake = CheckWritingFake(specs=[
+        _check_report(problems=[(1, "P1", "§2", "范围含糊", "写清")],
+                      conclusion="> 核查结论:FIX(P1×1)"),
+    ])
+
+    class _Harness:
+        """吞掉驱动链尾的修复跳(脚本到 check 为止):链断即停,不误报。"""
+
+        def __init__(self, inner):
+            self.inner = inner
+            self.repair_calls: list[tuple[str, str]] = []
+
+        def run(self, project_path, prompt: str):
+            if "核查执行者" in prompt:
+                yield from self.inner.run(project_path, prompt)
+            else:
+                # 修复跳被本用例吞停(不写 tmp、不发事件即 done)
+                self.repair_calls.append((str(project_path), prompt))
+                yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    harness = _Harness(fake)
+    fresh_session._set_caller_for_tests(harness)
+    assert fresh_session.start_check() is True
+    assert _wait_chain_idle(fresh_session)
+
+    # 编号仍 1,不出现 check-2(修复跳被吞停,链断在第一跳后)
+    assert (docs / "DESIGN-check-1.md").is_file()
+    assert not (docs / "DESIGN-check-2.md").exists(), "半份重跑不得跳号(D-P3-21)"
+
+    # 对照:完整盘(有结论行)起跳 → 产 check-2
+    assert fresh_session._next_check_n(tmp_path) == 2
+
+
+def test_start_check_entry_rejects(tmp_path, fresh_session):
+    """用例 9:入口拒绝——phase3/phase4 → False;busy 在飞 → False(HangingFake)。"""
+    _enter_phase3_compliant(fresh_session, tmp_path)
+    assert fresh_session.check_available(tmp_path) is False
+    assert fresh_session.start_check() is False, "phase3 不应受理核查"
+    assert fresh_session.start_repair() is False, "phase3 不应受理修复"
+
+    _enter_phase4(fresh_session, tmp_path)
+    assert fresh_session.start_check() is False, "phase4 不应受理核查"
+    assert fresh_session.start_repair() is False, "phase4 不应受理修复"
+
+    # busy:挂住在飞主调用 → start_check/start_repair 均 False
+    _enter_phase5(fresh_session, tmp_path, check_reports={}, tier="严格")
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake(FakeAICaller):
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=10)
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    hanging = HangingFake(events=[])
+    fresh_session._set_caller_for_tests(hanging)
+    threading.Thread(target=lambda: fresh_session.send_message("先聊"), daemon=True).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    assert fresh_session.start_check() is False, "在飞中不应受理核查"
+    assert fresh_session.start_repair() is False, "在飞中不应受理修复"
+    assert len(hanging.run_calls) == 1
+
+    release.set()
+    assert wait_idle(fresh_session), "调用未收尾"
+
+
+def test_repair_available_three_states(tmp_path, fresh_session):
+    """用例 10:repair_available 三态互斥(D-P3-20)——running False / 判定式② True / unpaired True→False / 纯 P2 False。"""
+    # ① running 态:报告刚落盘未跑修复(无裁决行无待裁决行)→ False
+    #    (与 check_available 同时 True 违反互斥——本盘形即防此盘)
+    _enter_phase5(
+        fresh_session, tmp_path,
+        check_reports={1: _check_report(
+            problems=[(1, "P1", "§2", "范围含糊", "写清")],
+            conclusion="> 核查结论:FIX(P1×1)",
+        )},
+        tier="严格",
+    )
+    assert fresh_session.check_available(tmp_path) is True, "running 态继续自检可用(中断恢复)"
+    assert fresh_session.repair_available(tmp_path) is False, \
+        "running 态(报告刚落盘未跑修复)不得放行修复(D-P3-20 互斥)"
+
+    # ② 判定式②:配对裁决 + 末行非 PASS → True(「继续修复」唯一放行)
+    report = _check_report(
+        problems=[(1, "P1", "§2", "范围含糊", "写清")],
+        conclusion="> 核查结论:FIX(P1×1)",
+        pending_questions=[(1, "范围要不要收紧?")],
+        verdict_lines=[(1, "修——按建议")],
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: report}, tier="严格")
+    assert fresh_session.repair_available(tmp_path) is True, \
+        "判定式②(配对裁决 + 末行非 PASS)应放行继续修复"
+    assert fresh_session.check_available(tmp_path) is True  # check 是恢复通道,不互斥于此断言
+
+    session._reset_for_tests()
+    # unpaired 非空(paused 态)→ False
+    report = _check_report(
+        problems=[(1, "P1", "§2", "范围含糊", "写清")],
+        conclusion="> 核查结论:FIX(P1×1)",
+        pending_questions=[(1, "范围要不要收紧?")],
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: report}, tier="严格")
+    assert fresh_session.repair_available(tmp_path) is False, \
+        "暂停态(未配对待裁决)不得放行修复"
+
+    # 纯 P2 残余(p2 态)→ False
+    report = _check_report(
+        problems=[(2, "P2", "§5", "排版建议", "可选优化")],
+        conclusion="> 核查结论:FIX(P2×1)",
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: report}, tier="严格")
+    assert fresh_session.repair_available(tmp_path) is False, \
+        "纯 P2 残余走裁决卡通道,不放行修复"

@@ -40,6 +40,8 @@ from backend.state import (
     derive_state,
     list_complete_rounds,
 )
+from backend.state import latest_check_content as latest_check_content_mod
+from backend.state import max_check_number as max_check_number_mod
 from backend.transcript import append_message, parse_transcript
 
 logger = logging.getLogger(__name__)
@@ -936,6 +938,349 @@ def start_writing() -> bool:
                 inflight_local = _inflight
             if inflight_local is not None:
                 inflight_local.set()
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True
+
+
+# ---------------------------------------------------------------------------
+# 阶段 5 两角色循环引擎(PLAN idi-03-02 Task 2 / DATA-04 / §8.2 全节 /
+# D-P3-13 ~ D-P3-22;done-回调直排,无 scheduler——每跳结束重拉磁盘判定)
+# ---------------------------------------------------------------------------
+
+
+def _next_check_n(project) -> int:
+    """「继续自检」重跑的目标轮编号(D-P3-21 半份自愈的实现点)。
+
+    读 max_check_number(docs):None → 1(首轮);有报告 → 读
+    latest_check_content——**半份判定 = 报告缺结论行**(全文无
+    `> 核查结论:` 行;AI 产物必含结论行,缺即崩在半途)→ 返回 max
+    (同轮覆盖重跑,不跳号,D-P3-21 字面);报告完整(有结论行)→ 返回
+    max + 1。不重排已落盘报告编号。
+    """
+    docs_dir = Path(project) / "docs"
+    max_check = max_check_number_mod(docs_dir)
+    if max_check is None:
+        return 1
+    latest = latest_check_content_mod(docs_dir) or ""
+    if "> 核查结论:" not in latest:
+        return max_check  # 半份:同轮覆盖重跑
+    return max_check + 1
+
+
+def check_available(project_path) -> bool:
+    """自检入口判定(纯靠磁盘,防绕过;D-P3-20 与「继续修复」互斥单一路径):
+    derive_state == phase5_checking → True(「继续自检」= 意外中断恢复,
+    §7.3②,重跑当前核查轮覆盖半份;paused/resumed 态由 repair_available
+    互斥拒绝修复跳,check 重跑覆盖是恢复通道)。
+
+    STATE_PHASE5_AWAITING_TIER 且 tier 签名文件存在(read_tier 非 None)
+    → True(选档是起检前置,D-P3-11);未选档 → False(先选档)。
+    其余态 False。
+    """
+    state = derive_state(Path(project_path))
+    if state["state"] == STATE_PHASE5_CHECKING:
+        return True
+    if state["state"] == STATE_PHASE5_AWAITING_TIER:
+        return checks_mod.read_tier(Path(project_path)) is not None
+    return False
+
+
+def repair_available(project_path) -> bool:
+    """修复入口判定(纯靠磁盘,双条件恰一放行——D-P3-20 判定式①②互斥的
+    服务端强制,「继续自检」/「继续修复」单一路径放行):
+
+      ① 判定式①命中(最新报告 unpaired_verdicts 非空 = 抛问待裁决,
+         paused 态)→ False(裁决落盘前不得重跑修复,check-10;
+         T-idi03 对应的 route 409 防线);
+      ② 判定式②命中(unpaired_verdicts 为空 且 报告含 `> 裁决:#K:` 配对
+         问答行 且 末行非 PASS)→ True(裁决已落盘「继续修复」唯一放行口);
+      ③ 其余态 → False:
+         - running 态(报告刚落盘未跑修复,无裁决行无待裁决行)→ False
+           ——否则与 check_available 的「继续自检」同时可用,违反 D-P3-20;
+         - 纯 P2 残余(p2 态)→ False(残余走裁决卡通道,不修复);
+         - PASS 尾(mission_complete)→ False。
+    """
+    state = derive_state(Path(project_path))
+    if state["state"] != STATE_PHASE5_CHECKING:
+        return False
+    docs_dir = Path(project_path) / "docs"
+    latest = latest_check_content_mod(docs_dir)
+    if not latest:
+        return False  # 无报告(防御:phase5_checking 必有报告)
+    if grammar_mod.unpaired_verdicts(latest):
+        return False  # ① 暂停态:先裁决,不修复
+    verdicts = grammar_mod.parse_verdict_lines(latest)
+    has_answered = any(v["kind"] == "裁决" for v in verdicts)
+    if has_answered and not grammar_mod.is_pass_conclusion(latest):
+        return True  # ② 配对裁决 + 末行非 PASS:「继续修复」唯一放行
+    return False  # ③ running(无裁决无待裁决)/ p2 / PASS
+
+
+def _drive_next(project, kind: str) -> None:
+    """循环驱动器外层 wrapper(D-P3-16 定案形态)。
+
+    在 start_check/start_repair 的 finally 解锁**之后**由驱动函数串调
+    (else 分支不直接自调——单飞锁未释放会自我拒绝);每跳结束重拉磁盘
+    判定下一步,无 scheduler / 无 threading.Timer / 无 while True 轮询。
+    abort 语义:_aborted 置位后驱动链条断(else 不排下一跳),
+    「继续自检/继续修复」恢复。
+
+    repair 跳走 start_repair(auto=True) 自动链入口:报告刚落盘
+    (running 态)无裁决行,判定式②用户门不适用(那是「继续修复」
+    按钮的放行条件,D-P3-20);自动链的守卫在 start_repair 的
+    auto 分支重验(phase5_checking + 无未配对待裁决)。
+    """
+    if _aborted:
+        return
+    if kind == "repair":
+        start_repair(auto=True)
+    elif kind == "check":
+        start_check()
+
+
+def start_check() -> bool:
+    """起一轮核查(§8.2 多方角色① / D-P3-13):后台线程 caller.run
+    (build_check_prompt(project, check_n, tier))→ AI 用 Write 写
+    docs/DESIGN-check-{n}.md → done-else = 循环驱动判定头部(D-P3-16):
+      ① 最新报告末行 PASS → 自然结束(mission_complete 由 derive_state
+         推导,§7.4 行 7;Wave 4 弹窗);
+      ② 报告纯 P2(问题表全 P2,非 PASS)→ 不修复,结束(残余裁决态,
+         D-22 / D-P3-17,Wave 4 呈现裁决卡);
+      ③ 其余(含 P0/P1)→ 自动链入 start_repair(finally 解锁后由
+         外层 wrapper _drive_next 串调,无 scheduler)。
+
+    check_n = _next_check_n(project)(半份报告同轮覆盖重跑不跳号,D-P3-21);
+    tier = 最新报告头部 parse_tier_line 或 read_tier 兜底(check_available
+    在 awaiting_tier 已要求 tier 存在;两者皆无 → 严格兜底)。两跳事件
+    照常 SSE 直播(§5.2)。
+    """
+    global _inflight, _ai_texts, _aborted
+    from backend.prompts import build_check_prompt
+
+    with _lock:
+        project = _current_project
+        if project is None:
+            raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+        if _inflight is not None and _inflight.is_set() is False:
+            return False  # 在飞调用未结束:并发拒绝
+        if not check_available(project):
+            return False  # 非 phase5 / 未选档 / 在飞:入口关闭(防绕过)
+        caller = _ensure_caller()
+        _inflight = threading.Event()  # set = 未结束
+        _ai_texts = []
+        _aborted = False
+
+    check_n = _next_check_n(project)
+    docs_dir = project / "docs"
+    latest_before = latest_check_content_mod(docs_dir) or ""
+    tier = grammar_mod.parse_tier_line(latest_before) or checks_mod.read_tier(project) or "严格"
+    prompt = build_check_prompt(project, check_n, tier)
+    tmp_path = project / "DESIGN.md.tmp"
+    design_path = project / "DESIGN.md"
+
+    def _worker():
+        global _aborted
+        try:
+            _wire_permission_callback(caller)
+            for event in caller.run(project, prompt):
+                if _aborted:
+                    break
+                _publish_for_tests(event)
+                if event.get("kind") == "done":
+                    break
+        except Exception as exc:  # 线程内兜底:流不悬空
+            _publish_for_tests(
+                {"kind": "error", "content": f"调用线程异常:{exc}", "raw": None}
+            )
+        else:
+            # ---- 循环驱动判定头部(D-P3-16;每跳重拉磁盘)----
+            try:
+                latest = latest_check_content_mod(docs_dir) or ""
+                if not latest:
+                    _publish_for_tests(
+                        {
+                            "kind": "error",
+                            "content": "核查未产出报告,可重跑",
+                            "raw": None,
+                        }
+                    )
+                elif grammar_mod.is_pass_conclusion(latest):
+                    pass  # ① PASS:自然结束(mission_complete 由 derive_state 推导)
+                elif grammar_mod.is_pure_p2(latest):
+                    pass  # ② 纯 P2 残余:不修复,结束(Wave 4 呈现裁决卡)
+                else:
+                    pass  # ③ 含 P0/P1:finally 解锁后 _drive_next 串调修复
+            except Exception as exc:
+                _publish_for_tests(
+                    {"kind": "error", "content": f"自检驱动判定异常:{exc}", "raw": None}
+                )
+        finally:
+            _publish_for_tests({"kind": "done", "content": "本轮核查结束", "raw": None})
+            with _lock:
+                inflight_local = _inflight
+            if inflight_local is not None:
+                inflight_local.set()
+            # finally 解锁后串调下一跳(D-P3-16 外层 wrapper;_aborted 断链;
+            # PASS / 纯 P2 / 无报告 → 不驱动)
+            latest = ""
+            try:
+                latest = latest_check_content_mod(docs_dir) or ""
+            except Exception:
+                pass
+            if (
+                not _aborted
+                and latest
+                and not grammar_mod.is_pass_conclusion(latest)
+                and not grammar_mod.is_pure_p2(latest)
+            ):
+                _drive_next(project, "repair")
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True
+
+
+def start_repair(auto: bool = False) -> bool:
+    """起修复跳(§8.2 多方角色② / D-P3-14 / D-P3-18):后台线程 caller.run
+    (build_repair_prompt;最新报告 + DESIGN.md 全文)→ done-else:
+      - 全文本扫描 `> 待裁决:`(say 事件流 + 最终报告文本,先流后文本;
+        scan_pending_questions 取命中清单,D-P3-18 幂等截存)→ 有命中 →
+        checks.append_pending_question 逐条截存到当轮报告尾部 + error 事件
+        「修复者抛问,已截存暂停,等待用户裁决」,**不驱动下一跳**(循环
+        停在当前跳;识别到标记一律暂停,误暂停代价 = 用户看一眼,比误
+        推进安全);
+      - 无命中且 tmp 已写 → tmp 原子改名 DESIGN.md(同 writing,D-P3-22)
+        → 驱动判定:宽松档(tier == 宽松)→ 结束(PASS 由修复者已追加
+        或残余收口动作处理);严格档 → start_check(check_n+1,同轮驱动器);
+      - 无命中且 tmp 不存在(AI 没写)→ error 事件「修复未产出 tmp,可
+        重跑」,不驱动下一跳(重跑覆盖自愈)。
+
+    入口判定(D-P3-20):
+      - auto=False(用户「继续修复」按钮):repair_available 双条件恰一
+        放行——判定式②(配对裁决 + 无未配对 + 末行非 PASS)才 True;
+        running 态(报告刚落盘未跑修复)与 unpaired 非空(paused 态)
+        均拒绝 409。
+      - auto=True(严格档自动链,check-done 后由 _drive_next 串调):
+        只重验 phase5_checking + 无未配对待裁决(报告刚落盘的 running
+        形态正是自动修复的目标盘,判定式②的用户门不适用)。
+    两者同样受单飞锁(在飞 409)与未进项目(400)约束。
+    """
+    global _inflight, _ai_texts, _aborted
+    from backend.prompts import build_repair_prompt
+
+    with _lock:
+        project = _current_project
+        if project is None:
+            raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+        if _inflight is not None and _inflight.is_set() is False:
+            return False  # 在飞调用未结束:并发拒绝
+        if not repair_available(project):
+            if not auto:
+                return False  # 判定式②未命中:用户入口关闭(D-P3-20 互斥)
+            # 自动链:重验 phase5_checking + 无未配对待裁决(§8.2 两跳自动)
+            state_auto = derive_state(project)
+            if state_auto["state"] != STATE_PHASE5_CHECKING:
+                return False
+            latest = latest_check_content_mod(project / "docs") or ""
+            if grammar_mod.unpaired_verdicts(latest):
+                return False  # 暂停态(待裁决):自动链也停,等用户
+        caller = _ensure_caller()
+        _inflight = threading.Event()  # set = 未结束
+        _ai_texts = []
+        _aborted = False
+
+    state = derive_state(project)
+    check_n = state["current_check"]
+    docs_dir = project / "docs"
+    latest_before = latest_check_content_mod(docs_dir) or ""
+    tier = grammar_mod.parse_tier_line(latest_before) or checks_mod.read_tier(project) or "严格"
+    prompt = build_repair_prompt(project, check_n, tier)
+    tmp_path = project / "DESIGN.md.tmp"
+    design_path = project / "DESIGN.md"
+
+    def _worker():
+        global _aborted
+        try:
+            _wire_permission_callback(caller)
+            for event in caller.run(project, prompt):
+                if _aborted:
+                    break
+                if event.get("kind") == "say":
+                    _ai_texts.append(event.get("content", ""))
+                _publish_for_tests(event)
+                if event.get("kind") == "done":
+                    break
+        except Exception as exc:  # 线程内兜底:流不悬空
+            _publish_for_tests(
+                {"kind": "error", "content": f"调用线程异常:{exc}", "raw": None}
+            )
+        else:
+            # ---- done 后端动作:抛问扫描 → 截存暂停 / 改名 → 下一跳 ----
+            try:
+                # 先流后文本(D-P3-18:say 事件流 + 报告文本都扫;
+                # 报告文本兜底覆盖修复者把抛问写进报告正文的形态)
+                combined_text = "\n".join(t for t in _ai_texts if t)
+                try:
+                    report_text = (
+                        docs_dir / f"DESIGN-check-{check_n}.md"
+                    ).read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    report_text = ""
+                scanned = grammar_mod.scan_pending_questions(
+                    combined_text + "\n" + report_text
+                )
+                if scanned:
+                    for q in scanned:
+                        checks_mod.append_pending_question(
+                            docs_dir / f"DESIGN-check-{check_n}.md",
+                            q["number"],
+                            q["text"],
+                        )
+                    _publish_for_tests(
+                        {
+                            "kind": "error",
+                            "content": "修复者抛问,已截存暂停,等待用户裁决",
+                            "raw": None,
+                        }
+                    )
+                    # 不驱动下一跳:循环停在当前跳;finally 尾部的驱动判定
+                    # 由 unpaired_verdicts 非空拦截(截存后报告必含未配对待裁决)
+                else:
+                    # 无命中:tmp 存在 → 原子改名(D-P3-8/D-P3-22 同 writing)
+                    if tmp_path.is_file() and design_path.is_file():
+                        tmp_path.replace(design_path)
+                    elif not tmp_path.is_file():
+                        _publish_for_tests(
+                            {
+                                "kind": "error",
+                                "content": "修复未产出 tmp,可重跑",
+                                "raw": None,
+                            }
+                        )
+            except Exception as exc:
+                _publish_for_tests(
+                    {"kind": "error", "content": f"修复收尾异常:{exc}", "raw": None}
+                )
+        finally:
+            _publish_for_tests({"kind": "done", "content": "修复结束", "raw": None})
+            with _lock:
+                inflight_local = _inflight
+            if inflight_local is not None:
+                inflight_local.set()
+            # 每跳结束重拉磁盘判定下一步(finally 解锁后外层 wrapper 串调;
+            # 抛问截存 → unpaired 非空断链;宽松档不链;tmp 缺失不链)
+            if _aborted or tier == "宽松":
+                return
+            latest = ""
+            try:
+                latest = latest_check_content_mod(docs_dir) or ""
+            except Exception:
+                pass
+            if not latest or grammar_mod.unpaired_verdicts(latest):
+                return  # 抛问截存盘:不再自动推进
+            if tmp_path.is_file():
+                return  # tmp 未消费(异常形态,不推进;重跑覆盖)
+            _drive_next(project, "check")
 
     threading.Thread(target=_worker, daemon=True).start()
     return True

@@ -32,6 +32,22 @@ def test_permission_design_md_reject():
     assert make_permission_decision(p, "write", p / "DESIGN.md") == "reject"
 
 
+def test_permission_authorization_md_reject():
+    """写项目根 AUTHORIZATION.md → reject(AI 无任何批准路径,§5.4 / D-P3-4)。
+
+    Specific Ideas 红线:AUTHORIZATION.md 的写入者是后端且仅后端——
+    权限矩阵对 AI 拒绝无任何绕过通道(PLAN idi-03-02 Task 2 断言在位)。
+    """
+    p = Path("/tmp/fakeproj")
+    assert make_permission_decision(p, "write", p / "AUTHORIZATION.md") == "reject"
+
+
+def test_permission_tmp_allow():
+    """写项目根 DESIGN.md.tmp → allow(tmp 是 DESIGN.md 唯一合法落盘路径)。"""
+    p = Path("/tmp/fakeproj")
+    assert make_permission_decision(p, "write", p / "DESIGN.md.tmp") == "allow"
+
+
 def test_permission_docs_allow():
     """写项目内 docs/ → allow(G1 定稿通道)。"""
     p = Path("/tmp/fakeproj")

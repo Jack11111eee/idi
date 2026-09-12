@@ -18,6 +18,16 @@ build_writing_prompt(project_path) -> str(阶段 4 撰写 / §7.4 行 4 / D-P3-7
 + transcript/draft/brainstorm(绝不读 DESIGN.md.tmp / AUTHORIZATION.md,
 D-P3-9),任务段注入七维度覆盖 + DESIGN.md.tmp 落盘指令与明禁。
 
+build_check_prompt(project_path, check_n, tier) -> str(阶段 5 核查 / §8.2 /
+D-P3-13 / D-P3-15):「干净的眼睛」核查提示词——资料段 = DESIGN.md 全文 +
+全部轮次文档 + 全部批注 + 已有全部 DESIGN-check 报告;问题分级表头与
+结论行文法逐字注入(解析器两端一字不差,D-P3-29),绝不修改 DESIGN.md。
+
+build_repair_prompt(project_path, check_n, tier) -> str(阶段 5 修复 / §8.2 /
+D-P3-14):修复者提示词——资料段 = DESIGN.md + 最新报告全文(含裁决行)
++ 其他报告;任务段 = 按裁决逐条修复、写 DESIGN.md.tmp、用户职权问题发
+`> 待裁决:#K:` 停下、宽松档在报告末追加 PASS。
+
 四段结构(PLAN idi-01-03 Task 1):
   一、系统段:角色(项目开工前的讨论搭档)+ §3.8 语言红线原文要义
   二、资料段:docs/ 下各文档(transcript.md 历史、draft.md 现状、brainstorm.md 若存在),
@@ -463,4 +473,313 @@ def build_writing_prompt(project_path) -> str:
         f"{known_docs_section}\n\n"
         "## 三、本次任务\n\n"
         f"{_WRITING_INSTRUCTIONS}\n"
+    )
+
+
+# ---------------------------------------------------------------------------
+# 阶段 5 自检两角色(PLAN idi-03-02 Task 2 / DATA-04 / §8.2 全节 /
+# D-P3-13 / D-P3-14 / D-P3-15 / D-P3-29)
+# ---------------------------------------------------------------------------
+
+# 报告文法模板正例(逐字贴入 prompt——grammar.py 解析器按此逐字解析,
+# 两端一字不差是 D-P3-29 硬要求;照 _GRAMMAR_EXAMPLES 元组形态)
+_CHECK_GRAMMAR_EXAMPLES = (
+    "报告文法(逐字遵守,工具按此解析):",
+    "",
+    "报告首行为档位头部行(恰为以下两串之一,「档位」由任务方给定):",
+    "",
+    "> 自检档位:严格",
+    "> 自检档位:宽松",
+    "",
+    "问题分级表(二级标题含「问题分级」,表格列头逐字如下,级别仅 P0/P1/P2):",
+    "",
+    "| 编号 | 级别 | 位置 | 问题 | 建议修法 |",
+    "|---|---|---|---|---|",
+    "",
+    "末行结论(报告最后一个非空行,恰为以下两形态之一;零问题时必须 PASS):",
+    "",
+    "> 核查结论:FIX(P1×2,P2×1 …)",
+    "> 核查结论:PASS",
+    "",
+    "裁决追加形态(仅由后端追加,AI 正文任何行不得以这两前缀开头;"
+    "引用样例须置于行内代码,如 `> 待裁决:#K:…`):",
+    "",
+    "> 待裁决:#K:…(修复者抛出的第 K 问)",
+    "> 裁决:#K:…(用户对第 K 问的回答)",
+    "",
+    "切勿改列名、切勿改头部/结论行格式——工具按此逐字解析,改动即解析失败。",
+)
+
+# 核查任务段常量(D-P3-13)
+_CHECK_INSTRUCTIONS = (
+    "任务:以干净的眼睛核查总设计文档(DESIGN.md),按五维逐项检查:\n"
+    "内部一致性 / 历史批注符合度 / 决策无歧义 / 可实施性 / 结论覆盖"
+    "(全部决策无一遗漏)。\n"
+    "发现问题即按问题分级表逐条列出(编号从 1 递增);零问题时问题分级表"
+    "可整体省略。报告末行写结论行:零问题 → `> 核查结论:PASS`;有问题 →"
+    " `> 核查结论:FIX(P1×2 …)` 附分级计数。\n"
+    "资料完备性:上方「二、项目资料」已包含完成本任务所需的全部材料"
+    "(DESIGN.md + 全部轮次文档与批注 + 已有全部核查报告)——直接依据"
+    "资料作答,不要读取资料段之外的任何文件,不要访问项目目录之外的任何路径。\n"
+    "**绝不修改 DESIGN.md——你只写自家的核查报告**(权限门会拒绝你对"
+    " DESIGN.md 的写入)。\n"
+    "落盘指令:用 Write 工具把报告全文写入 docs/DESIGN-check-{check_n}.md"
+    "(编号由任务方给出,勿自定),报告首行写档位头部行(见四)。"
+    "写完后在回复里简述发现。"
+)
+
+# 修复任务段常量(D-P3-14)
+_REPAIR_INSTRUCTIONS = (
+    "任务:按最新核查报告的问题清单与用户裁决逐条修复总设计文档。\n"
+    "规则:\n"
+    "1. 报告中每个问题的处置以其后的 `> 裁决:#K:` 行为准(用户裁决:"
+    "「修」= 按建议修法执行;「接受现状」= 不改动该项,仅记录);\n"
+    "2. 报告问题若属用户职权(如范围与非目标类问题),**不得替用户决定**——"
+    "在最终回复文本里单独一行输出 `> 待裁决:#K:<问题>` 后即结束"
+    "(抛问协议:#K 从 1 递增,一次抛出全部待裁决问题;后端会截存并暂停"
+    "等你获得裁决);\n"
+    "3. 修订用 Write 工具把修改后的总设计文档**全文**写入 DESIGN.md.tmp"
+    "(项目根,整体覆盖式写入)后即结束——绝不直接写 DESIGN.md"
+    "(权限门将拒绝);{loose_pass_rule}\n"
+    "资料完备性:上方「二、项目资料」已包含完成本任务所需的全部材料——"
+    "直接依据资料作答,不要读取资料段之外的任何文件。"
+)
+
+
+def build_check_prompt(project_path, check_n: int, tier: str) -> str:
+    """拼装「干净的眼睛」核查提示词(D-P3-13 / D-P3-15 / D-P3-29)。
+
+    四段结构(照 build_round_prompt 同族):
+      一、系统段:角色(独立核查引擎,无讨论立场,只依据磁盘文件)+ 明禁
+                 绝不修改 DESIGN.md(只写自家报告)+ §3.8 语言红线
+      二、资料段:DESIGN.md 全文 + 全部完整轮文档 + 各轮 annotations 逐条 +
+                 已有全部 DESIGN-check 报告全文(max_check_number 循环,
+                 严格档趋势照读,§8.2 以磁盘文件为唯一输入;报告缺给显式说明)
+      三、任务段:_CHECK_INSTRUCTIONS(五维核查 + 结论行文法 + 落盘指令,
+                 check_n 由后端算好注入防编错号 D-P3-21)
+      四、文法模板:_CHECK_GRAMMAR_EXAMPLES 逐字(表头/头部行/结论行与
+                 grammar.py 解析器两端一字不差)
+    """
+    project = Path(project_path)
+    docs_dir = project / "docs"
+    from backend import annotations as annotations_mod
+    from backend.state import list_complete_rounds, max_check_number
+
+    # ---- 资料段①:DESIGN.md 全文(§8.2 核查对象) ----
+    design_path = project / "DESIGN.md"
+    if design_path.is_file():
+        try:
+            design_text = design_path.read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            design_text = ""
+        design_section = (
+            f"### 总设计文档:DESIGN.md(全文——本轮核查对象)\n\n{design_text}"
+            if design_text.strip()
+            else "### 总设计文档:DESIGN.md\n\n(文件为空)"
+        )
+    else:
+        design_section = "### 总设计文档:DESIGN.md\n\n(尚不存在)"
+
+    # ---- 资料段②:全部完整轮文档 + 各轮 annotations 逐条 ----
+    round_numbers = list_complete_rounds(docs_dir)
+    round_sections: list[str] = []
+    anno_lines: list[str] = []
+    for n in round_numbers:
+        round_path = docs_dir / f"discuss-round-{n}.md"
+        try:
+            text = round_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            text = ""
+        round_sections.append(
+            f"### 轮次文档:docs/discuss-round-{n}.md(全文)\n\n{text}"
+        )
+        ann = annotations_mod.load(project, n)
+        for item in ann.get("items") or []:
+            anno_lines.append(
+                f"- 轮 {n} | id: {item.get('id', '')} | 原文摘录: "
+                f"{item.get('quote', '')} | 用户批注: {item.get('note', '')}"
+                f" | 类型: {item.get('type', '')}"
+            )
+    if round_sections:
+        rounds_section = "\n\n".join(round_sections)
+    else:
+        rounds_section = "(无完整轮次文档)"
+    if anno_lines:
+        annotations_section = (
+            "### 各轮批注(逐条;历史批注符合度是核查维度之一)\n\n"
+            + "\n".join(anno_lines)
+        )
+    else:
+        annotations_section = "### 各轮批注\n\n全部轮次均无批注记录。"
+
+    # ---- 资料段③:已有全部 DESIGN-check 报告全文(严格档趋势照读) ----
+    max_check = max_check_number(docs_dir)
+    check_sections: list[str] = []
+    if max_check is not None:
+        for n in range(1, max_check + 1):
+            check_path = docs_dir / f"DESIGN-check-{n}.md"
+            if check_path.is_file():
+                try:
+                    text = check_path.read_text(
+                        encoding="utf-8", errors="replace"
+                    )
+                except OSError:
+                    text = ""
+                check_sections.append(
+                    f"### 既有核查报告:docs/DESIGN-check-{n}.md(全文)\n\n{text}"
+                )
+    if check_sections:
+        checks_section = (
+            "### 既有核查报告(全部," f"严格档趋势照读)\n\n" + "\n\n".join(check_sections)
+        )
+    else:
+        checks_section = "### 既有核查报告\n\n(尚无任何核查报告——这是首轮核查。)"
+
+    grammar_examples = "\n".join(_CHECK_GRAMMAR_EXAMPLES)
+    instructions = _CHECK_INSTRUCTIONS.replace("{check_n}", str(check_n))
+
+    return (
+        "## 一、你的角色\n\n"
+        "你是本工具的核查执行者——干净的眼睛:独立核查引擎,无讨论立场,"
+        "只依据磁盘文件判断。\n"
+        f"{_LANGUAGE_RULES}\n"
+        "**绝不修改 DESIGN.md——你只写自家的核查报告。**\n\n"
+        f"## 二、项目资料(磁盘文件为唯一输入,§8.2)\n\n"
+        f"{design_section}\n\n"
+        f"{rounds_section}\n\n"
+        f"{annotations_section}\n\n"
+        f"{checks_section}\n\n"
+        f"## 三、本次任务\n\n"
+        f"{instructions}\n\n"
+        "## 四、报告文法模板(逐字遵守,§6.4)\n\n"
+        f"{grammar_examples}\n"
+    )
+
+
+def build_repair_prompt(project_path, check_n: int, tier: str) -> str:
+    """拼装修复者提示词(D-P3-14 / D-P3-18 / D-P3-29)。
+
+    四段结构:
+      一、系统段:角色(修复引擎)+ §3.8 语言红线
+      二、资料段:DESIGN.md 全文 + **最新报告全文**(含裁决行——磁盘即状态,
+                 续跑天然满足 D-P3-19)+ 其他既有报告 + 轮次文档/批注
+      三、任务段:_REPAIR_INSTRUCTIONS(按裁决逐条修复 + 抛问协议 +
+                 tmp 落盘纪律 + 宽松档追加 PASS 特例)
+      四、文法模板:_CHECK_GRAMMAR_EXAMPLES 逐字(问题分级表头与裁决
+                 追加形态照读)
+    """
+    project = Path(project_path)
+    docs_dir = project / "docs"
+    from backend import annotations as annotations_mod
+    from backend.state import list_complete_rounds
+
+    # ---- 资料段①:DESIGN.md 全文 ----
+    design_path = project / "DESIGN.md"
+    if design_path.is_file():
+        try:
+            design_text = design_path.read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            design_text = ""
+        design_section = (
+            f"### 总设计文档:DESIGN.md(全文——本轮修复对象)\n\n{design_text}"
+            if design_text.strip()
+            else "### 总设计文档:DESIGN.md\n\n(文件为空)"
+        )
+    else:
+        design_section = "### 总设计文档:DESIGN.md\n\n(尚不存在)"
+
+    # ---- 资料段②:最新报告全文(含裁决行,磁盘即状态)+ 其他既有报告 ----
+    latest_n = check_n
+    check_sections: list[str] = []
+    latest_path = docs_dir / f"DESIGN-check-{latest_n}.md"
+    if latest_path.is_file():
+        try:
+            latest_text = latest_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            latest_text = ""
+        check_sections.append(
+            f"### 最新核查报告:docs/DESIGN-check-{latest_n}.md"
+            "(全文——问题清单与用户裁决都在其中,修复以此为准)\n\n"
+            f"{latest_text}"
+        )
+    else:
+        check_sections.append(
+            f"### 最新核查报告:docs/DESIGN-check-{latest_n}.md\n\n(尚不存在)"
+        )
+    for n in range(1, latest_n):
+        other_path = docs_dir / f"DESIGN-check-{n}.md"
+        if other_path.is_file():
+            try:
+                text = other_path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = ""
+            check_sections.append(
+                f"### 其他既有核查报告:docs/DESIGN-check-{n}.md(全文)\n\n{text}"
+            )
+
+    # ---- 资料段③:轮次文档 + 各轮批注 ----
+    round_numbers = list_complete_rounds(docs_dir)
+    round_sections: list[str] = []
+    anno_lines: list[str] = []
+    for n in round_numbers:
+        round_path = docs_dir / f"discuss-round-{n}.md"
+        try:
+            text = round_path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            text = ""
+        round_sections.append(
+            f"### 轮次文档:docs/discuss-round-{n}.md(全文)\n\n{text}"
+        )
+        ann = annotations_mod.load(project, n)
+        for item in ann.get("items") or []:
+            anno_lines.append(
+                f"- 轮 {n} | id: {item.get('id', '')} | 原文摘录: "
+                f"{item.get('quote', '')} | 用户批注: {item.get('note', '')}"
+                f" | 类型: {item.get('type', '')}"
+            )
+    if round_sections:
+        rounds_section = "\n\n".join(round_sections)
+    else:
+        rounds_section = "(无完整轮次文档)"
+    if anno_lines:
+        annotations_section = (
+            "### 各轮批注(逐条)\n\n" + "\n".join(anno_lines)
+        )
+    else:
+        annotations_section = "### 各轮批注\n\n全部轮次均无批注记录。"
+
+    # 宽松档特例指令(D-P3-14:修复者在报告末追加 PASS)
+    if tier == "宽松":
+        loose_pass_rule = (
+            "本档位为宽松档:这是唯一一轮修复——完成后用 Write 工具整体重写"
+            " docs/DESIGN-check-{check_n}.md(含报告原内容)并在报告末行追加"
+            " `> 核查结论:PASS` 结论行(或用 Edit 在末行追加——落盘物必须"
+            " 末行前缀合规),随后即结束。"
+        ).replace("{check_n}", str(check_n))
+    else:
+        loose_pass_rule = (
+            "本档位为严格档:修复完成后即结束,后端会自动开启下一轮核查。"
+        )
+
+    grammar_examples = "\n".join(_CHECK_GRAMMAR_EXAMPLES)
+    instructions = _REPAIR_INSTRUCTIONS.format(loose_pass_rule=loose_pass_rule)
+
+    return (
+        "## 一、你的角色\n\n"
+        "你是本工具的修复引擎。最新核查报告已落盘,你的任务是把报告问题"
+        "按用户裁决逐条修复到总设计文档。\n"
+        f"{_LANGUAGE_RULES}\n\n"
+        "## 二、项目资料(磁盘文件为唯一输入,§8.2)\n\n"
+        f"{design_section}\n\n"
+        + "\n\n".join(check_sections)
+        + f"\n\n{rounds_section}\n\n"
+        f"{annotations_section}\n\n"
+        "## 三、本次任务\n\n"
+        f"{instructions}\n\n"
+        "## 四、报告文法模板(逐字遵守,§6.4)\n\n"
+        f"{grammar_examples}\n"
     )

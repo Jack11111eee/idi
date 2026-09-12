@@ -1083,3 +1083,351 @@ def test_add_annotation_creates_pending_comment(tmp_path, fresh_session):
     # 计数:1 条 pending comment → snapshot pending_annotations == 1
     snap = fresh_session.snapshot()
     assert snap["pending_annotations"] == 1
+
+
+# ---------------------------------------------------------------------------
+# G3 授权 + 选档/裁决同步三件 + 撰写流水线(PLAN idi-03-02 Task 1,
+# FLOW-05 / DATA-02 / DATA-04 / D-P3-4 ~ D-P3-11)
+# ---------------------------------------------------------------------------
+
+
+def _compliant_round_doc(marker: str = "> 申请授权:是") -> str:
+    """四查合规轮文档样本:维度全绿 + 清单清零 + 申请授权「是」+ 末行标记。"""
+    return (
+        "# 第 1 轮讨论\n\n"
+        "## 批注回应\n\n"
+        "| 批注id | 原文摘录 | 回应 |\n"
+        "|---|---|---|\n"
+        "| a1-01 | 目标与边界 | 已补充说明。 |\n"
+        "\n"
+        "## 决策登记\n\n"
+        "- D1:目标与边界已对齐。\n"
+        "\n"
+        "## 覆盖维度表\n\n"
+        "| 维度 | 状态 | 说明 |\n"
+        "|---|---|---|\n"
+        "| 目标与边界 | ✓ | 已对齐 |\n"
+        "\n"
+        "## 未决问题清单\n\n"
+        "| 编号 | 问题 | 状态 |\n"
+        "|---|---|---|\n"
+        "| 1 | 用户画像是否细化 | 已决 |\n"
+        "\n"
+        f"{marker}\n"
+    )
+
+
+def _enter_phase3_compliant(sess, tmp_path, marker: str = "> 申请授权:是"):
+    """直造四查合规 phase3 目录:完整合规第 1 轮 + 进入项目(无 pending 批注)。"""
+    docs = tmp_path / "docs"
+    docs.mkdir(parents=True, exist_ok=True)
+    (docs / "discuss-round-1.md").write_text(
+        _compliant_round_doc(marker), encoding="utf-8"
+    )
+    sess.enter_project(tmp_path)
+    return docs
+
+
+def _enter_phase4(sess, tmp_path, tmp_text: str | None = None):
+    """直造 phase4 目录:完整轮 + AUTHORIZATION.md(无 DESIGN.md)+ 进入项目。
+
+    tmp_text 非 None 时同时写 DESIGN.md.tmp(半份残留形态,D-P3-9)。"""
+    docs = _enter_phase3_compliant(sess, tmp_path)
+    (tmp_path / "AUTHORIZATION.md").write_text(
+        "# 授权记录\n\n- 操作者确认词:确认授权\n", encoding="utf-8"
+    )
+    if tmp_text is not None:
+        (tmp_path / "DESIGN.md.tmp").write_text(tmp_text, encoding="utf-8")
+    return docs
+
+
+def _enter_phase5(sess, tmp_path, design_text: str = "# 总设计文档\n\n正文。\n",
+                  check_reports: dict | None = None, tier: str | None = None):
+    """直造阶段 5 目录:完整轮 + AUTHORIZATION.md + DESIGN.md + 可选 check 报告族。"""
+    docs = _enter_phase4(sess, tmp_path)
+    (tmp_path / "DESIGN.md").write_text(design_text, encoding="utf-8")
+    for n, text in (check_reports or {}).items():
+        (docs / f"DESIGN-check-{n}.md").write_text(text, encoding="utf-8")
+    if tier is not None:
+        (docs / "DESIGN-check-tier.md").write_text(
+            f"> 自检档位:{tier}\n", encoding="utf-8"
+        )
+    return docs
+
+
+class WritingFake(FakeAICaller):
+    """AI 在撰写调用中写盘 DESIGN.md.tmp(Write 工具语义:整体覆盖)。
+
+    照 RoundWritingFake 同构;content=None 时模拟 AI 没写 tmp 的失败形态。
+    """
+
+    def __init__(self, events, content: str | None):
+        super().__init__(events=events)
+        self.content = content
+
+    def run(self, project_path, prompt: str):
+        self.run_calls.append((str(project_path), prompt))
+        if self.content is not None:
+            (Path(project_path) / "DESIGN.md.tmp").write_text(
+                self.content, encoding="utf-8"
+            )
+        for ev in list(self.events):
+            yield dict(ev)
+        yield {"kind": "done", "content": "调用结束", "raw": None}
+
+
+def test_authorize_accepts_and_persists(tmp_path, fresh_session):
+    """用例 1:authorize 受理——四查合规 phase3 → AUTHORIZATION.md 落盘 → 幂等 False。"""
+    from backend.g3 import AUTHORIZATION_FILENAME
+
+    _enter_phase3_compliant(fresh_session, tmp_path)
+    assert fresh_session.authorize() is True
+    auth_path = tmp_path / AUTHORIZATION_FILENAME
+    assert auth_path.is_file(), "AUTHORIZATION.md 应已落盘"
+    assert "确认授权" in auth_path.read_text(encoding="utf-8")
+    # 落盘后 derive_state → phase4(授权链走通)
+    assert fresh_session.snapshot()["state"] == "phase4"
+
+    # 再次 authorize → False(已授权,幂等;derive_state 已 != phase3)
+    assert fresh_session.authorize() is False
+
+
+def test_authorize_rejects_on_four_checks(tmp_path, fresh_session):
+    """用例 2:四查防绕过——维度表含 ◐ → False;未进项目 → RuntimeError。"""
+    # 维度污染:◐ 行 → g3_available False → authorize False
+    docs = tmp_path / "docs"
+    docs.mkdir(parents=True, exist_ok=True)
+    polluted = _compliant_round_doc().replace(
+        "| 目标与边界 | ✓ | 已对齐 |", "| 目标与边界 | ◐ | 未对齐 |"
+    )
+    (docs / "discuss-round-1.md").write_text(polluted, encoding="utf-8")
+    fresh_session.enter_project(tmp_path)
+    assert fresh_session.authorize() is False, "维度 ◐ 污染盘应拒绝授权"
+    assert not (tmp_path / "AUTHORIZATION.md").exists()
+
+    # 未进入项目 → RuntimeError(路由层 400)
+    session._reset_for_tests()
+    with pytest.raises(RuntimeError, match="尚未进入任何项目"):
+        fresh_session.authorize()
+
+
+def test_set_tier_accepts_and_rejects(tmp_path, fresh_session):
+    """用例 3:set_tier——phase5_awaiting_tier 落盘签名;非该态 RuntimeError;白名单外 ValueError。"""
+    from backend.checks import TIER_FILENAME
+
+    # phase5_awaiting_tier:有 DESIGN.md 无 check 报告
+    _enter_phase5(fresh_session, tmp_path)
+    assert fresh_session.set_tier("严格") is True
+    tier_path = tmp_path / "docs" / TIER_FILENAME
+    assert tier_path.is_file()
+    assert "> 自检档位:严格" in tier_path.read_text(encoding="utf-8")
+    # 同值覆盖幂等合法
+    assert fresh_session.set_tier("严格") is True
+
+    # 白名单外 → ValueError(路由层 400)
+    with pytest.raises(ValueError, match="档位"):
+        fresh_session.set_tier("超严格")
+
+    # 非 phase5_awaiting_tier(全新 phase3 目录)→ RuntimeError(路由层 409)
+    session._reset_for_tests()
+    _other = tmp_path / "other-project"
+    _enter_phase3_compliant(fresh_session, _other)
+    with pytest.raises(RuntimeError, match="仅待选档阶段可选"):
+        fresh_session.set_tier("宽松")
+
+
+def test_verdict_append_persists_and_closes(tmp_path, fresh_session):
+    """用例 4:verdict_append——追加 `> 裁决:#1:修——按建议`;残余清零 → PASS 收口;同号 FileExistsError。"""
+    # phase5_checking:check-1 报告含待裁决 #1(结论行之后)无配对
+    report = (
+        "# 核查报告 1\n\n"
+        "> 自检档位:严格\n\n"
+        "## 问题分级\n\n"
+        "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|---|---|---|---|---|\n"
+        "| 1 | P1 | §2 | 范围含糊 | 写清边界 |\n"
+        "\n"
+        "> 核查结论:FIX(P1×1)\n\n"
+        "> 待裁决:#1:范围要不要收紧?\n"
+    )
+    _enter_phase5(
+        fresh_session, tmp_path,
+        check_reports={1: report}, tier="严格",
+    )
+    assert fresh_session.verdict_append(1, "修", "按建议") is True
+    text = (tmp_path / "docs" / "DESIGN-check-1.md").read_text(encoding="utf-8")
+    assert "> 裁决:#1:修——按建议" in text
+
+    # 残余清零(问题表 #1 已有同号裁决 + 无未配对)→ PASS 收口 → mission_complete
+    assert "> 核查结论:PASS(残余裁决收口)" in text
+    assert fresh_session.snapshot()["state"] == "mission_complete"
+
+    # 收口后再裁决(非 phase5_checking)→ RuntimeError「仅自检进行中可裁决」
+    # (路由层 409:同号拒绝被入口门先拦,同样是 409)
+    with pytest.raises(RuntimeError, match="仅自检进行中可裁决"):
+        fresh_session.verdict_append(1, "又修", "重复")
+
+
+def test_verdict_append_same_number_rejects(tmp_path, fresh_session):
+    """用例 4b:同号 FileExistsError——双待裁决盘,#1 裁决后 #2 仍配对缺口(不收口),
+    状态留 phase5_checking;重复裁决 #1 → FileExistsError 冒出供路由 409。"""
+    report = (
+        "# 核查报告 1\n\n"
+        "> 自检档位:严格\n\n"
+        "## 问题分级\n\n"
+        "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|---|---|---|---|---|\n"
+        "| 1 | P1 | §2 | 范围含糊 | 写清边界 |\n"
+        "| 2 | P1 | §4 | 措辞歧义 | 直说 |\n"
+        "\n"
+        "> 核查结论:FIX(P1×2)\n\n"
+        "> 待裁决:#1:范围要不要收紧?\n"
+        "> 待裁决:#2:第 4 节是否重写?\n"
+    )
+    _enter_phase5(
+        fresh_session, tmp_path,
+        check_reports={1: report}, tier="严格",
+    )
+    # 裁决 #1:#2 仍无同号裁决 → _residue_cleared False → 不收口
+    assert fresh_session.verdict_append(1, "修", "按建议") is True
+    text = (tmp_path / "docs" / "DESIGN-check-1.md").read_text(encoding="utf-8")
+    assert "> 裁决:#1:修——按建议" in text
+    assert "> 核查结论:PASS" not in text.split("> 核查结论:FIX")[1].split("\n")[0], \
+        "PASS 收口行不应出现(#2 仍未配对)"
+    assert fresh_session.snapshot()["state"] == "phase5_checking"
+
+    # 同号重复裁决 → FileExistsError(checks.append_user_verdict 冒出,路由层 409)
+    with pytest.raises(FileExistsError):
+        fresh_session.verdict_append(1, "再修", "重复")
+
+
+def test_start_writing_closes_loop(tmp_path, fresh_session):
+    """用例 5:撰写闭环——WritingFake 写 tmp → done 后 tmp 消失、DESIGN.md 出现、state=phase5_awaiting_tier。"""
+    _enter_phase4(fresh_session, tmp_path)
+    fake = WritingFake(
+        events=[{"kind": "say", "content": "开始撰写。", "raw": None}],
+        content="# 总设计文档\n\n七维度全覆盖。\n",
+    )
+    fresh_session._set_caller_for_tests(fake)
+    assert fresh_session.start_writing() is True
+    assert wait_idle(fresh_session), "撰写未在时限内结束"
+
+    assert (tmp_path / "DESIGN.md").is_file(), "tmp 应已改名为 DESIGN.md"
+    assert not (tmp_path / "DESIGN.md.tmp").exists(), "tmp 应消失"
+    assert "# 总设计文档" in (tmp_path / "DESIGN.md").read_text(encoding="utf-8")
+    snap = fresh_session.snapshot()
+    assert snap["state"] == "phase5_awaiting_tier"
+
+
+def test_start_writing_error_when_no_tmp(tmp_path, fresh_session):
+    """用例 6:tmp 缺失——error 事件含「撰写未产出 tmp」、状态留 phase4、可重跑。"""
+    _enter_phase4(fresh_session, tmp_path)
+
+    published = []
+    orig_publish = fresh_session._publish_for_tests
+    fresh_session._publish_for_tests = lambda ev: published.append(ev)
+
+    fake = WritingFake(events=[], content=None)  # AI 没写 tmp
+    fresh_session._set_caller_for_tests(fake)
+    assert fresh_session.start_writing() is True
+    assert wait_idle(fresh_session), "撰写未在时限内结束"
+
+    errors = [ev for ev in published if ev.get("kind") == "error"]
+    assert any("撰写未产出 tmp" in ev.get("content", "") for ev in errors), \
+        "应发「撰写未产出 tmp,可重跑」error 事件"
+    assert not (tmp_path / "DESIGN.md").exists()
+    assert fresh_session.snapshot()["state"] == "phase4"
+
+    # 可重跑:重进 fake 写 tmp → 闭环成功
+    fresh_session._publish_for_tests = orig_publish
+    fake2 = WritingFake(events=[], content="# 总设计文档\n\n重跑产物。\n")
+    fresh_session._set_caller_for_tests(fake2)
+    assert fresh_session.start_writing() is True, "phase4 应可重跑"
+    assert wait_idle(fresh_session)
+    assert (tmp_path / "DESIGN.md").is_file()
+
+
+def test_start_writing_entry_rejects(tmp_path, fresh_session):
+    """用例 7:入口拒绝——phase3 → False;busy 在飞 → False。"""
+    _enter_phase3_compliant(fresh_session, tmp_path)
+    assert fresh_session.writing_available(tmp_path) is False
+    assert fresh_session.start_writing() is False, "phase3 不应受理撰写"
+
+    # busy:挂住在飞主调用 → start_writing False
+    _enter_phase4(fresh_session, tmp_path)
+
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake(FakeAICaller):
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=10)
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = HangingFake(events=[])
+    fresh_session._set_caller_for_tests(fake)
+    threading.Thread(target=lambda: fresh_session.send_message("先聊"), daemon=True).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    assert fresh_session.start_writing() is False, "在飞中不应受理撰写"
+    assert len(fake.run_calls) == 1, "start_writing 不应另起调用"
+
+    release.set()
+    assert wait_idle(fresh_session), "调用未收尾"
+
+
+def test_build_writing_prompt_contains_materials(tmp_path, fresh_session):
+    """用例 8:build_writing_prompt 产物——完整轮文档正文 + 批注逐条 + transcript 片段
+    + DESIGN.md.tmp 落盘指令 + 明禁直写语句 + 语言红线。"""
+    from backend.prompts import build_writing_prompt
+
+    docs = _enter_phase3_compliant(fresh_session, tmp_path)
+    from backend import annotations as annotations_mod
+
+    annotations_mod.append_item(
+        tmp_path, 1,
+        quote="目标与边界", before="", type="comment", note="写清边界",
+    )
+    (docs / "transcript.md").write_text(
+        "[user] 帮我把目标写清楚\n[ai] 已经写清\n", encoding="utf-8"
+    )
+    (tmp_path / "DESIGN.md.tmp").write_text(
+        "半份残留不该进资料段", encoding="utf-8"
+    )
+    (tmp_path / "AUTHORIZATION.md").write_text(
+        "# 授权记录\n", encoding="utf-8"
+    )
+
+    prompt = build_writing_prompt(tmp_path)
+    # 全部完整轮文档正文片段
+    assert "第 1 轮讨论" in prompt
+    # annotations 逐条(id/quote/note)
+    assert "目标与边界" in prompt
+    assert "写清边界" in prompt
+    # transcript 片段
+    assert "帮我把目标写清楚" in prompt
+    # DESIGN.md.tmp 落盘指令
+    assert "DESIGN.md.tmp" in prompt
+    # 明禁直写 DESIGN.md / AUTHORIZATION.md
+    assert "绝不直接写 DESIGN.md 或 AUTHORIZATION.md" in prompt
+    # 语言红线
+    assert "简洁" in prompt and "大白话" in prompt
+
+
+def test_build_writing_prompt_excludes_tmp_and_auth(tmp_path, fresh_session):
+    """用例 9:资料隔离——半份 DESIGN.md.tmp 与 AUTHORIZATION.md 内容不入资料段。"""
+    from backend.prompts import build_writing_prompt
+
+    docs = _enter_phase3_compliant(fresh_session, tmp_path)
+    (tmp_path / "DESIGN.md.tmp").write_text(
+        "HALF-TMP-MARKER 半份内容不应出现", encoding="utf-8"
+    )
+    (tmp_path / "AUTHORIZATION.md").write_text(
+        "AUTH-MARKER 授权记录不应出现", encoding="utf-8"
+    )
+
+    prompt = build_writing_prompt(tmp_path)
+    assert "HALF-TMP-MARKER" not in prompt, "半份 tmp 内容不得进资料段(D-P3-9)"
+    assert "AUTH-MARKER" not in prompt, "AUTHORIZATION.md 内容不得进资料段"

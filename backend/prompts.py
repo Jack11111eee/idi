@@ -13,6 +13,11 @@ build_round_prompt(project_path, current_round) -> str(G2 / §4.4 / D-P2-11):
 当前轮 annotations 逐条 + transcript/draft),任务段注入 §3.3 四步 +
 §6.3 五件套 + §6.4 文法模板逐字。
 
+build_writing_prompt(project_path) -> str(阶段 4 撰写 / §7.4 行 4 / D-P3-7):
+「撰写总设计文档」的服务端提示词——资料段读全部完整轮文档 + 各轮批注
++ transcript/draft/brainstorm(绝不读 DESIGN.md.tmp / AUTHORIZATION.md,
+D-P3-9),任务段注入七维度覆盖 + DESIGN.md.tmp 落盘指令与明禁。
+
 四段结构(PLAN idi-01-03 Task 1):
   一、系统段:角色(项目开工前的讨论搭档)+ §3.8 语言红线原文要义
   二、资料段:docs/ 下各文档(transcript.md 历史、draft.md 现状、brainstorm.md 若存在),
@@ -349,4 +354,113 @@ def build_round_prompt(project_path, current_round: int) -> str:
         f"{instructions}\n\n"
         "## 四、文法模板(逐字遵守,§6.4)\n\n"
         f"{grammar_examples}\n"
+    )
+
+
+# ---------------------------------------------------------------------------
+# 阶段 4 撰写(G3 授权后,PLAN idi-03-02 Task 1 / FLOW-05 / DATA-02 /
+# §7.3① / §7.4 行 4 / D-P3-7 / D-P3-9)
+# ---------------------------------------------------------------------------
+
+# 撰写任务段落盘指令常量(照 _ROUND_INSTRUCTIONS 元组风格,D-P3-7)
+_WRITING_INSTRUCTIONS = (
+    "任务:产出一份无歧义的总设计文档。要求:\n"
+    "1. 覆盖上一份轮次文档中覆盖维度表的全部七个维度内容;\n"
+    "2. 吸收全部轮次的决策登记与已对齐结论(「已对齐」的决策照录为正式决策);\n"
+    "3. 不含未决问题——授权已通过,未决清单应已清零;若你认为仍有歧义,"
+    "选择最贴合已对齐结论的表述并继续,不把问题带进总设计文档。\n"
+    "资料完备性:上方「二、项目资料」已包含完成本任务所需的全部材料"
+    "(全部完整轮文档 + 全部批注 + 历史文档)——直接依据资料作答,"
+    "不要读取资料段之外的任何文件,不要访问项目目录之外的任何路径。\n"
+    "落盘指令:用 Write 工具把总设计文档全文写入 DESIGN.md.tmp"
+    "(项目根,按 Markdown 全文整体覆盖式写入)后即结束,不要写其他文件。\n"
+    "**绝不直接写 DESIGN.md 或 AUTHORIZATION.md——权限门将拒绝这两项写入。**"
+    "DESIGN.md.tmp 是 DESIGN.md 唯一合法的落盘路径(暂存名):后端会在你"
+    "完成后原子改名为 DESIGN.md。写完后在回复里简述文档结构。"
+)
+
+
+def build_writing_prompt(project_path) -> str:
+    """拼装「撰写总设计文档」的服务端提示词(D-P3-7 / D-P3-9)。
+
+    四段结构(照 build_round_prompt 同族):
+      一、系统段:角色(总设计文档撰写引擎)+ §3.8 语言红线
+      二、资料段:全部完整轮文档全文(list_complete_rounds 循环)+ 各轮
+                 annotations 逐条(id/quote/note)+ transcript/draft/
+                 brainstorm 照 _KNOWN_DOCS 既有循环注入
+                 **绝不读 DESIGN.md.tmp 与 AUTHORIZATION.md**(D-P3-9:
+                 半份 tmp 是被覆盖物,不入资料不参考;授权凭证与撰写无关)
+      三、任务段:_WRITING_INSTRUCTIONS(七维度覆盖 + 吸收决策 + 不含
+                 未决问题 + DESIGN.md.tmp 落盘指令与明禁)
+    """
+    project = Path(project_path)
+    docs_dir = project / "docs"
+    from backend import annotations as annotations_mod  # 延迟导入防环
+    from backend.state import list_complete_rounds
+
+    # ---- 资料段①:全部完整轮文档全文 ----
+    round_numbers = list_complete_rounds(docs_dir)
+    round_sections: list[str] = []
+    if round_numbers:
+        for n in round_numbers:
+            round_path = docs_dir / f"discuss-round-{n}.md"
+            try:
+                text = round_path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = ""
+            round_sections.append(
+                f"### 轮次文档:docs/discuss-round-{n}.md(全文)\n\n{text}"
+            )
+        rounds_section = "\n\n".join(round_sections)
+    else:
+        rounds_section = "(无完整轮次文档)"
+
+    # ---- 资料段②:各轮 annotations 逐条(id/quote/note) ----
+    anno_lines: list[str] = []
+    for n in round_numbers:
+        ann = annotations_mod.load(project, n)
+        for item in ann.get("items") or []:
+            anno_lines.append(
+                f"- 轮 {n} | id: {item.get('id', '')} | 原文摘录: "
+                f"{item.get('quote', '')} | 用户批注: {item.get('note', '')}"
+                f" | 类型: {item.get('type', '')}"
+            )
+    if anno_lines:
+        annotations_section = (
+            "### 各轮批注(discuss-round-*.annotations.json,逐条;"
+            "type=plain 是大白话问答,type=comment 是实质批注——两类的"
+            "用户原话都吸收进总设计文档)\n\n" + "\n".join(anno_lines)
+        )
+    else:
+        annotations_section = "### 各轮批注\n\n全部轮次均无批注记录。"
+
+    # ---- 资料段③:transcript / draft / brainstorm(_KNOWN_DOCS 既有形态) ----
+    doc_sections: list[str] = []
+    for name in _KNOWN_DOCS:
+        path = docs_dir / name
+        if path.is_file():
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = ""
+            if text.strip():
+                doc_sections.append(f"### 文件:docs/{name}\n\n{text}")
+        else:
+            if name in ("draft.md", "brainstorm.md"):
+                doc_sections.append(f"### 文件:docs/{name}\n\n(尚不存在)")
+    known_docs_section = (
+        "\n\n".join(doc_sections) if doc_sections else "(无其他文档)"
+    )
+
+    return (
+        "## 一、你的角色\n\n"
+        "你是本工具的总设计文档撰写引擎。用户已在 G3 门明确授权撰写总设计文档,"
+        "你的任务是把整段讨论的收敛成果写成一份无歧义的总设计文档。\n"
+        f"{_LANGUAGE_RULES}\n\n"
+        "## 二、项目资料(docs/ 全量,§5.1)\n\n"
+        f"{rounds_section}\n\n"
+        f"{annotations_section}\n\n"
+        f"{known_docs_section}\n\n"
+        "## 三、本次任务\n\n"
+        f"{_WRITING_INSTRUCTIONS}\n"
     )

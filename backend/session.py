@@ -25,10 +25,21 @@ import uuid
 from pathlib import Path
 
 from backend import annotations as annotations_mod
+from backend import checks as checks_mod
 from backend import config as cfg
+from backend import g3 as g3_mod
+from backend import grammar as grammar_mod
 from backend.events import broker
 from backend.prompts import build_divergence_prompt, build_phase12_prompt
-from backend.state import STATE_PHASE3, derive_state, list_complete_rounds
+from backend.state import (
+    STATE_PHASE3,
+    STATE_PHASE4,
+    STATE_PHASE5_AWAITING_TIER,
+    STATE_PHASE5_CHECKING,
+    STATE_MISSION_COMPLETE,
+    derive_state,
+    list_complete_rounds,
+)
 from backend.transcript import append_message, parse_transcript
 
 logger = logging.getLogger(__name__)
@@ -719,3 +730,212 @@ def answer_plain(round_n: int, quote: str, before: str, question: str) -> dict:
         note=question,
         answer=answer,
     )
+
+
+# ---------------------------------------------------------------------------
+# G3 授权 + 阶段 4 撰写 + 选档/裁决同步三件(FLOW-05 / DATA-02 / DATA-04,
+# PLAN idi-03-02 Task 1 / §4.4 / §7.3① / §7.4 行 4 / D-P3-4 / D-P3-5 ~ D-P3-11)
+# ---------------------------------------------------------------------------
+
+
+def authorize() -> bool:
+    """G3 授权:后端四查再查后写 AUTHORIZATION.md(§4.4 / §7.4 行 3→4,D-P3-4)。
+
+    入口三查(照 answer_plain 同步风格,不起线程):
+      ① 未进入项目 → RuntimeError(路由层 400)
+      ② 在飞调用中 → False(拒绝瞬时写授权,防在飞期间状态漂移;路由层 409)
+      ③ derive_state != phase3 或 g3_available 四查不过 → False(路由层 409)
+
+    D-P3-4 防绕过语义:前端按钮亮否只是呈现,服务端在本入口独立重判四条
+    机械校验(机械校验而非采信 AI 自评,D-17)——不存在绕过确认词的 API 路径
+    (确认词在前端模态完成,D-P3-3;后端防线 = 四查再查 + 写入动作本身)。
+    通过 → g3.authorize_write 落 AUTHORIZATION.md(AI 不可写,§5.4)→ True;
+    FileExistsError(已授权)上抛——理论不可达(已授权后 derive_state 为
+    phase4+ != phase3),保留防御供路由层 409 幂等。
+    """
+    with _lock:
+        project = _current_project
+        inflight_busy = _inflight is not None and not _inflight.is_set()
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    if inflight_busy:
+        return False  # 在飞调用未结束:拒绝瞬时写授权
+    state = derive_state(project)
+    if state["state"] != STATE_PHASE3 or not g3_mod.g3_available(project):
+        return False  # 四查不过 / 非 phase3:入口关闭(路由层 409)
+    g3_mod.authorize_write(project)  # FileExistsError 上抛供路由层 409(防御)
+    return True
+
+
+def set_tier(tier: str) -> bool:
+    """选档落盘:checks.write_tier 写 docs/DESIGN-check-tier.md(§8.2 / D-P3-11)。
+
+    入口:未进入项目 → RuntimeError(400);derive_state !=
+    phase5_awaiting_tier(有 DESIGN.md、无 check 报告)→ RuntimeError
+    「仅待选档阶段可选(当前:…)」供路由层 409。tier 白名单外值由
+    checks.write_tier 抛 ValueError 冒出(路由层 400)。覆盖式写入幂等
+    合法:同值重选覆盖,重选改档亦覆盖(D-P3-11)。
+    """
+    with _lock:
+        project = _current_project
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    state = derive_state(project)
+    if state["state"] != STATE_PHASE5_AWAITING_TIER:
+        raise RuntimeError(f"仅待选档阶段可选(当前:{state['state']})")
+    checks_mod.write_tier(project, tier)  # ValueError 冒出供路由层 400
+    return True
+
+
+def _residue_cleared(report_text: str) -> bool:
+    """残余清零判定(D-P3-17「全部处理完即视为收敛收口」,机器可判定)。
+
+    两源问题同一配对判定式收口:
+      ① 纯 P2 残余(mode=p2):问题来自问题分级表,`> 裁决:#K:` 同号配对;
+      ② 修复者抛问暂停(paused):问题来自 `> 待裁决:#K:` 截存行,同号配对。
+    清零 ⇔ 问题集(表编号 ∪ 待裁决编号)全部有同号裁决行 且
+    unpaired_verdicts 为空;复用 grammar 锁定函数,不重实现第二套判定。
+    """
+    problems = {row["number"] for row in grammar_mod.parse_problem_grades(report_text)}
+    verdicts = grammar_mod.parse_verdict_lines(report_text)
+    problems.update(v["number"] for v in verdicts if v["kind"] == "待裁决")
+    answered = {v["number"] for v in verdicts if v["kind"] == "裁决"}
+    if grammar_mod.unpaired_verdicts(report_text):
+        return False
+    return problems <= answered
+
+
+def verdict_append(number: int, decision: str, note: str) -> bool:
+    """用户裁决落盘:checks.append_user_verdict 追加 `> 裁决:#K:<decision>——<note>`
+    到当前核查报告(§8.2 / §6.4 / D-P3-19);残余全部配对 → 后端立即追加 PASS
+    收口(D-P3-17)。
+
+    入口:未进入项目 → RuntimeError(400);busy → False(单飞防双写竞态,
+    D-P3-26);derive_state != phase5_checking → RuntimeError
+    「仅自检进行中可裁决(当前:…)」供路由层 409。
+    同号裁决已存在 → FileExistsError 冒出供路由层 409(一问一答)。
+    追加后重读报告:_residue_cleared 判定残余清零 → append_pass_conclusion
+    立即收口(derive_state 自行翻 mission_complete,§7.4 行 7)。
+    """
+    with _lock:
+        project = _current_project
+        inflight_busy = _inflight is not None and not _inflight.is_set()
+    if project is None:
+        raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+    if inflight_busy:
+        return False  # 在飞调用未结束:409 语义,由路由层转
+    state = derive_state(project)
+    if state["state"] != STATE_PHASE5_CHECKING or state["current_check"] is None:
+        raise RuntimeError(f"仅自检进行中可裁决(当前:{state['state']})")
+    report_path = project / "docs" / f"DESIGN-check-{state['current_check']}.md"
+    verdict_text = f"{decision}——{note}"
+    checks_mod.append_user_verdict(report_path, number, verdict_text)  # FileExistsError 冒出
+    # 残余清零判定(追加后重读报告,磁盘现状):
+    try:
+        report_text = report_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        report_text = ""
+    if _residue_cleared(report_text):
+        checks_mod.append_pass_conclusion(report_path, "残余裁决收口")
+    return True
+
+
+def writing_available(project_path) -> bool:
+    """撰写入口判定(纯靠磁盘,防绕过):derive_state == phase4(§7.4 行 4)。
+
+    有 AUTHORIZATION.md、无 DESIGN.md → True(「撰写总设计文档」/
+    「继续撰写」同一入口,tmp 残留由文案二态区分,D-P3-10);
+    其余态一律 False。
+    """
+    state = derive_state(Path(project_path))
+    return state["state"] == STATE_PHASE4
+
+
+def start_writing() -> bool:
+    """撰写总设计文档(§7.3① / §7.4 行 4 / D-P3-6 / D-P3-8):后台线程跑
+    build_writing_prompt → caller.run(AI 用 Write 写 DESIGN.md.tmp,权限门
+    放行)→ done 后端原子改名 tmp → DESIGN.md(同 inode,半份 DESIGN.md
+    不可能存在)。
+
+    入口三查(照 process_round 模子):
+      ① 未进入项目 → RuntimeError(路由层 400)
+      ② 在飞调用中 → False(单飞锁,路由层 409)
+      ③ writing_available 为 False(非 phase4)→ False(409,防绕过)
+    事件照常 SSE 直播(§5.2);改名前不校验 tmp 内容完整性(D-P3-8:
+    AI 产物不修补,靠重跑覆盖)。
+    done 后端动作(重拉磁盘,不依赖内存):
+      - tmp 存在且 DESIGN.md 未出现 → tmp.replace(design) 原子改名 →
+        信息性 say 事件「总设计文档已落盘」(state 自然翻 phase5_awaiting_tier)
+      - tmp 不存在(AI 没写)→ error 事件「撰写未产出 tmp,可重跑」,
+        状态留 phase4(重开入口,重跑覆盖,D-P3-9)
+    """
+    global _inflight, _ai_texts, _aborted
+    from backend.prompts import build_writing_prompt
+
+    with _lock:
+        project = _current_project
+        if project is None:
+            raise RuntimeError("尚未进入任何项目(先调 enter_project)")
+        if _inflight is not None and _inflight.is_set() is False:
+            return False  # 在飞调用未结束:并发拒绝
+        if not writing_available(project):
+            return False  # 非 phase4:入口关闭(防绕过)
+        caller = _ensure_caller()
+        _inflight = threading.Event()  # set = 未结束
+        _ai_texts = []
+        _aborted = False
+
+    prompt = build_writing_prompt(project)
+    tmp_path = project / "DESIGN.md.tmp"
+    design_path = project / "DESIGN.md"
+
+    def _worker():
+        global _aborted
+        try:
+            _wire_permission_callback(caller)
+            for event in caller.run(project, prompt):
+                if _aborted:
+                    break
+                if event.get("kind") == "say":
+                    _ai_texts.append(event.get("content", ""))
+                _publish_for_tests(event)
+                if event.get("kind") == "done":
+                    break
+        except Exception as exc:  # 线程内兜底:流不悬空
+            _publish_for_tests(
+                {"kind": "error", "content": f"调用线程异常:{exc}", "raw": None}
+            )
+        else:
+            # ---- done 后端动作:原子改名 / error 可重跑(D-P3-8) ----
+            try:
+                if tmp_path.is_file() and not design_path.is_file():
+                    tmp_path.replace(design_path)  # 同 inode 原子改名,不校验内容
+                    _publish_for_tests(
+                        {
+                            "kind": "say",
+                            "content": "总设计文档已落盘",
+                            "raw": None,
+                        }
+                    )
+                else:
+                    _publish_for_tests(
+                        {
+                            "kind": "error",
+                            "content": "撰写未产出 tmp,可重跑",
+                            "raw": None,
+                        }
+                    )
+            except Exception as exc:  # 改名失败:发 error 事件,不悬空进度
+                _publish_for_tests(
+                    {"kind": "error", "content": f"总设计文档落盘异常:{exc}", "raw": None}
+                )
+        finally:
+            # done 收尾事件:本流水线唯一一条 kind=done(改名动作不发第二条)
+            _publish_for_tests({"kind": "done", "content": "撰写结束", "raw": None})
+            with _lock:
+                inflight_local = _inflight
+            if inflight_local is not None:
+                inflight_local.set()
+
+    threading.Thread(target=_worker, daemon=True).start()
+    return True

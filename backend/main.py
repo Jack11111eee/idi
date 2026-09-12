@@ -87,6 +87,16 @@ class PlainBody(BaseModel):
     question: str
 
 
+class TierBody(BaseModel):
+    tier: str
+
+
+class VerdictBody(BaseModel):
+    number: int
+    decision: str
+    note: str
+
+
 # ---------------------------------------------------------------------------
 # 会话路由(FLOW-01 / FLOW-02 / AI-04)
 # ---------------------------------------------------------------------------
@@ -351,8 +361,74 @@ def post_round_process() -> JSONResponse:
 
 
 # ---------------------------------------------------------------------------
-# Plan 01 骨架路由(保留)
+# 阶段 3/4/5 路由族(PLAN idi-03-02,D-P3-27:authorize/tier/verdict 三 POST;
+# GET /api/design、GET /api/checks 两 GET 归 Task 3;POST /api/writing、
+# /api/checks/start、/api/checks/repair 三条 202 受理路由归 idi-03-03)
 # ---------------------------------------------------------------------------
+
+
+@app.post("/api/authorize")
+def authorize() -> JSONResponse:
+    """G3 授权(FLOW-05 / §4.4 / §8.1):后端四查再查后写 AUTHORIZATION.md。
+
+    无请求体——确认词在前端模态完成(D-P3-3),后端防线 = 四查再查 +
+    authorize_write 动作本身。成功 → 200 新 derive_state(state=phase4);
+    四查不过或已授权 → 409;未进项目 → 400。
+    """
+    try:
+        accepted = session.authorize()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    except FileExistsError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=409)
+    if not accepted:
+        return JSONResponse(
+            {"status": "error", "message": "授权入口已关闭(四查未通过或已授权)"},
+            status_code=409,
+        )
+    state = session.snapshot()
+    return JSONResponse({"status": "ok", "state": state["state"]})
+
+
+@app.post("/api/checks/tier")
+def set_tier(body: TierBody) -> JSONResponse:
+    """选档落盘(§8.2 / D-P3-11):写 docs/DESIGN-check-tier.md 签名文件。
+
+    白名单外档位 → 400;非待选档阶段 → 409;成功 200。
+    """
+    try:
+        session.set_tier(body.tier)
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=409)
+    except ValueError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    return JSONResponse({"status": "ok"})
+
+
+@app.post("/api/checks/verdict")
+def post_verdict(body: VerdictBody) -> JSONResponse:
+    """用户裁决追加落盘(§8.2 / §6.4 / D-P3-19):`> 裁决:#K:<decision>——<note>`。
+
+    同号裁决已存在 → 409(一问一答);非自检阶段 → 409;在飞 → 409;
+    未进项目 → 400;成功 200。残余全部配对时后端立即追加 PASS 收口
+    (D-P3-17),响应附新 state 供前端感知 mission_complete。
+    """
+    try:
+        accepted = session.verdict_append(body.number, body.decision, body.note)
+    except RuntimeError as exc:
+        message = str(exc)
+        if message.startswith("尚未进入任何项目"):
+            return JSONResponse({"status": "error", "message": message}, status_code=400)
+        return JSONResponse({"status": "error", "message": message}, status_code=409)
+    except FileExistsError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=409)
+    if not accepted:
+        return JSONResponse(
+            {"status": "error", "message": "当前有调用进行中,请等它结束或先中止"},
+            status_code=409,
+        )
+    state = session.snapshot()
+    return JSONResponse({"status": "ok", "state": state["state"]})
 
 
 @app.post("/api/config")

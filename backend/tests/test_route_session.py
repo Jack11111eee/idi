@@ -9,6 +9,8 @@
 """
 
 import sys
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -670,3 +672,259 @@ def test_route_tier_all_branches(route_env):
     resp409 = fresh_env["client"].post("/api/checks/tier", json={"tier": "宽松"})
     assert resp409.status_code == 409
     assert "仅待选档阶段可选" in resp409.json()["message"]
+
+
+# ---------------------------------------------------------------------------
+# POST /api/writing + /api/checks/start + /api/checks/repair 三条受理路由
+# (PLAN idi-03-03 / D-P3-27:202 受理 / busy 或入口判定不过 → 409 / 未进项目 → 400;
+# 分支逐字照 /api/rounds/process 模子;路由层零判定透传 session 结果)
+# ---------------------------------------------------------------------------
+
+
+def _wait_route_idle(sess, timeout: float = 10.0) -> bool:
+    """等后台流水线收尾(route 环境副本,同 test_session.wait_idle 语义)。"""
+    deadline = time.time() + timeout
+    while sess.busy() and time.time() < deadline:
+        time.sleep(0.05)
+    return not sess.busy()
+
+
+def test_route_writing_accepted(route_env):
+    """用例 1:POST /api/writing——phase4 造盘 + Fake 写 tmp → 202 {"status":"accepted"};
+    done 后 tmp 原子改名 DESIGN.md(session 级已测,此处断言受理码 + 响应体同形)。"""
+    _enter_phase4_route(route_env)
+    client = route_env["client"]
+
+    class WritingFake:
+        """route 环境副本:run 内写 DESIGN.md.tmp 后发 done(Write 工具语义)。"""
+
+        def __init__(self):
+            self.run_calls = []
+
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            (Path(project_path) / "DESIGN.md.tmp").write_text(
+                "# 总设计文档\n", encoding="utf-8"
+            )
+            yield {"kind": "say", "content": "开始撰写。", "raw": None}
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = WritingFake()
+    session._set_caller_for_tests(fake)
+
+    resp = client.post("/api/writing")
+    assert resp.status_code == 202, "phase4 撰写入口应受理"
+    body = resp.json()
+    assert body["status"] == "accepted", "响应体与 /api/rounds/process 同形"
+    assert _wait_route_idle(session), "撰写未在时限内结束"
+
+    # 事件链归 session 级已测;此处轻收尾证明链真的跑过(受理非空转)
+    assert len(fake.run_calls) == 1
+    assert (route_env["project"] / "DESIGN.md").is_file(), "done 后 tmp 应改名 DESIGN.md"
+
+
+def test_route_writing_409_non_phase4_and_busy(route_env):
+    """用例 2:POST /api/writing 409×2——非 phase4(phase3 造盘)→ 409;在飞 → 409。"""
+    client = route_env["client"]
+
+    # 非 phase4(phase3 四查合规盘)→ 409(writing_available False 透传)
+    _enter_phase3_g3_route(route_env)
+    resp409_state = client.post("/api/writing")
+    assert resp409_state.status_code == 409
+    assert "撰写入口已关闭" in resp409_state.json()["message"]
+
+    # busy:挂住在飞调用 → 409(HangingFake gate/release 模子,route 环境复用)
+    fresh_env = _reenter_fresh_route(route_env, "wbusy", _enter_phase4_route)
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake:
+        def __init__(self):
+            self.run_calls = []
+
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=10)
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    hanging = HangingFake()
+    session._set_caller_for_tests(hanging)
+    threading.Thread(
+        target=lambda: session.send_message("先聊"), daemon=True
+    ).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    resp409_busy = fresh_env["client"].post("/api/writing")
+    assert resp409_busy.status_code == 409, "在飞中不应受理撰写"
+    assert len(hanging.run_calls) == 1, "start_writing 不应另起调用"
+
+    release.set()
+    assert _wait_route_idle(session), "调用未收尾"
+
+
+def test_route_writing_400_without_project(route_env):
+    """用例 3:POST /api/writing——未进项目 → 400(RuntimeError 透传,process 模子)。"""
+    resp = route_env["client"].post("/api/writing")
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["status"] == "error"
+    assert "尚未进入" in body["message"]
+
+
+def test_route_check_start_accepted_and_409(route_env):
+    """用例 4:POST /api/checks/start——phase5_awaiting_tier + tier 签名 → 202;
+    无 tier 签名 → 409(check_available False 透传,T-idi03-12 服务端强制)。"""
+    client = route_env["client"]
+
+    # 无 tier 签名 → 409(先选档,D-P3-11 选档是起检前置)
+    _enter_phase5_route(route_env, check_reports={}, tier=None)
+    resp409 = client.post("/api/checks/start")
+    assert resp409.status_code == 409
+    assert "自检入口已关闭" in resp409.json()["message"]
+
+    # tier 签名落盘 → 202 受理(Fake 不产报告:done 后 latest 空 → 链不驱动,
+    # 单跳确定性收尾;报告文法归 session 级用例)
+    fresh_env = _reenter_fresh_route(
+        route_env, "start",
+        lambda e: _enter_phase5_route(e, check_reports={}, tier="严格"),
+    )
+
+    class NoReportFake:
+        def __init__(self):
+            self.run_calls = []
+
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            yield {"kind": "say", "content": "开始核查。", "raw": None}
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = NoReportFake()
+    session._set_caller_for_tests(fake)
+
+    resp = fresh_env["client"].post("/api/checks/start")
+    assert resp.status_code == 202, "选档后起检应受理"
+    assert resp.json()["status"] == "accepted"
+    assert _wait_route_idle(session), "核查未在时限内结束"
+    assert len(fake.run_calls) == 1, "单跳受理后恰一次调用"
+
+
+def test_route_check_repair_accepted_and_409s(route_env):
+    """用例 5:POST /api/checks/repair——判定式②盘(配对裁决 + 末行非 PASS)→ 202;
+    phase5_awaiting_tier → 409;unpaired 待裁决非空(paused)→ 409(判定式①
+    服务端强制,T-idi03-13)。"""
+    client = route_env["client"]
+
+    # 判定式②盘:#1 抛问已裁决(配对)+ #2 问题表未配 → 不收口,resumed 态
+    resumed_report = _check_report_route(
+        problems=[(1, "P1", "§2", "范围含糊", "写清"), (2, "P1", "§4", "措辞歧义", "直说")],
+        conclusion="> 核查结论:FIX(P1×2)",
+        pending_questions=[(1, "范围要不要收紧?")],
+        verdict_lines=[(1, "修——按建议")],
+    )
+    _enter_phase5_route(
+        route_env, check_reports={1: resumed_report}, tier="宽松",
+    )
+
+    class RepairFake:
+        """修复者 fake:写 tmp 后 done;宽松档 finally 尾提前返回 → 单跳收尾。"""
+
+        def __init__(self):
+            self.run_calls = []
+
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            (Path(project_path) / "DESIGN.md.tmp").write_text(
+                "# 总设计文档\n\n修复后版本。\n", encoding="utf-8"
+            )
+            yield {"kind": "say", "content": "按裁决修复完成。", "raw": None}
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    fake = RepairFake()
+    session._set_caller_for_tests(fake)
+
+    resp = client.post("/api/checks/repair")
+    assert resp.status_code == 202, "判定式②(裁决待续跑态)应受理继续修复"
+    assert resp.json()["status"] == "accepted"
+    assert _wait_route_idle(session), "修复未在时限内结束"
+    assert len(fake.run_calls) == 1, "宽松档单跳收尾,不链下一轮核查"
+
+    # phase5_awaiting_tier(非 phase5_checking)→ 409
+    fresh_await = _reenter_fresh_route(
+        route_env, "rawait",
+        lambda e: _enter_phase5_route(e, check_reports={}, tier=None),
+    )
+    resp409_state = fresh_await["client"].post("/api/checks/repair")
+    assert resp409_state.status_code == 409
+    assert "修复入口已关闭" in resp409_state.json()["message"]
+
+    # unpaired 待裁决非空(paused 态)→ 409(判定式①:裁决落盘前不得重跑修复)
+    paused_report = _check_report_route(
+        problems=[(1, "P1", "§2", "范围含糊", "写清")],
+        conclusion="> 核查结论:FIX(P1×1)",
+        pending_questions=[(1, "范围要不要收紧?")],
+    )
+    fresh_paused = _reenter_fresh_route(
+        route_env, "rpause",
+        lambda e: _enter_phase5_route(
+            e, check_reports={1: paused_report}, tier="严格",
+        ),
+    )
+    resp409_paused = fresh_paused["client"].post("/api/checks/repair")
+    assert resp409_paused.status_code == 409, "暂停态(待裁决未配对)不得放行修复"
+    assert "修复入口已关闭" in resp409_paused.json()["message"]
+
+
+def test_route_check_repair_400_without_project(route_env):
+    """用例 6:POST /api/checks/repair——未进项目 → 400;未进项目 POST /api/checks/start
+    同分支(两路由共用 process 模子 RuntimeError → 400)。"""
+    resp_repair = route_env["client"].post("/api/checks/repair")
+    assert resp_repair.status_code == 400
+    assert "尚未进入" in resp_repair.json()["message"]
+
+    resp_start = route_env["client"].post("/api/checks/start")
+    assert resp_start.status_code == 400
+    assert "尚未进入" in resp_start.json()["message"]
+
+
+def test_route_three_entries_busy_mutex(route_env):
+    """用例 7:三受理路由 busy 互斥——挂住在飞调用时 /api/checks/start 与
+    /api/checks/repair 同被 409(writing 的 busy 409 已在用例 2 证;单飞锁
+    三入口同源,多窗口同点只有一个被受理,D-P3-26)。"""
+    # phase5_checking 盘(running 态:check 可用作恢复通道)
+    running_report = _check_report_route(
+        problems=[(1, "P1", "§2", "范围含糊", "写清")],
+        conclusion="> 核查结论:FIX(P1×1)",
+    )
+    _enter_phase5_route(
+        route_env, check_reports={1: running_report}, tier="严格",
+    )
+    gate = threading.Event()
+    release = threading.Event()
+
+    class HangingFake:
+        def __init__(self):
+            self.run_calls = []
+
+        def run(self, project_path, prompt):
+            self.run_calls.append((str(project_path), prompt))
+            gate.set()
+            release.wait(timeout=10)
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    hanging = HangingFake()
+    session._set_caller_for_tests(hanging)
+    threading.Thread(
+        target=lambda: session.send_message("先聊"), daemon=True
+    ).start()
+    assert gate.wait(timeout=5), "在飞调用未启动"
+
+    client = route_env["client"]
+    resp_start = client.post("/api/checks/start")
+    assert resp_start.status_code == 409, "在飞中不应受理继续自检"
+    resp_repair = client.post("/api/checks/repair")
+    assert resp_repair.status_code == 409, "在飞中不应受理继续修复"
+    assert len(hanging.run_calls) == 1, "受理路由不应另起调用"
+
+    release.set()
+    assert _wait_route_idle(session), "调用未收尾"

@@ -72,6 +72,8 @@ const latestCheck = document.getElementById('latest-check');
 const verdictCards = document.getElementById('verdict-cards');
 const continueCheckBtn = document.getElementById('btn-continue-check');
 const continueRepairBtn = document.getElementById('btn-continue-repair');
+const missionCompleteModal = document.getElementById('mission-complete-modal');
+const missionCloseBtn = document.getElementById('btn-mission-close');
 
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
@@ -83,6 +85,7 @@ let processInFlight = false;     // 「处理本轮批注」在飞标记(SSE don
 let writingInFlight = false;     // 「撰写/继续撰写」在飞标记(done 后拉新的判据)
 let checkInFlight = false;       // 「继续自检/继续修复」在飞标记(done 后拉新的判据)
 let tierModalShown = false;      // 档位模态本会话是否已弹过(防重复弹,不落盘)
+let missionCelebrated = false;   // 使命完成欢呼本会话是否已弹过(D-P3-24:不落盘)
 
 // §7.4 状态中文名(derive_state 返回值 → 界面徽标)
 const STATE_LABELS = {
@@ -322,12 +325,17 @@ function applySessionGates(data) {
       annotationsPanel.classList.add('hidden');
       hidePhase3Extras();
       applyPhase5View(data);
+    } else if (data.state === 'mission_complete') {
+      // mission_complete:只读归档视图(D-P3-25)+ 一次性欢呼模态(D-P3-24)
+      annotationsPanel.classList.add('hidden');
+      hidePhase3Extras();
+      applyArchiveView(data);
     } else {
-      // mission_complete:占位维持现状(本计划后续切片替换归档视图)
+      // 防御:phase3 无完整轮等异常形态,退回中性占位(不误入归档视图)
       annotationsPanel.classList.add('hidden');
       checksPanel.classList.add('hidden');
       hidePhase3Extras();
-      roundsHint.textContent = `当前状态:${STATE_LABELS[data.state] || data.state}(视图在本计划后续切片呈现)。`;
+      roundsHint.textContent = `当前状态:${STATE_LABELS[data.state] || data.state}。`;
       roundsHint.classList.remove('hidden');
       roundDoc.innerHTML = '';
     }
@@ -371,6 +379,7 @@ function hidePhase3Extras() {
   authorizeRow.classList.add('hidden');
   writingView.classList.add('hidden');
   checksPanel.classList.add('hidden');
+  roundsPlaceholder.classList.remove('archive-mode');
   roundSwitcher.classList.remove('hidden');
 }
 
@@ -750,6 +759,78 @@ async function refreshChecksAfterStream() {
   await loadChecksView(null);
 }
 
+// mission_complete:只读归档视图(D-P3-25;呈现 = 推导态,零归档标志)
+function applyArchiveView(data) {
+  roundsPlaceholder.classList.add('archive-mode');
+  roundsHint.classList.add('hidden');
+  roundTitle.textContent = '总设计文档(只读归档)';
+  roundSwitcher.classList.remove('hidden');
+  checksPanel.classList.remove('hidden');
+  // 只读防线的呈现层(服务端 409 是真防线,D-P3-25):三交互面隐藏
+  processRoundBtn.classList.add('hidden');
+  divergenceEntry.classList.add('hidden');
+  messageInput.disabled = true;
+  sendBtn.disabled = true;
+  loadArchiveView();
+  // 欢呼模态:本会话首见弹一次(missionCelebrated 不落盘,重开重现)
+  if (!missionCelebrated) {
+    missionCelebrated = true;
+    missionCompleteModal.classList.remove('hidden');
+  }
+}
+
+async function loadArchiveView() {
+  // 归档三源可浏览:DESIGN.md(默认文)+ 轮次切换器 + check 报告
+  const design = await fetchJson('/api/design');
+  roundDoc.innerHTML = '';
+  if (design && design.design) {
+    roundDoc.appendChild(renderMarkdown(design.design));
+  } else {
+    roundDoc.textContent = '(未找到 DESIGN.md)';
+  }
+  await loadArchiveRounds();
+  await loadChecksView(null);
+}
+
+async function loadArchiveRounds() {
+  const result = await roundApi.list();
+  if (!result.ok) return;
+  const { rounds } = result.data;
+  roundSwitcher.innerHTML = '';
+  (rounds || []).forEach((n) => {
+    const opt = document.createElement('option');
+    opt.value = String(n);
+    opt.textContent = `第 ${n} 轮`;
+    roundSwitcher.appendChild(opt);
+  });
+  displayedRoundNumber = null; // 归档态轮次切换渲染所选轮文档(不判冻结)
+}
+
+async function loadArchiveRoundDoc(n) {
+  const result = await roundApi.get(n);
+  roundDoc.innerHTML = '';
+  if (!result.ok) {
+    roundDoc.textContent = `第 ${n} 轮文档拉取失败。`;
+    return;
+  }
+  roundTitle.textContent = `第 ${n} 轮(归档·只读)`;
+  renderRoundDocument(result.data.document, null); // 高亮不绑(只读浏览)
+}
+
+async function fetchJson(url) {
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch {
+    return null;
+  }
+}
+
+missionCloseBtn.addEventListener('click', () => {
+  missionCompleteModal.classList.add('hidden');
+});
+
 function renderDraft(draft) {
   if (draft == null || draft === '') {
     draftContent.innerHTML = '';
@@ -1103,6 +1184,10 @@ messageInput.addEventListener('keydown', (e) => {
 roundSwitcher.addEventListener('change', () => {
   const n = parseInt(roundSwitcher.value, 10);
   if (!Number.isFinite(n)) return;
+  if (currentState === 'mission_complete') {
+    loadArchiveRoundDoc(n); // 归档态:切历史轮只读浏览(D-P3-25)
+    return;
+  }
   loadRoundView(n);
 });
 

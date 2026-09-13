@@ -60,5 +60,12 @@
   },
   "project_code": "idi",
   "agent_skills": {},
-  "claude_md_path": "./.claude/CLAUDE.md"
+  "claude_md_path": "./.claude/CLAUDE.md",
+  "model_profile_overrides": {
+    "pi": {
+      "opus": "glm-5.3-flash",
+      "sonnet": "glm-5.3-flash",
+      "haiku": "glm-5.3-flash"
+    }
+  }
 }

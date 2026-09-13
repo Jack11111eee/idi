@@ -12,7 +12,7 @@
 - [x] **FLOW-02**: 阶段 1-2 为一段连续会话,产出 `docs/transcript.md`(逐条追加式转录,`[user]`/`[ai]` 起始行文法)与 `docs/draft.md` 草稿;重启后由 transcript 恢复 — §6.1, §4.2
 - [x] **FLOW-03**: G1:草稿区末尾常驻「认可雏形」按钮,点击后**后端**将 draft.md 定稿为 `discuss-round-1.md` 并追加合规的 `> 申请授权:否` 标记行 — §4.4, §6.4
 - [x] **FLOW-04**: G2:用户点「处理本轮批注」后,AI 批量回应全部批注、产出 `discuss-round-(N+1).md`;上轮文档与 annotations 冻结只读 — §3.5, §4.4
-- [ ] **FLOW-05**: G3:「授权撰写总设计文档」按钮点亮条件 = 四处机械校验全过(annotations 无 pending + 未决清单清零 + 维度表全绿 + 授权申请标记为「是」);点击后确认框输入「确认授权」;默认拒绝;拒绝 = 一条普通批注 — §4.4, §8.1
+- [x] **FLOW-05**: G3:「授权撰写总设计文档」按钮点亮条件 = 四处机械校验全过(annotations 无 pending + 未决清单清零 + 维度表全绿 + 授权申请标记为「是」);点击后确认框输入「确认授权」;默认拒绝;拒绝 = 一条普通批注 — §4.4, §8.1
 - [x] **FLOW-06**: 发散模式:新建项目时选「没想法」进入;内置发散指令模板(多视角风暴→3~5 个候选方向→用户挑选或委托 AI 挑选);产物 `docs/brainstorm.md` 可反复覆盖不编号;雏形存在后发散模式关闭 — §3.7
 - [x] **FLOW-07**: §6.4 机器可解析文法的全部机械校验(维度表/未决清单/授权标记/批注回应表/PASS 结论行/裁决追加/完整轮判据)由工具实现,AI 生成模板逐字遵守 — §6.4, §7.3
 
@@ -34,9 +34,9 @@
 ### 数据与状态(DATA)
 
 - [x] **DATA-01**: 目录结构按 §6.1 落盘(DESIGN.md 项目根 / AUTHORIZATION.md / docs/ 全套);annotations.json 字段按 §6.2(含字段写回职责:后端创建条目、批量处理完成后由后端解析回应表回写 answer 与 status,AI 不直接改写 annotations) — §6.1, §6.2, §6.3
-- [ ] **DATA-02**: 崩溃自愈:半成品判据(轮次文档末行非合规授权标记即视为不存在)、`DESIGN.md.tmp` 原子改名落盘、check-N 半份重跑覆盖;「继续撰写」/「继续自检」/「继续修复」按钮按 §7.3② 与 §6.4 判定式出现 — §7.3, §6.4
-- [ ] **DATA-03**: 完成态:最新 check 末行以 `> 核查结论:PASS` 开头 → 「使命完成」提示 + 只读归档态(划词批注、处理本轮批注、授权按钮均不可用) — §7.4, §8.2
-- [ ] **DATA-04**: 自检档位宽松/严格:宽松=一次核查+修复+追加 PASS 即止;严格=循环至零问题轮 PASS,纯 P2 轮走 D-22 残余裁决制(待裁决/裁决行落盘配对、裁决待续跑态判定) — §8.2, §6.4
+- [x] **DATA-02**: 崩溃自愈:半成品判据(轮次文档末行非合规授权标记即视为不存在)、`DESIGN.md.tmp` 原子改名落盘、check-N 半份重跑覆盖;「继续撰写」/「继续自检」/「继续修复」按钮按 §7.3② 与 §6.4 判定式出现 — §7.3, §6.4
+- [x] **DATA-03**: 完成态:最新 check 末行以 `> 核查结论:PASS` 开头 → 「使命完成」提示 + 只读归档态(划词批注、处理本轮批注、授权按钮均不可用) — §7.4, §8.2
+- [x] **DATA-04**: 自检档位宽松/严格:宽松=一次核查+修复+追加 PASS 即止;严格=循环至零问题轮 PASS,纯 P2 轮走 D-22 残余裁决制(待裁决/裁决行落盘配对、裁决待续跑态判定) — §8.2, §6.4
 
 ## v2 Requirements
 
@@ -65,7 +65,7 @@
 | FLOW-02 | Phase 1 | Complete |
 | FLOW-03 | Phase 1 | Complete |
 | FLOW-04 | Phase 2 | Complete |
-| FLOW-05 | Phase 3 | Pending |
+| FLOW-05 | Phase 3 | Complete |
 | FLOW-06 | Phase 1 | Complete |
 | FLOW-07 | Phase 2 | Complete |
 | UI-01 | Phase 2 | Complete |
@@ -78,6 +78,6 @@
 | AI-04 | Phase 1 | Complete |
 | AI-05 | Phase 1 | Complete |
 | DATA-01 | Phase 2 | Complete |
-| DATA-02 | Phase 3 | Pending |
-| DATA-03 | Phase 3 | Pending |
-| DATA-04 | Phase 3 | Pending |
+| DATA-02 | Phase 3 | Complete |
+| DATA-03 | Phase 3 | Complete |
+| DATA-04 | Phase 3 | Complete |

@@ -23,7 +23,7 @@
 
 ### Active
 
-实施 DESIGN.md 全部范围内的功能,详见 `.planning/REQUIREMENTS.md`(REQ-ID 追溯至 DESIGN.md 章节)。
+v1.13 范围内工作已全部交付,当前无在办需求。下一里程碑的需求将在 `/gsd-new-milestone` 中重新定义(旧的 v1.13 需求清单已归档至 `.planning/milestones/v1.13-REQUIREMENTS.md`;`.planning/REQUIREMENTS.md` 保留在盘但内容已冻结)。
 
 ### Out of Scope
 
@@ -33,7 +33,10 @@
 
 - **设计已完成:** DESIGN.md v1.13,由 22 条已确认决策(D-01~D-22)、4 轮讨论(docs/discuss-round-0~4.md)、14 轮自检核查(docs/DESIGN-check-1~14.md)收敛而来。第 14 轮为 PASS 收口。
 - **为什么存在:** 用 AI 做项目最大的浪费是"开工前没对齐"。本工具把对齐流程产品化。
-- **唯一权威:** 一切入implement细节以 DESIGN.md 为准;`.planning/` 文档若与 DESIGN.md 冲突,DESIGN.md 胜出。
+- **唯一权威:** 一切入 implement 细节以 DESIGN.md 为准;`.planning/` 文档若与 DESIGN.md 冲突,DESIGN.md 胜出。
+- **当前代码状态(v1.13 shipped, 2026-09-13):** 13,322 LOC(不含 vendor);Python + FastAPI 后端(`backend/` 15 个测试文件,219 passed / 6 skipped),原生 HTML/JS 前端(`frontend/`,仅 vendored `marked.min.js`);SSE 事件直播 + 双轨 AICaller(SDK / 子进程);纯模块 `grammar.py`/`annotations.py`/`g3.py`/`checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
+- **已知技术债:** ①`SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧"无脏状态"语义仍成立);②`annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口);③STATE.md 在 `phase.complete` 后偶发字段异常(需人工修正)。
+- **方法论教训:** 真浏览器 UAT 抓出了机器级验证漏掉的 6 处真实缺陷(含一处高危无界自动链);文本级 gate 通过不等于运行时语义成立(详见 `.planning/RETROSPECTIVE.md`)。
 
 ## Constraints
 
@@ -61,6 +64,9 @@
 | Phase 2:ask_lite 同步调用、事件不进工作面板 | §3.4"数秒内…"不打断阅读 + 单机单人;走 SSE 直播面板的是用户驱动的批处理任务(§4.3),轻量问答不属此列 | ✓ Good(UAT 真调 55s 灰斜体秒级感) |
 | Phase 2:冻结 = 纯磁盘推导(轮号 < current_round 即只读),非当前轮批注 API 层拒绝 409 | 不新增后端状态;§7.4 文件即状态的直接推论 | ✓ Good(路由 19 契约 + UAT 冻结检查点) |
 | Phase 2:annotations 写回(AI 不碰 JSON)与标记脏变体免疫 | §6.2 字段写回职责——后端解析响应表统一回写 answer/status,格式漂移归零 | ✓ Good(UAT a1-01 回写 answered) |
+| Phase 3:裁决行锚点取末一处 `> 核查结论:` + 同号配对 | 宽松档裁决轮报告可含双结论行,锚点取末一处才能让尾部追加段进配对空间;配对与呈现必须共用同一编号空间 | ⚠️ Revisit(G-idi03-2 暴露:anchor 受限扫描与锚点无关扫描曾口径不一,已修) |
+| Phase 3:自检自动推进以 hop-local 标志(而非"tmp 在盘")守卫 | 原 `finally` 守卫写反导致严格档无界自动链(实测 84 跳/1.5s);仅当 `tmp_path.replace` 实际执行处置 `tmp_consumed=True` | ✓ Good(修复后恰 1 跳,复验 passed) |
+| Phase 3:prompt 契约必须由测试锁死参数注入 | `build_check_prompt` 接受 `tier` 却未注入,AI 写出非法档位行导致 `parse_tier_line` 返回 None——靠真 CLI E2E 才暴露 | ✓ Good(已补 `test_build_check_prompt_injects_tier_line`) |
 
 ---
-*Last updated: 2026-09-13 after Phase 3(授权/自检/终点收口:验证 passed 5/5 + UAT 8 检查点,4 处运行时缺陷修复)——milestone v1.13 全 20 需求交付*
+*Last updated: 2026-09-13 after v1.13 milestone — 交互式讨论迭代系统 MVP shipped(3 phases / 13 plans / 28 tasks,20/20 REQ 交付并验证;真浏览器 UAT 抓出 6 处运行时缺陷并全部修复)*

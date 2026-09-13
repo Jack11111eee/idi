@@ -22,7 +22,7 @@ current_phase: 3
 See: .planning/PROJECT.md (updated 2026-09-13)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Milestone v1.13 全部三阶段完成——待 complete-milestone 归档
+**Current focus:** Planning next milestone(v1.13 已 shipped;用 `/gsd-new-milestone` 开启下一里程碑)
 
 ## Current Position
 
@@ -94,7 +94,7 @@ Recent decisions affecting current work:
 
 - [Phase 3]: UAT 四处运行时缺陷修复(503f374,复验 862703c)——G-idi03-1(high):start_repair finally 守卫从「tmp 在盘即 return」改为 hop-local `tmp_consumed` 标志(仅 tmp_path.replace 实际执行处分支置 True),堵死严格档无界自动链(修复前实测 84 跳/1.5s→修复后恰 1 跳),命名 flake test_next_check_n_half_report_no_skip 转 10/10 确定;G-idi03-2:新增 session 层 _unpaired_pending_questions 以 unpaired 编号过滤锚点无关扫描,裁决与呈现共用同一配对空间(grammar.py 锁定语义零触碰);G-idi03-3:loadArchiveView 复位两推进按钮(归档态 继续自检/继续修复 不可见);G-idi03-4:applyPhase3Extras 隐藏 checksPanel(跨项目状态残留);修复仅 3 文件(session.py +35/−5、test_session.py +117、app.js +5),grammar/state/checks/g3/main/prompts 零改动
 - [Phase 3]: 决策覆盖 gate 30/30 通过 ≠ 运行时语义成立——G-idi03-1 是 D-P3-16 的活偏差,而该 gate 当时报 30/30(只扫 PLAN/SUMMARY 文本);记入方法论教训:门通过须以行为验证佐证
-- [Phase 3]: 遗留已知项(未修,移交 milestone 收口裁定)——.planning/phases/idi-02-g2/02-VERIFICATION.md 存储的 covered_digest(acd6f0f8…)与当前文件树重算值(20a4297f…)漂移,系 Phase 2 收口后代码演进所致,非本次引入
+- [Phase 3]: 遗留已知项(已闭合)——Phase 2 `02-VERIFICATION.md` 的 covered_digest 漂移,已在里程碑收口由复验代理刷新至当前冻结树(commit a5bfcad),三阶段验证指纹与代码树一致
 
 ### Pending Todos
 
@@ -114,8 +114,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-13T15:05:06Z
-Stopped at: Phase 3 complete — all phases complete; milestone v1.13 待 complete-milestone 归档
+Last session: 2026-09-13T15:32:22Z
+Stopped at: Milestone v1.13 shipped and archived — 待开启下一里程碑
 Resume file: None
 
 ## Operator Next Steps

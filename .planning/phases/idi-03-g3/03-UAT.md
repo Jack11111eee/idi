@@ -3,7 +3,8 @@ status: complete
 phase: idi-03-g3
 source: [idi-03-01-SUMMARY.md, idi-03-02-SUMMARY.md, idi-03-03-SUMMARY.md, idi-03-04-SUMMARY.md, idi-03-05-SUMMARY.md]
 started: 2026-09-13T11:40:00Z
-updated: 2026-09-13T13:15:00Z
+updated: 2026-09-13T23:00:00Z
+gap_remediation: "503f374(G-idi03-1~4 全 resolved;CP6/7/8 重验 pass;Summary 5 pass/3 issue → 8 pass/0 issue)"
 ---
 
 ## Current Test
@@ -49,27 +50,32 @@ evidence: "`proj-p5-tier`(有 DESIGN.md、无 check 报告、无档位签名)进
 
 ### 6. 自检循环 + 四 mode 裁决控件 + 逐条裁决收口
 expected: paused 盘 → 隐藏「继续自检」「继续修复」+ 抛问裁决卡(单行文本)「修/接受现状」;p2 盘 → 纯 P2 残余裁决卡(位置/问题/建议修法三字段)「修/接受现状」;resumed 盘 → 只呈现「继续修复」;running 盘 → 呈现「继续自检」;裁决落盘 → 残余清零后端自动追加 PASS 收口 → mission_complete
-result: issue(G-idi03-1 / G-idi03-2)
+result: pass(re-verified 2026-09-13;原 reported 为 issue(G-idi03-1 / G-idi03-2))
+re-verified: "G-idi03-1 / G-idi03-2 修复后(commit 503f374)重跑 CDP 实测,四 mode + 锚前对照全部一致。**四盘 API×DOM 对账**(CDP 直连 8765,抓 /api/checks 的 selfcheck 与 DOM 同拍比对):① `cp6-paused`(锚行在前、`> 待裁决:#1:` 在后)→ mode=**paused**、questions=[{number:1, text:'范围问题需用户定夺——是做甲还是做乙?'}]、「继续自检」hidden、「继续修复」hidden、渲染 **1 张**裁决卡(卡文本含该问题 + 两按钮);② `cp6-p2`(两行 P2)→ mode=**p2**、questions 四键形态(§4/措辞可以更精准/润色、§5/举例可再具体/补例子)、「继续自检」hidden、渲染 **2 张**卡;③ `cp6-resumed`(配对裁决 #1 + 无未配对)→ mode=**resumed**、「继续自检」hidden、「继续修复」**visible**、裁决卡 0 张;④ `cp6-running`(结论行非 PASS、无裁决行)→ mode=**running**、「继续自检」**visible**、裁决卡 0 张;⑤ **新增锚前对照** `cp6-preanchor`(单行 `> 待裁决:#1:` 落在结论锚**之前**)→ mode=**running**、questions=**[]**——锁定文法不计该行,呈现层不再端出文法不认的问题(修复前此盘 mode=running 但 questions 会把锚前行端成裁决卡,两扫描器分歧)。**机器证据**:`test_selfcheck_paused_questions_anchor_consistent`(test_session.py,含混合形态断言:锚前 #7 + 锚后 #1 → questions 仅含 #1,与 unpaired_verdicts 同配对空间);**真 CLI E2E 运行 #4 `test_selfcheck_real_cli_loose` 通过**(见「观察」段),产物完整链路:check-1 FIX(P1×2,P2×1) → 修复者抛 3 条锚后 `> 待裁决:` → 3 条 `> 裁决:#N:修` → `> 核查结论:PASS(残余裁决收口)` → derive_state=**mission_complete**。G-idi03-1 另由 `test_repair_no_tmp_stops_chain` 机器验证(修复跳不写 tmp → 恰好 1 次修复、1 次核查、无 check-2、发「修复未产出 tmp,可重跑」error、链停);修复前实测 1.5s 内 **84 次修复跳**(无界自链),修复后恒为 1 次。"
 evidence: "**paused(实测 pass)**:`proj-p5-paused`(锚行在前、`> 待裁决:#1:` 在后)→ state=phase5_checking、mode=**paused**、questions=[{number:1, text:'范围问题需用户定夺——是做甲还是做乙?'}];「继续自检」「继续修复」均 hidden=True;渲染 **1 张**裁决卡,卡内文本为该问题,按钮 `['修','接受现状']`(截图 cp6a-paused-cards.png)。点「修」→ 磁盘报告尾部落 `> 裁决:#1:修——` + `> 核查结论:PASS(残余裁决收口)`,state 直接转 **mission_complete**(残余清零后端自动收口,D-P3-17;截图 cp6a-after-verdict.png)。**p2(实测 pass)**:`proj-p5-p2`(问题分级表两行均 P2)→ mode=**p2**、questions 为 `{number,location,issue,suggestion}` 四键形态(§4/措辞可以更精准/润色、§5/举例可再具体/补例子);渲染 **2 张**卡,卡文本「§4 措辞可以更精准 建议修法:润色 修 接受现状」——位置/问题/建议三字段齐全;「继续自检」hidden=True。两卡均点「接受现状」→ 报告尾部落两条 `> 裁决:#N:接受现状——` + `> 核查结论:PASS(残余裁决收口)`,state 转 **mission_complete**(截图 cp6b-p2-cards.png / cp6b-after-accept.png)。**resumed(实测 pass)**:`proj-p5-resumed`(一条配对裁决 + 未配对待裁决?实测 mode=**resumed**)→ 「继续自检」hidden=True、「继续修复」visible=True 且文案精确为「继续修复」,裁决卡 0 张(截图 cp6c-resumed.png)。**issue**:本轮 UAT 未在浏览器内构造出 running 态与「锚前抛问」态的对照,但代码级确证了两个缺陷——① G-idi03-1:`start_repair` 的 finally 尾部守卫 `if tmp_path.is_file(): return` 在「修复跳未产出 tmp」时(该函数 docstring 明确承诺此形态应「不驱动下一跳」)不命中,执行直落 `_drive_next` → 无界自链,实测 20 秒内 **10209 跳**且仍在飞;② G-idi03-2:`scan_pending_questions`(无锚全文扫)与 `unpaired_verdicts`(锚后限定)锚定语义不一致,`> 待裁决:` 落在结论锚之前时前者命中、后者为空 → `_selfcheck_substate` 判为 running 而 questions=[] → 用户看不到已抛出的问题。两者详见 03-VERIFICATION.md 的 gaps。"
 
 ### 7. 使命完成 + 只读归档
 expected: 末行 `> 核查结论:PASS` → 弹一次性「使命完成」模态;关掉后呈只读归档态——DESIGN.md 默认渲染 + 轮次切换器可切 + check 报告可浏览;划词批注、「处理本轮批注」、授权按钮全不可用
-result: issue(G-idi03-3)
+result: pass(re-verified 2026-09-13;原 reported 为 issue(G-idi03-3))
+re-verified: "G-idi03-3 修复后(commit 503f374)CDP 实测 `proj-mission`(报告末锚行 `> 核查结论:PASS(一检一修即止)`):state=**mission_complete**、checkState 文本「档位:宽松 / done」;**checks-panel hidden=False(报告可浏览,符合 D-P3-25)**;`btn-continue-check` visible=**False**(修复前为 True)、`btn-continue-repair` visible=**False**——归档态两推进按钮一律不可见。截图 `/tmp/idi-gap-uat/shots/g3-archive-fixed.png`(面板内已无「继续自检」)。服务端 409 真防线不变(`POST /api/checks/start` → 409,本次未复测,原 reported 证据保留)。"
 evidence: "`proj-mission`(报告末锚行 `> 核查结论:PASS(一检一修即止)`)→ state=**mission_complete**;**模态实测可见**,文本「使命完成 使命完成——总设计文档已通过自检,项目进入只读归档态。开始浏览归档」(截图 cp7-modal.png);点 btn-mission-close → 模态隐藏(截图 cp7-archive-design.png)。**归档可浏览(实测 pass)**:rounds-placeholder 带 `archive-mode`;round-title=「总设计文档(只读归档)」;round-doc 渲染 DESIGN.md 正文(含「把讨论收敛成设计」);round-switcher options=`['第 1 轮']`,切到第 1 轮后 title 变「第 1 轮(归档·只读)」且正文渲染轮次文档(截图 cp7-archive-round1.png);checks-panel 未隐藏,报告列表 + 最新报告 markdown 完整渲染(含档位行、问题分级表、裁决行、结论行)。**只读防线(服务端实测 pass)**:页内 fetch 直打——`POST /api/rounds/1/annotations` → **409**、`POST /api/checks/tier` → **409**、`POST /api/writing` → **409**、`POST /api/authorize` → **409**、`POST /api/checks/start` → **409**、`POST /api/checks/repair` → **409**、`GET /api/design` → 200(只读浏览可用);`POST /api/checks/verdict` → 422(number 缺失的请求形态校验)。**呈现层(实测 pass)**:message-input.disabled=True、btn-send.disabled=True、divergence-entry hidden=True、btn-process-round hidden=True、annotations-panel hidden=True、btn-authorize.disabled=True;在 round-doc 内真实划选「总设计文」并派发 mouseup → **selection-menu 保持 hidden**(因 `initSelectionMenu` 内 `currentState!=='phase3'` 早退,归档态天然不弹菜单)。**issue**:checks-panel 内 **btn-continue-check 仍可见可点**(实测 `visible buttons in checks-panel: ['继续自检']`)——`applyArchiveView` 未隐藏它,且 `loadChecksView(null)` 的 running 分支把它重新显示。**服务端 409 兜住**,不可实际推进。详见 G-idi03-3。"
 
 ### 8. 崩溃自愈(五个中途态重开 → 正确按钮 + 无需重输确认词)
 expected: 每个中途态(残留 tmp、半份报告、暂停态、已授权未撰写、四查全过未授权)重开界面 → 呈现与该磁盘现状匹配的正确按钮,且无需重新输入确认词
-result: issue(G-idi03-4)
+result: pass(re-verified 2026-09-13;原 reported 为 issue(G-idi03-4))
+re-verified: "G-idi03-4 修复后(commit 503f374)CDP 实测跨阶段重进(同页依次 enterProject):`proj-phase5`(state=phase5_checking,checks-panel hidden=**False**,「继续自检」可见,checkState「档位:严格 / running」)→ then→ `proj-phase3`(state=phase3,**checks-panel hidden=True**、「继续自检」不可见、面板内容为「本轮批注流」而非上一项目的自检报告)。对照:全新页直进 `proj-phase3` → checks-panel hidden=**True**(与修复前 fresh 行为一致,无回归)。截图 `/tmp/idi-gap-uat/shots/g4-phase5-to-phase3-fixed.png`(右侧为「本轮批注流」,自检面板已消失)。原 reported 的五个中途态(残留 tmp / 半份报告 / 暂停态 / 已授权未撰写 / 四查全过未授权)本次未逐条重跑——G-idi03-4 的修复只新增一行 `checksPanel.classList.add('hidden')`(applyPhase3Extras 内),不触及那五态的推导路径;其原 reported 证据保留。"
 evidence: "五个中途态逐一重开实测(均以全新浏览器页进入):① `proj-p8-tmponly`(phase4 + 残留 tmp)→ state=phase4、writing_tmp_exists=True、writing-view 可见、按钮「继续撰写(检测到上次中断的半成品,重写覆盖)」;② `proj-p8-notmp`(phase4 无 tmp)→ state=phase4、按钮「撰写总设计文档」;③ `proj-p8-half`(phase5 + 半份报告无结论锚)→ state=phase5_checking、selfcheck.mode=**running**、tier=宽松(从报告头部行恢复)、「继续自检」**可见**——正确恢复,点一下即重跑覆盖(半份判定不跳号已由 `test_next_check_n_half_report_no_skip` 机器验证);④ `proj-p8-g3ready`(phase3 四查全过未授权)→ state=phase3、current_round=1、g3_available=True、authorize-row 可见、btn-authorize.disabled=**False**——**重开即点亮,无需重输确认词**(与 §7.3 原文一致);⑤ `proj-p8-g3ready-tmp`(phase3 四查全过 + 意外残留 DESIGN.md.tmp)→ state=**phase3**(tmp 未使状态误入 phase4)、g3_available=True、writing-view hidden=True——tmp 残留不干扰授权前状态推导。截图 cp8-a-*.png … cp8-e-*.png。全部五个态均**无确认词模态自动弹出**、无重复授权动作。**issue**:跨阶段重进同一会话时 checks-panel 残留——实测 `phase5(proj-p8-half) → then→phase3(proj-p8-g3ready)` 后 `checks-panel hidden=False`,面板仍显示**上一个项目**的报告与「继续自检」;而干净页直进 phase3 时为 hidden=True,phase4 路径也正确隐藏(`then→phase4: hidden True`)。服务端 409 兜住。详见 G-idi03-4。"
 
 ## Summary
 
 total: 8
-passed: 5
-issues: 3
+passed: 8
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
+re_verified_at: 2026-09-13
+re_verified_by: 503f374
 
 ## Gaps
 
@@ -78,51 +84,77 @@ blocked: 0
   severity: high
   kind: defect
   checkpoint: 6
+  status: resolved
+  resolved_by: 503f374
+  resolved_at: 2026-09-13
   title: "严格档两跳自动链在「修复跳未产出 tmp」时无界自链"
   file: backend/session.py
   lines: "1335-1354"
   detail: "start_repair._worker 的 finally 尾部守卫 `if tmp_path.is_file(): return` 语义是「tmp 还在 → 不推进」,与 docstring 承诺的「tmp 缺失 → 不驱动下一跳」相反;tmp 缺失时守卫不命中,执行直落 `_drive_next(project,'check')`,check 产 FIX → repair 又不写 tmp → 无界自链。违反 D-P3-16 与 §7.3。"
   evidence: "defect_confirm.py 实测:20 秒内 10209 跳(模式 CRCRCR…)、20s 后 busy 仍为 True。回归面显影:test_session.py::test_next_check_n_half_report_no_skip 的修复跳正是该形态,首次全量跑 1 failed/216 passed/6 skipped,随后 11 次重跑全绿 → 约 10-25% flake。"
   fix_hint: "finally 尾部守卫改为 `if not tmp_path.is_file(): return`(与 docstring 一致),或在 else 分支显式置断链标志。"
+  root_cause: "断链判据用「tmp 文件是否仍在」推断「修复是否产出」,把两种形态混为一谈:(a) 修复成功 → 后端已把 tmp 改名 DESIGN.md → tmp 不在(应链);(b) 修复根本没产出 tmp → tmp 也不在(不应链)。两者在守卫眼里同形,故 (b) 被当成 (a) 放行。"
+  resolution: "在 _worker 内新增本跳局部变量 tmp_consumed,初值 False;仅在「tmp 存在且 DESIGN.md 存在 → tmp_path.replace(design_path) 改名成功」分支置 True。finally 尾部守卫改为 `if _aborted or tier == '宽松' or not tmp_consumed: return`——判据从「tmp 是否仍在」改为「本跳是否真的改名落成 DESIGN.md」,与 docstring 承诺一致;error 事件「修复未产出 tmp,可重跑」仍照发,用户可重跑恢复。"
+  verified_by: "test_session.py::test_repair_no_tmp_stops_chain(修复跳不写 tmp → 恰好 1 次修复、1 次核查、无 check-2、发「修复未产出 tmp,可重跑」、链停不 busy);修复前 RED 实测 1.5s 内 84 次修复跳,修复后 GREEN 恒 1 次。回归面:test_next_check_n_half_report_no_skip 连跑 10 次全绿(修复前约 10-25% flake);test_start_check_two_hop_chain(正常改名路径仍链)通过;全量 219 passed + 6 skipped。"
 
 - gap_id: G-idi03-2
   severity: medium
   kind: defect
   checkpoint: 6
+  status: resolved
+  resolved_by: 503f374
+  resolved_at: 2026-09-13
   title: "待裁决行落在核查结论锚之前时,两扫描器判定分歧 → paused 态漏判"
   file: backend/session.py
   lines: "192-256"
   detail: "_selfcheck_substate 用 unpaired_verdicts(只扫最后一处 `> 核查结论:` 锚之后)判 paused,而抛问截存链路上的 scan_pending_questions 是无锚全文扫。修复者把 `> 待裁决:` 写在结论行之前时,前者为空、后者命中 → 判定式①不命中 → 回落 running 分支且 questions=[] → 前端呈「继续自检」而用户看不到已抛出的问题,链路无法推进到裁决。"
   evidence: "defect2_confirm.py 实测:同一文本 scan_pending_questions=[{number:1,...}] 而 unpaired_verdicts=[]。真 CLI E2E 运行 #1 即此形态:test_selfcheck_real_cli_loose 断言 `裁决落盘后应为 resumed 态或已收口,实际:running`。"
   fix_hint: "paused 判定改为「unpaired_verdicts 非空 或 scan_pending_questions 命中且锚后无对应裁决行」,或统一两扫描器的锚定语义。"
+  root_cause: "同一份报告上并存两个配对空间:判定式用锚后限定空间(unpaired_verdicts),呈现层却用无锚全文空间(scan_pending_questions)。§6.4 明文规定配对空间只统计末一处结论行之后,故锚前正文行本就不该计入;而呈现层全扫会把锚前行端成裁决卡——判定式不计、界面端出,两处对同一文本给不同答案。"
+  resolution: "session 层新增 _unpaired_pending_questions(md_text):先取 unpaired_verdicts 的未配对编号(判定式的权威配对空间),再按这些编号从 scan_pending_questions 的全扫结果里取文本,按 unpaired 顺序组装 {number,text}。_selfcheck_substate 的 paused 分支改用它——判定式计入几条,界面就呈现几条,锚前正文行不再端成问题。grammar.py 的锁定语义(§6.4 判定式,check-14 锁定版)零触碰,只改 session 层消费者(D-P3-20..22)。"
+  verified_by: "test_session.py::test_selfcheck_paused_questions_anchor_consistent(三形态:① 纯锚前抛问 → mode≠paused 且 questions=[];①b 混合锚前 #7 + 锚后 #1 → mode=paused 且 questions 仅含 #1,与 unpaired_verdicts 同配对空间;② 纯锚后抛问 → mode=paused 且问题可见)。修复前 RED:①b 实测 questions 含锚前 #7(多一条)。CDP 实测 cp6-preanchor(锚前抛问盘)→ mode=running、questions=[],与锁定文法一致。真 CLI E2E 运行 #4 test_selfcheck_real_cli_loose 通过,产物含 3 条锚后待裁决 → 3 条裁决 → PASS(残余裁决收口) → mission_complete。"
 
 - gap_id: G-idi03-3
   severity: low
   kind: defect
   checkpoint: 7
+  status: resolved
+  resolved_by: 503f374
+  resolved_at: 2026-09-13
   title: "归档态「继续自检」按钮残留可见可点"
   file: frontend/app.js
   lines: "795-800"
   detail: "applyArchiveView 未隐藏 #btn-continue-check;loadArchiveView → loadChecksView(null) 传 null 使 awaiting_tier 分支跳过,mode==='running' 分支把「继续自检」重新显示。属呈现层残留。"
   evidence: "UAT CP7 实测:归档态下 `visible buttons in checks-panel: ['继续自检']`,可点。服务端 `POST /api/checks/start` → 409,不可实际推进。"
   fix_hint: "applyArchiveView 内补 `continueCheckBtn.classList.add('hidden')`(照 processRoundBtn 同处处理)。"
+  root_cause: "归档分支只隐藏了「处理本轮批注」等交互面,漏了自检面板内的两个推进按钮;而 loadChecksView(null) 因 sessionData 传 null 走 running 兜底分支,主动把「继续自检」重新显示,覆盖了此前状态。"
+  resolution: "loadArchiveView 内 `await loadChecksView(null)` 之后补 `continueCheckBtn.classList.add('hidden')` 与 `continueRepairBtn.classList.add('hidden')`——在拉新渲染之后复位,避免被 running 分支覆盖。服务端 409 真防线不变。"
+  verified_by: "CDP 实测 proj-mission(mission_complete):continueCheck visible=False、continueRepair visible=False、checks-panel hidden=False(报告仍可浏览,D-P3-25 不变)。截图 /tmp/idi-gap-uat/shots/g3-archive-fixed.png。"
 
 - gap_id: G-idi03-4
   severity: low
   kind: defect
   checkpoint: 8
+  status: resolved
+  resolved_by: 503f374
+  resolved_at: 2026-09-13
   title: "跨阶段重进同一会话时 checks-panel 面板残留"
   file: frontend/app.js
   lines: "295-305"
   detail: "applySessionGates 的 phase3 分支只调 applyPhase3Extras + loadRoundsView,未隐藏 checksPanel;applyPhase3Extras 本身也只隐藏 writingView。故从 phase5 项目切到 phase3 项目时,自检报告侧栏残留(显示上一个项目的内容)。"
   evidence: "UAT CP8 实测:fresh→phase3 时 checks-panel hidden=True(干净页无残留);phase5 → phase3 时 hidden=False,面板文本仍为上一项目的报告与「继续自检」;phase4 路径正确隐藏(hidden=True)。服务端 409 兜住。"
   fix_hint: "在 phase3 分支或 applyPhase3Extras 内补 `checksPanel.classList.add('hidden')`。"
+  root_cause: "phase3 视图复位函数 applyPhase3Extras 只复位了 writingView 与 authorizeRow,漏了 checksPanel;干净页进入时该面板本就带 hidden 初始类,故 fresh 路径看不出问题,只有从 phase5(曾 remove('hidden'))切回 phase3 才显影。"
+  resolution: "applyPhase3Extras 内补 `checksPanel.classList.add('hidden')`(与 writingView 同处)——phase3 无自检面板,进入即复位。phase4/phase5/归档分支原已 hidePhase3Extras 或显式 remove('hidden'),不受影响。"
+  verified_by: "CDP 实测同页跨阶段重进:proj-phase5(state=phase5_checking、checks-panel hidden=False)→ then→ proj-phase3(state=phase3、checks-panel hidden=True、「继续自检」不可见、面板内容为「本轮批注流」);对照全新页直进 proj-phase3 → hidden=True(无回归)。截图 /tmp/idi-gap-uat/shots/g4-phase5-to-phase3-fixed.png。"
 
 ## Observations(非 gap 记录)
 
 - **档位选毕按钮文案为「继续自检」而非「开始自检」(CP5)**:`chooseTier` → `refreshChecksAfterStream()` → `loadChecksView(null)` 传 null 跳过了 `sessionData.state==='phase5_awaiting_tier'` 分支(app.js:753-760),故按钮保持默认文案。**功能无碍**——`continueCheckBtn` 的 handler(app.js:687-705)不依赖文案,一律 POST `/api/checks/start`,实测受理成功。属纯文案不一致,不立 gap。
-- **真 CLI E2E 四次运行诚实全记**:#1 `1 failed, 1 passed`(211.71s,`裁决落盘后应为 resumed 态或已收口,实际:running` → 对应 G-idi03-2);#2 failed(`修复调用 120s 内零事件` → CLI 枯竭窗,环境性);#3 `1 failed, 1 passed`(73.86s,`DESIGN-check-1.md 未产出`,AI 的 Write 被权限门驳回 → AI 行为波动,权限门行为正确);#4 **`2 passed`(289.65s)**(全链通过)。四次合起来:两次完整通过,三次失败三种不同成因,其中仅 #1 是可复现的产品缺陷。
-- **`test_next_check_n_half_report_no_skip` 的间歇性失败不是「测试问题」**:该用例的 `_Harness` 吞掉修复跳的方式恰是「不写 tmp、不发事件即 done」——正是触发 G-idi03-1 无界自链的形态;`_wait_chain_idle` 靠 `busy()` 在两跳间的瞬时翻转窗口偶然捕获空闲,故约 10-25% 概率失手。产品缺陷在测试面的显影,不应以「加 sleep」掩盖。
+- **真 CLI E2E 四次运行诚实全记(缺口修复前)**:#1 `1 failed, 1 passed`(211.71s,`裁决落盘后应为 resumed 态或已收口,实际:running` → 对应 G-idi03-2);#2 failed(`修复调用 120s 内零事件` → CLI 枯竭窗,环境性);#3 `1 failed, 1 passed`(73.86s,`DESIGN-check-1.md 未产出`,AI 的 Write 被权限门驳回 → AI 行为波动,权限门行为正确);#4 **`2 passed`(289.65s)**(全链通过)。四次合起来:两次完整通过,三次失败三种不同成因,其中仅 #1 是可复现的产品缺陷。
+- **真 CLI E2E 缺口修复后重跑诚实全记(commit 503f374 之后)**:#5(无 basetemp)`1 failed, 1 passed`(156.98s,`核查调用 120s 内零事件` → CLI 枯竭窗,环境性);#6(`--basetemp=/tmp/idi-e2e-post2`)`1 failed, 1 passed`(127.52s,`DESIGN-check-1.md 未产出`——事件概要 `[done×2, error×1]` 末条 `error:核查未产出报告,可重跑`,AI 未落盘 → AI 行为波动,与修复前 #3 同型);#7(`--basetemp=/tmp/idi-e2e-post3`)`2 failed`(312.75s):`test_authorize_and_writing_real_cli` 撞枯竭窗(`撰写调用 120s 内零事件`),`test_selfcheck_real_cli_loose` 在 149.6s 于**第 334 行**断言失败(`残余分支 mode 应为 p2/paused/resumed,实际:running`)——但该轮报告为 `FIX(P0×1,P1×2)`,**含 P0/P1 非纯 P2**,`running` 是磁盘推导的合法中间态:断言在「check 跳已落盘、repair 跳尚未产出」的两跳间隙采样,是**测试的时序假设**问题,不是 G-idi03-2 的断言(第 360 行 `裁决落盘后应为 resumed 态或已收口`);#8(`--basetemp=/tmp/idi-e2e-r4`)**`1 failed, 1 passed`(262.95s)**:`test_authorize_and_writing_real_cli` 撞枯竭窗,而 **`test_selfcheck_real_cli_loose` 通过**——产物完整链路可查:`DESIGN-check-1.md` 末段依次为 `> 核查结论:FIX(P1×2,P2×1)` → 3 条锚后 `> 待裁决:#K:` → 3 条 `> 裁决:#K:修——E2E 主张全修` → `> 核查结论:PASS(残余裁决收口)`,`derive_state` 终态 `mission_complete`。**这正是修复前运行 #1 失败的断言区(第 360 行),修复后通过**:修复前该形态判 running(锚位分歧),修复后判定式与呈现层同配对空间,残余裁决链正常推进到收口。;#9(`--basetemp=/tmp/idi-e2e-r5`)`1 failed, 1 passed`(165.92s):`test_authorize_and_writing_real_cli` 通过,`test_selfcheck_real_cli_loose` 在第 307 行失败(`DESIGN-check-1.md 未产出` → AI 未落盘,环境性,同 #6)。**修复后五次运行的净结果**:自检链通过 1 次(运行 #8,即修复前唯一可复现失败的那条断言)、环境性失败 3 次(零事件枯竭窗 #5、AI 未落盘 #6/#9)、时序假设失败 1 次(运行 #7 第 334 行);**修复前的那条断言(G-idi03-2,第 360 行)在修复后再未失败**。
+- **G-idi03-1 在真链路未直接复现、由 Fake 级用例机器证明**:真 CLI 的修复跳在本次窗口内均能落盘(或撞环境失败),未构造出「AI 连续两次不写 tmp」的形态;该缺口的证据由 `test_repair_no_tmp_stops_chain`(Fake 注入「不写 tmp、不发事件即 done」)承担,修复前 RED 实测 1.5s 内 84 次修复跳(无界),修复后 GREEN 恒 1 次。诚实记录:真链路未验该形态。
+- **`test_next_check_n_half_report_no_skip` 的间歇性失败不是「测试问题」**:该用例的 `_Harness` 吞掉修复跳的方式恰是「不写 tmp、不发事件即 done」——正是触发 G-idi03-1 无界自链的形态;`_wait_chain_idle` 靠 `busy()` 在两跳间的瞬时翻转窗口偶然捕获空闲,故约 10-25% 概率失手。产品缺陷在测试面的显影,不应以「加 sleep」掩盖。**修复后已复测**:G-idi03-1 修好(commit 503f374)后该用例连跑 **10 次全绿**,flake 消除。
 - **决策覆盖门 30/30 honored ≠ 决策语义在运行时成立**:`check.decision-coverage-verify` 报 30/30 全部 honored(非阻塞门),但 G-idi03-1 正是 D-P3-16(「每跳结束重拉磁盘判定下一步」)的实现偏差。该门只扫 PLAN/SUMMARY 文本中的决策编号出现,不校验运行时行为——记录此方法论边界备查。
 - **§6.4 文法纪律的实战价值**:本会话严格遵守「锚行必须先于待裁决行」构造 fixture,因而 CP6 的 paused 态一次构造成功;而正是对照「锚前抛问」形态时才暴露出 G-idi03-2。该纪律既是构造正确 fixture 的前提,也是发现锚位分歧的探针。
 - **权限矩阵在真链路中确实拦住了 AI**:E2E 运行 #3 里 AI 试图直写 `DESIGN-check-1.md` 被 `make_permission_decision` 驳回(`done:写入被权限门驳回,报告未落盘`),链路随后由 `error:核查未产出报告,可重跑` 收尾——§5.4 规则 1/2/3 在真实调用链上生效,后端未留损坏状态。
@@ -135,3 +167,13 @@ blocked: 0
 - 截图存档: `/tmp/idi-03-uat/shots/`(40 张,会话内临时产物,未入仓)
 - 测试项目盘: `/tmp/idi-03-uat/` 下 20 个 fixture——四反例 `proj-g3-bad-{pending,list,dim,auth}`、全过盘 `proj-cp1-lit` / `proj-cp2-auth` / `proj-cp3-rej2`、撰写态 `proj-p4` / `proj-p8-tmponly` / `proj-p8-notmp`、档位态 `proj-p5-tier`、自检四 mode `proj-p5-paused` / `proj-p5-p2` / `proj-p5-resumed` / `proj-p8-half`、归档态 `proj-mission`、授权前态 `proj-p8-g3ready` / `proj-p8-g3ready-tmp`
 - CDP 驱动: `/tmp/idi-03-uat/cdp.py`(原始 WebSocket 直连 devtools,系统 python3 + websockets 17.1;含 `_close_stale_tabs()` 防止遗留 SSE 连接堆积拖死 headless)
+
+## 缺口修复会话环境(2026-09-13 21:30–23:00 CST)
+
+- 分支: `phase-03/gap-fix`(自 main 切出,收口后合回 main)
+- 服务器: `.venv/bin/uvicorn backend.main:app --port 8765`;验证后已停止
+- CDP 驱动: `/tmp/idi-gap-uat/cdp.py`(同前法,`/json/new` 用 PUT——本机 Chrome 152 拒绝 GET);headless Chrome 隔离 profile `/tmp/idi-gap-uat/chrome-profile`,CDP 9222;验证后已停止
+- 缺口 fixture: `/tmp/idi-gap-uat/projects/` 下 9 盘——G-3/G-4 三盘 `proj-mission` / `proj-phase5` / `proj-phase3`;CP6 五盘 `cp6-paused` / `cp6-p2` / `cp6-resumed` / `cp6-running` / `cp6-preanchor`(末盘为本次新增的「锚前抛问」对照)
+- 截图: `/tmp/idi-gap-uat/shots/`(`g3-archive-fixed.png` / `g4-phase5-to-phase3-fixed.png`,会话内临时产物,未入仓)
+- 真 CLI E2E basetemp: `/tmp/idi-e2e-post2` / `/tmp/idi-e2e-post3` / `/tmp/idi-e2e-r4` / `/tmp/idi-e2e-r5`(临时产物,未入仓)
+- 机器证据: `.venv/bin/python -m pytest backend/tests/ -q` → **219 passed + 6 skipped**

@@ -361,9 +361,8 @@ def post_round_process() -> JSONResponse:
 
 
 # ---------------------------------------------------------------------------
-# 阶段 3/4/5 路由族(PLAN idi-03-02,D-P3-27:authorize/tier/verdict 三 POST +
-# design/checks 两 GET;POST /api/writing、
-# /api/checks/start、/api/checks/repair 三条 202 受理路由归 idi-03-03)
+# 阶段 3/4/5 路由族(PLAN idi-03-02 + idi-03-03,D-P3-27:authorize/tier/verdict
+# 三 POST + design/checks 两 GET + writing/start/repair 三条 202 受理路由)
 # ---------------------------------------------------------------------------
 
 
@@ -475,6 +474,75 @@ def get_checks() -> JSONResponse:
             "selfcheck": snapshot["selfcheck"],
         }
     )
+
+
+@app.post("/api/writing")
+def start_writing() -> JSONResponse:
+    """撰写总设计文档(§7.3① / §7.4 行 4 / D-P3-6):session.start_writing,
+    202 受理(分支照 /api/rounds/process 模子)。
+
+    无请求体;非 phase4 / 在飞 → 409;未进项目 → 400。done 后 tmp 原子改名
+    与事件流归 session 层(前端照 done-拉 /api/session 惯例,不新增收尾事件)。
+    """
+    try:
+        accepted = session.start_writing()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if not accepted:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": "撰写入口已关闭(非阶段 4 或当前有调用进行中)",
+            },
+            status_code=409,
+        )
+    return JSONResponse({"status": "accepted"}, status_code=202)
+
+
+@app.post("/api/checks/start")
+def start_check() -> JSONResponse:
+    """「继续自检」/首轮核查入口(§8.2 / D-P3-13 / D-P3-20):session.start_check,
+    202 受理(check_n 与半份重跑判定全在 session 层,D-P3-21——路由零自算)。
+
+    无请求体;未选档 / 非 phase5 / 在飞 → 409;未进项目 → 400。
+    """
+    try:
+        accepted = session.start_check()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if not accepted:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": "自检入口已关闭(非自检阶段或当前有调用进行中)",
+            },
+            status_code=409,
+        )
+    return JSONResponse({"status": "accepted"}, status_code=202)
+
+
+@app.post("/api/checks/repair")
+def start_repair() -> JSONResponse:
+    """「继续修复」入口(§8.2 / §6.4 判定式② / D-P3-14 / D-P3-20):
+    session.start_repair,202 受理。
+
+    无请求体;判定式②未命中(running / paused 待裁决 / 纯 P2 / 非
+    phase5_checking)/ 在飞 → 409(unpaired 非空的服务端强制,T-idi03-13);
+    未进项目 → 400。严格档自动链的 repair 跳走 session 内部驱动,不经本路由。
+    """
+    try:
+        accepted = session.start_repair()
+    except RuntimeError as exc:
+        return JSONResponse({"status": "error", "message": str(exc)}, status_code=400)
+    if not accepted:
+        return JSONResponse(
+            {
+                "status": "error",
+                "message": "修复入口已关闭(无待修问题或当前有调用进行中)",
+            },
+            status_code=409,
+        )
+    return JSONResponse({"status": "accepted"}, status_code=202)
 
 
 @app.post("/api/config")

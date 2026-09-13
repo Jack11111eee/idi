@@ -16,13 +16,13 @@
     {
       "number": "3",
       "name": "授权、自检与终点——G3、档位、使命完成归档",
-      "status": "in_progress"
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "/gsd:progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 03 of 3 · executing"
+    "command": "/gsd:new-milestone",
+    "label": "Start a new milestone",
+    "reason": "All phases complete — start a new milestone"
   },
-  "updated_at": "2026-09-11T16:16:00.915Z"
+  "updated_at": "2026-09-13T15:05:06.106Z"
 }

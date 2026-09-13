@@ -16,6 +16,10 @@
 - ✓ FLOW-01/02/03/06、UI-03、AI-01~05 共 10 条需求 — Phase 1(见 .planning/phases/idi-01-1-2/01-VERIFICATION.md,8/8 真值 + UAT 6/6)
 - ✓ 轮次收敛循环(划词批注/大白话即时答/处理本轮批注 G2/轮次冻结/批注回应回写/§6.4 机器文法全解析)— Phase 2
 - ✓ FLOW-04/07、UI-01/02/04、DATA-01 共 6 条需求 — Phase 2(见 .planning/phases/idi-02-g2/02-VERIFICATION.md,7/7 SC + UAT 7/7 零 gap)
+- ✓ 授权、自检与终点(G3 四处机械校验 + 确认词、DESIGN.md.tmp 原子落盘、宽松/严格自检两角色自动循环、D-22 残余裁决、崩溃自愈、使命完成只读归档)— Phase 3
+- ✓ FLOW-05、DATA-02/03/04 共 4 条需求 — Phase 3(见 .planning/phases/idi-03-g3/03-VERIFICATION.md,5/5 ROADMAP 判据 + UAT 8 检查点,4 处运行时缺陷修复后复验 passed)
+
+**全部 20 条需求(DESIGN.md v1.13 全范围)已交付并验证。**
 
 ### Active
 
@@ -59,4 +63,4 @@
 | Phase 2:annotations 写回(AI 不碰 JSON)与标记脏变体免疫 | §6.2 字段写回职责——后端解析响应表统一回写 answer/status,格式漂移归零 | ✓ Good(UAT a1-01 回写 answered) |
 
 ---
-*Last updated: 2026-09-10 after Phase 2(轮次收敛循环收口:验证 passed 7/7 + UAT 7/7 零 gap)*
+*Last updated: 2026-09-13 after Phase 3(授权/自检/终点收口:验证 passed 5/5 + UAT 8 检查点,4 处运行时缺陷修复)——milestone v1.13 全 20 需求交付*

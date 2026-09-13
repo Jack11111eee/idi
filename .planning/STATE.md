@@ -1,44 +1,43 @@
 ---
 gsd_state_version: "1.0"
 milestone: v1.13
-current_phase: 03
-current_phase_name: 授权、自检与终点——G3、档位、使命完成归档
-status: executing
-stopped_at: Phase 3 context gathered
-last_updated: "2026-09-11T16:16:00.826Z"
-last_activity: 2026-09-12
-last_activity_desc: Phase idi-03 execution started
-state_head: 77ae8c32344fdfde1abe5b6aca7f34d372874fa9
+current_phase: 3
+status: completed
+stopped_at: Phase 3 complete — all phases complete
+last_updated: "2026-09-13T15:05:06.057Z"
+last_activity: 2026-09-13
+last_activity_desc: Phase 3 complete
+state_head: 862703cd534e3ec541214d05bf6a9958609b0701
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 3
   total_plans: 13
-  completed_plans: 8
+  completed_plans: 13
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-09)
+See: .planning/PROJECT.md (updated 2026-09-13)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-03 — 授权、自检与终点——G3、档位、使命完成归档
+**Current focus:** Milestone v1.13 全部三阶段完成——待 complete-milestone 归档
 
 ## Current Position
 
-Phase: idi-03 (授权、自检与终点——G3、档位、使命完成归档) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase idi-03
-Last activity: 2026-09-12 — Phase idi-03 execution started
+Phase: 3 of 3 (授权、自检与终点——G3、档位、使命完成归档)
+Plan: 5/5 in current phase
+Status: All phases complete — ready for milestone close
+Last activity: 2026-09-13 — Phase 3 complete(验证 passed + UAT 8 检查点全过,4 gap 已修)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 8
+- Total plans completed: 13
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -46,11 +45,9 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. 行走骨架 | 0 | - | - |
-| 2. 轮次收敛循环 | 0 | - | - |
-| 3. 授权、自检与终点 | 0 | - | - |
-| 1 | 4 | - | - |
-| 2 | 4 | - | - |
+| 1. 行走骨架 | 4 | - | - |
+| 2. 轮次收敛循环 | 4 | - | - |
+| 3. 授权、自检与终点 | 5 | - | - |
 
 **Recent Trend:**
 
@@ -66,7 +63,15 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 1 P01 | 122min | 3 tasks | 16 files |
 | Phase idi-01 P03 | 125min | 3 tasks | 10 files |
 | Phase idi-01 P04 | 33min | 2 tasks | 9 files |
-| Phase idi-01 P04 | 33min | 2 tasks | 9 files |
+| Phase idi-02 P01 | - | 2 tasks | 4 files |
+| Phase idi-02 P02 | - | 3 tasks | 6 files |
+| Phase idi-02 P03 | - | 2 tasks | 3 files |
+| Phase idi-02 P04 | - | 2 tasks | 2 files |
+| Phase idi-03 P01 | - | 3 tasks | 5 files |
+| Phase idi-03 P02 | - | 3 tasks | 5 files |
+| Phase idi-03 P03 | - | 2 tasks | 3 files |
+| Phase idi-03 P04 | - | 3 tasks | 3 files |
+| Phase idi-03 P05 | - | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -89,6 +94,10 @@ Recent decisions affecting current work:
 - [Phase 3]: 计划修订裁定(iteration 1 反馈 3B+5W+2I,9 修 + 1 外部已解)——B1(纯 P2 残余裁决链断:mode 增第四值 "p2" 于 D-P3-23 开放集内,questions = parse_problem_grades 四键卡数据;verdict_append 配对判定改「读追加后报告」双源收口)与 B2(裁决卡键契约 02/04 两端一字不差:p2={number,location,issue,suggestion}/paused={number,text})修于 06603c9;B3(repair_available 双条件恰一放行,running 态 False 防「继续自检/继续修复」双门)同修;W4(writing_tmp_exists snapshot 伪层字段,D-P3-10 二态文案逐字)、W3(archive 409 冒烟改 `curl -s -o /dev/null -w %{http_code}` 整数比较)、W2(半份判定 = 结论行缺失 → _next_check_n 同轮覆盖不跳号)同 commit;W1(W PATTERNS 未提交)由 orchestrator 预先解决于 ed32674;I1(预算边界)以 70% context 收口纪律条款注入 02/04;I2(route 409 分流)以「错误消息字面表」五条逐字落码;补丁 0b32056:parse_problem_grades number 列转 int 消除卡号混型配对隐患;4/4 REQ、30/30 D-P3 本地 gate 全过
 - [Phase 3]: 计划修订二(iteration 2 反馈 1B+3W+1I 全修于 2997f89)——B1(idi-03-04 冒烟盘 D 缺 `> 核查结论:` 锚点 → 锁定 grammar 配对扫描空间为空,paused 断言必挂;补 FIX(P2×1) 锚点行,经真模块实测 unpaired=[1] 复活)修;W1(is_pure_p2 增「无锚点行 → False」半份 fail-closed 前置 + 半份 P2 盘回落 running 用例,堵 p2 死局态)修;W2(POST /api/writing 路由交付权从 02 Task 1 摘除归 03,三处计数 六→四/五→三 修正)修;W3(AuthorizeBody 删除,authorize 路由无请求体——防 FastAPI 422 断 04 冒烟无体 POST 链)修;I1(①scan_pending 正则措辞统一为「从 _VERDICT_RE 派生 _PENDING_QUESTION_RE」②build_repair_prompt truth 改三参与 action 一致 ③04 不可达态 behavior 删除)全修;30/30 D-P3、12/12 verify-directions、plan-structure×5 本地 gate 复跑全过
 
+- [Phase 3]: UAT 四处运行时缺陷修复(503f374,复验 862703c)——G-idi03-1(high):start_repair finally 守卫从「tmp 在盘即 return」改为 hop-local `tmp_consumed` 标志(仅 tmp_path.replace 实际执行处分支置 True),堵死严格档无界自动链(修复前实测 84 跳/1.5s→修复后恰 1 跳),命名 flake test_next_check_n_half_report_no_skip 转 10/10 确定;G-idi03-2:新增 session 层 _unpaired_pending_questions 以 unpaired 编号过滤锚点无关扫描,裁决与呈现共用同一配对空间(grammar.py 锁定语义零触碰);G-idi03-3:loadArchiveView 复位两推进按钮(归档态 继续自检/继续修复 不可见);G-idi03-4:applyPhase3Extras 隐藏 checksPanel(跨项目状态残留);修复仅 3 文件(session.py +35/−5、test_session.py +117、app.js +5),grammar/state/checks/g3/main/prompts 零改动
+- [Phase 3]: 决策覆盖 gate 30/30 通过 ≠ 运行时语义成立——G-idi03-1 是 D-P3-16 的活偏差,而该 gate 当时报 30/30(只扫 PLAN/SUMMARY 文本);记入方法论教训:门通过须以行为验证佐证
+- [Phase 3]: 遗留已知项(未修,移交 milestone 收口裁定)——.planning/phases/idi-02-g2/02-VERIFICATION.md 存储的 covered_digest(acd6f0f8…)与当前文件树重算值(20a4297f…)漂移,系 Phase 2 收口后代码演进所致,非本次引入
+
 ### Pending Todos
 
 None yet.
@@ -107,6 +116,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-10T10:16:29.816Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/idi-03-g3/03-CONTEXT.md
+Last session: 2026-09-13T15:05:06Z
+Stopped at: Phase 3 complete — all phases complete; milestone v1.13 待 complete-milestone 归档
+Resume file: None

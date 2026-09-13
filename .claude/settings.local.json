@@ -1,4 +1,17 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npx gsd-core *)",
+      "Read(.planning/*)",
+      "Edit(.planning/*)",
+      "Read(STATE.md)",
+      "Edit(STATE.md)",
+      "Skill(gsd-ui-phase)",
+      "Skill(gsd-config)",
+      "Read(//private/tmp/**)",
+      "Skill(gsd-complete-milestone)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
@@ -190,14 +203,5 @@
   },
   "worktree": {
     "baseRef": "head"
-  },
-  "permissions": {
-    "allow": [
-      "Bash(npx gsd-core *)",
-      "Read(.planning/*)",
-      "Edit(.planning/*)",
-      "Read(STATE.md)",
-      "Edit(STATE.md)"
-    ]
   }
 }

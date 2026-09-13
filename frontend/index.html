@@ -53,12 +53,24 @@
       <!-- 子视图:rounds-placeholder(阶段 3:轮次视图 = 切换器 + 文档渲染 + 冻结提示位;
            阶段 4+ 仍为占位语义,本计划不触碰其内容) -->
       <div id="rounds-placeholder" class="doc-subview hidden">
-        <div class="round-view-header">
+        <div class="round-view-header" id="round-view-header">
           <h2 id="round-title">轮次视图</h2>
           <select id="round-switcher" title="切换轮次(历史轮只读)"></select>
         </div>
         <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
         <div id="round-doc" class="markdown-body"><!-- 当前轮文档 markdown 渲染区 --></div>
+
+        <!-- G3 授权入口(FLOW-05 §4.4:仅阶段 3 呈现;按钮三态由 g3_available 驱动) -->
+        <div id="authorize-row" class="hidden">
+          <button id="btn-authorize" disabled title="四处机械校验尚未全部通过">授权撰写总设计文档</button>
+          <p class="hint" id="authorize-hint"></p>
+        </div>
+
+        <!-- 阶段 4 撰写视图(D-P3-10:按钮文案二态由 writing_tmp_exists 驱动) -->
+        <div id="writing-view" class="hidden">
+          <button id="btn-start-writing">撰写总设计文档</button>
+          <p class="hint" id="writing-hint"></p>
+        </div>
       </div>
     </main>
 
@@ -88,6 +100,8 @@
           <div id="annotation-list"><!-- 批注条目动态追加 --></div>
         </div>
       </section>
+
+      <!-- 自检报告面板(阶段 5:DATA-04 报告列表 + 最新报告 + 四 mode 裁决控件)——TASK2 挂载点 -->
 
       <section id="ai-panel">
         <header id="ai-panel-header" class="panel-header">
@@ -126,6 +140,24 @@
       </div>
     </div>
   </div>
+
+  <!-- G3 确认词模态(FLOW-05 / D-P3-3:输入「确认授权」strip 全等才放行;默认拒绝) -->
+  <div id="confirmation-modal" class="overlay hidden">
+    <div class="overlay-card">
+      <h3>授权确认</h3>
+      <p>授权后 AI 将撰写总设计文档并进入收尾流程。<strong>默认拒绝</strong>:不输入确认词或不点放行,即视为拒绝——拒绝会作为一条普通批注转给下一轮,本轮仍可继续讨论。</p>
+      <input type="text" id="confirm-word-input" placeholder="请输入确认词:确认授权" autocomplete="off">
+      <p id="confirm-error" class="hint hidden"></p>
+      <div class="modal-buttons">
+        <button id="btn-confirm-authorize" class="primary" disabled>放行</button>
+        <button id="btn-confirm-cancel" class="danger">拒绝</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 档位选择模态(§8.2 / D-P3-11:两选项各一句话说明;不自动起检)——TASK2 挂载点 -->
+
+  <!-- 使命完成欢呼模态(DATA-03 / D-P3-24:一次性,会话内存标记不落盘)——TASK3 挂载点 -->
 
   <!-- 划词小菜单(D-P2-1:原生 Selection API + mouseup;仅轮次文档区绑定,D-P2-2) -->
   <div id="selection-menu" class="hidden">

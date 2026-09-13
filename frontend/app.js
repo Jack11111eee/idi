@@ -50,6 +50,19 @@ const selectionMenu = document.getElementById('selection-menu');
 const annotateBtn = document.getElementById('btn-annotate');
 const plainAskBtn = document.getElementById('btn-plain-ask');
 
+// 阶段 3/4/5 视图句柄(PLAN idi-03-04)
+const authorizeRow = document.getElementById('authorize-row');
+const authorizeBtn = document.getElementById('btn-authorize');
+const authorizeHint = document.getElementById('authorize-hint');
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmWordInput = document.getElementById('confirm-word-input');
+const confirmAuthorizeBtn = document.getElementById('btn-confirm-authorize');
+const confirmCancelBtn = document.getElementById('btn-confirm-cancel');
+const confirmError = document.getElementById('confirm-error');
+const writingView = document.getElementById('writing-view');
+const startWritingBtn = document.getElementById('btn-start-writing');
+const writingHint = document.getElementById('writing-hint');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
@@ -57,6 +70,7 @@ let streamingBubble = null; // 流式中的 AI 气泡
 let currentRoundNumber = null;   // phase3 当前轮号(点击「处理本轮批注」的目标)
 let displayedRoundNumber = null; // 当前显示的轮号(切换器切历史轮时 < currentRoundNumber)
 let processInFlight = false;     // 「处理本轮批注」在飞标记(SSE done 后拉新的判据)
+let writingInFlight = false;     // 「撰写/继续撰写」在飞标记(done 后拉新的判据)
 
 // §7.4 状态中文名(derive_state 返回值 → 界面徽标)
 const STATE_LABELS = {
@@ -257,6 +271,11 @@ function applySessionGates(data) {
   stateBadge.textContent = STATE_LABELS[data.state] || data.state;
   stateBadge.classList.remove('hidden');
 
+  // 只读归档防线复位(归档分支内再逐面隐藏;其余态恢复可用,D-P3-25)
+  processRoundBtn.classList.remove('hidden');
+  messageInput.disabled = false;
+  sendBtn.disabled = false;
+
   // 子视图切换:阶段 1-2 → draft-view;阶段 3+ → rounds-placeholder
   if (data.state === 'phase1_new' || data.state === 'phase12_in_progress') {
     draftView.classList.remove('hidden');
@@ -270,11 +289,19 @@ function applySessionGates(data) {
       currentRoundNumber = data.current_round;
       pendingCount.textContent = `本轮批注未处理 ${data.pending_annotations}`;
       annotationsPanel.classList.remove('hidden');
+      applyPhase3Extras(data);
       loadRoundsView(data.current_round);
-    } else {
-      // phase4/5/mission_complete:占位文案维持现状(CODEX 边界裁决③,不触碰内容)
+    } else if (data.state === 'phase4') {
+      // 阶段 4:撰写视图(按钮文案二态纯消费 snapshot.writing_tmp_exists,D-P3-10)
       annotationsPanel.classList.add('hidden');
-      roundsHint.textContent = `当前状态:${STATE_LABELS[data.state] || data.state}(轮次阶段之后的视图在本工具后续版本呈现)。`;
+      hidePhase3Extras();
+      applyWritingView(data);
+    } else {
+      // phase5/mission_complete:占位文案维持现状(后续切片替换真视图)
+      annotationsPanel.classList.add('hidden');
+      hidePhase3Extras();
+      roundsHint.textContent = `当前状态:${STATE_LABELS[data.state] || data.state}(视图在本计划后续切片呈现)。`;
+      roundsHint.classList.remove('hidden');
       roundDoc.innerHTML = '';
     }
   }
@@ -306,6 +333,167 @@ function applySessionGates(data) {
       : '先要有雏形草稿才能认可';
   }
 }
+
+// ---------------------------------------------------------------------------
+// 阶段 3 G3 授权入口 + 阶段 4 撰写视图 + 阶段 5 报告视图 + 归档视图
+// (PLAN idi-03-04;FLOW-05 / DATA-02 / DATA-03 / DATA-04)
+// ---------------------------------------------------------------------------
+
+// 非 phase3 态:隐藏 G3 授权行与撰写视图(两个容器都只在各自阶段呈现)
+function hidePhase3Extras() {
+  authorizeRow.classList.add('hidden');
+  writingView.classList.add('hidden');
+  roundSwitcher.classList.remove('hidden');
+}
+
+// phase3:G3 授权行三态(照 g1_available 先例,D-P3-26 按钮点亮 = 四查全过)
+function applyPhase3Extras(data) {
+  writingView.classList.add('hidden');
+  authorizeRow.classList.remove('hidden');
+  if (data.g3_available) {
+    authorizeBtn.disabled = false;
+    authorizeBtn.title = '四处机械校验已全部通过——点击开始授权';
+    authorizeHint.textContent = '点击后需输入确认词「确认授权」;不输入或不放行即视为拒绝(记为一条普通批注)。';
+    authorizeHint.classList.remove('hidden');
+  } else {
+    authorizeBtn.disabled = true;
+    authorizeBtn.title = '四处机械校验尚未全部通过:annotations/清单/维度表/授权标记';
+    authorizeHint.textContent = '四处机械校验全部通过后按钮才会点亮(annotations 无待处理 + 未决清单清零 + 维度表全绿 + 授权标记为「是」)。';
+    authorizeHint.classList.remove('hidden');
+  }
+}
+
+// phase4:撰写视图(按钮文案二态纯消费 snapshot.writing_tmp_exists,D-P3-10 字面)
+function applyWritingView(data) {
+  roundsHint.classList.add('hidden');
+  roundTitle.textContent = '撰写总设计文档';
+  roundSwitcher.classList.add('hidden');
+  roundDoc.innerHTML = '';
+  writingView.classList.remove('hidden');
+  if (data.writing_tmp_exists) {
+    startWritingBtn.textContent = '继续撰写(检测到上次中断的半成品,重写覆盖)';
+    writingHint.textContent = '残留的半份 tmp 将被整体覆盖重写(上次撰写中途崩溃,重跑即恢复,无需重新确认词)。';
+  } else {
+    startWritingBtn.textContent = '撰写总设计文档';
+    writingHint.textContent = 'AI 将撰写总设计文档并整体落盘;过程在 AI 工作面板全程直播。';
+  }
+  writingHint.classList.remove('hidden');
+}
+
+// ---------------------------------------------------------------------------
+// G3 确认词模态(FLOW-05 / D-P3-3):strip 后全等「确认授权」才放行;默认拒绝
+// ---------------------------------------------------------------------------
+
+const CONFIRM_WORD = '确认授权';
+
+function openConfirmModal() {
+  confirmWordInput.value = '';
+  confirmAuthorizeBtn.disabled = true; // 初始 disabled(未输入即不可放行)
+  confirmError.classList.add('hidden');
+  confirmationModal.classList.remove('hidden');
+  confirmWordInput.focus();
+}
+
+function closeConfirmModal() {
+  confirmationModal.classList.add('hidden');
+}
+
+// 拒绝路径(D-P3-5):不 POST 授权,把拒绝原因作为一条普通批注转给下一轮
+async function rejectAuthorization() {
+  const reason = window.prompt('拒绝原因(将作为一条普通批注转给下一轮):', '授权被拒,继续完善');
+  if (reason == null) return; // 取消:既不授权也不建批注(用户放弃本次操作)
+  const note = reason.trim() || '授权被拒,继续完善';
+  const n = currentRoundNumber;
+  if (n == null) return;
+  // quote 取当前轮文档首行标题文本(前端已知;空串由 append_item 语义兜底)
+  const quote = firstLineOfRoundDoc() || '本轮讨论文档';
+  const result = await roundApi.postAnnotations(n, { quote, before: '', note });
+  if (result.ok) {
+    renderEvent({ kind: 'say', content: '已记录拒绝,并作为一条普通批注转给下一轮。', raw: null });
+    await loadRoundView(n);
+    await refreshPendingCount();
+  } else {
+    renderEvent({
+      kind: 'error',
+      content: `拒绝批注落盘失败:${(result.data && result.data.message) || result.status}`,
+      raw: null,
+    });
+  }
+}
+
+function firstLineOfRoundDoc() {
+  const text = String(roundDoc.textContent || '');
+  const line = text.split('\n').map((s) => s.trim()).find((s) => s);
+  return line || '';
+}
+
+authorizeBtn.addEventListener('click', () => {
+  if (authorizeBtn.disabled) return;
+  openConfirmModal();
+});
+
+// 输入事件:strip 后全等才 enable(textContent 比较,不进渲染管线,D-P3-3)
+confirmWordInput.addEventListener('input', () => {
+  const ok = confirmWordInput.value.trim() === CONFIRM_WORD;
+  confirmAuthorizeBtn.disabled = !ok;
+});
+
+confirmAuthorizeBtn.addEventListener('click', async () => {
+  if (confirmAuthorizeBtn.disabled) return;
+  confirmAuthorizeBtn.disabled = true;
+  try {
+    const resp = await fetch('/api/authorize', { method: 'POST' });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      confirmError.textContent = `授权失败:${data.message || resp.status}`;
+      confirmError.classList.remove('hidden');
+      confirmAuthorizeBtn.disabled = false;
+      return;
+    }
+    closeConfirmModal();
+    await refreshRoundsAfterStream(); // 拉新 /api/session → 进入 phase4 撰写视图
+  } catch {
+    confirmError.textContent = '授权请求失败(网络)';
+    confirmError.classList.remove('hidden');
+    confirmAuthorizeBtn.disabled = false;
+  }
+});
+
+confirmCancelBtn.addEventListener('click', async () => {
+  closeConfirmModal();
+  await rejectAuthorization();
+});
+
+// 撰写按钮(phase4):POST /api/writing → 202 → SSE 直播 → done 拉新
+startWritingBtn.addEventListener('click', async () => {
+  if (startWritingBtn.disabled || writingInFlight) return;
+  writingInFlight = true;
+  startWritingBtn.disabled = true;
+  const originalText = startWritingBtn.textContent;
+  startWritingBtn.textContent = '撰写中…';
+  renderEvent({
+    kind: 'say',
+    content: '已发起撰写总设计文档,过程在下方工作面板全程直播……',
+    raw: null,
+  });
+  try {
+    const resp = await fetch('/api/writing', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      renderEvent({ kind: 'error', content: `撰写发起失败:${err.message || resp.status}`, raw: null });
+      writingInFlight = false;
+      startWritingBtn.disabled = false;
+      startWritingBtn.textContent = originalText;
+    }
+  } catch {
+    renderEvent({ kind: 'error', content: '撰写请求失败(网络)', raw: null });
+    writingInFlight = false;
+    startWritingBtn.disabled = false;
+    startWritingBtn.textContent = originalText;
+  }
+});
+
+// 档位模态两按钮(阶段 5 视图,TASK2 挂载点)
 
 function renderDraft(draft) {
   if (draft == null || draft === '') {

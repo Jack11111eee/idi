@@ -493,3 +493,130 @@ button.primary {
   opacity: 0.55;
   filter: saturate(0.6);
 }
+
+/* =========================================================================
+   阶段 3/4/5 视图(PLAN idi-03-04;原生存理,无框架)
+   ========================================================================= */
+
+/* G3 授权入口(照 #btn-approve-draft 绿色系先例) */
+#authorize-row { margin-top: 18px; }
+#authorize-row.hidden { display: none; }
+#btn-authorize {
+  padding: 8px 18px;
+  background: #e9f7ef;
+  border-color: #2e8b57;
+  color: #2e8b57;
+  font-weight: 600;
+}
+#btn-authorize:disabled { opacity: 0.55; cursor: not-allowed; }
+#authorize-row .hint { margin: 6px 0 0; }
+#authorize-row .hint.hidden { display: none; }
+
+/* 阶段 4 撰写视图(按钮文案二态由后端快照字段驱动) */
+#writing-view { margin-top: 18px; }
+#writing-view.hidden { display: none; }
+#btn-start-writing {
+  padding: 8px 18px;
+  background: #e9f7ef;
+  border-color: #2e8b57;
+  color: #2e8b57;
+  font-weight: 600;
+}
+#btn-start-writing:disabled { opacity: 0.55; cursor: not-allowed; }
+#writing-view .hint { margin: 6px 0 0; }
+
+/* 三模态共用外壳复用 .overlay/.overlay-card;模态内输入框与按钮组 */
+#confirmation-modal input[type="text"] {
+  width: 100%;
+  margin: 10px 0 4px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+#confirm-error { color: #c0392b; }
+#confirm-error.hidden { display: none; }
+.overlay-card .modal-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 档位模态两选项(纵向排列,各带一句话说明) */
+.tier-buttons { flex-direction: column; }
+.tier-buttons button {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  text-align: center;
+}
+.tier-desc { font-size: 12px; font-weight: 400; opacity: 0.8; }
+
+/* 自检报告面板(阶段 5 侧栏;照 annotations-panel 形态) */
+#checks-panel {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #eee;
+}
+#checks-panel.hidden { display: none; }
+#checks-panel .panel-header { cursor: default; }
+#checks-panel .panel-body { display: flex; flex-direction: column; gap: 10px; }
+#check-switcher {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  width: 100%;
+}
+#latest-check {
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 6px 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fdfdfd;
+  font-size: 13px;
+}
+#check-controls { display: flex; flex-direction: column; gap: 8px; }
+#check-controls button.hidden { display: none; }
+#btn-continue-check, #btn-continue-repair {
+  background: #e9f7ef;
+  border-color: #2e8b57;
+  color: #2e8b57;
+  font-weight: 600;
+}
+#btn-continue-check:disabled, #btn-continue-repair:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* 裁决卡(D-22 残余裁决制:位置/描述/建议修法三行 + 按钮组) */
+#verdict-cards { display: flex; flex-direction: column; gap: 10px; }
+.verdict-card {
+  padding: 8px 10px;
+  border: 1px solid #e8d9a8;
+  border-radius: 6px;
+  background: #fffdf5;
+  font-size: 13px;
+}
+.verdict-card p { margin: 3px 0; }
+.verdict-location { color: #555; }
+.verdict-location::before { content: '📍 '; }
+.verdict-issue { color: #1a1a1a; }
+.verdict-suggestion { color: #666; font-style: italic; }
+.verdict-note-input {
+  width: 100%;
+  margin: 6px 0;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12.5px;
+}
+.verdict-buttons { display: flex; gap: 8px; }
+.verdict-buttons button { font-size: 12.5px; padding: 4px 10px; }
+.verdict-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 只读归档态(D-P3-25:呈现层灰化;服务端 409 是防线) */
+#rounds-placeholder.archive-mode #round-doc { opacity: 0.75; }
+
+/* 使命完成欢呼模态(一次性;会话内存标记) */
+#mission-complete-modal .overlay-card { border: 2px solid #2e8b57; }

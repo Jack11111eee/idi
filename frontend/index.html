@@ -101,7 +101,22 @@
         </div>
       </section>
 
-      <!-- 自检报告面板(阶段 5:DATA-04 报告列表 + 最新报告 + 四 mode 裁决控件)——TASK2 挂载点 -->
+      <!-- 自检报告面板(阶段 5:DATA-04 报告列表 + 最新报告 + 四 mode 裁决控件) -->
+      <section id="checks-panel" class="hidden">
+        <header class="panel-header">
+          <h2>自检报告</h2>
+          <span id="check-state" class="badge-pending"></span>
+        </header>
+        <div class="panel-body">
+          <select id="check-switcher" title="切换核查报告"></select>
+          <div id="latest-check" class="markdown-body"><!-- 最新报告 markdown 渲染区 --></div>
+          <div id="check-controls">
+            <button id="btn-continue-check" class="hidden">继续自检</button>
+            <div id="verdict-cards"><!-- 裁决卡动态追加 --></div>
+            <button id="btn-continue-repair" class="hidden">继续修复</button>
+          </div>
+        </div>
+      </section>
 
       <section id="ai-panel">
         <header id="ai-panel-header" class="panel-header">
@@ -155,7 +170,17 @@
     </div>
   </div>
 
-  <!-- 档位选择模态(§8.2 / D-P3-11:两选项各一句话说明;不自动起检)——TASK2 挂载点 -->
+  <!-- 档位选择模态(§8.2 / D-P3-11:两选项各一句话说明;不自动起检) -->
+  <div id="tier-modal" class="overlay hidden">
+    <div class="overlay-card">
+      <h3>选择自检档位</h3>
+      <p>总设计文档初稿已写完。请选择自检档位(记录在每份核查报告头部):</p>
+      <div class="modal-buttons tier-buttons">
+        <button id="btn-tier-loose">宽松<span class="tier-desc">一次核查 + 修复 + 追加 PASS 即止</span></button>
+        <button id="btn-tier-strict">严格<span class="tier-desc">循环核查至零问题轮 PASS;纯 P2 轮交用户裁决</span></button>
+      </div>
+    </div>
+  </div>
 
   <!-- 使命完成欢呼模态(DATA-03 / D-P3-24:一次性,会话内存标记不落盘)——TASK3 挂载点 -->
 

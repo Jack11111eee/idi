@@ -62,6 +62,16 @@ const confirmError = document.getElementById('confirm-error');
 const writingView = document.getElementById('writing-view');
 const startWritingBtn = document.getElementById('btn-start-writing');
 const writingHint = document.getElementById('writing-hint');
+const tierModal = document.getElementById('tier-modal');
+const tierLooseBtn = document.getElementById('btn-tier-loose');
+const tierStrictBtn = document.getElementById('btn-tier-strict');
+const checksPanel = document.getElementById('checks-panel');
+const checkState = document.getElementById('check-state');
+const checkSwitcher = document.getElementById('check-switcher');
+const latestCheck = document.getElementById('latest-check');
+const verdictCards = document.getElementById('verdict-cards');
+const continueCheckBtn = document.getElementById('btn-continue-check');
+const continueRepairBtn = document.getElementById('btn-continue-repair');
 
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
@@ -71,6 +81,8 @@ let currentRoundNumber = null;   // phase3 当前轮号(点击「处理本轮批
 let displayedRoundNumber = null; // 当前显示的轮号(切换器切历史轮时 < currentRoundNumber)
 let processInFlight = false;     // 「处理本轮批注」在飞标记(SSE done 后拉新的判据)
 let writingInFlight = false;     // 「撰写/继续撰写」在飞标记(done 后拉新的判据)
+let checkInFlight = false;       // 「继续自检/继续修复」在飞标记(done 后拉新的判据)
+let tierModalShown = false;      // 档位模态本会话是否已弹过(防重复弹,不落盘)
 
 // §7.4 状态中文名(derive_state 返回值 → 界面徽标)
 const STATE_LABELS = {
@@ -156,6 +168,15 @@ function dispatchEvent_(event) {
       processRoundBtn.textContent = '处理本轮批注';
       processRoundBtn.title = '仅阶段 3 当前轮可用';
       refreshRoundsAfterStream();
+    }
+    // 撰写在飞:done 后拉新链(session → phase5_awaiting_tier 档位视图,D-P3-27)
+    if (writingInFlight) {
+      writingInFlight = false;
+      refreshRoundsAfterStream();
+    }
+    // 自检/修复在飞:done 后拉新链(session + checks 报告与 mode 控件)
+    if (checkInFlight) {
+      refreshChecksAfterStream();
     }
     pingBtn.disabled = false;
   }
@@ -296,9 +317,15 @@ function applySessionGates(data) {
       annotationsPanel.classList.add('hidden');
       hidePhase3Extras();
       applyWritingView(data);
-    } else {
-      // phase5/mission_complete:占位文案维持现状(后续切片替换真视图)
+    } else if (data.state === 'phase5_awaiting_tier' || data.state === 'phase5_checking') {
+      // 阶段 5:自检报告视图(awaiting_tier 额外弹档位模态/呈「开始自检」)
       annotationsPanel.classList.add('hidden');
+      hidePhase3Extras();
+      applyPhase5View(data);
+    } else {
+      // mission_complete:占位维持现状(本计划后续切片替换归档视图)
+      annotationsPanel.classList.add('hidden');
+      checksPanel.classList.add('hidden');
       hidePhase3Extras();
       roundsHint.textContent = `当前状态:${STATE_LABELS[data.state] || data.state}(视图在本计划后续切片呈现)。`;
       roundsHint.classList.remove('hidden');
@@ -343,6 +370,7 @@ function applySessionGates(data) {
 function hidePhase3Extras() {
   authorizeRow.classList.add('hidden');
   writingView.classList.add('hidden');
+  checksPanel.classList.add('hidden');
   roundSwitcher.classList.remove('hidden');
 }
 
@@ -493,7 +521,234 @@ startWritingBtn.addEventListener('click', async () => {
   }
 });
 
-// 档位模态两按钮(阶段 5 视图,TASK2 挂载点)
+// phase5:awaiting_tier 呈档位引导(模态 + 开始自检按钮);checking 呈报告视图
+function applyPhase5View(data) {
+  writingView.classList.add('hidden');
+  roundsHint.classList.add('hidden');
+  roundTitle.textContent = '自检报告';
+  roundSwitcher.classList.add('hidden');
+  roundDoc.innerHTML = '';
+  checksPanel.classList.remove('hidden');
+  loadChecksView(data);
+}
+
+// 拉取 GET /api/checks 渲染报告列表 + 最新报告 + 按 selfcheck.mode 切控件区
+async function loadChecksView(sessionData) {
+  const result = await roundApi.listChecks();
+  if (!result.ok) {
+    checkState.textContent = '报告拉取失败';
+    return;
+  }
+  const data = result.data;
+  const selfcheck = data.selfcheck || { tier: null, mode: 'running', questions: [] };
+  const mode = selfcheck.mode;
+
+  // 报告切换器(照 round-switcher 模式)
+  checkSwitcher.innerHTML = '';
+  (data.checks || []).forEach((n) => {
+    const opt = document.createElement('option');
+    opt.value = String(n);
+    opt.textContent = `第 ${n} 次核查${n === data.current_check ? '(当前)' : ''}`;
+    checkSwitcher.appendChild(opt);
+  });
+  if (data.current_check != null) checkSwitcher.value = String(data.current_check);
+  checkState.textContent = `档位:${selfcheck.tier || '未选'} / ${mode}`;
+
+  // 最新报告 markdown 渲染(XSS:renderMarkdown→stripUnsafeNodes,D-P3-28)
+  latestCheck.innerHTML = '';
+  if (data.latest) {
+    latestCheck.appendChild(renderMarkdown(data.latest));
+  } else {
+    latestCheck.textContent = '(尚无核查报告)';
+  }
+
+  // 档位引导:awaiting_tier 且未选档 → 弹模态(会话内只弹一次);已选档 → 开始自检
+  if (sessionData && sessionData.state === 'phase5_awaiting_tier') {
+    continueCheckBtn.textContent = '开始自检';
+    continueCheckBtn.classList.remove('hidden');
+    continueRepairBtn.classList.add('hidden');
+    verdictCards.innerHTML = '';
+    if (!selfcheck.tier && !tierModalShown) {
+      tierModalShown = true;
+      tierModal.classList.remove('hidden');
+    }
+    return;
+  }
+
+  // checking:按 mode 切控件区(§8.2 锁定版清单,D-P3-20 互斥)
+  verdictCards.innerHTML = '';
+  if (mode === 'paused') {
+    // 暂停态:隐藏继续自检与继续修复;呈现修复者抛问裁决卡({number, text})
+    continueCheckBtn.classList.add('hidden');
+    continueRepairBtn.classList.add('hidden');
+    (selfcheck.questions || []).forEach((q) => {
+      verdictCards.appendChild(renderVerdictCard(q, 'paused'));
+    });
+  } else if (mode === 'p2') {
+    // 纯 P2 残余态:隐藏继续自检;呈现残余裁决卡({number, location, issue, suggestion})
+    continueCheckBtn.classList.add('hidden');
+    continueRepairBtn.classList.add('hidden');
+    (selfcheck.questions || []).forEach((q) => {
+      verdictCards.appendChild(renderVerdictCard(q, 'p2'));
+    });
+  } else if (mode === 'resumed') {
+    // 裁决待续跑态:只呈现「继续修复」(D-P3-20 判定式②唯一放行)
+    continueCheckBtn.classList.add('hidden');
+    continueRepairBtn.classList.remove('hidden');
+  } else {
+    // running:呈现「继续自检」(意外中断恢复,D-P3-20/§7.3②)
+    continueCheckBtn.textContent = '继续自检';
+    continueCheckBtn.classList.remove('hidden');
+    continueRepairBtn.classList.add('hidden');
+  }
+}
+
+// 裁决卡(createElement/textContent,零 innerHTML 拼接用户内容,D-P3-28)
+// 按 mode 取键:p2 → location/issue/suggestion 三行(D-P3-17);paused → text 单行
+function renderVerdictCard(question, mode) {
+  const card = document.createElement('div');
+  card.className = 'verdict-card';
+  card.dataset.number = String(question.number);
+
+  if (mode === 'p2') {
+    const loc = document.createElement('p');
+    loc.className = 'verdict-location';
+    loc.textContent = question.location || '(未标位置)';
+    card.appendChild(loc);
+    const issue = document.createElement('p');
+    issue.className = 'verdict-issue';
+    issue.textContent = question.issue || '';
+    card.appendChild(issue);
+    const sug = document.createElement('p');
+    sug.className = 'verdict-suggestion';
+    sug.textContent = `建议修法:${question.suggestion || '(无)'}`;
+    card.appendChild(sug);
+  } else {
+    // paused:修复者抛问文本({number, text})
+    const q = document.createElement('p');
+    q.className = 'verdict-issue';
+    q.textContent = question.text || '';
+    card.appendChild(q);
+  }
+
+  const noteInput = document.createElement('input');
+  noteInput.type = 'text';
+  noteInput.className = 'verdict-note-input';
+  noteInput.placeholder = '备注(可选)';
+  card.appendChild(noteInput);
+
+  const buttons = document.createElement('div');
+  buttons.className = 'verdict-buttons';
+  const fixBtn = document.createElement('button');
+  fixBtn.textContent = '修';
+  const keepBtn = document.createElement('button');
+  keepBtn.textContent = '接受现状';
+  buttons.appendChild(fixBtn);
+  buttons.appendChild(keepBtn);
+  card.appendChild(buttons);
+
+  const submit = async (decision) => {
+    fixBtn.disabled = true;
+    keepBtn.disabled = true;
+    const resp = await fetch('/api/checks/verdict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number: question.number, decision, note: noteInput.value }),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      renderEvent({
+        kind: 'error',
+        content: `裁决落盘失败:${data.message || resp.status}`,
+        raw: null,
+      });
+      fixBtn.disabled = false;
+      keepBtn.disabled = false;
+      return;
+    }
+    renderEvent({ kind: 'say', content: `裁决 #${question.number} 已落盘(${decision})。`, raw: null });
+    await refreshChecksAfterStream();
+  };
+  fixBtn.addEventListener('click', () => submit('修'));
+  keepBtn.addEventListener('click', () => submit('接受现状'));
+  return card;
+}
+
+// 「继续自检」/「开始自检」:POST /api/checks/start → 202 → SSE 直播 → done 拉新
+continueCheckBtn.addEventListener('click', async () => {
+  if (continueCheckBtn.disabled || checkInFlight) return;
+  checkInFlight = true;
+  continueCheckBtn.disabled = true;
+  renderEvent({ kind: 'say', content: '已发起核查,过程在下方工作面板全程直播……', raw: null });
+  try {
+    const resp = await fetch('/api/checks/start', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      renderEvent({ kind: 'error', content: `自检发起失败:${err.message || resp.status}`, raw: null });
+      checkInFlight = false;
+      continueCheckBtn.disabled = false;
+    }
+  } catch {
+    renderEvent({ kind: 'error', content: '自检请求失败(网络)', raw: null });
+    checkInFlight = false;
+    continueCheckBtn.disabled = false;
+  }
+});
+
+// 「继续修复」:POST /api/checks/repair → 202 → SSE 直播 → done 拉新
+continueRepairBtn.addEventListener('click', async () => {
+  if (continueRepairBtn.disabled || checkInFlight) return;
+  checkInFlight = true;
+  continueRepairBtn.disabled = true;
+  renderEvent({ kind: 'say', content: '已发起修复,过程在下方工作面板全程直播……', raw: null });
+  try {
+    const resp = await fetch('/api/checks/repair', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      renderEvent({ kind: 'error', content: `修复发起失败:${err.message || resp.status}`, raw: null });
+      checkInFlight = false;
+      continueRepairBtn.disabled = false;
+    }
+  } catch {
+    renderEvent({ kind: 'error', content: '修复请求失败(网络)', raw: null });
+    checkInFlight = false;
+    continueRepairBtn.disabled = false;
+  }
+});
+
+// 档位模态两按钮:POST /api/checks/tier → 关模态拉新
+async function chooseTier(tier) {
+  try {
+    const resp = await fetch('/api/checks/tier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      renderEvent({ kind: 'error', content: `档位选择失败:${err.message || resp.status}`, raw: null });
+      return;
+    }
+    tierModal.classList.add('hidden');
+    renderEvent({ kind: 'say', content: `已选择「${tier}」档,点「开始自检」启动核查。`, raw: null });
+    await refreshChecksAfterStream();
+  } catch {
+    renderEvent({ kind: 'error', content: '档位选择失败(网络)', raw: null });
+  }
+}
+
+tierLooseBtn.addEventListener('click', () => chooseTier('宽松'));
+tierStrictBtn.addEventListener('click', () => chooseTier('严格'));
+
+// done 后拉新:session(状态徽标/门控)+ checks(报告与 mode 控件)
+async function refreshChecksAfterStream() {
+  if (currentProject == null) return;
+  checkInFlight = false;
+  continueCheckBtn.disabled = false;
+  continueRepairBtn.disabled = false;
+  await refreshRoundsAfterStream();
+  await loadChecksView(null);
+}
 
 function renderDraft(draft) {
   if (draft == null || draft === '') {
@@ -585,6 +840,11 @@ const roundApi = {
     });
     const data = await resp.json().catch(() => ({}));
     return { ok: resp.ok, status: resp.status, data };
+  },
+  async listChecks() {
+    const resp = await fetch('/api/checks');
+    if (!resp.ok) return { ok: false, status: resp.status };
+    return { ok: true, data: await resp.json() };
   },
 };
 

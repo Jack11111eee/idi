@@ -1614,6 +1614,31 @@ def test_build_check_prompt_three_sections(tmp_path, fresh_session):
     assert "简洁" in prompt and "大白话" in prompt
 
 
+def test_build_check_prompt_injects_tier_line(tmp_path, fresh_session):
+    """用例 1b:本轮档位头部行逐字注入任务段(真 CLI E2E 发现的缺陷回归)。
+
+    缺陷形态:build_check_prompt 收 tier 参数但从未注入任务段——文法模板
+    同时含两档正例且标注「档位由任务方给定」,AI 无从得知该写哪一行(真机
+    观测:AI 写出 `自检档位:严格`,既缺 `> ` 前缀又选错档位,parse_tier_line
+    返回 None)。修复 = 任务段落盘指令逐字注入本轮 tier_line。
+    """
+    from backend.grammar import TIER_LINE_LOOSE, TIER_LINE_STRICT
+    from backend.prompts import build_check_prompt
+
+    _enter_phase5(fresh_session, tmp_path)
+
+    loose_prompt = build_check_prompt(tmp_path, 1, "宽松")
+    # 任务段须含本轮档位行逐字(且明确「必须逐字写」)
+    assert "必须逐字写:" + TIER_LINE_LOOSE in loose_prompt, (
+        "宽松档 prompt 未逐字注入档位头部行(AI 无从得知该写哪一行)"
+    )
+
+    strict_prompt = build_check_prompt(tmp_path, 1, "严格")
+    assert "必须逐字写:" + TIER_LINE_STRICT in strict_prompt, (
+        "严格档 prompt 未逐字注入档位头部行"
+    )
+
+
 def test_build_check_prompt_multi_round_trend(tmp_path, fresh_session):
     """用例 2:多轮趋势照读——已有 check-1 时 prompt 资料段含 check-1 全文。"""
     from backend.prompts import build_check_prompt

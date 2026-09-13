@@ -525,6 +525,8 @@ _CHECK_INSTRUCTIONS = (
     " DESIGN.md 的写入)。\n"
     "落盘指令:用 Write 工具把报告全文写入 docs/DESIGN-check-{check_n}.md"
     "(编号由任务方给出,勿自定),报告首行写档位头部行(见四)。"
+    "**本次档位已由任务方给定,报告首行必须逐字写:{tier_line}**"
+    "(不得写另一档位、不得省略 `> ` 前缀)。"
     "写完后在回复里简述发现。"
 )
 
@@ -638,7 +640,15 @@ def build_check_prompt(project_path, check_n: int, tier: str) -> str:
         checks_section = "### 既有核查报告\n\n(尚无任何核查报告——这是首轮核查。)"
 
     grammar_examples = "\n".join(_CHECK_GRAMMAR_EXAMPLES)
-    instructions = _CHECK_INSTRUCTIONS.replace("{check_n}", str(check_n))
+    # 档位头部行逐字注入(D-P3-12:报告首行必须与本轮档位一致;两常量字面
+    # 取自 grammar,不手拼——缺此注入时 AI 无从得知该写哪一行)
+    from backend.grammar import TIER_LINE_LOOSE, TIER_LINE_STRICT
+
+    tier_line = TIER_LINE_LOOSE if tier == "宽松" else TIER_LINE_STRICT
+    instructions = (
+        _CHECK_INSTRUCTIONS.replace("{check_n}", str(check_n))
+        .replace("{tier_line}", tier_line)
+    )
 
     return (
         "## 一、你的角色\n\n"

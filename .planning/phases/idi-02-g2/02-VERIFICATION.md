@@ -1,11 +1,13 @@
 ---
 phase: idi-02-g2
-verified: 2026-09-10T09:35:00Z
+verified: 2026-09-13T00:00:00Z(UAT 收口后最终更新 2026-09-10T09:35:00Z;里程碑收口复验 2026-09-13——phases 2/3 合并后现行冻结树,指纹刷新)
 status: passed
 score: 7/7 must-haves verified
 covered_files:
 
   - .planning/phases/idi-02-g2/02-CONTEXT.md
+  - .planning/phases/idi-02-g2/02-DISCUSSION-LOG.md
+  - .planning/phases/idi-02-g2/02-UAT.md
   - .planning/phases/idi-02-g2/idi-02-01-PLAN.md
   - .planning/phases/idi-02-g2/idi-02-01-SUMMARY.md
   - .planning/phases/idi-02-g2/idi-02-02-PLAN.md
@@ -29,7 +31,7 @@ covered_files:
   - frontend/index.html
   - frontend/style.css
   - pytest.ini
-covered_digest: "v1:sha256:acd6f0f8e97800c681b3ef15330d0a5f57ede19702e14a65d212f5767ef86d45"
+covered_digest: "v1:sha256:8e74b10455e686a65c93df1881d642f12cad6d3ae502e97d953b2ec55e1056b8"
 behavior_unverified: 7
 overrides_applied: 0
 gaps: []
@@ -81,7 +83,7 @@ human_verification:  # 初验转 UAT,已收口:7/7 pass(02-UAT.md),见 behavior_
 **Phase Goal:** 进入阶段 3 后,用户能对轮次文档划词写实质批注(或即时要大白话),点「处理本轮批注」后 AI批量回应并产出下一轮,被回应的轮次自动冻结只读,四处机械校验所需的文法全部由工具可靠解析
 **Verified:** 2026-09-10T09:35:00Z(UAT 收口后最终更新;初验 2026-09-10T06:51:13Z)
 **Status:** passed(浏览器 7 人检项已由自动化浏览器 UAT 收口,7/7 pass,零缺陷——见 02-UAT.md;机器半边 7/7 SC 早已 VERIFIED)
-**Re-verification:** No — initial verification(+ UAT collection closure)
+**Re-verification:** No — initial verification(+ UAT collection closure);2026-09-13 里程碑收口 staleness 复验仅刷新指纹与回归确认,未改变任何真值判定(见文末 Milestone-Close Staleness Re-verification)
 
 > **MVP 格式说明(沿 Phase 1 先例):** ROADMAP `Mode: mvp` 但 goal 为中文结果陈述而非英文 "As a…, I want to…, so that…" 格式,`user-story.validate` 对全中文 goal 恒不通过(英文正则)。goal 实质是用户流结果陈述,各 PLAN.md 内亦各有中文 As-a/I-want/So-that 形态;本报告按实质继续 goal-backward 验证(下表 7 条 SC 即操作契约),不因此拒绝验证。
 
@@ -230,5 +232,22 @@ human_verification:  # 初验转 UAT,已收口:7/7 pass(02-UAT.md),见 behavior_
 
 ---
 
-_Verified: 2026-09-10T09:35:00Z(UAT 收口后最终;初验 2026-09-10T06:51:13Z)_
+## Milestone-Close Staleness Re-verification(2026-09-13)
+
+**触发:** Phase 3 合并到 main 后,本报告 `verification.status` 读为 `stale`(存储的 `covered_digest` 不再匹配现行树)。Phase 3 的验证者已记录此为**既有漂移**,非 Phase 3 改动引入。本次只做「指纹刷新 + 回归确认」,不重跑已由初验与 02-UAT.md 验证的行为。
+
+**本验证者独立复核(不采信既有叙述):**
+
+1. **全量回归:** `.venv/bin/python -m pytest backend/tests/ -q` → **219 passed + 6 skipped**(6 skip 全为 IDI_E2E 门控 slow 用例)。
+2. **Phase 2 证据仍在且仍绿:** `test_annotations/test_grammar/test_session/test_route_session/test_ai_caller` 共含 Phase 2 全部用例,全绿。
+3. **§6.4 锁定文法语义零触碰(重点核查):** Phase 3 wave 1 确实向 `grammar.py` 增写了四个新解析器(`parse_tier_line` / `parse_problem_grades` / `is_pure_p2` / `scan_pending_questions`,提交 7fa31ff)。**本验证者独立 diff 审读 + live 探针复核确认这是纯增量**:`da4a5b7..HEAD` 对 grammar.py 的改动只在文件尾部追加新节,既有六条解析器(`parse_dimension_table` / `is_dimension_table_green` / `parse_pending_list` / `parse_annotation_responses` / `is_pass_conclusion` / `unpaired_verdicts`)与 `_VERDICT_RE` / `_last_conclusion_index` 逐字节未变。live 边界探针 21 项中 20 项通过(第 21 项「grammar.py 无第二份 `> 核查结论:` 字面量」为探针断言过严——命中的是 line 63 的**既有 Phase 2 常量定义** `_CONCLUSION_LINE_PREFIX` 与若干 docstring,非新增重复字面量;`> 申请授权:` 零重复)。双结论行锚点取末一处、PASS 括注前缀、裁决同号配对、锚前不收、维度表脏值 fail-closed、空表=绿、回应表空 id 跳过、常量 identity 复用 state——全部与 Phase 2 报告记录一致。
+4. **路由契约实测(TestClient):** 五条轮次路由全挂载(`GET /api/rounds`、`GET /api/rounds/{round_n}`、`POST /api/rounds/{round_n}/annotations`、`POST /api/rounds/{round_n}/plain`、`POST /api/rounds/process`);非 phase3 项目下 `GET /api/rounds/1` 404、`POST annotations` 409、`POST process` 409,与 Phase 2 报告记录的语义一致。
+5. **代码路径无回归:** `annotations.py` / `state.py` 自 Phase 2 收口后**零提交**;Phase 3 对 `session.py` / `main.py` / `ai_caller.py` / `frontend/app.js` 的改动经 diff 审读确认为**纯增量**(既有函数与路由签名保留,新增阶段 3/4/5 路由族与视图函数)。
+6. **指纹刷新:** `covered_files` 24 → **26**(补 `02-DISCUSSION-LOG.md`、`02-UAT.md`),`covered_digest` 经 `verification.fingerprint` 重算为 `v1:sha256:8e74b104…`(算法与 Phase 3 已知良好指纹逐字校准一致)。原存储值 `acd6f0f8…` 为 Phase 2 收口时的旧树指纹。
+
+**裁定:** 7/7 SC 机器半边保持 VERIFIED,浏览器 7 人检项已由 02-UAT.md 收口(7/7 pass)——状态维持 **passed**。
+
+---
+
+_Verified: 2026-09-13T00:00:00Z(UAT 收口后最终 2026-09-10T09:35:00Z;初验 2026-09-10T06:51:13Z;里程碑收口复验 2026-09-13)_
 _Verifier: Claude (gsd-verifier)_

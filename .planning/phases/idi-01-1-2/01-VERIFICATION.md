@@ -1,6 +1,6 @@
 ---
 phase: idi-01-1-2
-verified: 2026-09-09T12:14:41Z(初验 09:18:23Z;复审一 09:32:56Z;复审二 12:14:41Z——staleness 复验,指纹刷新至 381aa33+31deefb 后现行树)
+verified: 2026-09-13T00:00:00Z(初验 2026-09-09T09:18:23Z;复审一 09:32:56Z;复审二 12:14:41Z——staleness 复验,指纹刷新至 381aa33+31deefb 后现行树;里程碑收口复验 2026-09-13——phases 2/3 合并后现行冻结树,指纹再次刷新)
 status: passed
 score: 8/8 must-haves verified
 re_verification:
@@ -13,6 +13,7 @@ re_verification:
   post_gap_fix_passes:
     - "复审一(381aa33):/api/abort 会话路径中止——diff 审读 + test_route_abort.py 2 passed + 全量 64/2 + 失败复现脚本重放(killed:true/busy 释放/中止后 202)。结果:SC4 闭合,gaps_found → human_needed。"
     - "复审二(31deefb + 2ba44f1,本 staleness 复验):UAT 双 gap 修复——diff 审读 + test_route_session.py 2 passed + 全量 66 passed + 2 skipped + node --check + TestClient 亲测 /api/session 契约(未进入 400;draft 落盘后不重进门控翻转);浏览器行为 = 01-UAT.md 6/6 pass(2ba44f1 复测记录:门控就地翻转、CLI 自检加载即检零 TypeError、G1 全链落盘 + 8 张截图取证)。结果:行为级人检项全部收口,状态 → passed(ecb5bd5),本次复核指纹并确认。"
+    - "里程碑收口复验(2026-09-13,phases 2/3 合并后冻结树):本次只覆盖指纹刷新与回归,不重跑已验证行为。① 全量 `.venv/bin/python -m pytest backend/tests/ -q` → 219 passed + 6 skipped(6 skip = IDI_E2E 门控 slow,Phase 3 验证者已实跑真 E2E 记录);② Phase 1 全部证据文件在场且测试仍绿(test_state/test_transcript/test_session/test_route_abort/test_route_session/test_g1/test_ai_caller 共 200 passed);③ 路由契约实测:33 路由全挂载、/api/health 200、空闲 /api/abort killed=false、未进入项目 /api/g1 400、/api/enter 后快照 14 字段齐;④ 代码路径未回归:state.py/transcript.py/g1.py/annotations.py 自 Phase 1/2 收口后零提交,Phase 3 对 session.py/main.py/app.js 的改动为纯增量(grammar.py 亦纯增量);⑤ 指纹刷新:covered_files 38 → 41(补 01-DISCUSSION-LOG.md、01-UAT.md、SKELETON.md),covered_digest 重算为 v1:sha256:a7e9061b…(工具 verification.fingerprint 直接产出,与 Phase 3 已校准的算法逐字一致)。8/8 真值保持 VERIFIED,状态维持 passed。"
 covered_files:
 
   - .planning/phases/idi-01-1-2/01-CONTEXT.md
@@ -53,7 +54,10 @@ covered_files:
   - pytest.ini
   - requirements.txt
   - run.sh
-covered_digest: "v1:sha256:1ff0293918bfe75d961cc840815822df0ee0077fec1adc5ef88cedcb93fbcbdc"
+  - .planning/phases/idi-01-1-2/01-DISCUSSION-LOG.md
+  - .planning/phases/idi-01-1-2/01-UAT.md
+  - .planning/phases/idi-01-1-2/SKELETON.md
+covered_digest: "v1:sha256:a7e9061bcf94e0e941d8395e329d0ce2e341db5bd353fcec2711d6e082568adc"
 behavior_unverified: 6
 overrides_applied: 0
 gaps: []
@@ -341,5 +345,21 @@ human_verification:  # 已收口:以下 6 项全部由 01-UAT.md(2ba44f1)以自�
 
 ---
 
-_Verified: 2026-09-09T12:14:41Z(初验 09:18:23Z → 复审一 09:32:56Z → 复审二/staleness 复验 12:14:41Z)_
+### Milestone-Close Staleness Re-verification(第四次过闸,2026-09-13)
+
+**触发:** phases 2/3 全部合并到 main 后,本报告 `verification.status` 读为 `stale`(指纹不再匹配现行树)。本次只做「指纹刷新 + 回归确认」,不重跑已由前三次过闸验证的行为。
+
+**本验证者独立复核(不采信既有叙述):**
+
+1. **全量回归:** `.venv/bin/python -m pytest backend/tests/ -q` → **219 passed + 6 skipped**(6 skip 全为 IDI_E2E 门控 slow 用例;Phase 3 验证者已以真实 CLI 实跑并如实记录)。
+2. **Phase 1 证据仍在且仍绿:** `test_state/test_transcript/test_session/test_route_abort/test_route_session/test_g1/test_ai_caller` 共 **200 passed**;全部 19 个 Phase 1 相关源文件/测试文件在场。
+3. **路由契约实测(TestClient):** 33 条路由全挂载;`GET /api/health` 200;空闲 `POST /api/abort` → `{killed:false}`;未进入项目 `POST /api/g1` 400;`POST /api/enter` 后快照 14 字段齐全(含 Phase 2 的 rounds/current_round/pending_annotations 与 Phase 3 的 g3_available/selfcheck 等,既有字段零重命名)。
+4. **代码路径无回归:** `state.py` / `transcript.py` / `g1.py` / `annotations.py` 自 Phase 1/2 收口后**零提交**;Phase 3 对 `session.py` / `main.py` / `frontend/app.js` 的改动经 diff 审读确认为**纯增量**(fa6cd6b..HEAD 共 2144 插入 / 5 删除,5 处删除均为注释或 Phase 3 自有分支的占位文案替换,无 Phase 1/2 契约改动);`main.py` 的 `from backend.state import` 由 3 符号扩为 8 符号,原有 `STATE_PHASE3/derive_state/list_complete_rounds` 全部保留。
+5. **指纹刷新:** `covered_files` 38 → **41**(补本阶段目录内新纳入覆盖集的 `01-DISCUSSION-LOG.md`、`01-UAT.md`、`SKELETON.md`),`covered_digest` 经 `verification.fingerprint` 重算为 `v1:sha256:a7e9061b…`(算法与 Phase 3 已知良好指纹逐字校准一致)。
+
+**裁定:** 8/8 真值保持 VERIFIED,6 项浏览器人检项已由 01-UAT.md 收口——状态维持 **passed**。
+
+---
+
+_Verified: 2026-09-13T00:00:00Z(初验 2026-09-09T09:18:23Z → 复审一 09:32:56Z → 复审二 12:14:41Z → 里程碑收口复验 2026-09-13)_
 _Verifier: Claude (gsd-verifier)_

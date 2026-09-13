@@ -386,6 +386,7 @@ function hidePhase3Extras() {
 // phase3:G3 授权行三态(照 g1_available 先例,D-P3-26 按钮点亮 = 四查全过)
 function applyPhase3Extras(data) {
   writingView.classList.add('hidden');
+  checksPanel.classList.add('hidden'); // 跨阶段重进复位(G-idi03-4):phase3 无自检面板
   authorizeRow.classList.remove('hidden');
   if (data.g3_available) {
     authorizeBtn.disabled = false;
@@ -790,6 +791,10 @@ async function loadArchiveView() {
   }
   await loadArchiveRounds();
   await loadChecksView(null);
+  // 归档只读(G-idi03-3):loadChecksView 的 running 分支会把「继续自检」重新
+  // 显示,故在拉新之后复位——归档态两个推进按钮一律不可见(服务端 409 是真防线)
+  continueCheckBtn.classList.add('hidden');
+  continueRepairBtn.classList.add('hidden');
 }
 
 async function loadArchiveRounds() {

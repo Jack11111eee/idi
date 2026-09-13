@@ -189,6 +189,24 @@ def _session_snapshot() -> dict:
     }
 
 
+def _unpaired_pending_questions(md_text: str) -> list[dict]:
+    """暂停态问题卡数据:未配对待裁决的 {number, text}(G-idi03-2)。
+
+    与 unpaired_verdicts 同配对空间(§6.4 末一处 `> 核查结论:` 锚之后),
+    按未配对编号从 scan_pending_questions 的全扫结果里取文本——判定式计入
+    几条,界面就呈现几条;锚前正文行(锁定文法不计)不端成问题。
+    """
+    unpaired = grammar_mod.unpaired_verdicts(md_text)
+    if not unpaired:
+        return []
+    by_number: dict[int, str] = {}
+    for question in grammar_mod.scan_pending_questions(md_text):
+        by_number.setdefault(question["number"], question["text"])
+    return [
+        {"number": number, "text": by_number.get(number, "")} for number in unpaired
+    ]
+
+
 def _selfcheck_substate(project: Path, state: dict) -> dict:
     """组装 selfcheck 子状态({tier, mode, questions};只认磁盘不缓存,D-P3-23)。
 
@@ -215,7 +233,11 @@ def _selfcheck_substate(project: Path, state: dict) -> dict:
             return {
                 "tier": tier,
                 "mode": "paused",
-                "questions": grammar_mod.scan_pending_questions(latest),
+                # 配对空间与 unpaired_verdicts 一致(G-idi03-2):scan_pending_questions
+                # 无锚全文扫(D-P3-18 供 AI 输出扫描),但暂停态呈现的必须是锁定
+                # 文法计入的那几条——按 unpaired 编号过滤,避免把锚前正文行
+                # (§6.4 不进配对空间)也端成问题,两扫描器判定分歧。
+                "questions": _unpaired_pending_questions(latest),
             }
         # 判定式②:配对裁决 + 无未配对 + 末行非 PASS → resumed
         verdicts = grammar_mod.parse_verdict_lines(latest)
@@ -1271,6 +1293,7 @@ def start_repair(auto: bool = False) -> bool:
 
     def _worker():
         global _aborted
+        tmp_consumed = False  # 本跳是否真把 tmp 改名落成 DESIGN.md(链断判据)
         try:
             _wire_permission_callback(caller)
             for event in caller.run(project, prompt):
@@ -1320,6 +1343,7 @@ def start_repair(auto: bool = False) -> bool:
                     # 无命中:tmp 存在 → 原子改名(D-P3-8/D-P3-22 同 writing)
                     if tmp_path.is_file() and design_path.is_file():
                         tmp_path.replace(design_path)
+                        tmp_consumed = True
                     elif not tmp_path.is_file():
                         _publish_for_tests(
                             {
@@ -1339,8 +1363,11 @@ def start_repair(auto: bool = False) -> bool:
             if inflight_local is not None:
                 inflight_local.set()
             # 每跳结束重拉磁盘判定下一步(finally 解锁后外层 wrapper 串调;
-            # 抛问截存 → unpaired 非空断链;宽松档不链;tmp 缺失不链)
-            if _aborted or tier == "宽松":
+            # 抛问截存 → unpaired 非空断链;宽松档不链;本跳未产出并消费
+            # tmp → 断链,error 事件已发「修复未产出 tmp,可重跑」,等用户
+            # 重跑——不得在此形态驱动下一跳(G-idi03-1:否则 check 产 FIX →
+            # 修复又不写 tmp → 无界自链)
+            if _aborted or tier == "宽松" or not tmp_consumed:
                 return
             latest = ""
             try:
@@ -1349,8 +1376,6 @@ def start_repair(auto: bool = False) -> bool:
                 pass
             if not latest or grammar_mod.unpaired_verdicts(latest):
                 return  # 抛问截存盘:不再自动推进
-            if tmp_path.is_file():
-                return  # tmp 未消费(异常形态,不推进;重跑覆盖)
             _drive_next(project, "check")
 
     threading.Thread(target=_worker, daemon=True).start()

@@ -1937,3 +1937,120 @@ def test_repair_available_three_states(tmp_path, fresh_session):
     _enter_phase5(fresh_session, tmp_path, check_reports={1: report}, tier="严格")
     assert fresh_session.repair_available(tmp_path) is False, \
         "纯 P2 残余走裁决卡通道,不放行修复"
+
+
+def test_repair_no_tmp_stops_chain(tmp_path, fresh_session):
+    """用例 11(G-idi03-1 RED):严格档修复跳未产出 tmp → 链必须断,不得无界自链。
+
+    形态:check-1 产 P1 FIX 报告 → 自动链入修复 → 修复跳「不写 tmp、不发
+    事件即 done」(AI 没写 tmp 的失败形态,D-P3-14 docstring 承诺该形态
+    「error 事件『修复未产出 tmp,可重跑』,不驱动下一跳」)。
+    修复前实测:守卫 `if tmp_path.is_file(): return` 在 tmp 缺失时不命中,
+    执行直落 `_drive_next(project,"check")` → 无界自链
+    (03-VERIFICATION.md G-idi03-1:20 秒内 10209 跳且仍在飞)。
+    """
+    _enter_phase5(fresh_session, tmp_path, check_reports={}, tier="严格")
+
+    published: list[dict] = []
+    orig_publish = fresh_session._publish_for_tests
+    fresh_session._publish_for_tests = lambda ev: (published.append(dict(ev)), orig_publish(ev))[1]
+
+    class _NoTmpHarness:
+        """check 跳:固定产 P1 FIX 报告;repair 跳:不写 tmp、不发事件即 done。"""
+
+        def __init__(self):
+            self.check_calls = 0
+            self.repair_calls = 0
+            self.request_permission = None
+
+        def run(self, project_path, prompt):
+            if "核查执行者" in prompt:
+                self.check_calls += 1
+                n = _target_check_n(prompt) or self.check_calls
+                docs = Path(project_path) / "docs"
+                docs.mkdir(parents=True, exist_ok=True)
+                (docs / f"DESIGN-check-{n}.md").write_text(
+                    _check_report(problems=[(1, "P1", "§2", "范围含糊", "写清")],
+                                  conclusion="> 核查结论:FIX(P1×1)"),
+                    encoding="utf-8",
+                )
+                yield {"kind": "say", "content": f"核查第 {n} 轮完成。", "raw": None}
+            else:
+                self.repair_calls += 1
+            yield {"kind": "done", "content": "调用结束", "raw": None}
+
+    harness = _NoTmpHarness()
+    fresh_session._set_caller_for_tests(harness)
+
+    assert fresh_session.start_check() is True
+    # 给链充分时间显影:修复前该窗口内会跑出数百跳(实测 510 跳/秒)
+    time.sleep(1.5)
+
+    assert harness.repair_calls == 1, \
+        f"修复跳应恰好 1 次(未产出 tmp 不得再驱动),实际 {harness.repair_calls} 次"
+    assert harness.check_calls == 1, \
+        f"tmp 缺失不得驱动下一轮核查(无界自链),实际 {harness.check_calls} 次"
+    assert not (tmp_path / "docs" / "DESIGN-check-2.md").exists(), \
+        "tmp 缺失不得产生 check-2"
+    assert any("修复未产出 tmp" in str(ev.get("content", "")) for ev in published), \
+        "应发布「修复未产出 tmp,可重跑」error 事件"
+    assert not fresh_session.busy(), "链应已停(不得仍在飞)"
+
+
+def test_selfcheck_paused_questions_anchor_consistent(tmp_path, fresh_session):
+    """用例 12(G-idi03-2 RED):待裁决行锚位与判定式一致——锚后抛问可见、
+    锚前抛问按锁定文法不计(§6.4 配对空间限定在末一处结论行之后)。
+
+    修复前:`_selfcheck_substate` 用 unpaired_verdicts(锚后限定)判 paused,
+    却用 scan_pending_questions(无锚全文扫)取 questions——锚前抛问时判定式
+    不命中而扫描命中,两扫描器分歧;锚后抛问时若报告头部另有一处同号行,
+    questions 可能与判定式计数不一致。
+    """
+    import backend.grammar as grammar_mod
+
+    # ① 锚前抛问:锁定文法不计(配对空间 = 末一处结论行之后)→ mode 不得为
+    #    paused,questions 必须与判定式一致为空(不得呈现文法不认的问题)
+    header_pending = (
+        "# 核查报告\n\n> 自检档位:严格\n\n> 待裁决:#1:锚前抛问(正文行,不进配对空间)\n\n"
+        "## 问题分级\n\n| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|---|---|---|---|---|\n| 1 | P1 | §2 | 范围含糊 | 写清 |\n\n"
+        "> 核查结论:FIX(P1×1)\n"
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: header_pending}, tier="严格")
+    assert grammar_mod.unpaired_verdicts(header_pending) == [], "锚前抛问不进配对空间"
+    snap = fresh_session.snapshot()
+    assert snap["selfcheck"]["mode"] != "paused", \
+        "锚前抛问不得判 paused(锁定文法不计)"
+    assert snap["selfcheck"]["questions"] == [], \
+        "questions 必须与判定式一致(不得呈现文法不认的问题)"
+
+    # ①b 混合形态(分歧的正面显影):锚前一行 + 锚后一行 → 判定式只计锚后
+    #     那一行,questions 不得把锚前那行也端出来(修复前 scan_pending_questions
+    #     无锚全文扫 → questions 含两条,与 unpaired_verdicts 的计数分歧)
+    session._reset_for_tests()
+    mixed = (
+        "# 核查报告\n\n> 自检档位:严格\n\n> 待裁决:#7:锚前抛问(不进配对空间)\n\n"
+        "## 问题分级\n\n| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n"
+        "|---|---|---|---|---|\n| 1 | P1 | §2 | 范围含糊 | 写清 |\n\n"
+        "> 核查结论:FIX(P1×1)\n\n> 待裁决:#1:范围要不要收紧?\n"
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: mixed}, tier="严格")
+    assert grammar_mod.unpaired_verdicts(mixed) == [1], "锁定文法只计锚后待裁决"
+    snap = fresh_session.snapshot()
+    assert snap["selfcheck"]["mode"] == "paused"
+    assert snap["selfcheck"]["questions"] == [{"number": 1, "text": "范围要不要收紧?"}], \
+        "questions 不得含锚前行(须与 unpaired_verdicts 同配对空间)"
+
+    # ② 锚后抛问:锁定文法计入 → mode=paused,问题可见
+    session._reset_for_tests()
+    tail_pending = (
+        "# 核查报告\n\n> 自检档位:严格\n\n## 问题分级\n\n"
+        "| 编号 | 级别 | 位置 | 问题 | 建议修法 |\n|---|---|---|---|---|\n"
+        "| 1 | P1 | §2 | 范围含糊 | 写清 |\n\n"
+        "> 核查结论:FIX(P1×1)\n\n> 待裁决:#1:范围要不要收紧?\n"
+    )
+    _enter_phase5(fresh_session, tmp_path, check_reports={1: tail_pending}, tier="严格")
+    assert grammar_mod.unpaired_verdicts(tail_pending) == [1]
+    snap = fresh_session.snapshot()
+    assert snap["selfcheck"]["mode"] == "paused"
+    assert snap["selfcheck"]["questions"] == [{"number": 1, "text": "范围要不要收紧?"}]

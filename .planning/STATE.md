@@ -113,7 +113,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 | known-limitation | 已归档阶段的 `covered_digest` 不可解析:`covered_files` 声明 `.planning/phases/...` 路径,归档后移至 `.planning/milestones/v1.13-phases/`,重算返回 `null`(fail-closed=stale)。归档后的阶段报告不再被 staleness 机制消费,故记为已知限制而非回填重算 | acknowledged | 2026-09-14 | v1.13 |
 | tech-debt | `SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧「无脏状态」语义仍成立)— PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |
 | tech-debt | `annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口)— PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |
-| tech-debt | STATE.md 在 `phase.complete` 后偶发字段异常(需人工修正)— PROJECT.md 已登记;本次收口另发现 `milestone.lock` 释放因 phase token 形态不匹配(`idi-03` vs `3`)no-op,致锁滞留至 TTL 过期 | acknowledged | 2026-09-14 | v1.13 |
+| tech-debt | STATE.md 在 `phase.complete` 后偶发字段异常(`completed_phases` 计数、By-Phase 表重复、进度条 0%),需人工修正 — PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |
+| tool-defect | `phase.complete` 释放 `milestone.lock` 时按 `normalizePhaseToken` 匹配,锁内存 `idi-03`、完成时传 `3`,两者不匹配 → 释放 no-op,锁只能等 4h TTL 自然过期(过期后惰性无害,不影响新会话 claim)。GSD 工具侧问题,非本项目代码 | acknowledged | 2026-09-14 | v1.13 |
+| housekeeping | `.planning/tmp/`(GSD scratch)与 `.planning/milestone.lock`(机器相关瞬时 claim)曾被 git 跟踪,已解除跟踪并 gitignore;物理文件留存盘上 | resolved | 2026-09-14 | v1.13 |
 
 ## Session Continuity
 

@@ -6,3 +6,9 @@ __pycache__/
 
 # GSD 每会话瞬时 dispatch sentinel,不属仓库内容
 .gsd/
+
+# GSD 临时工作目录(doc-verifier / docs-update 的 scratch 文件)
+.planning/tmp/
+
+# GSD 里程碑锁(机器相关瞬时 claim:session id + pid;TTL 4h 自然过期)
+.planning/milestone.lock

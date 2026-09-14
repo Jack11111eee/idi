@@ -20,7 +20,8 @@
     "cross_ai_command": "",
     "cross_ai_timeout": 300,
     "test_gate_timeout": 600,
-    "use_worktrees": false
+    "use_worktrees": false,
+    "windows_enforce": true
   },
   "ship": {
     "pr_body_sections": []

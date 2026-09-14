@@ -3,3 +3,6 @@
 
 __pycache__/
 *.pyc
+
+# GSD 每会话瞬时 dispatch sentinel,不属仓库内容
+.gsd/

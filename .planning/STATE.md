@@ -6,7 +6,7 @@ stopped_at: Phase 3 complete — all phases complete
 last_updated: "2026-09-13T15:32:22.212Z"
 last_activity: 2026-09-13
 last_activity_desc: Milestone v1.13 completed and archived
-state_head: a5bfcad8c07a8449b72d725909ab7e922c2d183f
+state_head: 776d3ebbfc38c291796bc076dc967f24217b075a
 progress:
   total_phases: 3
   completed_phases: 3
@@ -110,7 +110,10 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
-| *(none)* | | | | |
+| known-limitation | 已归档阶段的 `covered_digest` 不可解析:`covered_files` 声明 `.planning/phases/...` 路径,归档后移至 `.planning/milestones/v1.13-phases/`,重算返回 `null`(fail-closed=stale)。归档后的阶段报告不再被 staleness 机制消费,故记为已知限制而非回填重算 | acknowledged | 2026-09-14 | v1.13 |
+| tech-debt | `SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧「无脏状态」语义仍成立)— PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |
+| tech-debt | `annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口)— PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |
+| tech-debt | STATE.md 在 `phase.complete` 后偶发字段异常(需人工修正)— PROJECT.md 已登记;本次收口另发现 `milestone.lock` 释放因 phase token 形态不匹配(`idi-03` vs `3`)no-op,致锁滞留至 TTL 过期 | acknowledged | 2026-09-14 | v1.13 |
 
 ## Session Continuity
 

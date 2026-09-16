@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-13)
 Phase: Milestone v1.13 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-13 — Milestone v1.13 completed and archived
+Last activity: 2026-09-16 — Completed quick task 260916-t8g: 修复 UI 审计报告 5 条功能性 BLOCKER
 
 ## Performance Metrics
 
@@ -103,6 +103,12 @@ None yet.
 ### Blockers/Concerns
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260916-t8g | 修复 UI 审计报告 5 条功能性 BLOCKER(.hidden 全局规则 / SSE 断流可见化 / 归档只读态加固 / 键盘划词路径 / 错误内联) | 2026-09-16 | 0912429 | [260916-t8g-ui-5-blocker-hidden-sse-onerror](./quick/260916-t8g-ui-5-blocker-hidden-sse-onerror/) |
 
 ## Deferred Items
 

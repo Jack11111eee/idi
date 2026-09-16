@@ -10,6 +10,10 @@ html, body {
   color: #1a1a1a;
 }
 
+/* 唯一全局显隐规则:!important 必需——.overlay/.doc-subview 等自身 display 特异性
+   同为 0-1-0 且声明在后,去掉 !important 会让这些容器重新无法隐藏。 */
+.hidden { display: none !important; }
+
 #app {
   display: flex;
   height: 100vh;
@@ -150,7 +154,6 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   justify-content: center;
   z-index: 100;
 }
-.overlay.hidden { display: none; }
 
 .overlay-card {
   background: #fff;
@@ -202,11 +205,8 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   font-weight: 600;
   z-index: 10;
 }
-#state-badge.hidden { display: none; }
 
 /* 文档区子视图切换 */
-.doc-subview.hidden { display: none; }
-
 #draft-view h2, #rounds-placeholder h2 {
   margin-top: 0;
   font-size: 15px;
@@ -252,11 +252,9 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 }
 #btn-approve-draft:disabled { opacity: 0.55; cursor: not-allowed; }
 #approve-row .hint { margin: 6px 0 0; }
-#approve-row .hint.hidden { display: none; }
 
 /* 发散入口(§3.7:仅阶段 1-2 雏形诞生前) */
 #divergence-entry { margin: 0 0 14px; }
-#divergence-entry.hidden { display: none; }
 #btn-divergence {
   padding: 8px 16px;
   background: #fdf6ec;
@@ -275,7 +273,6 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   border-radius: 6px;
   background: #fffdf5;
 }
-#brainstorm-view.hidden { display: none; }
 #brainstorm-view h2 {
   margin: 0 0 8px;
   font-size: 14px;
@@ -382,7 +379,6 @@ button.primary {
   flex-direction: column;
   border-top: 1px solid #eee;
 }
-#annotations-panel.hidden { display: none; }
 #annotations-panel .panel-header { cursor: default; }
 #pending-count {
   font-size: 12px;
@@ -472,7 +468,6 @@ button.primary {
   border-radius: 6px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
-#selection-menu.hidden { display: none; }
 #selection-menu button {
   border: none;
   background: transparent;
@@ -500,7 +495,6 @@ button.primary {
 
 /* G3 授权入口(照 #btn-approve-draft 绿色系先例) */
 #authorize-row { margin-top: 18px; }
-#authorize-row.hidden { display: none; }
 #btn-authorize {
   padding: 8px 18px;
   background: #e9f7ef;
@@ -510,11 +504,9 @@ button.primary {
 }
 #btn-authorize:disabled { opacity: 0.55; cursor: not-allowed; }
 #authorize-row .hint { margin: 6px 0 0; }
-#authorize-row .hint.hidden { display: none; }
 
 /* 阶段 4 撰写视图(按钮文案二态由后端快照字段驱动) */
 #writing-view { margin-top: 18px; }
-#writing-view.hidden { display: none; }
 #btn-start-writing {
   padding: 8px 18px;
   background: #e9f7ef;
@@ -536,7 +528,6 @@ button.primary {
   text-align: center;
 }
 #confirm-error { color: #c0392b; }
-#confirm-error.hidden { display: none; }
 .overlay-card .modal-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* 档位模态两选项(纵向排列,各带一句话说明) */
@@ -556,7 +547,6 @@ button.primary {
   flex-direction: column;
   border-top: 1px solid #eee;
 }
-#checks-panel.hidden { display: none; }
 #checks-panel .panel-header { cursor: default; }
 #checks-panel .panel-body { display: flex; flex-direction: column; gap: 10px; }
 #check-switcher {
@@ -577,7 +567,6 @@ button.primary {
   font-size: 13px;
 }
 #check-controls { display: flex; flex-direction: column; gap: 8px; }
-#check-controls button.hidden { display: none; }
 #btn-continue-check, #btn-continue-repair {
   background: #e9f7ef;
   border-color: #2e8b57;

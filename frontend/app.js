@@ -769,7 +769,9 @@ function applyArchiveView(data) {
   checksPanel.classList.remove('hidden');
   // 只读防线的呈现层(服务端 409 是真防线,D-P3-25):三交互面隐藏
   processRoundBtn.classList.add('hidden');
+  processRoundBtn.disabled = true; // 纵深防御:即使 CSS 未生效也不可点
   divergenceEntry.classList.add('hidden');
+  authorizeRow.classList.add('hidden');
   messageInput.disabled = true;
   sendBtn.disabled = true;
   loadArchiveView();

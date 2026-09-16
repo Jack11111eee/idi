@@ -290,7 +290,28 @@ function renderTranscript(transcript) {
 // 进入项目(FLOW-01)/ 发消息(FLOW-02)/ 权限(AI-04):fetch 封装
 // ---------------------------------------------------------------------------
 
+// 失败内联提示(UI-1.4):错误落在发起控件正下方,而非 #ai-events 工作面板。
+// 只用 textContent——错误文案含服务端返回内容,避免注入面(T-260916-01)。
+let inlineErrorEl = null;
+
+function clearInlineError() {
+  if (inlineErrorEl) {
+    inlineErrorEl.remove();
+    inlineErrorEl = null;
+  }
+}
+
+function showInlineError(anchor, message) {
+  clearInlineError();
+  const p = document.createElement('p');
+  p.className = 'inline-error';
+  p.textContent = message;
+  anchor.insertAdjacentElement('afterend', p);
+  inlineErrorEl = p;
+}
+
 async function enterProject(path) {
+  clearInlineError();
   const resp = await fetch('/api/enter', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -298,7 +319,7 @@ async function enterProject(path) {
   });
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    renderEvent({ kind: 'error', content: `进入失败:${err.message || resp.status}`, raw: null });
+    showInlineError(enterForm, `进入失败:${err.message || resp.status}`);
     return null;
   }
   const data = await resp.json();
@@ -568,9 +589,10 @@ function applyPhase5View(data) {
 
 // 拉取 GET /api/checks 渲染报告列表 + 最新报告 + 按 selfcheck.mode 切控件区
 async function loadChecksView(sessionData) {
+  clearInlineError();
   const result = await roundApi.listChecks();
   if (!result.ok) {
-    checkState.textContent = '报告拉取失败';
+    showInlineError(checkSwitcher, '报告拉取失败');
     return;
   }
   const data = result.data;
@@ -1283,31 +1305,36 @@ function showSelectionMenu(selection) {
   selectionMenu.style.top = `${y}px`;
 }
 
+// 划词触发(D-P2-2 / D-02):mouseup 与 keyup(键盘 Shift+方向键划选)共用同一份守卫。
+// 不对 keyup 做按键白名单——「折叠/空白选区即关闭菜单」已让非选择类按键成为安全 no-op。
+function handleSelectionTrigger() {
+  // 冻结轮禁用(D-P2-21:历史轮不可批注)——服务端 409 是防线,这里只是呈现
+  if (currentRoundNumber != null && displayedRoundNumber != null
+      && displayedRoundNumber < currentRoundNumber) return;
+  if (currentState !== 'phase3') return;
+
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || !String(selection.toString()).trim()) {
+    hideSelectionMenu();
+    return;
+  }
+  if (!selectionInRoundDoc(selection)) {
+    hideSelectionMenu();
+    return;
+  }
+  menuSelection = selection;
+  showSelectionMenu(selection);
+}
+
 // 一次性绑定入口(menu 单例,handler 内部动态读当前显示轮判定冻结)
 let selectionMenuBound = false;
 function initSelectionMenu() {
   if (selectionMenuBound) return;
   selectionMenuBound = true;
 
-  // 仅 round-doc 容器内 mouseup 触发(D-P2-2:draft-view / chat 区绝不绑此菜单)
-  roundDoc.addEventListener('mouseup', () => {
-    // 冻结轮禁用(D-P2-21:历史轮不可批注)——服务端 409 是防线,这里只是呈现
-    if (currentRoundNumber != null && displayedRoundNumber != null
-        && displayedRoundNumber < currentRoundNumber) return;
-    if (currentState !== 'phase3') return;
-
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !String(selection.toString()).trim()) {
-      hideSelectionMenu();
-      return;
-    }
-    if (!selectionInRoundDoc(selection)) {
-      hideSelectionMenu();
-      return;
-    }
-    menuSelection = selection;
-    showSelectionMenu(selection);
-  });
+  // 仅 round-doc 容器内触发(D-P2-2:draft-view / chat 区绝不绑此菜单)
+  roundDoc.addEventListener('mouseup', handleSelectionTrigger);
+  roundDoc.addEventListener('keyup', handleSelectionTrigger);
 
   // 点文档其他位置/滚动 → 菜单消失(菜单自身点击不冒泡关闭)
   document.addEventListener('mousedown', (e) => {
@@ -1418,14 +1445,11 @@ processRoundBtn.addEventListener('click', async () => {
     raw: null,
   });
   try {
+    clearInlineError();
     const resp = await fetch('/api/rounds/process', { method: 'POST' });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      renderEvent({
-        kind: 'error',
-        content: `处理发起失败:${err.message || resp.status}`,
-        raw: null,
-      });
+      showInlineError(processRoundBtn, `处理发起失败:${err.message || resp.status}`);
       // 202 未受理(非 phase3/在飞):恢复按钮;done 链不会来
       processInFlight = false;
       processRoundBtn.disabled = false;
@@ -1434,7 +1458,7 @@ processRoundBtn.addEventListener('click', async () => {
     }
     // 202 受理:保持处理中禁用态直至 SSE done(refreshRoundsAfterStream 收尾)
   } catch {
-    renderEvent({ kind: 'error', content: '处理请求失败(网络)', raw: null });
+    showInlineError(processRoundBtn, '处理请求失败(网络)');
     processInFlight = false;
     processRoundBtn.disabled = false;
     processRoundBtn.textContent = originalText;
@@ -1471,17 +1495,14 @@ divergenceBtn.addEventListener('click', async () => {
     raw: null,
   });
   try {
+    clearInlineError();
     const resp = await fetch('/api/divergence', { method: 'POST' });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      renderEvent({
-        kind: 'error',
-        content: `发散发起失败:${err.message || resp.status}`,
-        raw: null,
-      });
+      showInlineError(divergenceBtn, `发散发起失败:${err.message || resp.status}`);
     }
   } catch {
-    renderEvent({ kind: 'error', content: '发散发起失败(网络)', raw: null });
+    showInlineError(divergenceBtn, '发散发起失败(网络)');
   } finally {
     // 解禁在收到终止事件时进行(done/error 后);两拍防连点
     setTimeout(() => { divergenceBtn.disabled = false; }, 1500);
@@ -1498,14 +1519,11 @@ approveDraftBtn.addEventListener('click', async () => {
   if (approveDraftBtn.disabled) return;
   approveDraftBtn.disabled = true;
   try {
+    clearInlineError();
     const resp = await fetch('/api/g1', { method: 'POST' });
     const data = await resp.json().catch(() => ({}));
     if (!resp.ok) {
-      renderEvent({
-        kind: 'error',
-        content: `定稿失败:${data.message || resp.status}`,
-        raw: null,
-      });
+      showInlineError(approveDraftBtn, `定稿失败:${data.message || resp.status}`);
       // 已定稿(409 幂等防)以外的失败:按钮恢复,让用户处理后再点
       approveDraftBtn.disabled = data.message && data.message.includes('已定稿');
       return;
@@ -1518,7 +1536,7 @@ approveDraftBtn.addEventListener('click', async () => {
     // 定稿成功:重进(POST /api/enter)刷新状态,切到轮次视图
     await enterProject(currentProject);
   } catch {
-    renderEvent({ kind: 'error', content: '定稿请求失败(网络)', raw: null });
+    showInlineError(approveDraftBtn, '定稿请求失败(网络)');
     approveDraftBtn.disabled = false;
   }
 });

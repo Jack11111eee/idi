@@ -38,6 +38,9 @@ html, body {
 
 .hint { color: #999; font-size: 13px; }
 
+/* 失败内联提示(UI-1.4):落在发起控件正下方,与 .hint 同阶、同间距 */
+.inline-error { color: #c0392b; font-size: 13px; margin: 6px 0 0; }
+
 /* 面板与折叠态 */
 .panel-header {
   display: flex;

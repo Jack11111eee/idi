@@ -15,6 +15,7 @@ const enterForm = document.getElementById('enter-form');
 const enterPathInput = document.getElementById('enter-path-input');
 const enterBtn = document.getElementById('btn-enter');
 const stateBadge = document.getElementById('state-badge');
+const streamBanner = document.getElementById('stream-banner');
 const draftView = document.getElementById('draft-view');
 const draftContent = document.getElementById('draft-content');
 const draftEmpty = document.getElementById('draft-empty');
@@ -133,6 +134,17 @@ function stripUnsafeNodes(root) {
 // SSE 订阅:事件 → 会话气泡 / 工作面板 / 权限弹窗
 // ---------------------------------------------------------------------------
 
+// SSE 断流横幅(UI-6.2:断流与空闲必须可区分)——文案全部为代码内字面量
+function showStreamBanner(text, fatal) {
+  streamBanner.textContent = text;
+  streamBanner.classList.toggle('fatal', fatal);
+  streamBanner.classList.remove('hidden');
+}
+
+function hideStreamBanner() {
+  streamBanner.classList.add('hidden');
+}
+
 function initEventSource() {
   const source = new EventSource('/api/events');
   source.onmessage = (msg) => {
@@ -144,6 +156,18 @@ function initEventSource() {
       return;
     }
     dispatchEvent_(event);
+  };
+  // 连接恢复:横幅消失
+  source.onopen = () => {
+    hideStreamBanner();
+  };
+  // 断流:EventSource 自行重连,不手动重建;按 readyState 区分瞬时/致命
+  source.onerror = () => {
+    if (source.readyState === EventSource.CONNECTING) {
+      showStreamBanner('事件流已断开,正在自动重连……', false);
+    } else {
+      showStreamBanner('事件流已断开且无法自动恢复,请刷新页面。', true);
+    }
   };
 }
 

@@ -206,6 +206,23 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   z-index: 10;
 }
 
+/* SSE 断流横幅(UI-6.2:琥珀=重连中,红色致命态见下;z-index 高于状态徽标防遮挡) */
+#stream-banner {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: #fff3c4;
+  color: #8a6508;
+  border: 1px solid #e8d9a8;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 20;
+}
+#stream-banner.fatal { background: #fdecea; color: #c0392b; border-color: #e8b4ae; }
+
 /* 文档区子视图切换 */
 #draft-view h2, #rounds-placeholder h2 {
   margin-top: 0;

@@ -449,6 +449,7 @@ function applyPhase3Extras(data) {
 
 // phase4:撰写视图(按钮文案二态纯消费 snapshot.writing_tmp_exists,D-P3-10 字面)
 function applyWritingView(data) {
+  clearInlineError();
   roundsHint.classList.add('hidden');
   roundTitle.textContent = '撰写总设计文档';
   roundSwitcher.classList.add('hidden');
@@ -809,6 +810,7 @@ async function refreshChecksAfterStream() {
 
 // mission_complete:只读归档视图(D-P3-25;呈现 = 推导态,零归档标志)
 function applyArchiveView(data) {
+  clearInlineError();
   roundsPlaceholder.classList.add('archive-mode');
   roundsHint.classList.add('hidden');
   roundTitle.textContent = '总设计文档(只读归档)';
@@ -1238,6 +1240,7 @@ messageInput.addEventListener('keydown', (e) => {
 roundSwitcher.addEventListener('change', () => {
   const n = parseInt(roundSwitcher.value, 10);
   if (!Number.isFinite(n)) return;
+  clearInlineError();
   if (currentState === 'mission_complete') {
     loadArchiveRoundDoc(n); // 归档态:切历史轮只读浏览(D-P3-25)
     return;

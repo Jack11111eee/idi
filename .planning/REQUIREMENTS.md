@@ -67,8 +67,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### REG — 回归防护与继承缺陷
 
-- [ ] **REG-01**: 修正 `style.css` 中 `.hidden` 注释的**错误理由**——现称 `.overlay` / `.doc-subview` 为 0-1-0 竞争者;实际 `.doc-subview` 根本没有 `display` 声明,而决定性的三个竞争者 `#selection-menu` / `#annotations-panel` / `#checks-panel` 均为 **1-0-0**(ID 特异性,无论源码顺序都压过 `.hidden`)全部未被提及。`!important` 的结论正确,理由在两个方向上都不对
-- [ ] **REG-02**: `showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列。**锚点改为 `#probe-controls` 本身**(块级流容器,错误落在整行下方全宽),不给 flex 行打 CSS 补丁。顺带:视图切换时未调 `clearInlineError()`(陈旧错误残留在屏上)。其余四个调用点位于块级流容器,无此问题。**已裁定排除**:`inlineErrorEl` 单例"两个并发错误只显示一个"**不是缺陷**——单错误显示是既定的"下次动作即清除"设计,不修
+- [x] **REG-01**: 修正 `style.css` 中 `.hidden` 注释的**错误理由**——现称 `.overlay` / `.doc-subview` 为 0-1-0 竞争者;实际 `.doc-subview` 根本没有 `display` 声明,而决定性的三个竞争者 `#selection-menu` / `#annotations-panel` / `#checks-panel` 均为 **1-0-0**(ID 特异性,无论源码顺序都压过 `.hidden`)全部未被提及。`!important` 的结论正确,理由在两个方向上都不对 —— ✅ **已完成于 quick `260917-fqh`(`fac268d`)**
+- [x] **REG-02**: `showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列。**锚点改为 `#probe-controls` 本身**(块级流容器,错误落在整行下方全宽),不给 flex 行打 CSS 补丁。顺带:视图切换时未调 `clearInlineError()`(陈旧错误残留在屏上)。其余四个调用点位于块级流容器,无此问题。**已裁定排除**:`inlineErrorEl` 单例"两个并发错误只显示一个"**不是缺陷**——单错误显示是既定的"下次动作即清除"设计,不修 —— ✅ **已完成于 quick `260917-fqh`(`46e8ea3` + `793071e`);UAT 12/12,错误宽度 388px = 探针行宽度(100%)**
 - [ ] **REG-03**: `b9664e0` 五条修复的**全部人工验收项重跑**——这五条无任何自动化覆盖,一个重写其 CSS 的里程碑若不重跑,就没有"未破坏它们"的证据。含 `node --check app.js`、pytest 219 基线不变、以及在归档切换器**切轮之后**确认「处理本轮批注」不可点(走 `updateFrozenPresentation` 复位路径)
 
 ## v2 Requirements
@@ -153,18 +153,19 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| REG-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| REG-02 | Phase 8: 可访问性语义与键盘 | Pending |
+| REG-01 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
+| REG-02 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
 | REG-03 | Phase 8: 可访问性语义与键盘 | Pending |
 
 **Coverage:**
 - v1 requirements: 38 total
-- Mapped to phases: 38
+- Mapped to phases: 36
+- 已完成(路线图之前由 quick 收口): 2 — REG-01 / REG-02
 - Unmapped: 0 ✓
 
-**分类计数:** TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3
+**分类计数:** TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3(其中 REG-01/02 已完成)
 
-**按阶段计数:** Phase 4 = 15 / Phase 5 = 8 / Phase 6 = 5 / Phase 7 = 3 / Phase 8 = 7
+**按阶段计数:** Phase 4 = 14 / Phase 5 = 8 / Phase 6 = 5 / Phase 7 = 3 / Phase 8 = 6
 
 **人工验收项(本环境无法自动化,不得因自动测试 FAIL 判定功能缺陷):**
 - **A11Y-08** — tab 序到达每一个交互控件;键盘划词路径可用
@@ -173,4 +174,4 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ---
 *Requirements defined: 2026-09-17*
-*Last updated: 2026-09-17 after roadmap creation(v1.14 里程碑,Phases 4-8,38/38 映射)——追加 A11Y-04b(opacity 合成失败,含两处整篇文档灰化)*
+*Last updated: 2026-09-17 after quick 260917-fqh 收口 REG-01/REG-02(路线图前置完成 2 条,余 36 条映射 Phase 4-8)*

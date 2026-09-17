@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.13 交互式讨论迭代系统 MVP** — Phases 1-3 (shipped 2026-09-13) — 详见 `milestones/v1.13-ROADMAP.md`
-- 🚧 **v1.14 前端视觉与可访问性** — Phases 4-8 (in progress) — 38 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3)
+- 🚧 **v1.14 前端视觉与可访问性** — Phases 4-8 (in progress) — 38 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3),其中 **REG-01/REG-02 已于 2026-09-17 由 quick `260917-fqh` 前置收口**,余 36 条映射至 Phases 4-8
 
 ## Phases
 
@@ -58,7 +58,7 @@
 ### Phase 4: 设计契约、令牌层与契约校验
 **Goal**: `style.css` 拥有一份书面设计契约与单一令牌来源;全部字面量被替换为 `var()`,令牌块之外零裸 `#hex`;四条契约校验命令可独立运行;AA 达标值在**声明处**即选定。
 **Depends on**: Nothing (v1.14 首个阶段;v1.13 三阶段已 shipped)
-**Requirements**: TOKEN-01, TOKEN-02, TOKEN-03, TOKEN-04, TOKEN-05, TOKEN-06, TOKEN-07, TOKEN-08, CHECK-01, CHECK-02, CHECK-03, CHECK-04, REG-01, A11Y-04, A11Y-04b
+**Requirements**: TOKEN-01, TOKEN-02, TOKEN-03, TOKEN-04, TOKEN-05, TOKEN-06, TOKEN-07, TOKEN-08, CHECK-01, CHECK-02, CHECK-03, CHECK-04, A11Y-04, A11Y-04b
 
 **Rationale**: 硬前置——后续四个阶段全部消费它,且它是唯一一个成功判据是**纯重构**的阶段(除刻意修复的对比度外零视觉变化),因而是发现"迁移方法本身错了"最便宜的地方。它必须最先落地:后续每一个修复(对比度、层级、焦点)都是令牌**值**的改动,在存在两个事实源时无法验证。
 
@@ -69,7 +69,7 @@
 - 令牌块之外的 `style.css` 含**零**裸 hex;`--z-*` 序关系在块内注释中显式断言(badge 10 < banner 20 < overlay 100 < selection-menu 200)。
 - **AA 达标值在此选定**(`.hint` 用最浅的通过值而非"安全的"深灰;`opacity` 文字弱化改为颜色令牌,含 `#round-doc.round-frozen` 0.55 与归档态 0.75 两处整篇文档灰化——冻结灰化与 AA 的冲突须在此裁定)。这同时交付 A11Y-04 / A11Y-04b。
 - CHECK-01/02/03/04 四条零依赖命令。
-- REG-01:修正 `.hidden` 注释的**错误理由**(现称 `.overlay`/`.doc-subview` 为 0-1-0 竞争者;`.doc-subview` 根本没有 `display` 声明,而决定性的三个 ID 特异性竞争者全部未被提及)。`!important` 的结论正确,理由在两个方向上都不对。
+- ✅ **REG-01 已完成**(quick `260917-fqh`,`fac268d`):`.hidden` 注释的**错误理由**已修正——原注释称 `.overlay`/`.doc-subview` 为 0-1-0 竞争者;`.doc-subview` 根本没有 `display` 声明,而决定性的三个 ID 特异性竞争者(`#selection-menu`/`#annotations-panel`/`#checks-panel`,均 1-0-0)全部未被提及。`!important` 的结论正确,理由在两个方向上都不对。**本相位仍须以 CHECK-03/04 守住 `.hidden` 唯一性与 `!important` 声明数=1**(该规则是 5 路单点故障)。
 
 **Success Criteria** (what must be TRUE):
 1. `style.css` 顶部存在单一 `:root` 令牌块,块外零裸 `#hex`——CHECK-01 一条命令即可证明,而非靠人读文件。
@@ -200,9 +200,9 @@
 ### Phase 8: 可访问性语义与键盘
 **Goal**: 键盘用户能真实完成一次划词批注,能 Esc 关闭两个阻塞式弹窗;两个阻塞弹窗向辅助技术宣告的语义与其实现一致;内联错误不再破坏控件行;五条已交付修复的人工验收项全部重跑通过。
 **Depends on**: Phase 7
-**Requirements**: A11Y-02, A11Y-03, A11Y-05, A11Y-06, A11Y-08, REG-02, REG-03
+**Requirements**: A11Y-02, A11Y-03, A11Y-05, A11Y-06, A11Y-08, REG-03
 
-**Rationale**: **唯一触碰 `app.js` / `index.html` 的阶段,因而放在最后。** `app.js:4-75` 有约 70 个顶层 `getElementById` 句柄,任何 HTML 编辑删除或改名一个 id 都会在解析期静默杀死其下全部处理器(已记录的 G-idi01-8 失效形态)。**全部 HTML/JS 风险集中于此。** 按代码 diff 面积它是**最小**的阶段——1 个 `tabindex` 属性、2 个弹窗 × 2 个属性、约 8 行焦点交接、约 10 行 Escape 处理、以及 REG-02 的结构修复——但**每一个改动都可能致命**,必须按这个分量对待。
+**Rationale**: **唯一触碰 `app.js` / `index.html` 的阶段,因而放在最后。** `app.js:4-75` 有约 70 个顶层 `getElementById` 句柄,任何 HTML 编辑删除或改名一个 id 都会在解析期静默杀死其下全部处理器(已记录的 G-idi01-8 失效形态)。**全部 HTML/JS 风险集中于此。** 按代码 diff 面积它是**最小**的阶段——1 个 `tabindex` 属性、2 个弹窗 × 2 个属性、约 8 行焦点交接、约 10 行 Escape 处理——但**每一个改动都可能致命**,必须按这个分量对待。
 
 **关键框定(不是"加属性"):**
 - `#round-doc` 的 `tabindex="0"` 是让 `b9664e0` 已交付的 `keyup` 监听器(`app.js:1327`)**第一次真正执行**的东西。`#round-doc` 是普通 `<div>`,其子元素不可聚焦,焦点永不进入该子树——**键盘划词路径今天仍是鼠标专属**,不得把这个"已交付修复"报告为已生效。
@@ -213,7 +213,7 @@
 - `#round-doc` 加 `tabindex="0"` —— 与已存在的 `:focus-visible` 规则**同一次提交**(不得在焦点样式缺席的提交里落地);环落在 `#doc-pane` 或采用内嵌处理(`#round-doc` 有数千像素高,整体环只露出上下边缘)。
 - 键盘划词路径的焦点交接:`handleSelectionTrigger` 的键盘分支把焦点移入 `#selection-menu` 首个按钮;Escape 关闭并把焦点交还 `#round-doc`。
 - 两个阻塞式弹窗(G3 确认、授权)支持 **Escape 关闭**(G3 确认弹窗按设计是默认拒绝,按不了 Escape 的键盘用户会被卡住),并加 `role="dialog"` + `aria-modal="true"`。**范围锁死为这两个弹窗**——其余 2-3 个非阻塞弹窗的 `role` 与焦点陷阱是 Out of Scope。
-- REG-02:`showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列(它之所以通过了 grep gate 和人工检查,是因为它**字面上确实**紧邻按钮)。顺带两处:视图切换时未调 `clearInlineError()`(陈旧错误残留)、`inlineErrorEl` 单例会丢弃两个并发错误中的一个。**优先结构性修复,而非 CSS 补丁**;其余四个调用点位于块级流容器,无此问题。
+- ✅ **REG-02 已完成**(quick `260917-fqh`,`46e8ea3` + `793071e`):`showInlineError(processRoundBtn, …)` 的**结构性修复**已落地——锚点改为 `#probe-controls`(块级流容器,错误落在整行下方全宽;UAT 实测宽度 388px = 探针行宽度 100%),未给 flex 行打 CSS 补丁;三条视图切换路径(轮次切换 / 归档视图 / 撰写视图)已补 `clearInlineError()`。**本相位仍须守住两条回归门**:`grep -c 'inline-error' frontend/style.css` 仍为 1、`clearInlineError` 调用点计数只增不减。**已裁定排除**:`inlineErrorEl` 单例"两个并发错误只显示一个"不是缺陷。
 - REG-03:**`b9664e0` 五条修复的全部人工验收项重跑**——本阶段的收口 gate,不是事后补记。
 
 **Success Criteria** (what must be TRUE):

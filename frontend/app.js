@@ -45,6 +45,7 @@ const annotationsPanel = document.getElementById('annotations-panel');
 const pendingCount = document.getElementById('pending-count');
 const annotationList = document.getElementById('annotation-list');
 const processRoundBtn = document.getElementById('btn-process-round');
+const probeControls = document.getElementById('probe-controls');
 
 // 划词小菜单句柄(D-P2-1)
 const selectionMenu = document.getElementById('selection-menu');
@@ -1449,7 +1450,7 @@ processRoundBtn.addEventListener('click', async () => {
     const resp = await fetch('/api/rounds/process', { method: 'POST' });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      showInlineError(processRoundBtn, `处理发起失败:${err.message || resp.status}`);
+      showInlineError(probeControls, `处理发起失败:${err.message || resp.status}`);
       // 202 未受理(非 phase3/在飞):恢复按钮;done 链不会来
       processInFlight = false;
       processRoundBtn.disabled = false;
@@ -1458,7 +1459,7 @@ processRoundBtn.addEventListener('click', async () => {
     }
     // 202 受理:保持处理中禁用态直至 SSE done(refreshRoundsAfterStream 收尾)
   } catch {
-    showInlineError(processRoundBtn, '处理请求失败(网络)');
+    showInlineError(probeControls, '处理请求失败(网络)');
     processInFlight = false;
     processRoundBtn.disabled = false;
     processRoundBtn.textContent = originalText;

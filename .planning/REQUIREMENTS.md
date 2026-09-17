@@ -68,7 +68,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 ### REG — 回归防护与继承缺陷
 
 - [ ] **REG-01**: 修正 `style.css` 中 `.hidden` 注释的**错误理由**——现称 `.overlay` / `.doc-subview` 为 0-1-0 竞争者;实际 `.doc-subview` 根本没有 `display` 声明,而决定性的三个竞争者 `#selection-menu` / `#annotations-panel` / `#checks-panel` 均为 **1-0-0**(ID 特异性,无论源码顺序都压过 `.hidden`)全部未被提及。`!important` 的结论正确,理由在两个方向上都不对
-- [ ] **REG-02**: `showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列。顺带:视图切换时未调 `clearInlineError()`(陈旧错误残留)、`inlineErrorEl` 单例会丢弃两个并发错误中的一个。其余四个调用点位于块级流容器,无此问题
+- [ ] **REG-02**: `showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列。**锚点改为 `#probe-controls` 本身**(块级流容器,错误落在整行下方全宽),不给 flex 行打 CSS 补丁。顺带:视图切换时未调 `clearInlineError()`(陈旧错误残留在屏上)。其余四个调用点位于块级流容器,无此问题。**已裁定排除**:`inlineErrorEl` 单例"两个并发错误只显示一个"**不是缺陷**——单错误显示是既定的"下次动作即清除"设计,不修
 - [ ] **REG-03**: `b9664e0` 五条修复的**全部人工验收项重跑**——这五条无任何自动化覆盖,一个重写其 CSS 的里程碑若不重跑,就没有"未破坏它们"的证据。含 `node --check app.js`、pytest 219 基线不变、以及在归档切换器**切轮之后**确认「处理本轮批注」不可点(走 `updateFrozenPresentation` 复位路径)
 
 ## v2 Requirements

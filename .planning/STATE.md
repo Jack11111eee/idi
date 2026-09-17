@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 Phase: 4 of 8 (设计契约、令牌层与契约校验) — v1.14 第 1/5 阶段
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-09-17 — 路线图创建完成(Phases 4-8,38/38 需求映射)
+Last activity: 2026-09-17 — 完成 quick 260917-fqh:修复 b9664e0 自身引入的两条缺陷(REG-01/REG-02)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -118,6 +118,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260916-t8g | 修复 UI 审计报告 5 条功能性 BLOCKER(.hidden 全局规则 / SSE 断流可见化 / 归档只读态加固 / 键盘划词路径 / 错误内联) | 2026-09-16 | 0912429 | [260916-t8g-ui-5-blocker-hidden-sse-onerror](./quick/260916-t8g-ui-5-blocker-hidden-sse-onerror/) |
+| 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
 
 ## Deferred Items
 

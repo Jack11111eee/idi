@@ -10,8 +10,10 @@ html, body {
   color: #1a1a1a;
 }
 
-/* 唯一全局显隐规则:!important 必需——.overlay/.doc-subview 等自身 display 特异性
-   同为 0-1-0 且声明在后,去掉 !important 会让这些容器重新无法隐藏。 */
+/* 唯一全局显隐规则:!important 必需——#selection-menu / #annotations-panel /
+   #checks-panel 以 ID 特异性(1-0-0)声明 display: flex,压过 .hidden(0-1-0),
+   与声明先后无关;.overlay(0-1-0)是较弱的竞争者,仅因声明在本规则之后才被覆盖。
+   去掉 !important 会让上述容器重新无法隐藏。 */
 .hidden { display: none !important; }
 
 #app {

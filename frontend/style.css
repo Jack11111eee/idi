@@ -650,10 +650,14 @@ button.primary {
   border-radius: var(--radius-sm);
 }
 
-/* 冻结轮只读灰化(D-P2-21:轮 < 当前轮的呈现服务端 409 是防线) */
+/* 冻结轮只读信号(D-P2-21:轮 < 当前轮的呈现服务端 409 是防线)。
+   只读 = 去饱和(不动亮度,因而正文对比度不受影响)+ 左侧 3px 琥珀 inset 竖线。
+   原来的不透明度乘数已删除:它合成整棵子树(含 Phase 7 的焦点环),
+   使正文降到 3.84:1、焦点环降到 2.85:1;删除后正文回到 16.67:1、环回到 5.62:1。
+   box-shadow 不参与布局 ⇒ 零位移,纯重构判据成立(绝不用 border-left —— 它会加 3px 宽度)。 */
 #round-doc.round-frozen {
-  opacity: 0.55;
   filter: saturate(0.6);
+  box-shadow: inset 3px 0 0 var(--color-action-warning);
 }
 
 /* =========================================================================
@@ -783,3 +787,9 @@ button.primary {
 .annotation-answered .annotation-note,
 .annotation-answered .annotation-quote,
 .annotation-answered .annotation-answer summary { color: var(--color-text-muted); }
+
+/* 控件前景色(N-4 / D-19,追加在文件末尾):今天每个按钮与输入框的前景色来自 UA
+   (buttontext / fieldtext),那是令牌块之外的第二个事实源。
+   元素选择器特异性 0-0-1,所以 button.danger(0-1-1)、#btn-*(1-0-0)、
+   .overlay-card button(0-1-1)全部仍然取胜。视觉 delta 不可感知。 */
+button, input, select { color: var(--color-text); }

@@ -851,6 +851,7 @@ button.primary {
    绝不插入、绝不重排(Global Hard Rule 3)。 */
 .annotation-answered .annotation-note,
 .annotation-answered .annotation-quote,
+.annotation-answered .annotation-answer-body,
 .annotation-answered .annotation-answer summary { color: var(--color-text-muted); }
 
 /* 控件前景色(N-4 / D-19,追加在文件末尾):今天每个按钮与输入框的前景色来自 UA

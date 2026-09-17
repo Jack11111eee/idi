@@ -1,83 +1,138 @@
 # Requirements: 交互式讨论迭代系统
 
-**Defined:** 2026-09-09
-**Core Value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点。
-**权威来源:** DESIGN.md v1.13(项目根)。以下每条 REQ 均标注 DESIGN.md 章节,冲突时以 DESIGN.md 为准。
+**Defined:** 2026-09-17
+**Core Value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤——总设计文档通过自检、界面提示「使命完成」即为终点(只读归档态)。
 
 ## v1 Requirements
 
-### 流程支撑(FLOW)
+v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显式延后项**(`.planning/milestones/v1.13-phases/idi-03-g3/03-UI-REVIEW.md`,13/24,7 BLOCKER)——延后理由一致:修法本身就是设计决策,必须先定契约再落地。5 条功能性 BLOCKER 已于 2026-09-16 修复并合入 main(`b9664e0`),不在本清单内(但见 REG 类)。
 
-- [x] **FLOW-01**: 用户可选择或输入项目目录进入单界面,所选目录的流程状态由磁盘现状按 §7.4 推导表(8 行、自上而下首条命中)得出 — §7.1
-- [x] **FLOW-02**: 阶段 1-2 为一段连续会话,产出 `docs/transcript.md`(逐条追加式转录,`[user]`/`[ai]` 起始行文法)与 `docs/draft.md` 草稿;重启后由 transcript 恢复 — §6.1, §4.2
-- [x] **FLOW-03**: G1:草稿区末尾常驻「认可雏形」按钮,点击后**后端**将 draft.md 定稿为 `discuss-round-1.md` 并追加合规的 `> 申请授权:否` 标记行 — §4.4, §6.4
-- [x] **FLOW-04**: G2:用户点「处理本轮批注」后,AI 批量回应全部批注、产出 `discuss-round-(N+1).md`;上轮文档与 annotations 冻结只读 — §3.5, §4.4
-- [x] **FLOW-05**: G3:「授权撰写总设计文档」按钮点亮条件 = 四处机械校验全过(annotations 无 pending + 未决清单清零 + 维度表全绿 + 授权申请标记为「是」);点击后确认框输入「确认授权」;默认拒绝;拒绝 = 一条普通批注 — §4.4, §8.1
-- [x] **FLOW-06**: 发散模式:新建项目时选「没想法」进入;内置发散指令模板(多视角风暴→3~5 个候选方向→用户挑选或委托 AI 挑选);产物 `docs/brainstorm.md` 可反复覆盖不编号;雏形存在后发散模式关闭 — §3.7
-- [x] **FLOW-07**: §6.4 机器可解析文法的全部机械校验(维度表/未决清单/授权标记/批注回应表/PASS 结论行/裁决追加/完整轮判据)由工具实现,AI 生成模板逐字遵守 — §6.4, §7.3
+研究输入:`.planning/research/SUMMARY.md` 及四份分项研究。**基线数字一律取 SUMMARY.md 的"Baseline Reconciliation"表**(审计报告里的计数是 `b9664e0` 之前的旧值)。
 
-### 划词批注(UI)
+### TOKEN — 设计令牌体系
 
-- [x] **UI-01**: 划词弹出小菜单:「批注」或「用大白话讲这段」;批注与被选原文绑定(quote + before 前 40 字辅助定位),已解决批注变灰不删除 — §4.2, §6.2
-- [x] **UI-02**: 大白话问答走轻量无头调用(仅携带当前文档与划选原文,秒级响应),即时答落盘为 type=plain、样式灰色斜体、不计入未决清单 — §3.4, §6.2
-- [x] **UI-03**: 单一界面走完五阶段(文档区左/主 + 侧栏右:批注流 + AI 工作面板可折叠);阶段 1-2 显示草稿与会话流,进入轮次后切换为轮次文档 + 批注流 — §3.2, §4.1, §4.2
-- [x] **UI-04**: 每轮侧栏显示"本轮批注未处理数";文档区高亮 = 有批注 — §4.2
+- [ ] **TOKEN-01**: `style.css` 顶部含**单一** `:root` 令牌块,用原生 CSS 自定义属性;零构建步骤、零新增依赖
+- [ ] **TOKEN-02**: 令牌为**单层语义命名**(非 primitive→semantic 双层),目标 18–24 个
+- [ ] **TOKEN-03**: 先产出**含义清单**(每个颜色名对应哪一语义),再据此把四套竞争强调色收敛为主色 / 危险 / 中性三族
+- [ ] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
+- [ ] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
+- [ ] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
+- [ ] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200
+- [ ] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
 
-### AI 集成(AI)
+### VISUAL — 视觉层级
 
-- [x] **AI-01**: 无状态文件驱动:每次任务 = 一次全新无头调用,启动时自磁盘读取 docs/ 全部文档与批注,产出写回磁盘;失败重跑同一条任务可复现 — §5.1
-- [x] **AI-02**: 事件直播:无头调用的事件流(每句话、每次读写)由后端原样转发到浏览器渲染进工作面板;「中止」按钮随时杀掉当前调用 — §5.2, §5.5
-- [x] **AI-03**: 实现路线双轨:Claude Agent SDK 首选,子进程 `claude -p --output-format stream-json` 兜底,两路线界面契约完全一致可替换 — §5.3, §9
-- [x] **AI-04**: 权限门完整矩阵落地:按 §5.4 表(自上而下首条命中)处置读/写/执行;DESIGN.md 直写一律拒绝、AUTHORIZATION.md 仅后端在确认词通过瞬间写入、AI 写 tmp 合法 — §5.4
-- [x] **AI-05**: 启动自检 claude CLI(已装 + 已登录),不满足给出指引,只挡第一次 — §7.1
+- [ ] **VISUAL-01**: `#btn-authorize` 采用**不可逆动作**的独立视觉处理(实心填充,而非六个按钮共享的淡色底 `#e9f7ef`/`#2e8b57`),配一个保留令牌(如 `--color-irreversible-*`)
+- [ ] **VISUAL-02**: `#btn-approve-draft`(G1,同样不可逆)与 `#btn-start-writing` 为第二档;例行按钮(`#btn-process-round` / `#btn-continue-check` / `#btn-continue-repair`)保持中性
+- [ ] **VISUAL-03**: 页面级层级——`<h1>文档区</h1>` 降级为视觉标签,不再以 UA 默认约 32px 粗体成为全屏最大最重的文字
+- [ ] **VISUAL-04**: 侧栏四个面板(`会话流`/`本轮批注流`/`自检报告`/`AI 工作面板`)的活动/非活动态可区分
+- [ ] **VISUAL-05**: CSS `content` 里写死的两个 emoji(`📌` 批注引用、`📍` 裁决位置)替换为**内联 SVG**(定义一次、引用),不引入图标库 / 图标字体 / 任何第三方包
 
-### 数据与状态(DATA)
+### TYPE — 排版系统
 
-- [x] **DATA-01**: 目录结构按 §6.1 落盘(DESIGN.md 项目根 / AUTHORIZATION.md / docs/ 全套);annotations.json 字段按 §6.2(含字段写回职责:后端创建条目、批量处理完成后由后端解析回应表回写 answer 与 status,AI 不直接改写 annotations) — §6.1, §6.2, §6.3
-- [x] **DATA-02**: 崩溃自愈:半成品判据(轮次文档末行非合规授权标记即视为不存在)、`DESIGN.md.tmp` 原子改名落盘、check-N 半份重跑覆盖;「继续撰写」/「继续自检」/「继续修复」按钮按 §7.3② 与 §6.4 判定式出现 — §7.3, §6.4
-- [x] **DATA-03**: 完成态:最新 check 末行以 `> 核查结论:PASS` 开头 → 「使命完成」提示 + 只读归档态(划词批注、处理本轮批注、授权按钮均不可用) — §7.4, §8.2
-- [x] **DATA-04**: 自检档位宽松/严格:宽松=一次核查+修复+追加 PASS 即止;严格=循环至零问题轮 PASS,纯 P2 轮走 D-22 残余裁决制(待裁决/裁决行落盘配对、裁决待续跑态判定) — §8.2, §6.4
+- [ ] **TYPE-01**: `.markdown-body h1/h2/h3` 获得**显式** `font-size`,且**作用域限定在 `.markdown-body` 内**——不得写成全局 `h1,h2,h3` 规则(会与四处 chrome 覆盖碰撞:`.panel-header h2` 14px、`#draft-view h2` 15px、`#brainstorm-view h2` 14px、`.overlay-card h3` 16px)
+- [ ] **TYPE-02**: markdown 内容排版一致:`table th/td`(现 13px vs 正文 14px)、`code`(现 12.5px 分数值)、`blockquote`(现 `#666`)归入刻度与令牌
+- [ ] **TYPE-03**: 字重层级(基线:仅 600 / 400 两档)
+
+### A11Y — 可访问性
+
+- [ ] **A11Y-01**: 全站 `:focus-visible` 样式,覆盖 21 个按钮 / 8 个输入框 / 4 个下拉(基线:`:focus` 与 `outline` 规则均为 0)
+- [ ] **A11Y-02**: `#round-doc` 加 `tabindex="0"`,且 `tabindex` 与 `:focus` 样式落在**同一个提交**(只加 `tabindex` 会造出"可聚焦但焦点不可见"的元素,是拿一个 a11y 问题换另一个)
+- [ ] **A11Y-03**: 键盘用户能真实到达划词批注——`b9664e0` 装好的 `keyup` 监听器在 `tabindex` 落地后真正生效(基线:`tabindex` 计数 0,焦点永不进入该子树,监听器是死代码)
+- [ ] **A11Y-04**: 4 处 WCAG AA 文本对比度失败全部修复:`.hint` `#999`/`#fafafa` **2.73:1**、`#pending-count`/`.badge-pending` `#b8860b`/`#fdf6ec` **3.03:1**、`.event-kind` 白字/`#b8860b` **3.25:1**、`.chat-user` 白字/`#2c7be5` **4.14:1**。`.hint` 为最高价值项(全站每处闸门说明都用它)
+- [ ] **A11Y-05**: 两个阻塞式弹窗(G3 确认、授权)支持 **Escape 关闭**——G3 确认弹窗按设计是默认拒绝,按不了 Escape 的键盘用户会被卡住
+- [ ] **A11Y-06**: 上述两个弹窗加 `role="dialog"` + `aria-modal="true"`(两个属性、零风险)
+- [ ] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
+- [ ] **A11Y-08**: 键盘可达性人工验收——tab 序到达每一个交互控件;键盘划词路径可用。**标注为人工检查**:本环境无法自动化键盘文本选区(连 `contenteditable` 都选不中),不得因自动测试 FAIL 判定功能缺陷
+
+### LAYOUT — 布局稳健性
+
+- [ ] **LAYOUT-01**: `#state-badge { right: 448px }` 魔法数消除(改 `calc()` 或 `absolute`),与侧栏宽度决策作为**一个工作单元**处理,而非三件事
+- [ ] **LAYOUT-02**: 窄窗口不破版——≥1024px 无横向溢出,≥768px 无内容遮挡。范围是"不破版",**不是**"适配";一条 `@media` 守卫,不是断点系统
+- [ ] **LAYOUT-03**: `#state-badge` 不再遮挡滚动内容(该元素 `position: fixed` + 不透明背景,正文从其底下穿过被挡)
+- [ ] **LAYOUT-04**: 侧栏滚动容器套娃收敛(基线:420px 侧栏内最多 4 个独立滚动容器,40vh / 55vh / 32vh / 30vh)
+
+### INTERACT — 交互状态
+
+- [ ] **INTERACT-01**: `:hover` / `:active` / `:disabled` 覆盖交互控件(基线:2 / 0 / 8)
+- [ ] **INTERACT-02**: transition 限定在 `background-color` / `border-color` / `opacity`,约 120–150ms;不建动效系统。**不得软化 `:disabled`**——它是 G3 前提条件唯一的视觉信号
+
+### CHECK — 契约校验(让契约可执行,而非一次性清理)
+
+- [ ] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
+- [ ] **CHECK-02**: 对比度自动校验脚本——对所有声明的令牌配对计算 WCAG 对比度(约 15 行,零依赖)
+- [ ] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
+- [ ] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
+
+### REG — 回归防护与继承缺陷
+
+- [ ] **REG-01**: 修正 `style.css` 中 `.hidden` 注释的**错误理由**——现称 `.overlay` / `.doc-subview` 为 0-1-0 竞争者;实际 `.doc-subview` 根本没有 `display` 声明,而决定性的三个竞争者 `#selection-menu` / `#annotations-panel` / `#checks-panel` 均为 **1-0-0**(ID 特异性,无论源码顺序都压过 `.hidden`)全部未被提及。`!important` 的结论正确,理由在两个方向上都不对
+- [ ] **REG-02**: `showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列。顺带:视图切换时未调 `clearInlineError()`(陈旧错误残留)、`inlineErrorEl` 单例会丢弃两个并发错误中的一个。其余四个调用点位于块级流容器,无此问题
+- [ ] **REG-03**: `b9664e0` 五条修复的**全部人工验收项重跑**——这五条无任何自动化覆盖,一个重写其 CSS 的里程碑若不重跑,就没有"未破坏它们"的证据。含 `node --check app.js`、pytest 219 基线不变、以及在归档切换器**切轮之后**确认「处理本轮批注」不可点(走 `updateFrozenPresentation` 复位路径)
 
 ## v2 Requirements
 
-### 范围外(v2 再议)
+已确认但延后,不在本里程碑路线图中。
 
-- **V2-01**: AI 生成中途插话(双向流) — D-20 明确为非目标
-- **V2-02**: 分模块文档拆分(可选后续,不得与 DESIGN.md 冲突)— DESIGN.md 头注
+### TOKEN
+
+- **TOKEN-V2-01**: 暗色模式(`prefers-color-scheme`)——本里程碑的令牌写法需使其将来只是多一个 `@media` 块重赋现有语义名(此约束为**软约束**,用户已选择不在本次为暗色塑造令牌)
+
+### FLOW
+
+- **FLOW-V2-01**: 替换两处 `window.prompt` 调用(`app.js:486`、`app.js:1354`)——涉及批注流程(UI-01)与 G3 拒绝路径(FLOW-05 / D-P3-5)的行为变更,两者都以 `null` 判定取消,属功能工作且有 UAT 面
+- **FLOW-V2-02**: `#probe-controls` 开发脚手架的移除或重定位——见 Out of Scope 说明
+
+### A11Y
+
+- **A11Y-V2-01**: 焦点陷阱(focus trap)——含 Shift+Tab 环绕与动态内容
+- **A11Y-V2-02**: 其余 2–3 个非阻塞弹窗的 `role` / `aria-modal`
+- **A11Y-V2-03**: `aria-live` 在流式聊天区——**约束**:绝不可加在 chunk 容器上(`appendSayToChat` 每个 SSE 事件追加一个 DOM 节点,数分钟的长调用会让该区域不可用),应在**气泡**层配 `aria-busy`,或用 `role="log"`
+- **A11Y-V2-04**: `#stream-banner` 的 `aria-live="assertive"`
+- **A11Y-V2-05**: 响应式 / 移动端断点系统
 
 ## Out of Scope
 
+显式排除,记录以防范围蔓延。
+
 | Feature | Reason |
 |---------|--------|
-| 多项目并行 | DESIGN.md §1.5 明确非目标 |
-| 多人协作 | 同上 |
-| 云端部署 | D-03 单机单人本地 |
-| 批注以外的文档编辑能力 | §1.5 非目标 |
-| 直播回放(错过即错过) | D-13/§7.3 明确不做 |
-| 轮次自动推进(每轮需用户点「处理本轮批注」驱动) | §3.3 设计如此 |
-| 历史文档(本项目自身 discuss-round-0~4)回溯改造为 §6.4 文法 | §6.4 明确不回溯 |
+| 暗色模式 / `prefers-color-scheme` | **新功能**,本里程碑章程明确不含新功能;它也是唯一会迫使本项目引入 primitive 令牌层的理由;会把对比度校验面翻倍。零需求证据:单用户、短会话工具 |
+| primitive→semantic 双层令牌体系 | 第二层在需要**跨上下文重映射**(主题、品牌、白标)时才回本。本项目一个主题、一个用户。后期 1→2 层迁移很直接,反向拆解才麻烦 |
+| 组件级令牌层(`--button-primary-bg` 等) | 第三层。需要一个组件体系才回本,而这里没有组件体系——只有一份 631 行样式表和零框架 |
+| CSS 框架 / Tailwind / PostCSS / 任何构建步骤 | **违反硬约束 D-06**(原生 HTML/JS + markdown 渲染库,无框架)。CSS 自定义属性零构建正是选它的全部理由 |
+| Stylelint / lint 流水线 | 为一个无构建的 631 行样式表引入工具链与配置文件。CHECK-01/02 两个脚本给同样的保证,零依赖 |
+| 完整 ARIA / 屏幕阅读器合规(全四个弹窗的 role、`aria-describedby` 接线等) | **用户已裁定取"窄切片"。** ARIA 服务于不带上下文到达、且看不见屏幕的用户;本工具恰好一个用户,既是作者也看得见屏幕。成本真实(vanilla JS 的焦点管理易出微妙错误),收益归于**不存在的人**。保留 A11Y-05/06 两处,理由是**安全**而非无障碍 |
+| 焦点陷阱实现 | 无陷阱时从弹窗 Tab 会到背景控件——背景视觉上被遮挡,轻微困惑而非有害。写对陷阱(含 Shift+Tab 环绕与动态内容)是真实工作量 |
+| 图标库 / SVG sprite 体系 / 图标字体 | 只有两个 emoji。为两个字形引入 sprite 体系、图标字体或 vendored 图标集开销巨大;且无 CDN 约束下 vendor 库是唯一办法。VISUAL-05 用内联 SVG 单定义 |
+| 骨架屏 / spinner / 进度指示 | **新产品功能**,超出章程。且按钮已有文案切换态(`撰写中…`、`处理中…`) |
+| 动效 / 动画设计体系 | 631 行里只有 1 条 transition。INTERACT-02 的 120–150ms 背景/透明度过渡就是全部规格 |
+| Storybook / 组件画廊 | 无组件、无框架、无构建。审查面**就是**产品本身:打开应用 |
+| 重做 `#probe-controls` 的视觉 | 诱人因为它确实难看,但移除/移位是**产品行为变更**而非设计契约变更,且双路线契约是真功能(AI-03 / D-06)。用户已裁定不收进本里程碑——路线图列为独立候选条目 |
+| 移动端 / 手机宽度适配 | 审计"零 `@media`"的技术判断正确、实际无关:单用户本地桌面工具,跑在开发者自己机器上。LAYOUT-02 只承诺"窄窗口不破版" |
 
 ## Traceability
 
+由路线图创建时填充。
+
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FLOW-01 | Phase 1 | Complete |
-| FLOW-02 | Phase 1 | Complete |
-| FLOW-03 | Phase 1 | Complete |
-| FLOW-04 | Phase 2 | Complete |
-| FLOW-05 | Phase 3 | Complete |
-| FLOW-06 | Phase 1 | Complete |
-| FLOW-07 | Phase 2 | Complete |
-| UI-01 | Phase 2 | Complete |
-| UI-02 | Phase 2 | Complete |
-| UI-03 | Phase 1 | Complete |
-| UI-04 | Phase 2 | Complete |
-| AI-01 | Phase 1 | Complete |
-| AI-02 | Phase 1 | Complete |
-| AI-03 | Phase 1 | Complete |
-| AI-04 | Phase 1 | Complete |
-| AI-05 | Phase 1 | Complete |
-| DATA-01 | Phase 2 | Complete |
-| DATA-02 | Phase 3 | Complete |
-| DATA-03 | Phase 3 | Complete |
-| DATA-04 | Phase 3 | Complete |
+| TOKEN-01 … TOKEN-08 | — | Pending |
+| VISUAL-01 … VISUAL-05 | — | Pending |
+| TYPE-01 … TYPE-03 | — | Pending |
+| A11Y-01 … A11Y-08 | — | Pending |
+| LAYOUT-01 … LAYOUT-04 | — | Pending |
+| INTERACT-01 … INTERACT-02 | — | Pending |
+| CHECK-01 … CHECK-04 | — | Pending |
+| REG-01 … REG-03 | — | Pending |
+
+**Coverage:**
+- v1 requirements: 37 total
+- Mapped to phases: 0
+- Unmapped: 37 ⚠️ (待路线图创建填充)
+
+**分类计数:** TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 8 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3
+
+---
+*Requirements defined: 2026-09-17*
+*Last updated: 2026-09-17 after initial definition(v1.14 里程碑)*

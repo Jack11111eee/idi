@@ -5,7 +5,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-n=$(grep -c '^\.hidden {' frontend/style.css || true)
+# Match the selector anywhere on the line: a duplicate indented inside a future
+# @media / @layer would win the cascade just as surely as a column-0 one, and an
+# anchored-to-column-0 pattern would not see it.
+n=$(grep -cE '^[[:space:]]*\.hidden[[:space:]]*\{' frontend/style.css || true)
 
 if [ "$n" = "1" ]; then
   echo "PASS"

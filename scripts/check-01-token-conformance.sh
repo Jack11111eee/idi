@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# CHECK-01 — token conformance: zero bare #hex outside the fenced :root block.
+# CHECK-01 — token conformance: zero bare #hex AND zero tier-1 primitive
+# references outside the fenced :root block.
 # Zero-dependency (awk + grep). Read-only. PASS: prints "PASS" and exits 0.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -26,9 +27,20 @@ ends=$(grep -c '===== DESIGN TOKENS: END' frontend/style.css || true)
 outside=$(awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css)
 n=$(printf '%s\n' "$outside" | grep -o '#[0-9a-fA-F]\{3,6\}' | wc -l | tr -d ' ' || true)
 
-if [ "$n" = "0" ]; then
-  echo "PASS"
-  exit 0
+if [ "$n" != "0" ]; then
+  echo "FAIL: $n bare hex outside the token block"
+  exit 1
 fi
-echo "FAIL: $n bare hex outside the token block"
-exit 1
+
+# Hard invariant (TOKEN-02): tier-1 primitive names are private to the fence.
+# A selector reaching for one is a leak the bare-hex scan cannot see.
+prim=$(printf '%s\n' "$outside" \
+  | grep -oE 'var\(--(white|black|gray|green|blue|amber|red|purple)(-[0-9]+)?' \
+  | wc -l | tr -d ' ' || true)
+if [ "$prim" != "0" ]; then
+  echo "FAIL: $prim tier-1 primitive reference(s) outside the fence"
+  exit 1
+fi
+
+echo "PASS"
+exit 0

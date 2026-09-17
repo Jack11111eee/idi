@@ -2,12 +2,53 @@
 
 * { box-sizing: border-box; }
 
+/* ===== DESIGN TOKENS: START ===== */
+:root {
+  /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence. */
+  --white: #ffffff;
+  --black: #000000;
+  --gray-900: #1a1a1a;
+  --gray-700: #555555;
+  --gray-600: #6a6a6a; /* new — AA-safe muted grey; the reflexive "safe" greys fail on this file's grounds */
+  --gray-500: #8a8a8a; /* new — control boundary (SC 1.4.11) */
+  --gray-300: #dddddd;
+  --gray-100: #eeeeee;
+  --gray-50: #f5f5f5;
+  --gray-25: #fafafa;
+  --green-800: #1f5c3a; /* new — Phase 5 destination for --color-action-irreversible */
+  --green-700: #26754a;
+  --green-100: #e9f7ef;
+  --blue-700: #1f63bd;
+  --blue-100: #eef4ff;
+  --blue-50: #f0f7ff;
+  --amber-800: #8a6508;
+  --amber-300: #d9c58a;
+  --amber-100: #fff3c4;
+  --amber-50: #fdf6ec;
+  --amber-25: #fffdf5;
+  --red-600: #c0392b;
+  --red-200: #e8b4ae;
+  --red-50: #fdecea;
+  --purple-600: #6f42c1;
+
+  /* Tier 2 — semantic. The only names any selector outside the fence may reference. */
+  --color-text: var(--gray-900);
+  --color-text-secondary: var(--gray-700);
+  --color-text-muted: var(--gray-600);
+  --color-surface-page: var(--gray-25);
+  --color-surface-sunken: var(--gray-50);
+  --color-kind-default: var(--gray-600);
+  --color-kind-result: var(--gray-700);
+  --color-action-danger: var(--red-600);
+}
+/* ===== DESIGN TOKENS: END ===== */
+
 html, body {
   margin: 0;
   height: 100%;
   font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
-  background: #fafafa;
-  color: #1a1a1a;
+  background: var(--color-surface-page);
+  color: var(--color-text);
 }
 
 /* 唯一全局显隐规则:!important 必需——#selection-menu / #annotations-panel /
@@ -38,7 +79,7 @@ html, body {
   background: #fff;
 }
 
-.hint { color: #999; font-size: 13px; }
+.hint { color: var(--color-text-muted); font-size: 13px; }
 
 /* 失败内联提示(UI-1.4):落在发起控件正下方,与 .hint 同阶、同间距 */
 .inline-error { color: #c0392b; font-size: 13px; margin: 6px 0 0; }
@@ -127,7 +168,7 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   padding: 1px 4px;
   border-radius: 3px;
   color: #fff;
-  background: #999;
+  background: var(--color-kind-default);
 }
 
 .event-content {
@@ -143,11 +184,11 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 .kind-read .event-kind { background: #6f42c1; }    /* 读文件:紫 */
 .kind-write .event-kind { background: #2e8b57; }   /* 写文件:绿 */
 .kind-command .event-kind { background: #b8860b; } /* 执行:黄褐 */
-.kind-result .event-kind { background: #555; }     /* 结果:灰 */
+.kind-result .event-kind { background: var(--color-kind-result); }     /* 结果:灰 */
 .kind-error .event-kind { background: #c0392b; }   /* 错误:红 */
 .kind-done .event-kind { background: #000; }       /* 结束:黑 */
 
-.kind-error .event-content { color: #c0392b; }
+.kind-error .event-content { color: var(--color-action-danger); }
 
 /* claude CLI 自检浮层(只挡第一次) */
 .overlay {
@@ -169,7 +210,7 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   text-align: center;
 }
 .overlay-card h3 { margin-top: 0; font-size: 16px; }
-.overlay-card p { color: #444; font-size: 14px; line-height: 1.6; }
+.overlay-card p { color: var(--color-text-secondary); font-size: 14px; line-height: 1.6; }
 .overlay-card button {
   margin-top: 10px;
   background: #2c7be5;
@@ -232,7 +273,7 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 #draft-view h2, #rounds-placeholder h2 {
   margin-top: 0;
   font-size: 15px;
-  color: #555;
+  color: var(--color-text-secondary);
 }
 .markdown-body {
   max-width: 720px;
@@ -249,7 +290,7 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   border-left: 3px solid #ccc;
   margin: 8px 0;
   padding: 2px 12px;
-  color: #666;
+  color: var(--color-text-muted);
 }
 .markdown-body table { border-collapse: collapse; }
 .markdown-body th, .markdown-body td {
@@ -429,9 +470,9 @@ button.primary {
   font-size: 13px;
 }
 #annotations-panel .annotation-item p { margin: 4px 0; }
-.annotation-quote { color: #555; }
+.annotation-quote { color: var(--color-text-secondary); }
 .annotation-quote::before { content: '📌 '; }
-.annotation-note { color: #1a1a1a; }
+.annotation-note { color: var(--color-text); }
 .annotation-badge {
   display: inline-block;
   margin-top: 6px;
@@ -446,24 +487,26 @@ button.primary {
   border: 1px solid #e8d9a8; /* 待处理:橙 */
 }
 .badge-answered {
-  color: #999;
-  background: #f5f5f5; /* 已回应:灰 */
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken); /* 已回应:灰 */
   border: 1px solid #e0e0e0;
 }
 .annotation-pending-item { border-left: 3px solid #e8d9a8; }
 
-/* 已回应:灰化但保留条目(§4.2「变灰不删除」) */
-.annotation-answered { opacity: 0.65; }
+/* 已回应:文字转 --color-text-muted 表达弱化(§4.2「变灰不删除」)。
+   规则体见文件末尾 —— 必须用 0-2-0 后代选择器压过 .annotation-plain .annotation-note(0-2-0),
+   并靠追加在末尾的源码顺序取胜;裸 .annotation-answered(0-1-0)压不过它。
+   原不透明度乘数已删除:它把 .hint 系的 5.41:1 乘成 1.88:1(A11Y-04b)。 */
 
 /* plain 条目:灰斜体(§3.4 大白话即时答,不打断阅读) */
 .annotation-plain .annotation-note,
 .annotation-plain .annotation-answer-body {
   font-style: italic;
-  color: #999;
+  color: var(--color-text-muted);
 }
 .annotation-answer summary {
   cursor: pointer;
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 12px;
   margin-top: 4px;
 }
@@ -549,7 +592,7 @@ button.primary {
   font-size: 14px;
   text-align: center;
 }
-#confirm-error { color: #c0392b; }
+#confirm-error { color: var(--color-action-danger); }
 .overlay-card .modal-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* 档位模态两选项(纵向排列,各带一句话说明) */
@@ -610,10 +653,10 @@ button.primary {
   font-size: 13px;
 }
 .verdict-card p { margin: 3px 0; }
-.verdict-location { color: #555; }
+.verdict-location { color: var(--color-text-secondary); }
 .verdict-location::before { content: '📍 '; }
-.verdict-issue { color: #1a1a1a; }
-.verdict-suggestion { color: #666; font-style: italic; }
+.verdict-issue { color: var(--color-text); }
+.verdict-suggestion { color: var(--color-text-muted); font-style: italic; }
 .verdict-note-input {
   width: 100%;
   margin: 6px 0;
@@ -631,3 +674,10 @@ button.primary {
 
 /* 使命完成欢呼模态(一次性;会话内存标记) */
 #mission-complete-modal .overlay-card { border: 2px solid #2e8b57; }
+
+/* 已回应条目:文字弱化(A11Y-04b / D-11 的落地形态)。
+   追加在文件末尾 —— 0-2-0 后代选择器,靠源码顺序压过 .annotation-plain .annotation-note(0-2-0)。
+   绝不插入、绝不重排(Global Hard Rule 3)。 */
+.annotation-answered .annotation-note,
+.annotation-answered .annotation-quote,
+.annotation-answered .annotation-answer summary { color: var(--color-text-muted); }

@@ -142,6 +142,71 @@
   --z-banner: 20;
   --z-overlay: 100;
   --z-selection-menu: 200;
+
+  /* ---- Contrast pair manifest (CHECK-02) -----------------------------------
+     Every entry below names two tokens declared in this fence. The checker
+     scripts/check-02-contrast.py reads this manifest and fails loudly on a name
+     that is not declared here, so the manifest and the token block cannot drift
+     apart. Thresholds: TEXT 4.5:1, NON-TEXT 3:1; an optional @<alpha> suffix on
+     TEXT composites the foreground over the background before measuring. The
+     single ordering entry asserts a strict ratio ordering on one shared ground.
+     Token names only — never hex. */
+
+  /* text — the four grounds --color-text-muted actually lands on (note N-1) */
+  /* PAIR --color-text-muted ON --gray-25 TEXT */
+  /* PAIR --color-text-muted ON --white TEXT */
+  /* PAIR --color-text-muted ON --gray-50 TEXT */
+  /* PAIR --color-text-muted ON --gray-100 TEXT */
+
+  /* text — reading and structural text on their real grounds */
+  /* PAIR --color-text ON --gray-25 TEXT */
+  /* PAIR --color-text-secondary ON --gray-25 TEXT */
+  /* PAIR --color-text-secondary ON --amber-25 TEXT */
+
+  /* event-kind chips: the shared foreground on all seven chip grounds */
+  /* PAIR --color-kind-fg ON --color-kind-default TEXT */
+  /* PAIR --color-kind-fg ON --color-kind-say TEXT */
+  /* PAIR --color-kind-fg ON --color-kind-write TEXT */
+  /* PAIR --color-kind-fg ON --color-kind-command TEXT */
+  /* PAIR --color-kind-fg ON --color-kind-error TEXT */
+  /* PAIR --color-kind-fg ON --color-kind-read TEXT */
+  /* PAIR --color-kind-fg ON --color-kind-done TEXT */
+
+  /* pending badge, the six green buttons (three families, one Phase-4 value) */
+  /* PAIR --color-action-warning ON --color-surface-warning TEXT */
+  /* PAIR --color-action-routine-fg ON --color-action-routine-surface TEXT */
+  /* PAIR --color-action-commit-fg ON --color-action-commit-surface TEXT */
+  /* PAIR --color-action-irreversible-fg ON --color-action-irreversible-surface TEXT */
+
+  /* primary action, filled informational surface, informational accent text */
+  /* PAIR --color-action-primary-fg ON --color-action-primary TEXT */
+  /* PAIR --color-text-inverse ON --color-surface-info-strong TEXT */
+  /* PAIR --color-text-info ON --color-surface-info TEXT */
+
+  /* amber and danger text on the grounds they actually land on */
+  /* PAIR --color-action-warning ON --amber-25 TEXT */
+  /* PAIR --color-action-warning ON --white TEXT */
+  /* PAIR --color-action-warning ON --gray-25 TEXT */
+  /* PAIR --color-action-danger ON --white TEXT */
+  /* PAIR --color-action-danger ON --gray-25 TEXT */
+  /* PAIR --color-action-danger ON --gray-100 TEXT */
+
+  /* the two surviving whole-subtree dims — covered, and both pass (A11Y-04b) */
+  /* PAIR --black ON --white TEXT@0.8 */
+  /* PAIR --color-text ON --gray-25 TEXT@0.75 */
+
+  /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
+  /* PAIR --color-border-strong ON --white NON-TEXT */
+  /* PAIR --color-border-strong ON --gray-50 NON-TEXT */
+  /* PAIR --color-border-streaming ON --gray-50 NON-TEXT */
+  /* PAIR --color-border-success ON --white NON-TEXT */
+
+  /* the frozen-round structural marker (S-4) must clear the 3:1 floor */
+  /* PAIR --color-action-warning ON --gray-25 NON-TEXT */
+
+  /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than
+     body text on the same ground. Both operands above are TEXT pairs. */
+  /* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */
 }
 /* ===== DESIGN TOKENS: END ===== */
 

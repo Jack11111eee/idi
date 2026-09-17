@@ -5,6 +5,8 @@ status: draft
 shadcn_initialized: false
 preset: none
 created: "2026-09-17"
+revision: 1
+revised: "2026-09-17"
 ---
 
 # Phase 4 — UI Design Contract
@@ -20,6 +22,11 @@ created: "2026-09-17"
 > file is an auxiliary implementation view. Where this file and `DESIGN.md` conflict, `DESIGN.md`
 > wins. `DESIGN.md` §4.1 locks the layout regions and §4.2/§4.3/§4.4 the interaction semantics —
 > **only the VISUAL layer is in play here.**
+>
+> **Four items require explicit user sign-off before this contract is executed** — the spacing
+> scale's divergence from TOKEN-05, the type scale's divergence from TOKEN-08, the control-border
+> contrast fix, and the `#round-doc.round-frozen` ruling. They are collected in
+> `## Sign-Off Items` below, each with a one-line alternative. Everything else here is settled.
 
 ---
 
@@ -65,6 +72,14 @@ meanings (six buttons + the `写文件` event chip). The split:
 | primary | `--color-action-primary{,-fg}` | 发送 / 进入 / 同意 / 放行 / 我已装好重新检测 | flow-neutral affirmative |
 | warning | `--color-action-warning{,-surface}` | `#btn-divergence` | 提议性入口，非门 |
 | danger | `--color-action-danger{,-fg}` | 拒绝 / 中止 / `.danger` | destructive / abort |
+
+**The two green consumers that are NOT actions — named here so they cannot drift into an action
+family.** `#2e8b57` has **12** sites; the six buttons and these two account for all twelve:
+
+| Consumer | Site | Token | Why it is not an action family |
+|---|---|---|---|
+| `写文件` event chip | `style.css:144` | `--color-kind-write` | The event-kind vocabulary is **categorical**, not semantic — see the note after the meaning inventory. |
+| 使命完成 modal border | `style.css:633` | `--color-border-success` | It frames a *completed* state. It is a boundary, not a control — so it belongs to the border family, not to one of the three action families. |
 
 **Naming rationale, explicitly:** the three green families are named by **the user's obligation**,
 not by the button's label. `--color-action-commit` rather than `--color-action-gate` because
@@ -217,7 +232,9 @@ Phase 5 declares `--icon-pin` / `--icon-location` **in the same commit** that co
 ## Spacing Scale
 
 4px base, with the standard half-step band that real systems need for hairline padding and
-corner nudges. **Every step below is consumed in Phase 4** — no orphans (Pitfall 1).
+corner nudges. **Every step below is consumed in Phase 4** — no orphans (Pitfall 1). **The band
+exceeds TOKEN-05's literal seven-step list: that divergence is recorded, not denied — see
+`## Sign-Off Items` S-1 and note N-5.**
 
 | Token | Value | Usage |
 |-------|-------|-------|
@@ -230,7 +247,7 @@ corner nudges. **Every step below is consumed in Phase 4** — no orphans (Pitfa
 | `--space-3` | 12px | `.panel-body` padding-y, `#brainstorm-view` padding-y, `.modal-buttons` gap, `.round-view-header` gap, the badge / bubble / blockquote padding-x |
 | `--space-3-5` | 14px | `#brainstorm-view` padding-x, `#divergence-entry` margin-bottom |
 | `--space-4` | 16px | `.panel-header` / `.panel-body` padding-x, `#enter-form` margin-bottom, the `#btn-*` padding-x and `margin-top`, `.markdown-body h1,h2,h3` margin |
-| `--space-6` | 24px | `.overlay-card` padding-y; **Phase 6**: the `#state-badge` breathing gap |
+| `--space-6` | 24px | `.overlay-card` padding-y, `#brainstorm-view` margin-top, `.markdown-body ul, .markdown-body ol` padding-left; **Phase 6**: the `#state-badge` breathing gap |
 | `--space-8` | 32px | `#doc-pane` padding-y, `.overlay-card` padding-x |
 | `--space-10` | 40px | `#doc-pane` padding-x |
 
@@ -249,13 +266,46 @@ ledger; the largest is 4px.
 | `18px` | `--space-4` (16px) | `#btn-approve-draft` / `#authorize-row` / `#writing-view` `margin-top`; `.markdown-body h1,h2,h3` `margin-top` | −2px |
 | `18px` (padding-x) | `--space-4` (16px) | `#btn-approve-draft` / `#btn-authorize` / `#btn-start-writing` `padding-x` | −2px each side |
 | `28px` | `--space-6` (24px) | `.overlay-card` padding-y | −4px |
+| `22px` | `--space-6` (24px) | `#brainstorm-view` `margin-top`, `.markdown-body ul, ol` `padding-left` | +2px |
 
 `--space-0` is **not declared**: `0` is a reset, not a design value, and stays a literal (as does
 the `0` in `margin: 0 0 var(--space-2)`). `--space-5` (20px) and `--space-7` (28px) are not
-declared — nothing consumes them.
+declared — nothing consumes them. The `22px` row is the only snap with a tie (20 is as near as
+24); 24 is taken because it **reuses an already-declared, already-consumed token** instead of
+introducing a single-consumer step (Pitfall 1), and because `#brainstorm-view`'s gap is the same
+section-scale breathing space `.overlay-card` uses.
 
-**Exceptions:** none. 14 distinct padding / 11 margin / 5 gap values → **12 space tokens**; all
-gaps (4/6/8/10/12) and all margins land on the scale unchanged.
+**The two spacing sites with no token before this revision** — `#brainstorm-view { margin-top:
+22px }` (`style.css:292`) and `.markdown-body ul, .markdown-body ol { padding-left: 22px }`
+(`style.css:247`) — are now covered by `--space-6`. `22px` is not a hex literal, so TOKEN-04 /
+CHECK-01 would never have caught them; they are named here so an executor working from this
+contract has a declared destination for **all 14 padding / 11 margin / 5 gap** values the
+roadmap's Phase 4 deliverable enumerates.
+
+**Divergence from TOKEN-05's literal step list — recorded, with sign-off (S-1).** 14 distinct
+padding / 11 margin / 5 gap values → **12 space tokens**, of which **5 are off the 4px base**:
+`--space-px` (1px), `--space-half` (2px), `--space-1-5` (6px), `--space-2-5` (10px),
+`--space-3-5` (14px). TOKEN-05 reads 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40 — **seven
+steps, every one a multiple of 4**. The half-step band is therefore a divergence from a locked
+requirement, taken deliberately and recorded here (see `## Sign-Off Items`, S-1), exactly as the
+TOKEN-08 divergence is recorded in note N-3.
+
+**Why the band is kept rather than collapsed:** `6px` (button `padding-y`, `#ai-route-select`
+padding, `#selection-menu` gaps), `10px` (`.panel-header` `padding-y`, `button` `padding-x`) and
+`14px` (`#brainstorm-view` `padding-x`) **physically exist in `style.css` today**. Phase 4 SC2
+requires that no existing selector change rendering except the enumerated contrast fixes — a pure
+value substitution. Collapsing 6→8 / 10→12 / 14→16 would move pixels in the one phase whose
+success criterion forbids it, and would do so on the *most* interactive surfaces (every button's
+padding). The half-step band is the only route that satisfies both TOKEN-05's 4px base and SC2.
+**The locked constraint that yields is TOKEN-05's literal enumeration of seven steps; the 4px base
+itself is honoured** — the two sub-4px steps are the 1px hairline and the 2px micro step, the three
+half-steps are 6 / 10 / 14, and TOKEN-05's seven literal steps (4 / 8 / 12 / 16 / 24 / 32 / 40) are
+all present verbatim.
+
+**Exceptions to the scale, stated positively:** the `@media` breakpoint values (L-1), unitless
+`0` (L-2), and the `420px` inside `--sidebar-w` (L-4). Every other spacing literal in the file
+lands on a declared step — including the two `22px` sites above, whose +2px snap is recorded in
+the table and in ledger row D-16.
 
 ---
 
@@ -320,8 +370,23 @@ Each color family, one meaning, the elements that consume it. This is the artifa
 | 16 | `--color-border-strong` | **control boundary** (SC 1.4.11 scope) | every `input` / `select` / `button` border |
 | 17 | `--color-border` | structural divider | `.markdown-body th/td`, `blockquote` rule |
 | 18 | `--color-border-subtle` | decorative separator (out of 1.4.11) | panel borders, `.annotation-item`, `#doc-pane` border-right |
-| 19–24 | `--color-action-*` | six action families | see Q1 table above |
-| 25 | `--color-kind-*` | **event-kind vocabulary — its own closed group** | the seven `.kind-* .event-kind` chips |
+| 19 | `--color-border-warning-subtle` | decorative amber container boundary (out of 1.4.11) | `#brainstorm-view` dashed border, `.verdict-card` border |
+| 20 | `--color-border-success` | completion boundary — a boundary, **not an action** | `#mission-complete-modal .overlay-card` border |
+| 21 | `--color-surface-info-strong` | filled informational surface | `.chat-user` bubble |
+| 22 | `--color-border-streaming` | live-streaming state indicator | `.chat-ai.streaming-ai` `border-left` |
+| 23 | `--color-text-info` | informational accent text | `#state-badge` foreground (on `--color-surface-info`) |
+| 24–29 | `--color-action-*` | six action families | see Q1 table above |
+| 30 | `--color-kind-*` | **event-kind vocabulary — its own closed group** | the seven `.kind-* .event-kind` chips |
+
+**Rows 19–23 are the five consumers the first draft of this contract left without a tier-2 name.**
+Under the hard invariant ("tier-1 primitive names must never appear outside the `:root` block")
+each of them had a *value* but no legal name, so an executor could not have written the rule. Four
+of them (19–22) are the sites the UI checker flagged; **23 (`#state-badge`'s foreground,
+`#2c5fb8`) is the same class of gap, found while resolving those four** and fixed alongside them
+rather than left for a second pass. They are added here rather than folded into an existing family
+because each carries a distinct role: 19 is decoration, 20 is a completion boundary, 21 is a filled
+surface, 22 is a state indicator, 23 is accent text. Naming them by role is what lets a later phase
+re-value one without touching a selector.
 
 **The event-kind palette is deliberately NOT unified with the accent palette.** Green means both
 "写文件 event" and "routine positive button" — two genuinely different vocabularies (a categorical
@@ -369,18 +434,33 @@ are new. All primitives are consumed by a tier-2 token (except `--green-800`, se
 - `#444` (1 site) → `--gray-700` — `.overlay-card p` joins secondary text (9.74 → 7.46, still AA).
 - `#ccc` (11 sites) → 10 control borders to `--gray-500` (SC 1.4.11), 1 blockquote rule to `--gray-300`.
 - `#e0e0e0` (2) → `--gray-100` — decorative separators, out of 1.4.11 scope.
-- `#e8d9a8` (5) → `--amber-800` where it is a **state indicator** (1.31–1.38:1, in scope); the
-  `#stream-banner` border follows. One site (`#brainstorm-view` dashed container) keeps
-  `--amber-300`, out of scope as decoration.
+- `#e8d9a8` (5) → `--amber-800` where it is a **state indicator** (1.26–1.38:1, in scope) —
+  **four** sites: `#stream-banner` border (`style.css:224`), `#pending-count` border (`:410`),
+  `.badge-pending` border (`:446`), `.annotation-pending-item` border-left (`:453`). The **fifth**
+  site, `.verdict-card`'s border (`style.css:607`), is not a state indicator — it is a decorative
+  card boundary on the same `#fffdf5` ground as `#brainstorm-view` — and takes
+  `--color-border-warning-subtle` (`--amber-300`), the same token `#brainstorm-view`'s `#d9c58a`
+  dashed border takes unchanged. **The first draft of this contract counted four sites and
+  described the fifth as `#brainstorm-view`, which is a `#d9c58a` site, not an `#e8d9a8` site** —
+  so the fifth was both uncounted and mislabelled. The `.verdict-card` value moves 1.38 → 1.68,
+  recorded as ledger row D-10b.
 - `#f4f4f4`, `#f1f3f5`, `#fdfdfd` → `--gray-50` / `--gray-50` / `--white` — imperceptible collapses.
-- `#2c5fb8` (1) → `--blue-700` — the second near-identical blue is deleted, which is the concrete
-  payoff of having a primitive tier at all.
+- `#2c5fb8` (1) → `--blue-700` via **`--color-text-info`** (`#state-badge`'s foreground) — the
+  second near-identical blue is deleted, which is the concrete payoff of having a primitive tier
+  at all. This token is added in the same class of fix as meaning-inventory rows 19–22: without
+  it, `#state-badge`'s foreground had a value but no legal name outside the fence.
 - `#b8860b` (4) → `--amber-800` — **the amber fix is a deletion, not an addition.** Two ambers
   become one.
-- `#2c7be5` (9) → `--blue-700` — **one token change repairs four selectors at once**
-  (`.overlay-card button`, `#chat-input-row button`, `button.primary`, `.chat-user`) plus the
-  `.kind-say` chip and `.chat-ai.streaming-ai` border.
-- `#2e8b57` (12) → `--green-700` — one value fixes the six buttons **and** the `.kind-write` chip.
+- `#2c7be5` (9) → `--blue-700` — **one token change repairs four selectors at once**, and each of
+  the nine sites now has a named tier-2 consumer: `.overlay-card button` / `#chat-input-row
+  button` / `button.primary` → `--color-action-primary`; `.chat-user` → `--color-surface-info-strong`;
+  the `.kind-say` chip → `--color-kind-say`; `.chat-ai.streaming-ai`'s `border-left` →
+  `--color-border-streaming`. Three tier-2 names share the one value in Phase 4 — bounded and
+  intentional, for the same reason the three green families do (see the Q1 value rule).
+- `#2e8b57` (12) → `--green-700` — one value fixes the six buttons (`--color-action-routine*` /
+  `--color-action-commit*` / `--color-action-irreversible*`), the `.kind-write` chip
+  (`--color-kind-write`) **and** the 使命完成 modal border (`--color-border-success`,
+  `style.css:633` — the twelfth site). See the two-non-action-consumers table in Q1.
 
 ### Tier 2 — semantic (the only names any selector may reference)
 
@@ -406,6 +486,11 @@ are new. All primitives are consumed by a tier-2 token (except `--green-800`, se
 | `--color-border-strong` | `var(--gray-500)` | 3.45:1 on `#fff` ✓ 1.4.11 |
 | `--color-border` | `var(--gray-300)` | decorative |
 | `--color-border-subtle` | `var(--gray-100)` | decorative |
+| `--color-border-warning-subtle` | `var(--amber-300)` | decorative (1.68:1 on `#fffdf5`) — out of 1.4.11 |
+| `--color-border-success` | `var(--green-700)` | 5.40:1 on `#fafafa`, 5.64:1 on `#fff` ✓ 1.4.11 |
+| `--color-border-streaming` | `var(--blue-700)` | 5.38:1 on `#f5f5f5`, 5.62:1 on `#fafafa` ✓ 1.4.11 |
+| `--color-surface-info-strong` | `var(--blue-700)` | filled ground; `.chat-user` carries `--color-text-inverse` on it → 5.87:1 ✓ |
+| `--color-text-info` | `var(--blue-700)` | 5.32:1 on `--color-surface-info` (`#eef4ff`) ✓ |
 | `--color-overlay-backdrop` | `rgba(0, 0, 0, 0.45)` | `.overlay` |
 | `--shadow-overlay` | `0 8px 30px rgba(0, 0, 0, 0.2)` | `.overlay-card` |
 | `--shadow-menu` | `0 4px 14px rgba(0, 0, 0, 0.18)` | `#selection-menu` |
@@ -476,7 +561,7 @@ badge) — a future renumbering that inverts it must fail review.
 | Dominant (60%) | page + panel grounds | `--color-surface-page` `#fafafa`, `--color-surface` `#ffffff` | `#doc-pane`, `#sidebar`, cards, controls |
 | Secondary (30%) | recessed chrome | `--color-surface-sunken` `#f5f5f5`, `--color-border*` | panel headers, dividers, badges, event list |
 | Accent (10%) | **explicitly reserved** | `--color-action-primary` `#1f63bd`, `--color-action-warning` `#8a6508` | 发送 / 进入 / 同意 / 放行 · `#btn-divergence` · `#state-badge` · `mark` · active-panel marker (Phase 5) |
-| Green tier | **reserved, never "accent"** | `--color-action-routine/commit/irreversible` | the six gate/loop buttons **only** |
+| Green tier | **reserved, never "accent"** | `--color-action-routine/commit/irreversible` | the six gate/loop buttons, plus the two named non-action consumers (`.kind-write` chip, 使命完成 modal border — see Q1) |
 | Destructive | reserved | `--color-action-danger` `#c0392b` | 拒绝 / 中止 / `.danger` / `.kind-error` / `.inline-error` / `#confirm-error` / `#stream-banner.fatal` |
 
 **Accent is reserved for:** the primary-action buttons listed above, the amber divergence entry,
@@ -489,11 +574,16 @@ of Q1 is that reaching for green to mean "positive in general" is now structural
 ## Contrast Verification (A11Y-04 / A11Y-04b) — the reconciled scope
 
 **The v1.13 audit reported 4 failures. That is correct and INCOMPLETE** — it sampled; the
-researchers scanned. **The scope here is the union: 13 failing text declarations across 11
-selectors, plus 3 non-text failures, plus 2 of the 4 non-`:disabled` `opacity` states.** Do not
-plan against the number 4. Every ratio below was recomputed independently for this contract from
-the working tree at `main`, and reproduces the audit's four values exactly (2.73 / 3.03 / 3.25 /
-4.14) — which is what validates the rest of the table.
+researchers scanned. **The scope here is the union, and it is exactly the table below: 20 failing
+text declarations**, plus 3 non-text failures, plus 2 of the 4 non-`:disabled` `opacity` states.
+(The numbered rows enumerate 17 of the 20 — rows 7–11 count 6 buttons and row 12 counts 4 rules,
+each as one declaration; three further failing rows, `.kind-write`, `.annotation-plain` and
+`.annotation-answer summary`, sit below the numbered list.) **Do not plan against the number 4.**
+CHECK-02 does not depend on this figure — it derives its pairs from the `:root` block, not from a
+hardcoded list — so the count is a planning aid, not a gate input. Every ratio below was
+recomputed independently for this contract from the working tree at `main`, and reproduces the
+audit's four values exactly (2.73 / 3.03 / 3.25 / 4.14) — which is what validates the rest of the
+table.
 
 ### Text contrast (SC 1.4.5, ≥4.5:1 normal text)
 
@@ -527,10 +617,10 @@ element may be moved without re-checking:
 | `--color-text` `#1a1a1a` | 16.67 | 17.40 | 16.02 | 15.35 | — | — | — | — |
 | `--color-text-secondary` `#555` | 7.14 | 7.46 | 6.87 | 6.58 | — | — | — | 7.32 |
 | `--color-text-muted` `#6a6a6a` | **5.18** | 5.41 | **4.96** | **4.75** | — | — | — | — |
-| `--color-action-primary` `#1f63bd` | 5.62 | 5.87 | 5.41 | 5.18 | — | — | — | — |
+| `--color-action-primary` `#1f63bd` | 5.62 | 5.87 | **5.38** | **5.15** | — | — | — | — |
 | `--color-action-success` `#26754a` | 5.40 | 5.64 | 5.20 | 4.98 | **5.10** | — | — | — |
-| `--color-action-warning` `#8a6508` | 5.32 | 5.32 | 4.89 | 4.68 | — | **4.96** | **4.78** | 5.23 |
-| `--color-action-danger` `#c0392b` | 5.21 | 5.44 | 5.00 | 4.79 | — | — | — | — |
+| `--color-action-warning` `#8a6508` | **5.10** | 5.32 | 4.89 | 4.68 | — | **4.96** | **4.78** | 5.23 |
+| `--color-action-danger` `#c0392b` | 5.21 | 5.44 | 5.00 | **4.77** | — | — | — | — |
 | `--color-text-inverse` `#fff` on the fill | — | — | — | — | 5.64 (green-700) · 7.92 (green-800) · 5.87 (blue-700) · 5.44 (red-600) · 5.32 (amber-800) · 5.41 (gray-600) | | | |
 
 ### The three computed results a naive spec gets wrong
@@ -563,8 +653,11 @@ darker grey "to be safe."**
 | Input / button borders | `#ccc` on `#fff` | **1.61** ✗ | `--color-border-strong` `#8a8a8a` | **3.45** ✓ (3.17 on `#f5f5f5`) |
 | `.annotation-pending-item` left border (state indicator) | `#e8d9a8` on `#fffdf5` | **1.38** ✗ | `--amber-800` | **5.23** ✓ |
 | `.badge-pending` / `#pending-count` border (state indicator) | `#e8d9a8` on `#fdf6ec` | **1.31** ✗ | `--amber-800` | **4.96** ✓ |
-| `#stream-banner` border | `#e8d9a8` on `#fff3c4` | 1.30 ✗ | `--amber-800` | 4.78 ✓ |
-| `#brainstorm-view` dashed container border | `#d9c58a` on `#fffdf5` | 1.68 | **unchanged** `--amber-300` | out of scope — decoration, identifies no control or state |
+| `#stream-banner` border | `#e8d9a8` on `#fff3c4` | **1.26** ✗ | `--amber-800` | 4.78 ✓ |
+| `#mission-complete-modal .overlay-card` border | `#2e8b57` on `#fff` | 5.64 ✓ | `--color-border-success` (`#26754a`) | 5.64 ✓ (value collapse, no ratio change) |
+| `.chat-ai.streaming-ai` `border-left` (streaming state indicator) | `#2c7be5` on `#f5f5f5` | 3.97 ✓ | `--color-border-streaming` (`#1f63bd`) | **5.38** ✓ (collapse) |
+| `.verdict-card` border (decorative card boundary) | `#e8d9a8` on `#fffdf5` | 1.38 | `--color-border-warning-subtle` (`--amber-300`) | 1.68 — **value changed** to keep a single amber decoration rank; out of scope — decoration, identifies no control or state |
+| `#brainstorm-view` dashed container border | `#d9c58a` on `#fffdf5` | 1.68 | **unchanged**, via `--color-border-warning-subtle` (`--amber-300`) | out of scope — decoration, identifies no control or state |
 | `#eee` / `#e0e0e0` / `#f0f0f0` dividers | 1.16–1.36 | — | **unchanged** | out of scope — decorative separators. Do not darken every divider |
 | `:disabled` controls (`opacity: .55`) | — | — | **unchanged** | out of scope — SC 1.4.11 does not apply to inactive components |
 
@@ -579,9 +672,12 @@ boundaries. That is a one-line value edit; the token structure is identical eith
 
 `opacity` is **not a color token** and cannot be fixed by any palette change: it composites the
 whole subtree. **Ruling: `opacity` is banned for text de-emphasis.** A uniform
-`--opacity-deemphasized: 0.65` is explicitly **forbidden** — it would *lighten* `.round-frozen`
-(0.55 → 0.65) and *darken* the archive view (0.75 → 0.65), and the terminal read-only state must
-not regress.
+`--opacity-deemphasized: 0.65` is explicitly **forbidden** — not because 0.65 is a bad value (for
+`.round-frozen` alone it *clears* AA; see the ruling below) but because **one α cannot serve two
+states with opposite needs**: it would force the archive view *down* from 0.75 and would put
+every future de-emphasis site on a single multiplier — which is precisely the "one knob for all
+text" mechanism this ruling rejects. Text de-emphasis is expressed with `--color-text-muted`; the
+two whole-document `opacity` sites are ruled individually below.
 
 | Site | Composited | Ratio | Ruling |
 |---|---|---|---|
@@ -598,12 +694,38 @@ makes a dead G3 button look clickable — see Pitfall M5.
 ### RULING: `#round-doc.round-frozen` — the genuine design conflict
 
 **The conflict, stated plainly:** `opacity: 0.55` **is** the D-P2-21 "this round is read-only"
-signal, and a frozen round is **precisely content the user must READ**. Raising the opacity to
-reach AA requires α ≥ 0.83, at which point the dimming is imperceptible and the signal is gone.
-So "raise the opacity" is not a real option — it trades the signal away to buy a ratio.
+signal, and a frozen round is **precisely content the user must READ**. A11Y-04b offers exactly
+two routes: 「提高不透明度满足 AA,或保留灰化但改用别的方式表达冻结」.
 
-**Ruling: keep the signal, change its mechanism.** The dimming moves off the *text luminance* and
-onto *saturation + a structural marker*:
+**Route 1 is arithmetically available — the threshold is α ≥ 0.61, not 0.83.** Compositing
+`#1a1a1a` text over `#fafafa`:
+
+| α | composite | ratio vs `#fafafa` |
+|---|---|---|
+| 0.55 (today) | `#7f7f7f` | 3.84 ✗ |
+| 0.60 | `#747474` | 4.48 ✗ |
+| **0.61** | `#717171` | **4.68 ✓** |
+| **0.65** | `#686868` | **5.34 ✓** |
+| 0.83 | `#404040` | 9.93 |
+
+At α = 0.65 the composite is `#686868` against full-strength `#1a1a1a` — a plainly visible dim
+that clears AA with margin. **So "raise the opacity" IS a real option**, and this ruling does not
+claim otherwise.
+
+**What route 1 costs, measured.** The frozen subtree composites *everything* inside it —
+including Phase 7's focus ring. `--color-focus: #1f63bd` at α = 0.65 composites to `#6c98d2`,
+**2.85:1** against `#fafafa` — **below the 3:1 non-text floor**. Route 1 therefore fixes the text
+(5.34:1) and breaks the ring.
+
+**Ruling: route 2 — keep the signal, change its mechanism.** The structural marker is chosen over
+the opacity bump for two reasons, both measured: (a) it is **stronger at a glance** than a dimmed
+page and does not depend on a perceivable dim, and (b) deleting the `opacity` outright is what
+leaves the Phase 7 focus ring at **5.62:1** inside frozen rounds, where route 1 would have left it
+at 2.85:1. Sign-off item **S-4** records route 1 (`opacity: 0.65`, no marker) with this cost
+stated, so the choice remains the user's and is not made silently — but route 1 is not
+recommended for the reason in (b).
+
+The dimming moves off the *text luminance* and onto *saturation + a structural marker*:
 
 ```css
 #round-doc.round-frozen {
@@ -619,16 +741,19 @@ onto *saturation + a structural marker*:
   `border-left` would have added 3px of width and shifted every frozen round's text — rejected.
 - **The marker uses `--color-action-warning`**, the amber already reserved for "state that needs
   your attention but is not an error" (the same amber as the pending badges). A frozen round is
-  exactly that: it is read-only, not broken.
+  exactly that: it is read-only, not broken. **Verified as a non-text state indicator: 5.10:1 on
+  `#fafafa`** — clears the 3:1 floor (SC 1.4.11), which the deleted `opacity` could not do for the
+  ring.
 
 **Why this is better than the alternative and not a compromise:** the frozen state keeps a
 *visible, structural* signal (a persistent amber rule down the document's left edge) that is
-**stronger at a glance** than a 45%-dimmed page, and it composes correctly with Phase 7's focus
-ring. Verified consequence: `--color-focus: #1f63bd` measures **5.62:1** on `#fafafa`, **3.44:1**
-inside the 0.75 archive composite (passes), and would have measured **2.38:1** inside the old 0.55
-composite (fails). **Deleting this `opacity` is what makes the Phase 7 focus ring pass inside
-frozen rounds** — otherwise the ring silently fails WCAG 1.4.11 on exactly the content the user
-most needs to navigate.
+**stronger at a glance** than a dimmed page, and it composes correctly with Phase 7's focus ring.
+Verified consequence: `--color-focus: #1f63bd` measures **5.62:1** on `#fafafa`, **3.44:1** inside
+the 0.75 archive composite (passes), and would have measured **2.38:1** at the old α = 0.55 and
+**2.85:1** at route 1's α = 0.65 (both fail). **Deleting this `opacity` is what makes the Phase 7
+focus ring pass inside frozen rounds** — otherwise the ring silently fails WCAG 1.4.11 on exactly
+the content the user most needs to navigate. That is the measured reason the ruling prefers route
+2, and it is stated here rather than an appeal to an "imperceptible dim".
 
 **Do not silently revert this.** The Phase 5 gate must re-verify that a frozen round still reads as
 frozen (manual check: open a historical round and confirm the amber rule is present and the round
@@ -638,9 +763,12 @@ switcher shows the historical round).
 
 Focus-ring color `--color-focus: #1f63bd` is **specified here, declared and consumed in Phase 7**
 in the same commit as the `:focus-visible` rule (Pitfall 1 corollary). Verified across the
-composited backgrounds: 5.62 full · 3.44 in `.archive-mode` (0.75) · **and no longer subject to a
-0.55 frozen composite** after the ruling above. Both remaining cases clear the 3:1 non-text floor.
-Ring color `#2c7be5` would have measured 3.97 / 2.73 / 2.05 — failing in both dimmed states.
+composited backgrounds: **5.62** full · **3.44** in `.archive-mode` (0.75) · **5.62 inside a
+frozen round** after the ruling above, because the `opacity` is gone entirely. A frozen round left
+at route 1's α = 0.65 would have measured **2.85** — failing — which is the measured reason the
+ruling deletes the `opacity` rather than raising it. All three surviving cases clear the 3:1
+non-text floor. Ring color `#2c7be5` would have measured 3.97 / 2.73 / 2.05 — failing in both
+dimmed states.
 
 ---
 
@@ -659,15 +787,16 @@ asserted.
 | D-5 | `.event-kind` default chip `#999` → `--gray-600` | 1 | luminance | A11Y-04 #3 |
 | D-6 | `#b8860b` → `#8a6508` (4 sites) | 4 | luminance | A11Y-04 #4–6; a **deletion** |
 | D-7 | `#2c7be5` / `#2c5fb8` → `#1f63bd` (10 sites) | 10 | luminance | A11Y-04 #7–13; one token, four selectors |
-| D-8 | `#2e8b57` → `#26754a` (12 sites) | 12 | luminance | A11Y-04 #7–11 + `.kind-write`; **one fix for two audit findings** |
+| D-8 | `#2e8b57` → `#26754a` (12 sites) | 12 | luminance | A11Y-04 #7–11 + `.kind-write` + the 使命完成 modal border; **one fix for two audit findings** |
 | D-9 | `#ccc` → `#8a8a8a` control borders | 10 | **largest delta** | SC 1.4.11. Opt-out available |
-| D-10 | `#e8d9a8` → `#8a6508` state-indicator borders | 4 | luminance | SC 1.4.11 |
+| D-10 | `#e8d9a8` → `#8a6508` **state-indicator** borders | 4 | luminance | SC 1.4.11. Sites: `#stream-banner`, `#pending-count`, `.badge-pending`, `.annotation-pending-item`. **The fifth `#e8d9a8` site is D-10b** |
+| D-10b | `#e8d9a8` → `--amber-300` on `.verdict-card`'s border | 1 | value (1.38 → 1.68) | Decoration, out of 1.4.11 — keeps one amber decoration rank shared with `#brainstorm-view` |
 | D-11 | `.annotation-answered` `opacity: 0.65` deleted | 1 | luminance | A11Y-04b — 1.88:1 |
 | D-12 | `#round-doc.round-frozen` `opacity` deleted, inset marker added | 1 | structural | A11Y-04b — the ruling above |
 | D-13 | `#666` → `#6a6a6a`, `#444` → `#555` (collapses) | 3 | ≤0.4 ratio | Pitfall 1 — no near-duplicate greys |
 | D-14 | `#f4f4f4` / `#f1f3f5` / `#fdfdfd` → `#f5f5f5` / `#f5f5f5` / `#ffffff` | 3 | ≤2/255 per channel | Collapse — imperceptible |
 | D-15 | `#e0e0e0` / `#f0f0f0` (borders) → `#eeeeee` | 4 | ≤2/255 | Collapse — decorative, out of 1.4.11 |
-| D-16 | Spacing snaps: `3→4`, `5→4`, `18→16`, `28→24` | 12 | ≤4px | TOKEN-05 scale |
+| D-16 | Spacing snaps: `3→4`, `5→4`, `18→16`, `22→24`, `28→24` | 14 | ≤4px | TOKEN-05 scale (the `22px` pair is `#brainstorm-view` `margin-top` + `.markdown-body ul,ol` `padding-left`) |
 | D-17 | Radius snaps (see the radius table) | 9 | ≤2px, or pill | TOKEN-06 |
 | D-18 | `#state-badge { right: 448px }` → `444px` | 0 in P4 | 4px | **Phase 6** — recorded so it is not a surprise |
 | D-19 | `button, input, select { color: var(--color-text) }` appended | 3 selectors | `#000` → `#1a1a1a` | **The one added declaration.** See N-4 |
@@ -697,6 +826,14 @@ asserted.
   `.overlay-card button` all still win. Visual delta: `#000` → `#1a1a1a`, imperceptible.
   **Opt-out:** delete the rule; the UA foreground returns, and `--color-text` remains consumed by
   `html, body` and `.annotation-note` / `.verdict-issue`, so no token is orphaned.
+- **N-5 — the spacing scale's divergence from TOKEN-05** (see `## Spacing Scale` and sign-off item
+  S-1). TOKEN-05 enumerates seven 4px-multiple steps; this contract declares twelve, of which five
+  are half-steps (`1px`, `2px`, `6px`, `10px`, `14px`). The divergence is taken because `6px`,
+  `10px` and `14px` exist in the file today and Phase 4 SC2 forbids moving pixels — so they must
+  become `var()` references at their current values. The 4px base itself is honoured and all seven
+  literal steps are present verbatim. **Unlike N-3, this one is not recommended against** — but it
+  is still a locked requirement being exceeded, so it is a sign-off item and not a silent
+  expansion.
 
 ### Literal exceptions (the complete list — nothing else may be a literal)
 
@@ -707,6 +844,27 @@ asserted.
 | L-3 | Escaped hex inside the two `--icon-*` data-URIs | inside the `:root` fence | A data-URI SVG cannot reference a CSS variable; the fence is the one place literals are legal, and CHECK-01 counts bare `#hex` |
 | L-4 | `--sidebar-w: 420px` is a literal **inside** the fence | `:root` | It is a token; the fence is where literals live |
 | L-5 | `#state-badge { right: 448px }` | `style.css:204` | Not a hex literal — CHECK-01 is a hex counter. LAYOUT-01 is a **Phase 6** requirement; Phase 4 leaves it. Phase 6 replaces it with `calc(var(--sidebar-w) + var(--space-6))` |
+
+---
+
+## Sign-Off Items (four user decisions)
+
+The contract is **executable as written** — these are not blockers, they are the four points where
+the contract exceeds or departs from a locked input, or makes a deliberate visual delta. Each has
+a one-line alternative. They are collected here so none of them is buried in a table three
+hundred lines in; S-1, S-2 and S-3 were each recorded in a note, and S-4 in a ruling, but the
+*set* of them had no single place until now.
+
+| # | Item | What departs | Why it is taken | The one-line alternative |
+|---|---|---|---|---|
+| **S-1** | **TOKEN-05 spacing scale** (see N-5, `## Spacing Scale`) | The scale has **12 steps, 5 of them off the 4px base** (`--space-px` 1, `--space-half` 2, `--space-1-5` 6, `--space-2-5` 10, `--space-3-5` 14). TOKEN-05 lists exactly seven 4px-multiple steps. | `6px` / `10px` / `14px` **physically exist in `style.css`** (button `padding-y`, `#ai-route-select` padding, `#selection-menu` gap, `.panel-header` `padding-y`, `button` `padding-x`, `#brainstorm-view` `padding-x`). **Phase 4 SC2 requires zero rendering change**, so they must become `var()` references at their current value; collapsing 6→8 / 10→12 / 14→16 moves pixels in the one phase whose success criterion forbids it. The 4px base and all seven literal steps are preserved. | Delete the three half-step tokens and snap `6→8`, `10→12`, `14→16` — **and accept the rendering change**, amending Phase 4 SC2. Not recommended. |
+| **S-2** | **TOKEN-08 type scale** (see Q3, N-3) | `14px` is a first-class step — 7 steps, not the literal 6. | ROADMAP Phase 5 SC5 **and** Phase 6 SC5 both assert `#brainstorm-view h2` computes to **14px**; `.markdown-body` body copy is 14px. Collapsing breaks two downstream gates. | N-3's five-selector edit (`.markdown-body` / `.overlay-card p` / `#confirmation-modal input` → 15px, `.panel-header h2` → 13px, `#brainstorm-view h2` → 15px) **plus** amending Phase 5 SC5 / Phase 6 SC5. Not recommended. |
+| **S-3** | **D-9 control borders** | `#ccc` → `#8a8a8a` on **10 sites** — every input, select and button border darkens. The largest deliberate visual delta in Phase 4. | SC 1.4.11: the border is the only thing identifying a text input's boundary. | Keep `--color-border-strong: #cccccc` and record SC 1.4.11 as **waived** for control boundaries. One-line value edit; token structure identical. |
+| **S-4** | **`#round-doc.round-frozen`** | `opacity: 0.55` is deleted; the read-only signal becomes `filter: saturate(0.6)` + an amber `box-shadow: inset` rule. | Route 1 (raise the `opacity`) **is arithmetically available**: α ≥ 0.61 clears AA, and α = 0.65 gives **5.34:1** with a plainly visible dim. Route 2 is taken because deleting the `opacity` leaves Phase 7's focus ring at **5.62:1** inside frozen rounds, where route 1 would leave it at **2.85:1** — below the 3:1 floor. | Set `opacity: 0.65`, drop the structural marker — the minimal edit. **Cost: the Phase 7 focus ring fails SC 1.4.11 inside frozen rounds (2.85:1).** |
+
+**A11Y-04b is satisfied either way.** The requirement is 「提高不透明度满足 AA,或保留灰化但改用别
+的方式表达冻结」 — S-4 is a choice *between* its two routes, made with correct arithmetic on both
+sides, not a silent resolution of the conflict.
 
 ---
 
@@ -724,7 +882,10 @@ proves nothing about rendering, and the prior fix run already produced a gate ar
 awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css \
   | grep -c '#[0-9a-fA-F]\{3,6\}'
 ```
-Baseline today: **120 occurrences / 34 distinct**. Target: **0**.
+Baseline today: the command as written prints **117** — `grep -c` counts matching *lines*, not
+occurrences. The **120** in TOKEN-04 is the occurrence count (`grep -o '#[0-9a-fA-F]\{3,6\}'
+frontend/style.css | wc -l`). **34** distinct. Target: **0** for both counts — the gate reads the
+117 figure, so quote 117 when recording the before/after.
 
 **CHECK-02 — contrast verification.** Every declared token pair meets its threshold.
 
@@ -734,8 +895,10 @@ Baseline today: **120 occurrences / 34 distinct**. Target: **0**.
 # asserts 4.5:1 for text pairs and 3:1 for --color-border-strong.
 ```
 Target: **0 failing text pairs and 0 failing non-text pairs**, over the **reconciled** scope
-(13 text + 3 non-text), not the audit's 4. Must also cover the `opacity`-composited pairs, which
-is why the two failing `opacity` sites above are deleted rather than tuned.
+(**20 text + 3 non-text**), not the audit's 4. The script derives its pairs from the `:root` block,
+not from a hardcoded list, so those counts are a planning aid rather than a gate input. It must
+also cover the `opacity`-composited pairs, which is why the two failing `opacity` sites above are
+deleted rather than tuned.
 
 **CHECK-03 — `.hidden` uniqueness guard.**
 
@@ -908,7 +1071,7 @@ feature is out of scope.**
 | `aria-live` on the streaming chat | Must **never** go on the chunk container — `appendSayToChat` appends one DOM node per SSE event, so a multi-minute call makes the region unusable. | Out of scope (Phase 8 records the constraint to prevent creep). |
 | `role` / `aria-modal` on the other 2–3 non-blocking modals | Same narrow-slice ruling. | Out of scope. |
 | Component token tier (`--button-primary-bg`, …) | Needs a component system to pay off; there is none. | Out of scope. |
-| Stylelint / lint pipeline | A toolchain and config for a 631-line no-build stylesheet. CHECK-01/02 give the same guarantee with zero dependencies. | Out of scope. |
+| Stylelint / lint pipeline | A toolchain and config for a 633-line no-build stylesheet. CHECK-01/02 give the same guarantee with zero dependencies. | Out of scope. |
 | Icon library / SVG sprite system / icon font | Two glyphs. VISUAL-05 uses one inline data-URI SVG defined once. | Out of scope. |
 | Skeleton loaders / spinners / progress indicators | New product feature. Buttons already have text-swap states (`撰写中…`, `处理中…`). | Out of scope. |
 | Motion / animation system | The file has exactly **1** transition. INTERACT-02's 120–150ms `background-color` / `border-color` / `opacity` spec is the whole thing. | Out of scope. |
@@ -935,13 +1098,43 @@ feature is out of scope.**
 ## Provenance
 
 - Baselines re-measured for this contract against the working tree at `main`, 2026-09-17:
-  34 distinct hex / 120 occurrences; 3 `rgba()`; 7 `font-size` values (13×15, 12×6, 14×5, 12.5×3,
+  34 distinct hex / 120 occurrences / **117 matching lines** (CHECK-01's `grep -c` figure —
+  `grep -c` counts lines, `grep -o` counts occurrences; the gate reads 117); 3 `rgba()`; 7
+  `font-size` values (13×15, 12×6, 14×5, 12.5×3,
   16×1, 15×1, 11×1); 8 `border-radius`; 14 distinct padding / 11 margin / 5 gap; 4 `z-index`
   (10/20/100/200); `!important` hits = 3 but **declarations = 1**; `.hidden` = 1; `@media` = 0;
   `:focus` = 0; `outline` = 0; `var(--` = 0; `:disabled` = 8; `:hover` = 2; `transition` = 1.
 - All contrast ratios in this document were **recomputed independently** (WCAG 2.x relative
   luminance, script-verified) and reproduce the audit's four reported values exactly
   (2.73 / 3.03 / 3.25 / 4.14), which is what validates the remaining rows.
+- **Revision 1 (2026-09-17) — what changed after the UI checker's first pass, and what did not.**
+  - **Spacing (Dimension 5):** the half-step band's divergence from TOKEN-05 is now **recorded**
+    (N-5 + sign-off S-1) instead of being denied by an "Exceptions: none" sentence that its own
+    snapping table contradicted; the two `22px` sites that had no token
+    (`#brainstorm-view` `margin-top`, `.markdown-body ul,ol` `padding-left`) are now on
+    `--space-6` with their +2px delta in the snapping table and ledger row D-16.
+  - **`#round-doc.round-frozen`:** the ruling's stated basis was **false** — it claimed α ≥ 0.83
+    was needed. The real threshold is **α ≥ 0.61** (0.65 → 5.34:1). The basis is re-stated on the
+    measured cost of route 1 (the Phase 7 focus ring composites to **2.85:1** at α = 0.65) and
+    route 1 is surfaced as sign-off item S-4. **The mechanism is unchanged** — `filter:
+    saturate(0.6)` + the `box-shadow: inset` marker stand.
+  - **Color (Dimension 3):** the four consumers with no tier-2 name are named
+    (`--color-border-warning-subtle`, `--color-border-success`, `--color-surface-info-strong`,
+    `--color-border-streaming`); `#state-badge`'s foreground (`#2c5fb8`) was found to have the
+    **same class of gap** while resolving them and is named `--color-text-info`; D-10's count is
+    corrected to 4 with the fifth `#e8d9a8` site split out as **D-10b**, and Q1's green-consumer
+    list now names the twelfth `#2e8b57` site (the 使命完成 modal border).
+  - **Stale arithmetic corrected:** `style.css` **633** lines (not 631); CHECK-01's baseline
+    **117** matching lines (120 is the occurrence count); `--color-action-warning` on `#fafafa`
+    **5.10**; `--color-action-primary` on `#f5f5f5` / `#f0f0f0` **5.38 / 5.15**;
+    `--color-action-danger` on `#f0f0f0` **4.77**; `#e8d9a8` on `#fff3c4` **1.26**; the text-failure
+    scope restated as **20 declarations** (17 numbered + 3 below the list).
+  - **Unchanged by this revision** (all verified correct): the do-not-touch list, the N-3 TOKEN-08
+    handling, the D-9 `#ccc` delta and its opt-out, the Deliberate Delta Ledger, the four literal
+    exceptions, the scope fence, the four contract-check commands, the frozen-round **mechanism**,
+    the `:disabled` protection, `.tier-desc` and the archive view, the `--opacity-deemphasized`
+    ban, the token taxonomy, the 60/30/10 budget, the Q1/Q2 action-family naming, and the
+    copywriting freeze.
 - Upstream: `.planning/research/{SUMMARY,ARCHITECTURE,FEATURES,PITFALLS,STACK}.md`,
   `.planning/ROADMAP.md` (Phase 4 section), `.planning/REQUIREMENTS.md`,
   `.planning/STATE.md`, `.planning/PROJECT.md`, `frontend/{style.css,index.html,app.js}`,

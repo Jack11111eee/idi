@@ -1,12 +1,15 @@
 ---
 phase: "4"
 slug: "idi-04-tokens-contract"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-09-17"
 revision: 1
 revised: "2026-09-17"
+reviewed_at: "2026-09-17"
+review_verdict: APPROVED
+review_note: "Dimension 3 FLAG (residual figure errors) — corrected in the same commit that stamped this frontmatter."
 ---
 
 # Phase 4 — UI Design Contract
@@ -575,7 +578,7 @@ of Q1 is that reaching for green to mean "positive in general" is now structural
 
 **The v1.13 audit reported 4 failures. That is correct and INCOMPLETE** — it sampled; the
 researchers scanned. **The scope here is the union, and it is exactly the table below: 20 failing
-text declarations**, plus 3 non-text failures, plus 2 of the 4 non-`:disabled` `opacity` states.
+text declarations**, plus 4 non-text failures, plus 2 of the 4 non-`:disabled` `opacity` states.
 (The numbered rows enumerate 17 of the 20 — rows 7–11 count 6 buttons and row 12 counts 4 rules,
 each as one declaration; three further failing rows, `.kind-write`, `.annotation-plain` and
 `.annotation-answer summary`, sit below the numbered list.) **Do not plan against the number 4.**
@@ -654,8 +657,8 @@ darker grey "to be safe."**
 | `.annotation-pending-item` left border (state indicator) | `#e8d9a8` on `#fffdf5` | **1.38** ✗ | `--amber-800` | **5.23** ✓ |
 | `.badge-pending` / `#pending-count` border (state indicator) | `#e8d9a8` on `#fdf6ec` | **1.31** ✗ | `--amber-800` | **4.96** ✓ |
 | `#stream-banner` border | `#e8d9a8` on `#fff3c4` | **1.26** ✗ | `--amber-800` | 4.78 ✓ |
-| `#mission-complete-modal .overlay-card` border | `#2e8b57` on `#fff` | 5.64 ✓ | `--color-border-success` (`#26754a`) | 5.64 ✓ (value collapse, no ratio change) |
-| `.chat-ai.streaming-ai` `border-left` (streaming state indicator) | `#2c7be5` on `#f5f5f5` | 3.97 ✓ | `--color-border-streaming` (`#1f63bd`) | **5.38** ✓ (collapse) |
+| `#mission-complete-modal .overlay-card` border | `#2e8b57` on `#fff` | **4.25** ✓ | `--color-border-success` (`#26754a`) | 5.64 ✓ (value collapse; 4.25 → 5.64) |
+| `.chat-ai.streaming-ai` `border-left` (streaming state indicator) | `#2c7be5` on `#f5f5f5` | **3.80** ✓ | `--color-border-streaming` (`#1f63bd`) | **5.38** ✓ (collapse) |
 | `.verdict-card` border (decorative card boundary) | `#e8d9a8` on `#fffdf5` | 1.38 | `--color-border-warning-subtle` (`--amber-300`) | 1.68 — **value changed** to keep a single amber decoration rank; out of scope — decoration, identifies no control or state |
 | `#brainstorm-view` dashed container border | `#d9c58a` on `#fffdf5` | 1.68 | **unchanged**, via `--color-border-warning-subtle` (`--amber-300`) | out of scope — decoration, identifies no control or state |
 | `#eee` / `#e0e0e0` / `#f0f0f0` dividers | 1.16–1.36 | — | **unchanged** | out of scope — decorative separators. Do not darken every divider |
@@ -895,7 +898,7 @@ frontend/style.css | wc -l`). **34** distinct. Target: **0** for both counts —
 # asserts 4.5:1 for text pairs and 3:1 for --color-border-strong.
 ```
 Target: **0 failing text pairs and 0 failing non-text pairs**, over the **reconciled** scope
-(**20 text + 3 non-text**), not the audit's 4. The script derives its pairs from the `:root` block,
+(**20 text + 4 non-text**), not the audit's 4. The script derives its pairs from the `:root` block,
 not from a hardcoded list, so those counts are a planning aid rather than a gate input. It must
 also cover the `opacity`-composited pairs, which is why the two failing `opacity` sites above are
 deleted rather than tuned.
@@ -1022,16 +1025,34 @@ phases have a reference and cannot drift it silently.
 
 ## UI Considerations
 
-Applicable state considerations resolved: **4 covered, 1 backstop, 0 unresolved.**
+Produced by the **UI-consideration probe** (`ui-consideration-probe.cjs`) over 14 described
+surfaces — E2…E15, after the kind-confirmation step corrected four heuristic misclassifications
+(`#state-badge` and `#stream-banner` were unclassified; `#selection-menu` was a `list-collection`
+false positive from the phrase "listing the annotation actions"; `#ai-panel` and `#round-switcher`
+were missing `nav` / `form`). The `:root` token block itself was dropped from the element list: it
+is not a rendered surface, so it raises no element×state consideration.
+
+**79 considerations raised — 4 resolved (explicit), 1 backstop, 13 deferred, 61 dismissed, 0 unresolved.**
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| `empty` | token block / fence | ✅ covered | The `:root` block is a **new, non-empty** insertion; the file never renders a partially-migrated state. Commit order step 1 (token block alone, pixel-identical) guarantees no intermediate visual state exists. |
-| `empty` | `.hint` / `.badge-*` / `mark` | ✅ covered | Every token has ≥1 consumer in Phase 4 (except `--green-800`, note N-2). CHECK-01 + Gate 2 make an orphan token a **loud** failure, not a silent one. |
-| `zero-one-many` | the six green buttons | ✅ covered | The routine/commit/irreversible split is declared as **exactly** three families with a named consumer list per family; `--color-action-irreversible*` is contractually restricted to `#btn-authorize` and no other selector. A fourth family requires amending this contract. |
-| `partial` | `opacity` de-emphasis | ✅ covered | All four non-`:disabled` `opacity` sites are ruled on individually; a uniform `--opacity-deemphasized` is explicitly **forbidden**. |
-| `long-text` | `#round-doc.round-frozen` full-document dimming | 🧪 backstop | Held-out visual UI-state check: open a historical round and confirm (a) the amber inset rule is present, (b) the round switcher shows the historical round, (c) body text is readable at ≥4.5:1. Renders in Phase 5; **not automatable** in this environment. |
-| `error` | inline error / G3 confirm error | ✅ covered | Copy frozen above; the `textContent`-only invariant and the `#confirm-error` ID retention are both on the do-not-touch list. |
+| `partial` | E5 `#annotation-list` | ✅ resolved | `style.css:456` `.annotation-answered { opacity: 0.65 }` measures **1.88:1**. Ruling: **delete the `opacity` declaration** and apply `--color-text-muted` to the text inside. The grey *hue* is retained; only the multiplier goes → **5.41:1**. DESIGN.md §4.2's 「已回应…变灰不删除」 becomes "变灰但仍可读". |
+| `partial` | E6 `#checks-panel` | ✅ resolved | `style.css:564` `.tier-desc { opacity: 0.8 }` measures **12.63:1** — it **PASSES; kept unchanged**. It de-emphasizes a sub-label *inside a button*, a legitimate non-text use. **Coverage ≠ failure: this site is ruled on and left alone.** |
+| `partial` | E8 `#doc-pane` / `#round-doc` | ✅ resolved | Two whole-document dims. `style.css:509-512` `.round-frozen { opacity: 0.55 }` measures 3.84:1 — the **`opacity` is deleted**, `filter: saturate(0.6)` and a `box-shadow: inset 3px 0 0 var(--color-action-warning)` marker are kept (see the ruling below). `#rounds-placeholder.archive-mode #round-doc { opacity: 0.75 }` measures **7.49:1 — PASSES, kept unchanged.** |
+| `error` | E12 inline error / `#confirm-error` | ✅ resolved | Copy is frozen (this phase changes zero strings); the `textContent`-only invariant (T-260916-01) and the `#confirm-error` ID are both on the do-not-touch list. **Live Phase-4 risk, not a historical note:** Phase 4 tokenizes `.hint`, so `#confirm-error` must be given an error colour at equal-or-higher specificity or the G3 failure message degrades into a grey hint (**Pitfall M6**). |
+| `long-text` | E8 `#round-doc.round-frozen` | 🧪 backstop | Held-out visual UI-state check: open a historical round and confirm (a) the amber inset rule is present, (b) the round switcher shows the historical round, (c) body text is readable at ≥4.5:1. Renders in Phase 5; **not automatable** in this environment (see the environment facts below). A backstop is confirmed only by explicit evidence or routes to `human_needed` — never a silent pass. |
+| `overflow` | E2–E14 (13) | ⏸ deferred → Phase 6 | Narrow-window overflow and `#state-badge` occlusion are **LAYOUT-02 / LAYOUT-03's deliverables**. Phase 4 changes no layout rule, so it can neither introduce nor fix these. Deferred rather than dismissed so Phase 6 planning inherits the signal. |
+| `empty`, `loading`, `error`, `populated`, `partial`, `zero-one-many`, `long-text` | all remaining (61) | ✖ dismissed | **One shared reason:** Phase 4 is a **pure value refactor** — ROADMAP SC2 locks rendering to be identical to pre-migration except the deliberate contrast fixes. It introduces no new element and no new state, so each of these states renders exactly as it does today; a `var()` substitution cannot change a state's behaviour. |
+
+**What the probe does NOT cover — stated so this is not read as a gap.** The taxonomy's axis is
+*element × state*. Three of this contract's load-bearing invariants are **not** state considerations
+and are deliberately absent from the table above: (1) an orphan token must fail loudly — covered by
+**CHECK-01 + Gate 2**, not by a state row; (2) no partially-migrated state may ever render — covered
+by the **commit order** (step 1 lands the token block alone, pixel-identical); (3) the six green
+buttons resolve to **exactly three** action families with `--color-action-irreversible*`
+contractually restricted to `#btn-authorize` — covered by the **Q1 consumer table**. Per
+`references/ui-consideration-probe.md`, open/domain UX considerations (deep WCAG breadth,
+real-time/offline, i18n) are prose-owned elsewhere and are not forced into this closed taxonomy.
 
 **Environment facts that constrain verification (do not re-derive, do not fight):**
 - **Screenshots are unavailable** — headless rendering is blocked (Chrome, Chrome-for-Testing and
@@ -1083,15 +1104,28 @@ feature is out of scope.**
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS (N/A — `Tool: none`, no design system to enumerate)
+Verified by `gsd-ui-checker` on 2026-09-17 (revision 1, commit `e8ecbe2`). Verdict: **APPROVED** —
+no dimension met a BLOCK criterion. Both blocking findings of the first pass (Dimension 5 spacing;
+the `#round-doc.round-frozen` ruling's arithmetic) were re-derived independently by the checker and
+confirmed resolved.
 
-**Approval:** pending
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: **FLAG** — the fix itself is complete and verified; the FLAG is for residual
+      figure/label errors inside the contrast section, none gate-relevant. Three of them were
+      introduced or carried by revision 1 and are corrected in this commit: the modal-border Before
+      ratio (5.64 → **4.25**, and "no ratio change" was false — 4.25 → 5.64), the streaming-border
+      Before ratio (3.97 → **3.80**, the `#f5f5f5` ground not `#fafafa`), and the non-text failure
+      count (**3 → 4**). Five pre-existing figure items (the `--color-text-secondary` pair cells, the
+      tier-1 primitive summary 24/13/3 vs its own 25 rows, D-15's site count, the divider "unchanged"
+      label, and the Phase 5 SC5 vs SC1 citation) are recorded as deferred to plan time.
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS (N/A — `Tool: none`, no design system to enumerate)
+
+**Approval:** approved — revision 1. Sign-off items S-1…S-4 remain open **for the user**, not for the
+checker; they are the four deliberate divergences the contract must not resolve on the user's behalf.
 
 ---
 

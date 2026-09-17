@@ -319,3 +319,12 @@ None. The manifest is a complete enumeration of the reconciled scope, and the ch
 ---
 *Phase: idi-04-tokens-contract*
 *Completed: 2026-09-17*
+
+## Self-Check: PASSED
+
+- `scripts/check-02-contrast.py` — FOUND (executable, stdlib-only)
+- `.planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md` — FOUND
+- Commits `1759016`, `6dba970`, `db3e6b3` — all FOUND in history
+- Final gate run: CHECK-01 PASS · CHECK-02 `ORDER 0.311` + `PASS: 0 failures` · CHECK-03 PASS · CHECK-04 PASS
+- Tamper residue: `#deadbe` = 0 · injected pair = 0 · `!important;` = 1 · `--gray-600: #6a6a6a` = 1
+- `git diff --name-only f912c1a -- frontend/app.js frontend/index.html` — empty

@@ -178,14 +178,22 @@ def main():
         fg_name, bg_name, kind, alpha = match.groups()
         fg = resolve(fg_name, decls)
         bg = resolve(bg_name, decls)
-        if alpha is not None:
-            fg = composite(fg, bg, float(alpha))
+        # Composite whenever the foreground carries alpha — either from the
+        # token's own value or from the entry's @<alpha> suffix. contrast_ratio
+        # reads only rgb[:3], so skipping this would score rgba(0,0,0,0.45) as
+        # fully opaque (21.00 instead of the true 3.36).
+        token_alpha = fg[3]
+        fg_alpha = token_alpha * float(alpha) if alpha is not None else token_alpha
+        if fg_alpha < 1.0:
+            fg = composite(fg, bg, fg_alpha)
 
         value = contrast_ratio(fg, bg)
         threshold = TEXT_MIN if kind == "TEXT" else NON_TEXT_MIN
         label = "%s on %s" % (fg_name, bg_name)
         if alpha is not None:
             label += "@%s" % alpha
+        elif token_alpha < 1.0:
+            label += "@%s" % token_alpha
 
         if value >= threshold:
             print("PASS  %.2f  %s" % (value, label))

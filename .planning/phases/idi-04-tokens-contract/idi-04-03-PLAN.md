@@ -24,9 +24,9 @@ estimate:
 must_haves:
   truths:
     - "`scripts/check-02-contrast.py` 是零依赖的 python3(只用标准库),从 `frontend/style.css` 的 `:root` 围栏内读取**配对清单**,逐对计算 WCAG 对比度,全部达标时打印 `PASS: 0 failures` 并 `exit 0`,否则打印每个失败对与其比值并 `exit 1` ← CHECK-02 / ROADMAP Phase 4 SC5"
-    - "配对清单是围栏内的一段注释清单(与令牌同处一个 diff,漂移可见),不是脚本里的硬编码 Python 字面量 —— 这是「从 :root 块派生配对」的落地形态。语法:`/* PAIR <fg-token> ON <bg-token> TEXT */`(阈值 4.5:1)与 `/* PAIR <fg-token> ON <bg-token> NON-TEXT */`(阈值 3:1);可选的 `@<alpha>` 后缀(如 `TEXT@0.8`)表示 fg 先按该 α 与 bg 合成再算比值。脚本**必须**在清单引用了不存在的令牌名时大声失败(而不是静默跳过)——这是防止清单与令牌漂移的机制"
+    - "配对清单是围栏内的一段注释清单(与令牌同处一个 diff,漂移可见),不是脚本里的硬编码 Python 字面量 —— 这是「从 :root 块派生配对」的落地形态。语法:`/* PAIR <fg-token> ON <bg-token> TEXT */`(阈值 4.5:1)与 `/* PAIR <fg-token> ON <bg-token> NON-TEXT */`(阈值 3:1);可选的 `@<alpha>` 后缀(如 `TEXT@0.8`)表示 fg 先按该 α 与 bg 合成再算比值。脚本**必须**在清单引用了不存在的令牌名时大声失败(而不是静默跳过)——这是防止清单与令牌漂移的机制。清单还可含**层级断言行**,语法逐字为 `/* ORDER <quieter-fg-token> BEFORE <louder-fg-token> ON <bg-token> */`:它不断言阈值,而是断言**同一背景上**第一个 fg 的比值**严格小于**第二个 fg 的比值(即「谁更安静」),并打印二者之比作为度量;引用的两条 TEXT 对不在清单中时,同样大声失败"
     - "校验范围是**调和后的**范围(20 条文本对 + 4 条非文本对),不是审计报告的 4 条。文本对至少覆盖:`.hint` 的 `--color-text-muted` on `--color-surface-page`、`.badge-answered` 的 `--color-text-muted` on `--color-surface-sunken`、`.event-kind` 默认芯片的 `--color-kind-fg` on `--color-kind-default`、`#pending-count` / `.badge-pending` 的 `--color-action-warning` on `--color-surface-warning`、`.kind-command` 的 `--color-kind-fg` on `--color-kind-command`、六绿按钮的 `--color-action-*-fg` on `--color-action-*-surface`、`--color-action-primary-fg` on `--color-action-primary`、`.kind-say` 的 `--color-kind-fg` on `--color-kind-say`、`.kind-write` 的 `--color-kind-fg` on `--color-kind-write`、`.annotation-plain` 与 `.annotation-answer summary` 的 `--color-text-muted` on `--color-surface`、`.chat-user` 的 `--color-text-inverse` on `--color-surface-info-strong`、`#state-badge` 的 `--color-text-info` on `--color-surface-info`、`--color-text` / `--color-text-secondary` / `--color-text-muted` on 四个实际背景(`--gray-25` / `--white` / `--gray-50` / `--gray-100` 语义名)。非文本对 4 条:`--color-border-strong` on `--color-surface`(与 on `--gray-50`)、`--color-border-streaming` on `--gray-50`、`--color-border-success` on `--color-surface`,以及冻结轮标记 `--color-action-warning` on `--color-surface-page` ← A11Y-04 / A11Y-04b / UI-SPEC `## Contrast Verification`"
-    - "`--color-text-muted` 必须在**本文件实际出现的每一个背景**上通过:`--gray-25` 5.18:1、`--white` 5.41:1、`--gray-50` 4.96:1、`--gray-100` 4.75:1 —— 四条全过。若有人把 `--gray-600` 改成 `#767676` 或 `#737373`,清单里的 `--gray-25` / `--gray-100` 两条会立刻失败(这正是脚本存在的理由)← UI-SPEC note N-1"
+    - "`--color-text-muted` 必须在**本文件实际出现的每一个背景**上通过:`--gray-25` 5.18:1、`--white` 5.41:1、`--gray-50` 4.96:1、`--gray-100` 4.75:1 —— 四条全过。若有人把 `--gray-600` 改成 `#767676` 或 `#737373`,清单里的 `--gray-25` / `--gray-100` 两条会立刻失败(这正是脚本存在的理由)← UI-SPEC note N-1;**SC3 的「层级关系」半同样机器化**:清单含 `/* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */`,脚本断言 5.18 < 16.67 并打印 hint/正文比 **0.311**(= 5.18 / 16.67,UI-SPEC `## Hierarchy preserved, not just ratios` 的实测值)。门取**严格序关系**而非 0.30 阈值 —— UI-SPEC 已显式接受 0.311 对 `≤ ~0.30` guide 的残差,故 0.30 阈值门会在 HEAD 上立即失败、是个假门;严格序关系则精确捕获「有人把 `--color-text-muted` 加深到正文档」这一类改动(如把 `--gray-600` 改成 `#000000` → 打印 `FAIL: hierarchy inverted` 并 `exit 1`)← ROADMAP Phase 4 SC3(层级与比值一起校验)"
     - "**`opacity` 合成对被覆盖**:`.tier-desc` 的 `TEXT@0.8`(`#000` @0.8 on `--white` → 12.63:1)与归档态的 `TEXT@0.75`(`--color-text` @0.75 on `--color-surface-page` → 7.49:1)两条必须出现在清单里并通过 —— 覆盖 ≠ 失败,但**必须被覆盖**。已删除的两处(`.annotation-answered` 0.65、`.round-frozen` 0.55)不再出现在清单中,因为声明本身已消失 ← A11Y-04b / UI-SPEC `opacity` rulings 表"
     - "A11Y-04b 阈值边界(显式,脚本必须按此实现):合成逐通道在 8 位 sRGB 空间做 `round(α·fg + (1−α)·bg)`;比值 `(L_light + 0.05) / (L_dark + 0.05)`;阈值判定为**闭区间**(≥ 4.5 / ≥ 3.0 通过),**不做四舍五入到阈值** —— 4.496 判失败、4.504 判通过。此契约使 `#6a6a6a` 的 4.75 通过而 `#737373` 的 4.16 失败成为可复现的机器判定,而非人工目测 ← A11Y-04b boundary 行"
     - "A11Y-04b 精度契约(显式):WCAG 相对亮度 `L = 0.2126R + 0.7152G + 0.0722B`,通道先做 sRGB 反伽马(`c/255 ≤ 0.03928 ? c/255/12.92 : ((c/255+0.055)/1.055)^2.4`);比值报告保留 2 位小数。脚本对 `rgba()` 与 `#rgb` / `#rrggbb` 两种写法都必须解析(`--color-overlay-backdrop` 等三个 rgba 令牌虽不是配对成员,但令牌映射必须能解析它们而不崩)← A11Y-04b precision 行"
@@ -48,6 +48,10 @@ must_haves:
       to: "--gray-600"
       via: "四个实际背景上的比值构成 note N-1 的机器化守卫(改回 #767676 / #737373 立刻变红)"
       pattern: "--color-text-muted ON --gray-(25|100)"
+    - from: "`/* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */` 层级断言"
+      to: "--gray-600(经 --color-text-muted)"
+      via: "hint 的比值必须**严格小于**正文的比值(5.18 < 16.67,打印 0.311);把 muted 加深到正文档会让这条断言 FAIL,而四条比值门对此是**盲的**(加深只会让它们更容易通过)—— 这正是 SC3「层级与比值一起校验」的机器化形态"
+      pattern: "ORDER --color-text-muted BEFORE --color-text"
   prohibitions:
     - "不得引入任何第三方依赖或安装步骤 —— CHECK-02 只用 python3 标准库;`pip install` / `npm install` / 任何 vendored 包都是计划偏差与停止条件 ← D-06 / ROADMAP 全局硬规则 6"
     - "不得把配对清单写成脚本内的硬编码 Python 字面量,也不得在清单引用不存在的令牌名时静默跳过 —— 两者都会让「契约可执行」退化成「一次性清理」,正是本阶段要避免的 ← CHECK-01/02 的存在理由"
@@ -59,11 +63,11 @@ must_haves:
 ---
 
 <objective>
-交付第四条契约校验命令 `scripts/check-02-contrast.py`(CHECK-02):从 `:root` 围栏内的配对清单派生配对,逐对计算 WCAG 对比度,覆盖**调和后的**范围(20 条文本对 + 4 条非文本对,不是审计的 4 条),并实证四条命令的**失败方向**。
+交付第四条契约校验命令 `scripts/check-02-contrast.py`(CHECK-02):从 `:root` 围栏内的配对清单派生配对,逐对计算 WCAG 对比度,覆盖**调和后的**范围(下限 20 条文本对 + 4 条非文本对,不是审计的 4 条),并同时校验 **ROADMAP SC3 要求的另一半 —— 层级关系**(`/* ORDER … */` 断言:闸门说明文字必须比主正文安静,实测 hint/正文比 0.311),最后实证四条命令的**失败方向**。
 
-Purpose: 前三条命令是"计数守卫",只有 CHECK-02 校验**本阶段真正的主张** —— AA 达标值在声明处即选定。没有它,"契约可执行"就只是一句散文;有了它,后续四个阶段改任何一个令牌值都会被立刻判定为通过或失败。
+Purpose: 前三条命令是"计数守卫",只有 CHECK-02 校验**本阶段真正的主张** —— AA 达标值在声明处即选定,且**层级与比值一起校验**(SC3)。没有它,"契约可执行"就只是一句散文;有了它,后续四个阶段改任何一个令牌值都会被立刻判定为通过或失败 —— 包括「把 muted 加深以图省事」这一类**比值门看不见**的改动。
 
-Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */` 配对清单;四条命令的失败方向实证记录。
+Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */` 配对清单与 `/* ORDER … */` 层级断言;四条命令的失败方向实证记录(CHECK-02 两次)。
 
 **依赖说明:** 本计划在 wave 3 —— 它要读取 Plan 01 / Plan 02 完成后的令牌集合(配对清单引用令牌名),且需要向 `frontend/style.css` 的围栏内写入清单。由于本仓库 `use_worktrees=false`(并行计划共用同一工作树),让本计划与正在写 `style.css` 的 Plan 02 并发会造成读写竞态,故串行在 02 之后。
 </objective>
@@ -99,11 +103,14 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
     `/* PAIR <fg-token> ON <bg-token> TEXT */`(阈值 4.5:1)
     `/* PAIR <fg-token> ON <bg-token> NON-TEXT */`(阈值 3:1)
     可选 α 后缀作用于 fg:`/* PAIR <fg-token> ON <bg-token> TEXT@0.8 */`。
+    层级断言行(SC3 的「层级关系」半,第二种断言形态):
+    `/* ORDER <quieter-fg-token> BEFORE <louder-fg-token> ON <bg-token> */`
+    语义:断言 `ratio(quieter on bg) < ratio(louder on bg)`,两个比值都必须已作为 TEXT 对出现在本清单中;脚本打印二者之比(保留 3 位小数)作为度量。
     清单必须以 `--` 令牌名书写,**绝不写 hex** —— 清单引用未声明的令牌名时脚本必须大声失败。
 
-    **清单内容(调和后的范围:20 条文本对 + 4 条非文本对),逐条按 UI-SPEC 的三张表落笔:**
-    - `.hint` 一族:`--color-text-muted ON --color-surface-page TEXT`(5.18)
-    - `.badge-answered`:`--color-text-muted ON --color-surface-sunken TEXT`(4.96)
+    **清单内容(下限:20 条文本对 + 4 条非文本对 —— 见下方「条数口径」),逐条按 UI-SPEC 的三张表落笔:**
+    - `.hint` 一族:`--color-text-muted ON --gray-25 TEXT`(5.18;`--gray-25` 即 `--color-surface-page`,acceptance 逐字要求 primitive 形态)
+    - `.badge-answered`:`--color-text-muted ON --gray-50 TEXT`(4.96;`--gray-50` 即 `--color-surface-sunken`)
     - `--color-text-muted` 的另外两个实际背景:`--color-text-muted ON --white TEXT`(5.41)、`--color-text-muted ON --gray-100 TEXT`(4.75)—— **这四条构成 note N-1 的机器化守卫**
     - `--color-text` 与 `--color-text-secondary` 各自在其实际背景上的对(至少 `--color-text ON --gray-25 TEXT`、`--color-text-secondary ON --gray-25 TEXT`、`--color-text-secondary ON --amber-25 TEXT`)
     - 事件类别芯片:`--color-kind-fg ON --color-kind-default TEXT`(5.41)、`--color-kind-fg ON --color-kind-say TEXT`(5.87)、`--color-kind-fg ON --color-kind-write TEXT`(5.64)、`--color-kind-fg ON --color-kind-command TEXT`(5.32)、`--color-kind-fg ON --color-kind-error TEXT`、`--color-kind-fg ON --color-kind-read TEXT`、`--color-kind-fg ON --color-kind-done TEXT`
@@ -118,12 +125,17 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
     - **非文本 4 条**:`--color-border-strong ON --white NON-TEXT`(3.45)、`--color-border-strong ON --gray-50 NON-TEXT`(3.17)、`--color-border-streaming ON --gray-50 NON-TEXT`(5.38)、`--color-border-success ON --white NON-TEXT`(5.64)
     - **冻结轮标记(非文本)**:`--color-action-warning ON --gray-25 NON-TEXT`(5.10)—— S-4 裁定的结构性标记必须过 3:1
     - **α 合成 2 条(必须覆盖,覆盖 ≠ 失败)**:`--black ON --white TEXT@0.8`(12.63,`.tier-desc`)、`--color-text ON --gray-25 TEXT@0.75`(7.49,归档态)
-    共 20 条文本对(含 2 条 α 合成)与 4 条非文本对(冻结轮标记另计,若计入则 5 条 —— 以实际落笔条数为准并在 SUMMARY 记录)。
+    - **层级断言 1 条(SC3 的「层级关系」半;它不引入新比值,只断言清单里已有两条 TEXT 对之间的序关系)**:
+      `/* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */`
+      它要求清单中**逐字**存在 `--color-text-muted ON --gray-25 TEXT`(5.18)与 `--color-text ON --gray-25 TEXT`(16.67)两条对 —— 二者已分别在上面第 1 条与「`--color-text` … 实际背景」条列出。脚本应打印 `ORDER 0.311  --color-text-muted before --color-text on --gray-25`。**这一行是把 UI-SPEC 的 0.311 从散文变成可执行输出**(没有它,「层级」只剩 Plan 01 表格里的一句注释文字)。
+
+    **条数口径(下限,不是等式):** UI-SPEC 调和后的范围是「20 条文本失败声明 + 4 条非文本失败」—— 那是**审计侧的声明数**,是本清单的**下限**;按上面三张表逐条落笔后实际枚举出 **29 条文本对**(含 2 条 α 合成)与 **5 条非文本对**(4 条 + 冻结轮标记)。门是下限(总 ≥ 24 / TEXT ≥ 20 / NON-TEXT ≥ 4),不是等式;SUMMARY 按实际落笔条数记录,不要照抄 20/4。
 
     2) **新建 `scripts/check-02-contrast.py`**(零依赖,只用 python3 标准库)。职责:
     - 读 `frontend/style.css`;用与 CHECK-01 同源的围栏状态机(`===== DESIGN TOKENS: START` / `END`)取出围栏内文本。
     - 建令牌映射:解析 `--name: value;`,支持三种值形态 —— `#rgb` / `#rrggbb` / `rgba(r, g, b, a)`,以及 `var(--other)` 链式解析(递归到 primitive;出现环或未定义时**大声失败**并列出该名字)。
     - 解析 `/* PAIR fg ON bg KIND[@alpha] */` 清单行。
+    - 解析 `/* ORDER quieter BEFORE louder ON bg */` 层级断言行:取上面两条 TEXT 对**已算出的比值**求 `quieter/louder`,做**严格** `<` 判定;打印 `ORDER <metric>  <quieter> before <louder> on <bg>`(metric 保留 3 位小数)。若 `quieter >= louder`,打印 `FAIL: hierarchy inverted  <metric>  <quieter> not before <louder> on <bg>  (need < 1.000)` 并计入失败数(末行因此变成 `FAIL: <n> failures`、`exit 1`);若引用的任一条对不在清单中,打印 `FAIL: unknown pair <fg> ON <bg>` 并 `exit 1`(与未声明令牌同一漂移规则)。**实现规模:`ORDER` 支持约 10 行(一次清单解析、两次查表、一次比较、一次打印),不引入新依赖、不改动任何既有比值计算** —— 这是对 UI-SPEC「~15 lines of python3」契约的**有界追加**,不是重写。
     - WCAG 相对亮度:`L = 0.2126R + 0.7152G + 0.0722B`,通道先做 sRGB 反伽马(`c/255 <= 0.03928 ? c/255/12.92 : ((c/255+0.055)/1.055)**2.4`)。
     - 比值 `(L_light + 0.05) / (L_dark + 0.05)`,保留 2 位小数。
     - α 合成:逐通道在 8 位 sRGB 空间 `round(alpha*fg + (1-alpha)*bg)`,再做反伽马。
@@ -132,25 +144,27 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
     - **清单引用了未声明的令牌名 → 打印 `FAIL: unknown token <name>` 并 `exit 1`**(不得静默跳过)。
     - 文件头写 `#!/usr/bin/env python3`,并 `chmod +x`。
 
-    3) 运行它:必须打印 `PASS: 0 failures` 并退出 0。若有失败,**先核对实现是否写错**(某个选择器被迁到了错误的令牌、或某个令牌值被改过),**不要**为了通过而改阈值或改令牌值 —— 值已被 UI-SPEC 逐对重算并冻结。
+    3) 运行它:必须打印 `PASS: 0 failures` 并退出 0,且必须出现一行 `ORDER 0.311  --color-text-muted before --color-text on --gray-25`(= 5.18 / 16.67,UI-SPEC `## Hierarchy preserved` 的实测 hint/正文比)。若打印的不是 0.311,先核对比值计算或令牌值,不要改这个数字。若有失败,**先核对实现是否写错**(某个选择器被迁到了错误的令牌、或某个令牌值被改过),**不要**为了通过而改阈值或改令牌值 —— 值已被 UI-SPEC 逐对重算并冻结。
 
-    **不要做:** 不要把清单写进 Python 源码;不要引入第三方依赖;不要放宽阈值;不要在脚本里写 `git` 命令或写文件;不要把已删除的两处 opacity 重新引入清单。
+    **不要做:** 不要把清单写进 Python 源码;不要引入第三方依赖;不要放宽阈值;不要**新增** 0.30 之类的「层级阈值门」(UI-SPEC 已显式接受 0.311 对 `≤ ~0.30` guide 的残差,加这个门会在 HEAD 上立即失败);不要在脚本里写 `git` 命令或写文件;不要把已删除的两处 opacity 重新引入清单。
   </action>
   <verify>
     <automated>python3 scripts/check-02-contrast.py</automated>
-    <fails_when>退出码非 0,或 stdout 不含 `PASS: 0 failures`(出现任何 `FAIL` 行即失败)</fails_when>
-    <automated>grep -c '/\* PAIR ' frontend/style.css; grep -c 'PAIR .* TEXT' frontend/style.css; grep -c 'PAIR .* NON-TEXT' frontend/style.css</automated>
-    <fails_when>第一行不是清单实际条数(应为 24 条及以上);第二行少于 20(文本对不足调和后的范围);第三行少于 4(非文本对不足)</fails_when>
+    <fails_when>退出码非 0,或 stdout 不含 `PASS: 0 failures`,或不含 `ORDER 0.311` 行(出现任何 `FAIL` 行即失败)</fails_when>
+    <automated>grep -c '/\* PAIR ' frontend/style.css; grep -c 'PAIR .* TEXT' frontend/style.css; grep -c 'PAIR .* NON-TEXT' frontend/style.css; grep -c '/\* ORDER ' frontend/style.css; grep -c -- 'ORDER --color-text-muted BEFORE --color-text ON --gray-25' frontend/style.css</automated>
+    <fails_when>第一行少于 24(总对数不足);第二行少于 20(文本对不足调和后的范围);第三行少于 4(非文本对不足);第四行不是 1(SC3 的层级断言缺失);第五行不是 1(层级断言被写成了别的令牌组合)</fails_when>
     <automated>python3 -c "import ast,sys; src=open('scripts/check-02-contrast.py').read(); tree=ast.parse(src); mods={n.names[0].name.split('.')[0] for n in ast.walk(tree) if isinstance(n,ast.Import)} | {n.module.split('.')[0] for n in ast.walk(tree) if isinstance(n,ast.ImportFrom) and n.module}; print(sorted(mods))"</automated>
     <fails_when>输出的模块集合中出现任何非标准库名字(如 requests / numpy / wcag_contrast)—— 零依赖是本阶段的硬约束</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh && node --check frontend/app.js</automated>
     <fails_when>任一命令退出码非 0,或 stdout 出现 FAIL 字样(向围栏内追加清单不得破坏另外三条守卫)</fails_when>
-    <human-check>在 DevTools Computed 面板抽验 CHECK-02 的三条关键结论:`#ai-route-select` 的 `border-top-color` == rgb(138, 138, 138) 且其 `background-color` == rgb(255, 255, 255)(对应 `--color-border-strong ON --white` = 3.45:1);`.hint` 的 `color` == rgb(106, 106, 106) 且其所在 `#doc-pane` 背景 == rgb(250, 250, 250)(对应 5.18:1);`#stream-banner` 的 `border-top-color` == rgb(138, 101, 8)。三者与脚本打印的比值必须互相印证。</human-check>
+    <human-check>在 DevTools Computed 面板抽验 CHECK-02 的三条关键结论:`#ai-route-select` 的 `border-top-color` == rgb(138, 138, 138) 且其 `background-color` == rgb(255, 255, 255)(对应 `--color-border-strong ON --white` = 3.45:1);`.hint` 的 `color` == rgb(106, 106, 106) 且其所在 `#doc-pane` 背景 == rgb(250, 250, 250)(对应 5.18:1);`#stream-banner` 的 `border-top-color` == rgb(138, 101, 8)。三者与脚本打印的比值必须互相印证。**层级断言的可观察形态:** 再读 `.markdown-body` 的 `color`,应为 rgb(26, 26, 26)(正文,16.67:1)—— `.hint` 的灰(rgb(106, 106, 106))必须**明显浅于**正文的近乎黑,即 `.hint` 比正文安静;若二者一样深或 `.hint` 更深,层级已倒置,脚本的 `ORDER 0.311` 应已先一步变成 `FAIL: hierarchy inverted`。**期望关系:hint 浅于正文(比值更小);失败条件:二者相等或 hint 更深。**</human-check>
   </verify>
   <acceptance_criteria>
-    - `python3 scripts/check-02-contrast.py` 退出 0 且 stdout 末行为 `PASS: 0 failures`
+    - `python3 scripts/check-02-contrast.py` 退出 0,stdout 含 `PASS: 0 failures` **且**含一行 `ORDER 0.311  --color-text-muted before --color-text on --gray-25`(SC3 的层级半:0.311 = 5.18 / 16.67,与 UI-SPEC `## Hierarchy preserved` 的实测值一致)
     - `scripts/check-02-contrast.py` 存在且可执行;其 import 集合只含 python3 标准库(无第三方模块)
-    - `frontend/style.css` 的围栏内 `/* PAIR … */` 清单行数 ≥ 24,其中 `TEXT` 类 ≥ 20、`NON-TEXT` 类 ≥ 4
+    - `frontend/style.css` 的围栏内 `/* PAIR … */` 清单行数 ≥ 24,其中 `TEXT` 类 ≥ 20、`NON-TEXT` 类 ≥ 4(下限,不是等式 —— 按三张表逐条落笔后实际为 29 文本 + 5 非文本)
+    - `frontend/style.css` 的围栏内含**恰好 1 条** `/* ORDER … */` 层级断言,且逐字为 `/* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */`
+    - 清单同时含 `--color-text-muted ON --gray-25 TEXT` 与 `--color-text ON --gray-25 TEXT` 两条对(ORDER 断言的两个操作数 —— 缺任一,脚本按「unknown pair」大声失败)
     - 清单含 `--color-text-muted ON --gray-25`、`--color-text-muted ON --white`、`--color-text-muted ON --gray-50`、`--color-text-muted ON --gray-100` 四条
     - 清单含 `--color-action-warning ON --gray-25 NON-TEXT`(冻结轮标记)
     - 清单含两条 α 合成对:一条 `TEXT@0.8` 与一条 `TEXT@0.75`
@@ -159,7 +173,7 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
     - 脚本对未声明令牌名的处理是 `exit 1` 且 stdout 含 `unknown token`(可用一次临时改名实证,随后还原)
     - 另外三条守卫命令仍 PASS;`node --check frontend/app.js` 退出 0
   </acceptance_criteria>
-  <done>CHECK-02 脚本就位且零依赖;围栏内配对清单以令牌名书写、覆盖调和后的 20 文本 + 4 非文本(含冻结轮标记与两条 α 合成对);脚本打印 `PASS: 0 failures`;清单引用未声明令牌时大声失败;另三条守卫未被破坏。</done>
+  <done>CHECK-02 脚本就位且零依赖;围栏内配对清单以令牌名书写、覆盖调和后的范围(下限 20 文本 + 4 非文本,实际落笔 29 + 5,含冻结轮标记与两条 α 合成对);脚本打印 `PASS: 0 failures` 与 `ORDER 0.311`(SC3 的层级半机器化);清单引用未声明令牌/未列出配对时大声失败;另三条守卫未被破坏。</done>
 </task>
 
 <task type="auto">
@@ -175,9 +189,11 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
 
     **前置:先把工作树提交干净。** 下面的失败方向实证会临时篡改 `frontend/style.css` 再用 `git checkout -- frontend/style.css` 还原 —— 只有在文件已提交的前提下才安全。**若工作树有未提交的改动,先提交,不要执行 `git checkout`。** 分支策略(是否为本阶段开新分支)由 orchestrator 在 execute 时决定,本计划**不规定**也不创建分支 —— 本任务只依赖「工作树已提交」这一前提,不依赖任何分支名(仓库 `CLAUDE.md` §5 的分支纪律归 orchestrator 裁量)。
 
-    **失败方向实证(每条命令一次:注入违规 → 观察到 FAIL → 还原 → 观察到 PASS)。逐条记录命令、注入内容、观察到的输出与退出码:**
+    **失败方向实证(每条命令至少一次:注入违规 → 观察到 FAIL → 还原 → 观察到 PASS;CHECK-02 有两种断言形态,故做两次)。逐条记录命令、注入内容、观察到的输出与退出码:**
     - **CHECK-01**:在围栏**之外**追加一行 `#deadbe`(临时)。期望 `bash scripts/check-01-token-conformance.sh` 打印 `FAIL` 且退出 1,计数值 +1。还原后应回到 `PASS`、计数 0。
-    - **CHECK-02**:临时把清单里的一条 `TEXT` 对改成一个必然失败的组合(例如把 `--color-text-muted` 那一行临时替换成 `--gray-300` on `--gray-25`,比值约 1.1)。期望 `python3 scripts/check-02-contrast.py` 打印该对的 `FAIL` 行且末行为 `FAIL: 1 failures`、退出 1。还原后应回到 `PASS: 0 failures`。
+    - **CHECK-02(两次注入,分别打中它的两种断言形态)**:
+      ①**阈值失败** —— 临时把清单里的一条 `TEXT` 对改成一个必然失败的组合(例如把 `--color-text-muted` 那一行临时替换成 `--gray-300` on `--gray-25`,比值约 1.1)。期望 `python3 scripts/check-02-contrast.py` 打印该对的 `FAIL` 行且末行为 `FAIL: 1 failures`、退出 1。还原后应回到 `PASS: 0 failures`。
+      ②**层级倒置(SC3 的失败方向,必须实证)** —— 临时把围栏内 `--gray-600` 的值改成 `#000000`(即 muted 变成正文档的最深色)。期望 `ORDER` 行变成 `FAIL: hierarchy inverted  1.207  --color-text-muted not before --color-text on --gray-25  (need < 1.000)`、末行 `FAIL: 1 failures`、退出 1;而**四条 `--color-text-muted` 背景对仍全部 PASS**(20.12 / 21.00 / 19.26 / 18.43 —— 加深只会让比值更大)。这条对比正是「层级与比值一起校验」的证明:**比值门对「加深」是盲的,只有层级断言抓得到它**。还原后 `ORDER 0.311` 必须回来。两次注入各自记录注入前 / 注入后 / 还原后的原始输出。
     - **CHECK-03**:临时把 `^\.hidden {` 那一行前加一个空格(破坏行首锚点)。期望 `bash scripts/check-03-hidden-uniqueness.sh` 打印 `FAIL` 且退出 1。还原后回到 `PASS`(计数 1)。
     - **CHECK-04**:临时在任意规则里追加一条 `color: red !important;`(注意:**只用于实证,必须还原**)。期望 `bash scripts/check-04-important-count.sh` 打印 `FAIL` 且退出 1(计数 2)。还原后回到 `PASS`(计数 1)。
     **每次还原后都必须重跑该命令确认回到 PASS**,并在 SUMMARY 里记录四组"注入前 / 注入后 / 还原后"的原始输出。
@@ -191,7 +207,7 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
     - `git status --porcelain frontend/` → 只有 `frontend/style.css`;`ls frontend/vendor/` → 仅 `marked.min.js`
     - `git diff --name-only HEAD -- frontend/app.js frontend/index.html` → 输出为空
     - `git diff --name-only HEAD -- frontend/style.css` → 只有这一个文件
-    - **确认没有残留的实证篡改**:`frontend/style.css` 中不得出现 `#deadbe`、不得出现清单里的 `--gray-300 on --gray-25`,`grep -c '!important;'` 必须回到 1
+    - **确认没有残留的实证篡改**:`frontend/style.css` 中不得出现 `#deadbe`、不得出现清单里的 `--gray-300 on --gray-25`,`grep -c '!important;'` 必须回到 1,且 `grep -c -- '--gray-600: #6a6a6a' frontend/style.css` 必须回到 1(层级倒置注入的还原,用正向断言而非否定断言)
 
     **运行时收口(人工,具名):** 在运行中的应用里做一次全阶段 DevTools Computed 抽验 —— 覆盖 Plan 01 与 Plan 02 各任务列出的具名属性;重点复验两条下游门:①`#brainstorm-view h2` 仍为 14px / rgb(138, 101, 8);②冻结轮的 `box-shadow` 含 `inset 3px 0 0 rgb(138, 101, 8)` 且 `opacity` == 1。**本环境截图不可用、headless 渲染被挡 —— 不规划视觉 diff。**
 
@@ -200,8 +216,8 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
   <verify>
     <automated>bash scripts/check-01-token-conformance.sh && python3 scripts/check-02-contrast.py && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh</automated>
     <fails_when>任一命令退出码非 0,或 stdout 出现 FAIL 字样(四条必须各自独立通过)</fails_when>
-    <automated>test "$(grep -c '#deadbe' frontend/style.css)" = "0" && test "$(grep -c -- '--gray-300 on --gray-25' frontend/style.css)" = "0" && test "$(grep -c '!important;' frontend/style.css)" = "1"</automated>
-    <fails_when>任一 `test` 返回非 0 —— 即工作树里残留了实证用的篡改(`#deadbe` 或清单里的失败对),或 `!important;` 声明数不是 1(注入的那条未还原)</fails_when>
+    <automated>test "$(grep -c '#deadbe' frontend/style.css)" = "0" && test "$(grep -c -- '--gray-300 on --gray-25' frontend/style.css)" = "0" && test "$(grep -c '!important;' frontend/style.css)" = "1" && test "$(grep -c -- '--gray-600: #6a6a6a' frontend/style.css)" = "1"</automated>
+    <fails_when>任一 `test` 返回非 0 —— 即工作树里残留了实证用的篡改(`#deadbe`、清单里的失败对,或层级倒置注入未还原:`--gray-600` 不是 `#6a6a6a`),或 `!important;` 声明数不是 1(注入的那条未还原)</fails_when>
     <automated>test -z "$(comm -23 <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u) <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u))" && node --check frontend/app.js && .venv/bin/python -m pytest -q</automated>
     <fails_when>第一条输出非空(存在未声明的 var() 消费);或 node 退出非 0;或 pytest 摘要行 passed 数少于改动前实测的收集数</fails_when>
     <automated>test -z "$(git ls-files --others --exclude-standard frontend/)" && test "$(ls frontend/vendor/)" = "marked.min.js" && test -z "$(git diff --name-only HEAD -- frontend/app.js frontend/index.html)"</automated>
@@ -209,15 +225,16 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
     <human-check>全阶段 DevTools Computed 抽验:①`#brainstorm-view h2` 的 `font-size` == 14px 且 `color` == rgb(138, 101, 8)(ROADMAP Phase 5 SC5 / Phase 6 SC5 的下游门);②打开历史轮次,`#round-doc` 的 `box-shadow` 含 `inset 3px 0 0 rgb(138, 101, 8)`、`opacity` == 1、`filter` == `saturate(0.6)`,且文档区无横向位移;③`.hint` 的 `color` == rgb(106, 106, 106);④`#ai-route-select` 的 `border-top-color` == rgb(138, 138, 138);⑤在应用里点一次「处理本轮批注」与一次「发送」,确认交互路径未被令牌迁移破坏(五条 b9664e0 修复的回归复验在 Phase 8 的 REG-03,此处只做冒烟)。</human-check>
   </verify>
   <acceptance_criteria>
-    - 四条命令依次独立运行均退出 0:CHECK-01 / CHECK-02 / CHECK-03 / CHECK-04
-    - SUMMARY 里记录了四组失败方向实证的原始输出(注入前 / 注入后 / 还原后),每组都含一条可观察的 `FAIL` 与一条可观察的 `PASS`
-    - `grep -c '#deadbe' frontend/style.css` 输出 0;`grep -c -- '--gray-300 on --gray-25' frontend/style.css` 输出 0;`grep -c '!important;' frontend/style.css` 输出 1(无残留篡改)
+    - 四条命令依次独立运行均退出 0:CHECK-01 / CHECK-02 / CHECK-03 / CHECK-04;CHECK-02 的输出同时含 `PASS: 0 failures` 与 `ORDER 0.311`
+    - SUMMARY 里记录了四组失败方向实证的原始输出(注入前 / 注入后 / 还原后),每组都含一条可观察的 `FAIL` 与一条可观察的 `PASS`;其中 CHECK-02 一组含**两次**注入(阈值失败 + 层级倒置)
+    - CHECK-02 的层级倒置实证:把 `--gray-600` 临时加深到正文档时,`ORDER` 行打印 `FAIL: hierarchy inverted` 且退出 1,**同时四条 `--color-text-muted` 背景对仍全部 PASS** —— 这是「层级与比值一起校验」(SC3)的失败方向证明
+    - `grep -c '#deadbe' frontend/style.css` 输出 0;`grep -c -- '--gray-300 on --gray-25' frontend/style.css` 输出 0;`grep -c '!important;' frontend/style.css` 输出 1;`grep -c -- '--gray-600: #6a6a6a' frontend/style.css` 输出 1(无残留篡改)
     - `comm -23 <(...var(...)...) <(...--...:...)>` 输出为空;反向孤儿扫描除 `--green-800` 外为空
     - `node --check frontend/app.js` 退出 0;pytest 全绿且 passed 数不少于改动前实测收集数
     - `git status --porcelain frontend/` 只有 `frontend/style.css`;`ls frontend/vendor/` 仅 `marked.min.js`;`git diff --name-only HEAD -- frontend/app.js frontend/index.html` 输出为空
     - `git diff --name-only HEAD -- frontend/style.css` 只列出这一个文件
   </acceptance_criteria>
-  <done>四条命令的失败方向经实证(注入 → FAIL → 还原 → PASS),四组原始输出记入 SUMMARY;阶段全部自动化门绿;工作树无残留篡改;下游门(`#brainstorm-view h2` 14px / rgb(138,101,8))与冻结轮标记经人工实检。</done>
+  <done>四条命令的失败方向经实证(注入 → FAIL → 还原 → PASS;CHECK-02 两次注入,含层级倒置),四组原始输出记入 SUMMARY;SC3 的层级半有了自己的失败方向(ORDER 断言在四条背景对全 PASS 时仍报 FAIL);阶段全部自动化门绿;工作树无残留篡改;下游门(`#brainstorm-view h2` 14px / rgb(138,101,8))与冻结轮标记经人工实检。</done>
 </task>
 
 </tasks>
@@ -248,17 +265,17 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
 **自动化门(每条都可独立运行,均须给出明确 PASS/FAIL):**
 
 1. `bash scripts/check-01-token-conformance.sh` → PASS,围栏外裸 hex = 0
-2. `python3 scripts/check-02-contrast.py` → `PASS: 0 failures`
+2. `python3 scripts/check-02-contrast.py` → `PASS: 0 failures`,且打印 `ORDER 0.311  --color-text-muted before --color-text on --gray-25`(SC3 的层级半)
 3. `bash scripts/check-03-hidden-uniqueness.sh` → PASS,`^\.hidden {` = 1
 4. `bash scripts/check-04-important-count.sh` → PASS,`!important;` 声明数 = 1
 5. Gate 2(`comm -23`)→ 输出为空;反向孤儿扫描 → 除 `--green-800` 外为空
-6. `grep -c '#deadbe' frontend/style.css` → 0;`grep -c -- '--gray-300 on --gray-25' frontend/style.css` → 0;`grep -c '!important;' frontend/style.css` → 1(无残留篡改)
+6. `grep -c '#deadbe' frontend/style.css` → 0;`grep -c -- '--gray-300 on --gray-25' frontend/style.css` → 0;`grep -c '!important;' frontend/style.css` → 1;`grep -c -- '--gray-600: #6a6a6a' frontend/style.css` → 1(无残留篡改)
 7. `node --check frontend/app.js` → 退出 0
 8. `.venv/bin/python -m pytest -q` → 全绿
 9. `git status --porcelain frontend/` → 只有 `frontend/style.css`;`ls frontend/vendor/` → 仅 `marked.min.js`
 10. `git diff --name-only HEAD -- frontend/app.js frontend/index.html` → 输出为空
 
-**失败方向实证(SC5 的实质):** 四条命令各做一次"注入违规 → 观察到 FAIL → 还原 → 观察到 PASS",四组原始输出记入 SUMMARY。只验成功路径不构成 SC5 的证明。
+**失败方向实证(SC5 的实质):** 四条命令各做一次"注入违规 → 观察到 FAIL → 还原 → 观察到 PASS",四组原始输出记入 SUMMARY。只验成功路径不构成 SC5 的证明。**CHECK-02 做两次** —— 阈值失败与层级倒置各一次;后者同时是 **SC3 的失败方向**(ROADMAP SC3 要求"层级关系与比值一起校验":把 `--color-text-muted` 加深到正文档时,四条背景对比值全部**更**容易通过,只有 `ORDER` 断言会 FAIL)。
 
 **pytest 基线说明(必须照实记录):** ROADMAP 与 REQUIREMENTS 写的基线是 **219**,但规划时对工作树实测 `pytest --collect-only -q` 收集到 **225** 条。门按"passed 数 ≥ 执行本计划前实测的收集数"判定,并在 SUMMARY 里记录实际数字 —— 照抄 219 会造出一个必然失败的假门。
 
@@ -266,10 +283,10 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
 </verification>
 
 <success_criteria>
-1. CHECK-02 可独立运行,打印 `PASS: 0 failures`,零依赖(标准库 AST 扫描为证)
-2. 配对清单以令牌名书写于围栏内,覆盖调和后的 20 文本对 + 4 非文本对,含冻结轮标记与两条 α 合成对
-3. 清单引用未声明令牌时脚本大声失败(契约漂移可检出)
-4. 四条命令的失败方向均经实证,四组原始输出记入 SUMMARY
+1. CHECK-02 可独立运行,打印 `PASS: 0 failures` 与 `ORDER 0.311`(SC3 的层级半),零依赖(标准库 AST 扫描为证)
+2. 配对清单以令牌名书写于围栏内,覆盖调和后的范围(下限 20 文本对 + 4 非文本对,实际 29 + 5),含冻结轮标记、两条 α 合成对,以及 1 条 `/* ORDER … */` 层级断言(SC3:层级与比值一起校验)
+3. 清单引用未声明令牌名(或 ORDER 引用未列出的配对)时脚本大声失败(契约漂移可检出)
+4. 四条命令的失败方向均经实证(CHECK-02 两次:阈值失败 + 层级倒置),四组原始输出记入 SUMMARY
 5. 阶段全部自动化门绿;工作树无残留篡改
 6. `app.js` / `index.html` 零改动;`frontend/vendor/` 仍只有 `marked.min.js`;pytest 基线不下降
 7. `#brainstorm-view h2` 仍计算为 14px / rgb(138, 101, 8);冻结轮的琥珀 inset 标记可见且 `opacity` == 1
@@ -298,6 +315,7 @@ Plan 01 已列出本阶段的完整符号清单;本计划新增的部分如下�
 | `/* PAIR <fg> ON <bg> TEXT */` | 注释清单行(≥ 20 行) | 文本对,阈值 4.5:1 |
 | `/* PAIR <fg> ON <bg> NON-TEXT */` | 注释清单行(≥ 4 行) | 非文本对,阈值 3:1 |
 | `/* PAIR <fg> ON <bg> TEXT@<alpha> */` | 注释清单行(2 行) | α 合成对(`.tier-desc` 的 0.8、归档态的 0.75) |
+| `/* ORDER <quieter-fg> BEFORE <louder-fg> ON <bg> */` | 注释清单行(1 行) | **层级断言**(SC3):同一背景上第一个 fg 的比值必须严格小于第二个;脚本打印二者之比(本阶段为 `0.311`,即 UI-SPEC 的 hint/正文比) |
 
 **新增 CSS 自定义属性:** 无。
 **新增/变更的选择器:** 无。

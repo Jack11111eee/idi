@@ -141,7 +141,19 @@ def main():
     text_pairs = {}  # (fg, bg) -> ratio, for non-alpha TEXT pairs (ORDER operands)
     order_lines = []
 
-    for match in PAIR_RE.finditer(fence):
+    # Coverage floor: an empty or truncated manifest would otherwise satisfy
+    # "failures == 0" trivially. Floors are >=24 pairs, >=20 TEXT, >=4 NON-TEXT.
+    pairs = list(PAIR_RE.finditer(fence))
+    text_n = sum(1 for m in pairs if m.group(3) == "TEXT")
+    nontext_n = len(pairs) - text_n
+    if len(pairs) < 24 or text_n < 20 or nontext_n < 4:
+        print(
+            "FAIL: manifest coverage %d pairs (%d TEXT / %d NON-TEXT) below floor 24/20/4"
+            % (len(pairs), text_n, nontext_n)
+        )
+        sys.exit(1)
+
+    for match in pairs:
         fg_name, bg_name, kind, alpha = match.groups()
         fg = resolve(fg_name, decls)
         bg = resolve(bg_name, decls)

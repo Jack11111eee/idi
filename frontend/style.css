@@ -94,6 +94,7 @@
   /* Tier 2 — declared with their consumers (Hard Rule 5): .chat-user / .event-kind / .fatal */
   --color-text-inverse: var(--white);
   --color-kind-fg: var(--white);
+  --color-border-danger-subtle: var(--red-200);
 
   /* Spacing scale — 4px base + the half-step band (S-1). All 12 steps are consumed. */
   --space-px: 1px;
@@ -111,7 +112,36 @@
 
   /* Layout — sidebar fixed width (consumed by #sidebar) */
   --sidebar-w: 420px;
-  --color-border-danger-subtle: var(--red-200);
+
+  /* Type scale — 6 sizes + the 14px reading anchor (S-2). All consumed. */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 15px;
+  --text-xl: 16px;
+
+  /* Weight — two ranks, both consumed; the 500 rank is deliberately NOT declared (Q4). */
+  --fw-regular: 400;
+  --fw-semibold: 600;
+
+  /* Line height — three, all consumed. */
+  --lh-tight: 1.35;
+  --lh-compact: 1.6;
+  --lh-reading: 1.75;
+
+  /* Radius — three values covering all eight existing radii (TOKEN-06). */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+
+  /* z-index ordering assertion (TOKEN-07): --z-badge (10) < --z-banner (20)
+     < --z-overlay (100) < --z-selection-menu (200). badge < banner is load-bearing
+     for b9664e0 FIX 2 — the stream banner must stay above the state badge. */
+  --z-badge: 10;
+  --z-banner: 20;
+  --z-overlay: 100;
+  --z-selection-menu: 200;
 }
 /* ===== DESIGN TOKENS: END ===== */
 
@@ -151,10 +181,10 @@ html, body {
   background: var(--color-surface);
 }
 
-.hint { color: var(--color-text-muted); font-size: 13px; }
+.hint { color: var(--color-text-muted); font-size: var(--text-base); }
 
 /* 失败内联提示(UI-1.4):落在发起控件正下方,与 .hint 同阶、同间距 */
-.inline-error { color: var(--color-action-danger); font-size: 13px; margin: var(--space-1-5) 0 0; }
+.inline-error { color: var(--color-action-danger); font-size: var(--text-base); margin: var(--space-1-5) 0 0; }
 
 /* 面板与折叠态 */
 .panel-header {
@@ -168,7 +198,7 @@ html, body {
   user-select: none;
 }
 
-.panel-header h2 { margin: 0; font-size: 14px; font-weight: 600; }
+.panel-header h2 { margin: 0; font-size: var(--text-md); font-weight: var(--fw-semibold); }
 
 .panel-body { padding: var(--space-3) var(--space-4); }
 .panel-body.collapsed { display: none; }
@@ -184,8 +214,8 @@ html, body {
   flex: 0 0 auto;
   padding: var(--space-1-5) var(--space-1-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
   background: var(--color-surface);
 }
 
@@ -193,16 +223,16 @@ html, body {
   flex: 1;
   padding: var(--space-1-5) var(--space-2);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
 }
 
 button {
   padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: 13px;
+  font-size: var(--text-base);
   cursor: pointer;
 }
 button:hover { background: var(--color-surface-hover); }
@@ -216,7 +246,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   max-height: 55vh;
   overflow-y: auto;
   border: 1px solid var(--color-border-subtle);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: var(--space-2);
   background: var(--color-surface);
   transition: background-color 0.3s;
@@ -227,18 +257,18 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 .event-item {
   display: flex;
   gap: var(--space-2);
-  font-size: 13px;
+  font-size: var(--text-base);
   padding: var(--space-1) var(--space-1-5);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .event-kind {
   flex: 0 0 48px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semibold);
   text-align: center;
   padding: var(--space-px) var(--space-1);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--color-kind-fg);
   background: var(--color-kind-default);
 }
@@ -270,19 +300,19 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-overlay);
 }
 
 .overlay-card {
   background: var(--color-surface);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: var(--space-6) var(--space-8);
   max-width: 420px;
   box-shadow: var(--shadow-overlay);
   text-align: center;
 }
-.overlay-card h3 { margin-top: 0; font-size: 16px; }
-.overlay-card p { color: var(--color-text-secondary); font-size: 14px; line-height: 1.6; }
+.overlay-card h3 { margin-top: 0; font-size: var(--text-xl); }
+.overlay-card p { color: var(--color-text-secondary); font-size: var(--text-md); line-height: var(--lh-compact); }
 .overlay-card button {
   margin-top: var(--space-2-5);
   background: var(--color-action-primary);
@@ -305,8 +335,8 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   flex: 1;
   padding: var(--space-2) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
 }
 #enter-form .hint { margin: var(--space-1-5) 0 0; }
 
@@ -316,12 +346,12 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   top: 12px;
   right: 448px; /* 侧栏 420px + 呼吸空隙 */
   padding: var(--space-1) var(--space-3);
-  border-radius: 12px;
+  border-radius: var(--radius-pill);
   background: var(--color-surface-info);
   color: var(--color-text-info);
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 10;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semibold);
+  z-index: var(--z-badge);
 }
 
 /* SSE 断流横幅(UI-6.2:琥珀=重连中,红色致命态见下;z-index 高于状态徽标防遮挡) */
@@ -331,30 +361,30 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   left: 50%;
   transform: translateX(-50%);
   padding: var(--space-1) var(--space-3);
-  border-radius: 12px;
+  border-radius: var(--radius-pill);
   background: var(--color-surface-mark);
   color: var(--color-action-warning);
   border: 1px solid var(--color-action-warning);
-  font-size: 12px;
-  font-weight: 600;
-  z-index: 20;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semibold);
+  z-index: var(--z-banner);
 }
 #stream-banner.fatal { background: var(--color-surface-danger); color: var(--color-action-danger); border-color: var(--color-border-danger-subtle); }
 
 /* 文档区子视图切换 */
 #draft-view h2, #rounds-placeholder h2 {
   margin-top: 0;
-  font-size: 15px;
+  font-size: var(--text-lg);
   color: var(--color-text-secondary);
 }
 .markdown-body {
   max-width: 720px;
-  line-height: 1.75;
-  font-size: 14px;
+  line-height: var(--lh-reading);
+  font-size: var(--text-md);
 }
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
   margin: var(--space-4) 0 var(--space-2);
-  line-height: 1.35;
+  line-height: var(--lh-tight);
 }
 .markdown-body p { margin: var(--space-2) 0; }
 .markdown-body ul, .markdown-body ol { padding-left: var(--space-6); }
@@ -368,13 +398,13 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 .markdown-body th, .markdown-body td {
   border: 1px solid var(--color-border);
   padding: var(--space-1) var(--space-2-5);
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 .markdown-body code {
   background: var(--color-surface-sunken);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: var(--space-px) var(--space-1);
-  font-size: 12.5px;
+  font-size: var(--text-base);
 }
 
 #btn-approve-draft {
@@ -383,7 +413,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   background: var(--color-action-commit-surface);
   border-color: var(--color-action-commit);
   color: var(--color-action-commit-fg);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 #btn-approve-draft:disabled { opacity: 0.55; cursor: not-allowed; }
 #approve-row .hint { margin: var(--space-1-5) 0 0; }
@@ -395,7 +425,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   background: var(--color-action-warning-surface);
   border-color: var(--color-action-warning);
   color: var(--color-action-warning);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 #btn-divergence:disabled { opacity: 0.55; cursor: not-allowed; }
 #divergence-entry .hint { margin: var(--space-1-5) 0 0; }
@@ -405,12 +435,12 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   margin-top: var(--space-6);
   padding: var(--space-3) var(--space-3-5);
   border: 1px dashed var(--color-border-warning-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-warning-subtle);
 }
 #brainstorm-view h2 {
   margin: 0 0 var(--space-2);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--color-action-warning);
 }
 
@@ -435,21 +465,21 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 .chat-bubble {
   max-width: 86%;
   padding: var(--space-2) var(--space-3);
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.6;
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  line-height: var(--lh-compact);
   word-break: break-word;
 }
 .chat-user {
   align-self: flex-end;
   background: var(--color-surface-info-strong);
   color: var(--color-text-inverse);
-  border-bottom-right-radius: 2px;
+  border-bottom-right-radius: var(--radius-sm);
 }
 .chat-ai {
   align-self: flex-start;
   background: var(--color-surface-sunken);
-  border-bottom-left-radius: 2px;
+  border-bottom-left-radius: var(--radius-sm);
 }
 .chat-ai.streaming-ai { border-left: 3px solid var(--color-border-streaming); }
 .chat-ai p { margin: var(--space-1) 0; }
@@ -465,8 +495,8 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   flex: 1;
   padding: var(--space-2) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
 }
 #chat-input-row button {
   padding: var(--space-2) var(--space-4);
@@ -503,8 +533,8 @@ button.primary {
 #round-switcher {
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
   background: var(--color-surface);
 }
 
@@ -516,12 +546,12 @@ button.primary {
 }
 #annotations-panel .panel-header { cursor: default; }
 #pending-count {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semibold);
   color: var(--color-action-warning);
   background: var(--color-surface-warning);
   border: 1px solid var(--color-action-warning);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   padding: var(--space-half) var(--space-2-5);
 }
 #annotation-list {
@@ -537,9 +567,9 @@ button.primary {
 .annotation-item {
   padding: var(--space-2) var(--space-2-5);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--color-surface);
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 #annotations-panel .annotation-item p { margin: var(--space-1) 0; }
 .annotation-quote { color: var(--color-text-secondary); }
@@ -549,9 +579,9 @@ button.primary {
   display: inline-block;
   margin-top: var(--space-1-5);
   padding: var(--space-px) var(--space-2);
-  border-radius: 9px;
-  font-size: 11px;
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-semibold);
 }
 .badge-pending {
   color: var(--color-action-warning);
@@ -579,7 +609,7 @@ button.primary {
 .annotation-answer summary {
   cursor: pointer;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--text-sm);
   margin-top: var(--space-1);
 }
 .annotation-answer-body { margin-top: var(--space-half); }
@@ -589,20 +619,20 @@ button.primary {
   background: var(--color-action-routine-surface);
   border-color: var(--color-action-routine);
   color: var(--color-action-routine-fg);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 #btn-process-round:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* 划词小菜单(D-P2-1:原生 DOM,绝对定位,选区末端附近;不越视口由 JS clamp) */
 #selection-menu {
   position: absolute;
-  z-index: 200;
+  z-index: var(--z-selection-menu);
   display: flex;
   gap: var(--space-1-5);
   padding: var(--space-1);
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-menu);
 }
 #selection-menu button {
@@ -617,7 +647,7 @@ button.primary {
 .markdown-body mark {
   background: var(--color-surface-mark);
   padding: 0 var(--space-px);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /* 冻结轮只读灰化(D-P2-21:轮 < 当前轮的呈现服务端 409 是防线) */
@@ -637,7 +667,7 @@ button.primary {
   background: var(--color-action-irreversible-surface);
   border-color: var(--color-action-irreversible);
   color: var(--color-action-irreversible-fg);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 #btn-authorize:disabled { opacity: 0.55; cursor: not-allowed; }
 #authorize-row .hint { margin: var(--space-1-5) 0 0; }
@@ -649,7 +679,7 @@ button.primary {
   background: var(--color-action-commit-surface);
   border-color: var(--color-action-commit);
   color: var(--color-action-commit-fg);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 #btn-start-writing:disabled { opacity: 0.55; cursor: not-allowed; }
 #writing-view .hint { margin: var(--space-1-5) 0 0; }
@@ -660,8 +690,8 @@ button.primary {
   margin: var(--space-2-5) 0 var(--space-1);
   padding: var(--space-2) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
   text-align: center;
 }
 #confirm-error { color: var(--color-action-danger); }
@@ -676,7 +706,7 @@ button.primary {
   padding: var(--space-2-5) var(--space-4);
   text-align: center;
 }
-.tier-desc { font-size: 12px; font-weight: 400; opacity: 0.8; }
+.tier-desc { font-size: var(--text-sm); font-weight: var(--fw-regular); opacity: 0.8; }
 
 /* 自检报告面板(阶段 5 侧栏;照 annotations-panel 形态) */
 #checks-panel {
@@ -689,8 +719,8 @@ button.primary {
 #check-switcher {
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
   background: var(--color-surface);
   width: 100%;
 }
@@ -699,16 +729,16 @@ button.primary {
   overflow-y: auto;
   padding: var(--space-1-5) var(--space-2);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 #check-controls { display: flex; flex-direction: column; gap: var(--space-2); }
 #btn-continue-check, #btn-continue-repair {
   background: var(--color-action-routine-surface);
   border-color: var(--color-action-routine);
   color: var(--color-action-routine-fg);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 #btn-continue-check:disabled, #btn-continue-repair:disabled {
   opacity: 0.55;
@@ -720,9 +750,9 @@ button.primary {
 .verdict-card {
   padding: var(--space-2) var(--space-2-5);
   border: 1px solid var(--color-border-warning-subtle);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-warning-subtle);
-  font-size: 13px;
+  font-size: var(--text-base);
 }
 .verdict-card p { margin: var(--space-1) 0; }
 .verdict-location { color: var(--color-text-secondary); }
@@ -734,11 +764,11 @@ button.primary {
   margin: var(--space-1-5) 0;
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--color-border-strong);
-  border-radius: 4px;
-  font-size: 12.5px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
 }
 .verdict-buttons { display: flex; gap: var(--space-2); }
-.verdict-buttons button { font-size: 12.5px; padding: var(--space-1) var(--space-2-5); }
+.verdict-buttons button { font-size: var(--text-base); padding: var(--space-1) var(--space-2-5); }
 .verdict-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* 只读归档态(D-P3-25:呈现层灰化;服务端 409 是防线) */

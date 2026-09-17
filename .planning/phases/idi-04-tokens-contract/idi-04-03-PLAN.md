@@ -173,7 +173,7 @@ Output: `scripts/check-02-contrast.py`;围栏 `:root` 块内的 `/* PAIR … */`
   <action>
     本任务是本阶段的收口 gate:证明四条命令**各自独立、各自给出明确的通过/失败结论**,并跑完全部阶段门。
 
-    **前置:先把工作树提交干净。** 下面的失败方向实证会临时篡改 `frontend/style.css` 再用 `git checkout -- frontend/style.css` 还原 —— 只有在文件已提交的前提下才安全。**若工作树有未提交的改动,先提交,不要执行 `git checkout`。**
+    **前置:先把工作树提交干净。** 下面的失败方向实证会临时篡改 `frontend/style.css` 再用 `git checkout -- frontend/style.css` 还原 —— 只有在文件已提交的前提下才安全。**若工作树有未提交的改动,先提交,不要执行 `git checkout`。** 分支策略(是否为本阶段开新分支)由 orchestrator 在 execute 时决定,本计划**不规定**也不创建分支 —— 本任务只依赖「工作树已提交」这一前提,不依赖任何分支名(仓库 `CLAUDE.md` §5 的分支纪律归 orchestrator 裁量)。
 
     **失败方向实证(每条命令一次:注入违规 → 观察到 FAIL → 还原 → 观察到 PASS)。逐条记录命令、注入内容、观察到的输出与退出码:**
     - **CHECK-01**:在围栏**之外**追加一行 `#deadbe`(临时)。期望 `bash scripts/check-01-token-conformance.sh` 打印 `FAIL` 且退出 1,计数值 +1。还原后应回到 `PASS`、计数 0。

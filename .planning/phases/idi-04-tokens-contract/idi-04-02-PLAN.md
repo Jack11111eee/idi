@@ -74,7 +74,7 @@ Purpose: 颜色是"看得见"的一半,间距 / 字号 / 圆角是另一半 —�
 
 Output: 带 31 个新令牌的 `:root` 块;全部 padding / margin / gap / font-size / border-radius / z-index 替换为 `var()`;`#round-doc.round-frozen` 的结构性只读标记;文件末尾追加的 `button, input, select { color: var(--color-text) }`。
 
-**用户签核记录(2026-09-17,已批准,不得重新讨论):** 本计划落地 **S-1**(间距 12 档,含 5 个半步)与 **S-4**(冻结轮改走结构性标记),两项均**照原文执行**,不执行其"一行替代方案";**S-2**(14px 保留为一等档)在本计划落地;**S-3**(控件边框)已由 Plan 01 落地。
+**用户签核记录(2026-09-17,已批准,不得重新讨论):** 本计划落地 **S-1**(间距 12 档,含 5 个半步)与 **S-4**(冻结轮改走结构性标记),两项均**照原文执行**,不执行其"一行替代方案";**S-2**(14px 保留为一等档)在本计划落地;**S-3**(控件边框)已由 Plan 01 落地。该批准的两处**持久记录**为:①`04-UI-SPEC.md` 的 `## Sign-Off Items`;②`.planning/STATE.md` 的 `### Blockers/Concerns` `[v1.14 P4]` 条目与 `## Operator Next Steps` 的 `S-1…S-4` 逐项清单(✅ 批准 2026-09-17,并记明四项的一行式替代方案**均不执行**)。签核不在本计划内自证 —— 本计划只**消费**该已决事项。
 
 **无 `checkpoint:decision`:** S-1…S-4 已由用户在规划前批准,再设卡即重新审理已决事项。
 </objective>
@@ -172,8 +172,8 @@ Output: 带 31 个新令牌的 `:root` 块;全部 padding / margin / gap / font-
   <verify>
     <automated>bash scripts/check-01-token-conformance.sh && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh</automated>
     <fails_when>任一命令退出码非 0,或 stdout 出现 FAIL 字样</fails_when>
-    <automated>grep -cE 'font-size: [0-9.]+px' frontend/style.css; grep -c 'font-size: var(--text-' frontend/style.css; grep -cE 'border-radius: [0-9]+px' frontend/style.css; grep -c 'border-radius: var(--radius-' frontend/style.css; grep -cE 'z-index: [0-9]+' frontend/style.css; grep -c 'z-index: var(--z-' frontend/style.css</automated>
-    <fails_when>奇数行的裸字面量计数任一非 0(仍有未替换的字号 / 圆角 / z-index),或偶数行计数低于该族期望消费点(字号 30 处、圆角 26 处、z-index 4 处)</fails_when>
+    <automated>grep -cE 'font-size: [0-9.]+px' frontend/style.css; grep -c 'font-size: var(--text-' frontend/style.css; grep -cE 'border-radius: [0-9]+px' frontend/style.css; grep -c 'border-radius: var(--radius-' frontend/style.css; grep -cE 'radius: [0-9]+px' frontend/style.css; grep -cE 'radius: var\(--radius-' frontend/style.css; grep -cE 'z-index: [0-9]+' frontend/style.css; grep -c 'z-index: var(--z-' frontend/style.css</automated>
+    <fails_when>第 1 / 3 / 5 / 7 行的裸字面量计数任一非 0(仍有未替换的字号 / 圆角 / z-index);或第 5 行(`grep -cE 'radius: [0-9]+px'`)非 0 —— **这一行是本任务唯一能看见两个长写圆角的探针**:`style.css:334` 的 `border-bottom-right-radius: 2px` 与 `style.css:339` 的 `border-bottom-left-radius: 2px` 不含子串 `border-radius:`,所以第 3 行的探针对它们**隐形**;或偶数行计数低于该族期望消费点(字号 30 处、`border-radius:` shorthand 25 处、圆角**全部形态** 27 处、z-index 4 处)</fails_when>
     <automated>comm -23 <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u) <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u); node --check frontend/app.js</automated>
     <fails_when>第一条输出非空(存在未声明的 var() 消费),或 node 退出码非 0</fails_when>
     <human-check>在 DevTools Computed 面板读:`#brainstorm-view h2` 的 `font-size` == 14px、`color` == rgb(138, 101, 8)(这条是 ROADMAP Phase 5 SC5 / Phase 6 SC5 的下游门,必须在 Phase 4 结束时仍成立);`#draft-view h2` 的 `font-size` == 15px;`.panel-header h2` 的 `font-size` == 14px;`.overlay-card h3` 的 `font-size` == 16px;`.markdown-body` 的 `font-size` == 14px;`.markdown-body code` 的 `font-size` == 13px(由 12.5px 折叠);`#selection-menu` 的 `z-index` == 200、`#state-badge` == 10、`#stream-banner` == 20。</human-check>
@@ -185,7 +185,8 @@ Output: 带 31 个新令牌的 `:root` 块;全部 padding / margin / gap / font-
     - `frontend/style.css` 含 `--radius-sm: 4px;` `--radius-md: 8px;` `--radius-pill: 999px;`
     - `frontend/style.css` 含 `--z-badge: 10;` `--z-banner: 20;` `--z-overlay: 100;` `--z-selection-menu: 200;`,且块内有一行注释同时出现 10 / 20 / 100 / 200 与 badge / banner 字样(序关系断言)
     - `grep -cE 'font-size: [0-9.]+px' frontend/style.css` 输出 0;`grep -c 'font-size: var(--text-' frontend/style.css` 不小于 30
-    - `grep -cE 'border-radius: [0-9]+px' frontend/style.css` 输出 0;`grep -cE 'z-index: [0-9]+' frontend/style.css` 输出 0;`grep -c 'z-index: var(--z-' frontend/style.css` 输出 4
+    - `grep -cE 'border-radius: [0-9]+px' frontend/style.css` 输出 0;`grep -c 'border-radius: var(--radius-' frontend/style.css` 输出 25;`grep -cE 'radius: [0-9]+px' frontend/style.css` 输出 0;`grep -cE 'radius: var\(--radius-' frontend/style.css` 输出 27
+    - `grep -cE 'z-index: [0-9]+' frontend/style.css` 输出 0;`grep -c 'z-index: var(--z-' frontend/style.css` 输出 4
     - `frontend/style.css` 不含 `12.5px`
     - `frontend/style.css` 不含全局 `h1, h2, h3 {` 或 `h1,h2,h3 {` 规则(内容排版未越出 `.markdown-body`)
     - `frontend/style.css` 不含 `--text-2xl`、`--text-3xl`、`--icon-pin`、`--icon-location`、`--color-focus`
@@ -283,7 +284,7 @@ Output: 带 31 个新令牌的 `:root` 块;全部 padding / margin / gap / font-
 3. `bash scripts/check-04-important-count.sh` → PASS,`!important;` 声明数 = 1
 4. Gate 2:`comm -23 <(消费集) <(声明集)` → 输出为空
 5. 反向孤儿扫描:`comm -23 <(声明集) <(消费集)` → 只允许 `--green-800`
-6. `grep -cE 'font-size: [0-9.]+px' frontend/style.css` → 0;`border-radius: [0-9]+px` → 0;`z-index: [0-9]+` → 0
+6. `grep -cE 'font-size: [0-9.]+px' frontend/style.css` → 0;`border-radius: [0-9]+px` → 0;`radius: [0-9]+px` → 0(后者覆盖两个长写圆角);`z-index: [0-9]+` → 0
 7. `node --check frontend/app.js` → 退出 0
 8. `.venv/bin/python -m pytest -q` → 全绿
 9. `git diff --name-only HEAD -- frontend/app.js frontend/index.html` → 输出为空

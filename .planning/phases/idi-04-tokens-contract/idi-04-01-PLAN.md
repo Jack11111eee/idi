@@ -89,7 +89,7 @@ Purpose: Phase 4 是本里程碑的硬前置 —— 后续四个阶段全部消�
 
 Output: 带围栏令牌块的 `frontend/style.css`(颜色部分完成迁移,CHECK-01 归零)、`scripts/check-01-token-conformance.sh`、`scripts/check-03-hidden-uniqueness.sh`、`scripts/check-04-important-count.sh`。
 
-**用户签核记录(2026-09-17,已批准,不得重新讨论):** UI-SPEC 的四个 Sign-Off Items 用户已**全部照原文批准**。本计划执行其中两项:
+**用户签核记录(2026-09-17,已批准,不得重新讨论):** UI-SPEC 的四个 Sign-Off Items 用户已**全部照原文批准**。该批准有两处**持久记录**可核:①`04-UI-SPEC.md` 的 `## Sign-Off Items`(契约原文);②`.planning/STATE.md` 的 `### Blockers/Concerns` `[v1.14 P4]` 条目与 `## Operator Next Steps` 的 `S-1…S-4` 逐项清单(✅ 批准 2026-09-17,规划期,并记明四项的一行式替代方案**均不执行**)。签核不在本计划内自证 —— 本计划只**消费**该已决事项。本计划执行其中两项:
 
 - **S-3 已批准** —— 控件边框 `#ccc` → `#8a8a8a`(10 处,`--color-border-strong`)。这是本阶段最大的刻意视觉变更,**已接受**。理由:SC 1.4.11 —— 边框是识别文本输入框边界的唯一事物。**不执行**"保留 `#cccccc` 并豁免 1.4.11"的一行替代方案。
 - **S-2 已批准** —— `14px` 保留为一等字号档(7 档,非字面 6 档)。TOKEN-08 的"删除 14px"**不执行**(执行会同时打破 ROADMAP Phase 5 SC5 与 Phase 6 SC5)。本计划的颜色工作不涉及字号,该签核由 Plan 02 落地。
@@ -128,15 +128,21 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
 
     1) **落地围栏与颜色 primitive。** 在 `* { box-sizing: border-box; }` 之后、`html, body {` 之前插入唯一一个 `:root` 块,用 `/* ===== DESIGN TOKENS: START ===== */` 与 `/* ===== DESIGN TOKENS: END ===== */` 两行围栏注释界定。块内先放 tier-1 颜色 primitive(共 25 个,全部字面量只允许出现在这里):`--white #ffffff`、`--black #000000`、`--gray-900 #1a1a1a`、`--gray-700 #555555`、`--gray-600 #6a6a6a`、`--gray-500 #8a8a8a`、`--gray-300 #dddddd`、`--gray-100 #eeeeee`、`--gray-50 #f5f5f5`、`--gray-25 #fafafa`、`--green-800 #1f5c3a`、`--green-700 #26754a`、`--green-100 #e9f7ef`、`--blue-700 #1f63bd`、`--blue-100 #eef4ff`、`--blue-50 #f0f7ff`、`--amber-800 #8a6508`、`--amber-300 #d9c58a`、`--amber-100 #fff3c4`、`--amber-50 #fdf6ec`、`--amber-25 #fffdf5`、`--red-600 #c0392b`、`--red-200 #e8b4ae`、`--red-50 #fdecea`、`--purple-600 #6f42c1`。`--gray-600` / `--gray-500` / `--green-800` 是三个新值;其余由现有 34 个 hex 折叠而来(13 个被折叠消除)。
 
-    2) **块内再放本任务消费的 tier-2 文本族令牌**(绝不声明本任务不消费的令牌):`--color-text: var(--gray-900)`、`--color-text-secondary: var(--gray-700)`、`--color-text-muted: var(--gray-600)`、`--color-text-inverse: var(--white)`、`--color-surface-page: var(--gray-25)`、`--color-surface-sunken: var(--gray-50)`、`--color-kind-default: var(--gray-600)`、`--color-kind-result: var(--gray-700)`、`--color-kind-fg: var(--white)`、`--color-border-danger-subtle: var(--red-200)`、`--color-action-danger: var(--red-600)`。
+    2) **块内再放本任务消费的 tier-2 文本族令牌**(绝不声明本任务不消费的令牌 —— UI-SPEC Global Hard Rule 5):`--color-text: var(--gray-900)`、`--color-text-secondary: var(--gray-700)`、`--color-text-muted: var(--gray-600)`、`--color-surface-page: var(--gray-25)`、`--color-surface-sunken: var(--gray-50)`、`--color-kind-default: var(--gray-600)`、`--color-kind-result: var(--gray-700)`、`--color-action-danger: var(--red-600)`。**共 8 个,每个都在本任务第 3 步被消费。**
+
+    **本任务不声明的三个令牌(由 Task 3 与它们的消费者同提交声明,避免违反 Hard Rule 5):** `--color-text-inverse`(Task 3 的 `.chat-user` 消费)、`--color-kind-fg`(Task 3 的 `.event-kind` 消费)、`--color-border-danger-subtle`(Task 3 的 `#stream-banner.fatal` 消费)。本任务的 acceptance 只断言本任务实际声明的 8 个。
 
     **两处计划期裁定(UI-SPEC 的残留缺口,在此显式补上,不是疏漏):**
-    - `--color-border-danger-subtle: var(--red-200)` 是**新令牌**。UI-SPEC 的 Tier-2 表把 `#fdecea` 命名为 `--color-surface-danger` 却漏了 `#e8b4ae`(`#stream-banner.fatal` 的 `border-color`)—— 它属于 meaning-inventory 行 19–23 同一类"有值无合法名"的缺口。不加它,`.fatal` 的边框在围栏外就没有合法名可写。
+    - `--color-border-danger-subtle: var(--red-200)` 是**新令牌**。UI-SPEC 的 Tier-2 表把 `#fdecea` 命名为 `--color-surface-danger` 却漏了 `#e8b4ae`(`#stream-banner.fatal` 的 `border-color`)—— 它属于 meaning-inventory 行 19–23 同一类"有值无合法名"的缺口。不加它,`.fatal` 的边框在围栏外就没有合法名可写。**它的声明与消费都在 Task 3**(Task 3 替换 `#stream-banner.fatal` 的 `border-color`),本任务不声明它 —— 见上一条。
     - `--color-surface-success` **不声明**。UI-SPEC 的 Tier-2 表列了它,但其含义清单说的消费者是"三个绿色按钮族",而那三族各自持有 `-surface` 令牌(`--color-action-*-surface`),Phase 5 还要把 commit/irreversible 两族的 surface 改成实心填充 —— 一个共享的"success surface"名会立刻变成假抽象,且违反 Global Hard Rule 5(不得声明未消费的令牌)。三个绿色 surface 直接从 `--green-100` 取值。
 
-    3) **迁移文本色族的字面量**(逐条替换,只改值,不改选择器、不重排、不增删其它声明)。**恰好这 17 行,替换后 CHECK-01 的围栏外匹配行数应为 100**(基线 117 − 17):`html, body` 的 `background: #fafafa` → `var(--color-surface-page)`、`color: #1a1a1a` → `var(--color-text)`;`.hint` 的 `color: #999` → `var(--color-text-muted)`;`.event-kind` 的 `background: #999` → `var(--color-kind-default)`;`.kind-result .event-kind` 的 `background: #555` → `var(--color-kind-result)`;`#draft-view h2` 的 `color: #555` → `var(--color-text-secondary)`;`.markdown-body blockquote` 的 `color: #666` → `var(--color-text-muted)`;`.annotation-quote` 的 `color: #555` → `var(--color-text-secondary)`;`.annotation-note` 的 `color: #1a1a1a` → `var(--color-text)`;`.badge-answered` 的 `color: #999` → `var(--color-text-muted)`、`background: #f5f5f5` → `var(--color-surface-sunken)`;`.annotation-plain .annotation-note, .annotation-plain .annotation-answer-body` 的 `color: #999` → `var(--color-text-muted)`;`.annotation-answer summary` 的 `color: #999` → `var(--color-text-muted)`;`.overlay-card p` 的 `color: #444` → `var(--color-text-secondary)`;`.verdict-location` 的 `color: #555` → `var(--color-text-secondary)`;`.verdict-issue` 的 `color: #1a1a1a` → `var(--color-text)`;`.verdict-suggestion` 的 `color: #666` → `var(--color-text-muted)`。同时给 `#confirm-error` 的 `color: #c0392b` → `var(--color-action-danger)`(**保留 ID 选择器不动**,Pitfall M6)。`.kind-error .event-content` 的 `color: #c0392b` 也一并改 `var(--color-action-danger)`(同一值,同族)。
+    3) **迁移文本色族的字面量**(逐条替换,只改值,不改选择器、不重排、不增删其它声明)。**恰好这 19 行,替换后 CHECK-01 的围栏外匹配行数应为 98**(基线 117 − 19):`html, body` 的 `background: #fafafa` → `var(--color-surface-page)`、`color: #1a1a1a` → `var(--color-text)`;`.hint` 的 `color: #999` → `var(--color-text-muted)`;`.event-kind` 的 `background: #999` → `var(--color-kind-default)`;`.kind-result .event-kind` 的 `background: #555` → `var(--color-kind-result)`;`#draft-view h2` 的 `color: #555` → `var(--color-text-secondary)`;`.markdown-body blockquote` 的 `color: #666` → `var(--color-text-muted)`;`.annotation-quote` 的 `color: #555` → `var(--color-text-secondary)`;`.annotation-note` 的 `color: #1a1a1a` → `var(--color-text)`;`.badge-answered` 的 `color: #999` → `var(--color-text-muted)`、`background: #f5f5f5` → `var(--color-surface-sunken)`;`.annotation-plain .annotation-note, .annotation-plain .annotation-answer-body` 的 `color: #999` → `var(--color-text-muted)`;`.annotation-answer summary` 的 `color: #999` → `var(--color-text-muted)`;`.overlay-card p` 的 `color: #444` → `var(--color-text-secondary)`;`.verdict-location` 的 `color: #555` → `var(--color-text-secondary)`;`.verdict-issue` 的 `color: #1a1a1a` → `var(--color-text)`;`.verdict-suggestion` 的 `color: #666` → `var(--color-text-muted)`。同时给 `#confirm-error` 的 `color: #c0392b` → `var(--color-action-danger)`(**保留 ID 选择器不动**,Pitfall M6)。`.kind-error .event-content` 的 `color: #c0392b` 也一并改 `var(--color-action-danger)`(同一值,同族)。
 
-    4) **A11Y-04b:`#annotation-list` 的已回应灰化(D-11)。** 删除 `.annotation-answered { opacity: 0.65 }` 这条声明(整条规则体已空,连同该规则一并移除,其上方注释改为说明新机制),并在文件**末尾追加**(绝不插入、绝不重排)一条新规则:`.annotation-answered .annotation-note, .annotation-answered .annotation-quote, .annotation-answered .annotation-answer summary { color: var(--color-text-muted); }`。理由:`.annotation-note` 有自己的 0-1-0 规则,单纯在父级设 `color` 压不过它;必须用 0-2-0 的后代选择器。灰色色相保留,只去掉那个 1.88:1 的乘数。
+    **19 行 = 上面枚举的 17 行 + `#confirm-error`(`style.css:552`)+ `.kind-error .event-content`(`style.css:150`)。** 这 19 行**全部**是 hex 承载行,替换后 `grep -c` 从 117 落到 98。此处以行数(而非出现次数)计:CHECK-01 用 `grep -c`,数的是匹配**行**。
+
+    4) **A11Y-04b:`#annotation-list` 的已回应灰化(D-11)。** 删除 `.annotation-answered { opacity: 0.65 }` 这条声明(整条规则体已空,连同该规则一并移除,其上方注释改为说明新机制),并在文件**末尾追加**(绝不插入、绝不重排)一条新规则:`.annotation-answered .annotation-note, .annotation-answered .annotation-quote, .annotation-answered .annotation-answer summary { color: var(--color-text-muted); }`。
+
+    **为什么必须是 0-2-0 的后代选择器(准确的理由,勿改成"父级压不过子级"的简化说法):** 真正的竞争者不是裸 `.annotation-note`(0-1-0)—— 那条在同等特异性下由**源码顺序**决定,追加在末尾的父级规则本可赢过它。真正的竞争者是 `.annotation-plain .annotation-note`(0-2-0,`style.css:460-463`);两个 class 可以同时出现在一个条目上(`app.js:1120-1121` 确认)。0-1-0 的父级规则**压不过** 0-2-0 的它,所以必须用同为 0-2-0 的后代选择器,并靠追加在文件末尾的源码顺序取胜。(该 0-2-0 竞争者在**本任务**同样被赋 `--color-text-muted`,故二者值一致、不会冲突 —— 但选择器形态仍须是 0-2-0 才能对未来的值分歧保持稳健。)灰色色相保留,只去掉那个 1.88:1 的乘数。
 
     5) **新建三条零依赖守卫命令**(`scripts/` 目录,新建;不在 `frontend/` 下,以避开"frontend/ 仅三个已知文件"的门):
     - `scripts/check-01-token-conformance.sh`:`#!/usr/bin/env bash` + `set -euo pipefail`;用 awk 状态机 `/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f` 过滤掉围栏块,再 `grep -c '#[0-9a-fA-F]\{3,6\}'`。计数为 0 打印 `PASS` 并 `exit 0`;否则打印 `FAIL: <n> bare hex outside the token block` 并 `exit 1`。**注意 `grep -c` 在计数为 0 时退出码为 1**,所以判定必须读 stdout 数值,不能靠 grep 的退出码。
@@ -150,9 +156,9 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     <automated>bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh</automated>
     <fails_when>任一命令退出码非 0,或 stdout 中出现 `FAIL` 字样</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh</automated>
-    <fails_when>退出码为 0,或 stdout 不含 `FAIL: 100 bare hex outside the token block` —— **此刻 CHECK-01 必须正确地报错**:本任务只迁移了文本色族,围栏外仍有 100 行裸 hex。这条"预期失败"正是 tracer 对校验层端到端可用性的证明(awk 围栏状态机真的排除了块内字面量、计数口径正确、失败方向可观察)。CHECK-01 转为 PASS 是 Task 3 的判据。</fails_when>
+    <fails_when>退出码为 0,或 stdout 不含 `FAIL: 98 bare hex outside the token block` —— **此刻 CHECK-01 必须正确地报错**:本任务只迁移了文本色族,围栏外仍有 98 行裸 hex。这条"预期失败"正是 tracer 对校验层端到端可用性的证明(awk 围栏状态机真的排除了块内字面量、计数口径正确、失败方向可观察)。CHECK-01 转为 PASS 是 Task 3 的判据。</fails_when>
     <automated>awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c '#[0-9a-fA-F]\{3,6\}'</automated>
-    <fails_when>stdout 不是十进制整数 100(基线 117 减去本任务迁移的 17 行)</fails_when>
+    <fails_when>stdout 不是十进制整数 98(基线 117 减去本任务迁移的 19 行)</fails_when>
     <automated>comm -23 <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u) <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u)</automated>
     <fails_when>stdout 非空 —— 打印出的任一 `--x` 表示存在未声明的 var() 消费(Gate 2:var() 静默失败,拼错即整条声明回退 unset)</fails_when>
     <automated>grep -c '^\.hidden {' frontend/style.css && grep -c '!important;' frontend/style.css && grep -c '!important' frontend/style.css</automated>
@@ -160,8 +166,8 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     <human-check>启动应用(`./run.sh`,http://127.0.0.1:8765),在 DevTools Elements 面板选中一处闸门说明文字(`.hint`,例如「进入」表单下方或 `#approve-row` 下方),读 Computed → color,应为 `rgb(106, 106, 106)`;再选 `.badge-answered`,color 亦为 `rgb(106, 106, 106)`。打开一个历史(冻结)轮次,确认左侧出现琥珀色 inset 竖线且正文可读(backstop 真值)。**本环境截图不可用、headless 渲染被挡 —— 不得改用视觉 diff。**</human-check>
   </verify>
   <acceptance_criteria>
-    - `bash scripts/check-01-token-conformance.sh` 退出 1 且 stdout 含 `FAIL: 100 bare hex outside the token block`(tracer 阶段的**预期失败** —— 校验层可用且失败方向可观察;转为 PASS/0 是 Task 3 的判据)
-    - `awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c '#[0-9a-fA-F]\{3,6\}'` 输出 `100`
+    - `bash scripts/check-01-token-conformance.sh` 退出 1 且 stdout 含 `FAIL: 98 bare hex outside the token block`(tracer 阶段的**预期失败** —— 校验层可用且失败方向可观察;转为 PASS/0 是 Task 3 的判据)
+    - `awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c '#[0-9a-fA-F]\{3,6\}'` 输出 `98`
     - `grep -c '^\.hidden {' frontend/style.css` 输出 `1`;`grep -c '!important;' frontend/style.css` 输出 `1`
     - `frontend/style.css` 含 `/* ===== DESIGN TOKENS: START ===== */` 与 `/* ===== DESIGN TOKENS: END ===== */` 各恰好 1 次;START 行号 > `* { box-sizing` 的行号,且 < `html, body {` 的行号
     - `frontend/style.css` 含 `--color-text-muted: var(--gray-600);` 与 `--gray-600: #6a6a6a;`
@@ -169,14 +175,14 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     - `grep -n 'opacity: 0.65' frontend/style.css` 无命中(`.annotation-answered` 的乘数已删除);`grep -n 'opacity: 0.8' frontend/style.css` 仍有 1 处命中(`.tier-desc` 保留)
     - `frontend/style.css` 含 `.annotation-answered .annotation-note` 且其声明为 `color: var(--color-text-muted)`
     - `frontend/style.css` 含 `#confirm-error { color: var(--color-action-danger); }`(ID 选择器保留)
-    - `frontend/style.css` 含 `--color-border-danger-subtle: var(--red-200);`,且 `.fatal` 的 `border-color` 引用它
     - `frontend/style.css` **不含** `--color-surface-success`
+    - `frontend/style.css` **不含** `--color-text-inverse`、`--color-kind-fg`、`--color-border-danger-subtle`(三者由 Task 3 与各自的消费者同提交声明 —— 本任务不得声明不消费的令牌,Hard Rule 5)
     - `comm -23 <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u) <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u)` 输出为空
     - `node --check frontend/app.js` 退出 0;`git diff --name-only HEAD -- frontend/app.js frontend/index.html` 输出为空
     - `ls frontend/vendor/` 只含 `marked.min.js`
     - 三个脚本文件均存在且可执行(`test -x` 通过)
   </acceptance_criteria>
-  <done>围栏令牌块就位且位置正确;文本色族 17 行字面量全部替换;CHECK-01 围栏外计数恰为 100;CHECK-03/04 均打印 PASS;`.annotation-answered` 的 opacity 已删、其文字改走 `--color-text-muted`;三条守卫命令独立可跑且各有明确 PASS/FAIL;Gate 2 为空;app.js/index.html 零改动。</done>
+  <done>围栏令牌块就位且位置正确;文本色族 19 行字面量全部替换;CHECK-01 围栏外计数恰为 98;CHECK-03/04 均打印 PASS;`.annotation-answered` 的 opacity 已删、其文字改走 `--color-text-muted`;三条守卫命令独立可跑且各有明确 PASS/FAIL;Gate 2 为空;app.js/index.html 零改动。</done>
 </task>
 
 <task type="auto">
@@ -187,7 +193,9 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     - .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md 的 `### Q1 — Token naming, and the positive / gate / irreversible split`(含"两个非动作绿色消费者"表)与 `### Tier 2 — semantic` 的 Actions / Event kinds 两段
   </read_first>
   <action>
-    在 `:root` 块内**追加**本任务消费的 tier-2 动作与 kind 令牌(不声明不消费的):`--color-action-primary: var(--blue-700)`、`--color-action-primary-fg: var(--white)`、`--color-action-danger-fg: var(--white)`、`--color-action-warning: var(--amber-800)`、`--color-action-warning-surface: var(--amber-50)`、`--color-action-routine: var(--green-700)`、`--color-action-routine-surface: var(--green-100)`、`--color-action-routine-fg: var(--green-700)`、`--color-action-commit: var(--green-700)`、`--color-action-commit-surface: var(--green-100)`、`--color-action-commit-fg: var(--green-700)`、`--color-action-irreversible: var(--green-700)`、`--color-action-irreversible-surface: var(--green-100)`、`--color-action-irreversible-fg: var(--green-700)`、`--color-kind-say: var(--blue-700)`、`--color-kind-read: var(--purple-600)`、`--color-kind-write: var(--green-700)`、`--color-kind-command: var(--amber-800)`、`--color-kind-error: var(--red-600)`、`--color-kind-done: var(--black)`。
+    在 `:root` 块内**追加**本任务消费的 tier-2 动作与 kind 令牌(不声明不消费的):`--color-action-primary: var(--blue-700)`、`--color-action-primary-fg: var(--white)`、`--color-action-danger-fg: var(--white)`、`--color-action-warning: var(--amber-800)`、`--color-action-warning-surface: var(--amber-50)`、`--color-action-routine: var(--green-700)`、`--color-action-routine-surface: var(--green-100)`、`--color-action-routine-fg: var(--green-700)`、`--color-action-commit: var(--green-700)`、`--color-action-commit-surface: var(--green-100)`、`--color-action-commit-fg: var(--green-700)`、`--color-action-irreversible: var(--green-700)`、`--color-action-irreversible-surface: var(--green-100)`、`--color-action-irreversible-fg: var(--green-700)`、`--color-kind-say: var(--blue-700)`、`--color-kind-read: var(--purple-600)`、`--color-kind-write: var(--green-700)`、`--color-kind-command: var(--amber-800)`、`--color-kind-error: var(--red-600)`、`--color-kind-done: var(--black)`、`--color-border-success: var(--green-700)`。
+
+    **`--color-border-success` 必须在本任务的追加清单里**(不是只在 acceptance 里出现):它是第 12 个 `#2e8b57` 站点(`#mission-complete-modal .overlay-card` 的 `border: 2px solid`)的消费目标。缺了它,Gate 2(`comm -23` 消费集减声明集)在本任务结束时不可能为空,`check-02-contrast.py` 也会对未知令牌大声失败 —— 而「声明与消费同提交」正是 Hard Rule 5 的要求。**共 21 个令牌,每个都在本任务被消费。**
 
     **Phase 4 值规则(刻意,不是遗漏):** 三个绿色族在 Phase 4 **共用同一对值**(`--green-700` / `--green-100`)。令牌**名**在此落地,视觉差异化是 Phase 5 的事 —— 届时每一族只需改一行值,而不是重写选择器。`--color-action-irreversible*` 在本阶段**只被 `#btn-authorize` 消费,且永远只被它消费**。
 
@@ -200,11 +208,11 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     - 红/紫/黑:`button.danger` 与 `.overlay-card button.danger` 的 `#c0392b` → `var(--color-action-danger)`,其 `color: #fff` → `var(--color-action-danger-fg)`;`.kind-error .event-kind` 的 `background: #c0392b` → `var(--color-kind-error)`;`.kind-read .event-kind` 的 `background: #6f42c1` → `var(--color-kind-read)`;`.kind-done .event-kind` 的 `background: #000` → `var(--color-kind-done)`。
     - `#stream-banner` 的 `color: #8a6508` → `var(--color-action-warning)`。
 
-    **不要做:** 不要动 `.event-kind` 的 `color: #fff`(它属 kind-fg,Task 1 已声明的 `--color-kind-fg` 留给 Task 3 的 border/surface 收尾时消费 —— 若你在本任务消费它,请确认它已在块内);不要改任何 `padding` / `font-size` / `border-radius`(Plan 02);不要重排规则;不要引入新令牌。
+    **不要做:** 不要动 `.event-kind` 的 `color: #fff`(它属 kind-fg,`--color-kind-fg` 由 **Task 3** 与它的消费者 `.event-kind` 同提交声明 —— 本任务声明它就会违反 Hard Rule 5);不要改任何 `padding` / `font-size` / `border-radius`(Plan 02);不要重排规则;不要引入新令牌。
   </action>
   <verify>
     <automated>awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c '#[0-9a-fA-F]\{3,6\}'</automated>
-    <fails_when>stdout 不是十进制整数,或该整数不小于 100(本任务必须把围栏外计数严格压到 100 以下;CHECK-01 此刻仍应打印 `FAIL`,转 PASS 是 Task 3 的判据)</fails_when>
+    <fails_when>stdout 不是十进制整数,或该整数不小于 98(本任务必须把围栏外计数严格压到 Task 1 结束时的 98 以下;CHECK-01 此刻仍应打印 `FAIL`,转 PASS 是 Task 3 的判据)</fails_when>
     <automated>comm -23 <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u) <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u)</automated>
     <fails_when>stdout 非空(存在未声明的 var() 消费)</fails_when>
     <automated>bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh && node --check frontend/app.js</automated>
@@ -212,12 +220,13 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     <human-check>在 DevTools Computed 面板读:`#btn-authorize` 的 `color` == `rgb(38, 117, 74)`、`border-color` == `rgb(38, 117, 74)`、`background-color` == `rgb(233, 247, 239)`;`#btn-process-round` 三者与 `#btn-authorize` **逐字节相同**(这是 Phase 4 的刻意状态 —— 差异化是 Phase 5 的活);`.kind-write .event-kind` 的 `background-color` == `rgb(38, 117, 74)`;`.kind-done .event-kind` 的 `background-color` == `rgb(0, 0, 0)`。</human-check>
   </verify>
   <acceptance_criteria>
-    - 围栏外 CHECK-01 计数严格小于 100
+    - 围栏外 CHECK-01 计数严格小于 98(Task 1 结束时的值)
     - `frontend/style.css` 含 `--color-action-irreversible: var(--green-700);`、`--color-action-irreversible-surface: var(--green-100);`、`--color-action-irreversible-fg: var(--green-700);`
     - `grep -c 'var(--color-action-irreversible' frontend/style.css` 的全部命中都出现在 `#btn-authorize` 规则体内(无第二消费者)
     - `frontend/style.css` 含 `#mission-complete-modal .overlay-card { border: 2px solid var(--color-border-success); }`
     - `frontend/style.css` 含 `--color-border-success: var(--green-700);`
-    - `frontend/style.css` 不再含 `#2e8b57` 与 `#2c7be5` 于围栏之外(`awk` 过滤后 `grep -c` 对这两个值均为 0)
+    - `frontend/style.css` 围栏外 `grep -c '#2e8b57'` 输出 **0**(本任务覆盖它的全部 12 个站点)
+    - `frontend/style.css` 围栏外 `grep -c '#2c7be5'` 输出 **2** —— 且这两处必须是 `.chat-user` 的 `background`(`style.css:332`)与 `.chat-ai.streaming-ai` 的 `border-left`(`style.css:341`)。二者是 **Task 3** 的站点(`--color-surface-info-strong` / `--color-border-streaming`),本任务不得触碰;本任务只清除它自己的 7 个 `#2c7be5` 站点(kind-say、`.overlay-card button`、`#chat-input-row button`、`button.primary`)
     - `frontend/style.css` 仍含 `#stream-banner.fatal { background: #fdecea; color: #c0392b; border-color: #e8b4ae; }` 的**独立选择器**(未被折叠进共享 danger 令牌)
     - `comm -23 <(...var(...)...) <(...--...:...)>` 输出为空
     - `node --check frontend/app.js` 退出 0;`git diff --name-only HEAD -- frontend/app.js frontend/index.html` 输出为空
@@ -234,7 +243,9 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     - .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md 的 `## Sign-Off Items` 中 **S-3**(已由用户批准)
   </read_first>
   <action>
-    1) 在 `:root` 块内**追加**本任务消费的 tier-2 表面/边框/遮罩令牌:`--color-surface: var(--white)`、`--color-surface-hover: var(--gray-100)`、`--color-surface-info: var(--blue-100)`、`--color-surface-warning: var(--amber-50)`、`--color-surface-warning-subtle: var(--amber-25)`、`--color-surface-mark: var(--amber-100)`、`--color-surface-danger: var(--red-50)`、`--color-surface-streaming: var(--blue-50)`、`--color-border-strong: var(--gray-500)`、`--color-border: var(--gray-300)`、`--color-border-subtle: var(--gray-100)`、`--color-border-warning-subtle: var(--amber-300)`、`--color-border-streaming: var(--blue-700)`、`--color-surface-info-strong: var(--blue-700)`、`--color-text-info: var(--blue-700)`、`--color-overlay-backdrop: rgba(0, 0, 0, 0.45)`、`--shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2)`、`--shadow-menu: 0 4px 14px rgba(0, 0, 0, 0.18)`。
+    1) 在 `:root` 块内**追加**本任务消费的 tier-2 表面/边框/遮罩令牌:`--color-surface: var(--white)`、`--color-surface-hover: var(--gray-100)`、`--color-surface-info: var(--blue-100)`、`--color-surface-warning: var(--amber-50)`、`--color-surface-warning-subtle: var(--amber-25)`、`--color-surface-mark: var(--amber-100)`、`--color-surface-danger: var(--red-50)`、`--color-surface-streaming: var(--blue-50)`、`--color-border-strong: var(--gray-500)`、`--color-border: var(--gray-300)`、`--color-border-subtle: var(--gray-100)`、`--color-border-warning-subtle: var(--amber-300)`、`--color-border-streaming: var(--blue-700)`、`--color-surface-info-strong: var(--blue-700)`、`--color-text-info: var(--blue-700)`、`--color-overlay-backdrop: rgba(0, 0, 0, 0.45)`、`--shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2)`、`--shadow-menu: 0 4px 14px rgba(0, 0, 0, 0.18)`、**以及三个由本任务与消费者同提交声明的令牌** `--color-text-inverse: var(--white)`、`--color-kind-fg: var(--white)`、`--color-border-danger-subtle: var(--red-200)`。
+
+    **那三个令牌为何在此而非 Task 1:** 它们的唯一消费者全在本任务(本任务第 2 步的 `.chat-user` → `--color-text-inverse`、`.event-kind` → `--color-kind-fg`;`.fatal` 的 `border-color` → `--color-border-danger-subtle`)。把它们放在消费者同一次提交里,是 UI-SPEC Global Hard Rule 5(不得声明同一提交中不被消费的令牌)的直接落地。**共 21 个令牌,每个都在本任务被消费。**
 
     2) 替换剩余全部颜色字面量(只改值,不改选择器、不重排、不增删其它声明):
     - **D-9(S-3 已批准,本阶段最大刻意视觉变更):** `#ai-route-select`、`#project-path-input`、`button`、`#enter-form input[type="text"]`、`#chat-input-row input`、`#round-switcher`、`#selection-menu`、`#confirmation-modal input[type="text"]`、`#check-switcher`、`.verdict-note-input` 共 **10 处** `1px solid #ccc` 的 `border`/`border-color` → `var(--color-border-strong)`。**不执行**"保留 `#cccccc`"的退出口 —— 用户已批准 `#8a8a8a`。
@@ -247,6 +258,9 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     - `#stream-banner.fatal` 的 `border-color: #e8b4ae` → `var(--color-border-danger-subtle)`(**保持 `.fatal` 为独立选择器**,两态仍可区分)。
     - 表面:`#sidebar` 的 `background: #fff` → `var(--color-surface)`;`#selection-menu`、`.annotation-item`、`button`、`.overlay-card` 的 `background: #fff` → `var(--color-surface)`;`#ai-route-select` / `#round-switcher` / `#check-switcher` 的 `background: #fff` → `var(--color-surface)`;`.event-list` 与 `#latest-check` 的 `background: #fdfdfd` → `var(--color-surface)`;`.panel-header` 的 `background: #f5f5f5` → `var(--color-surface-sunken)`;`.chat-ai` 的 `background: #f1f3f5` → `var(--color-surface-sunken)`;`.markdown-body code` 的 `background: #f4f4f4` → `var(--color-surface-sunken)`;`button:hover` 的 `background: #f0f0f0` → `var(--color-surface-hover)`;`#state-badge` 的 `background: #eef4ff` → `var(--color-surface-info)`;`#selection-menu button:hover` 的 `background: #eef4ff` → `var(--color-surface-info)`;`.event-list.streaming` 的 `background: #f0f7ff` → `var(--color-surface-streaming)`;`.event-list.aborted` 与 `#stream-banner.fatal` 的 `background: #fdecea` → `var(--color-surface-danger)`;`#stream-banner` 与 `mark` 的 `background: #fff3c4` → `var(--color-surface-mark)`;`#brainstorm-view` 与 `.verdict-card` 的 `background: #fffdf5` → `var(--color-surface-warning-subtle)`;`#pending-count` 与 `.badge-pending` 的 `background: #fdf6ec` → `var(--color-surface-warning)`;`.chat-user` 的 `background: #2c7be5` → `var(--color-surface-info-strong)`;`.chat-ai.streaming-ai` 的 `border-left: 3px solid #2c7be5` → `var(--color-border-streaming)`;`#state-badge` 的 `color: #2c5fb8` → `var(--color-text-info)`;`.chat-user` 的 `color: #fff` → `var(--color-text-inverse)`;`.event-kind` 的 `color: #fff` → `var(--color-kind-fg)`。
     - 遮罩与阴影:`.overlay` 的 `background: rgba(0, 0, 0, 0.45)` → `var(--color-overlay-backdrop)`;`.overlay-card` 的 `box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2)` → `var(--shadow-overlay)`;`#selection-menu` 的 `box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18)` → `var(--shadow-menu)`。
+    - **两个必须点名的收尾站点(否则只有"替换剩余全部"这句兜底,令牌选择无指引):**
+      - `style.css:44` `.inline-error { color: #c0392b; … }` → `var(--color-action-danger)`。它是 UI-SPEC 破坏性/错误行里点名的一处,与 `#confirm-error` / `.kind-error .event-content` 同族同值(本阶段三处共用 `--red-600`)。**不要**新建一个"错误文字"令牌。
+      - `style.css:301` `#brainstorm-view h2 { … color: #8a6508 }` → `var(--color-action-warning)`。它是 `#brainstorm-view` 标题的琥珀色,与 `#stream-banner` / `#pending-count` / `.badge-pending` 同一琥珀档;它同时是 Phase 5/6 下游门断言的对象(`#brainstorm-view h2` 计算为 14px / `rgb(138, 101, 8)`),值必须保持 `#8a6508` 不变。
 
     3) 收尾自检:`bash scripts/check-01-token-conformance.sh` 必须打印 `PASS`(围栏外 0 裸 hex);Gate 2 必须为空。若仍有残留,定位并归入正确的语义令牌,**不要**新增 primitive 名到围栏之外。
 
@@ -269,6 +283,7 @@ S-1(间距 12 档,含 5 个半步)与 S-4(`#round-doc.round-frozen` 结构性标
     - `bash scripts/check-01-token-conformance.sh` 退出 0 且 stdout 含 `PASS`
     - `awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c '#[0-9a-fA-F]\{3,6\}'` 输出 `0`
     - `frontend/style.css` 含 `--color-border-strong: var(--gray-500);` 且 `--gray-500: #8a8a8a;`
+    - `frontend/style.css` 含本任务与消费者同提交声明的三个令牌:`--color-text-inverse: var(--white);`、`--color-kind-fg: var(--white);`、`--color-border-danger-subtle: var(--red-200);`(Task 1 的 acceptance 反向断言这三者**不**在 Task 1 结束时存在)
     - 围栏外 `1px solid var(--color-border-strong)` 恰出现 10 次;`border-left: 3px solid var(--color-border)` 恰出现 1 次(blockquote)
     - `frontend/style.css` 仍含 `#stream-banner.fatal { background: var(--color-surface-danger); color: var(--color-action-danger); border-color: var(--color-border-danger-subtle); }` 形式的**独立** `.fatal` 选择器
     - `frontend/style.css` 含 `--color-overlay-backdrop: rgba(0, 0, 0, 0.45);`、`--shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);`、`--shadow-menu: 0 4px 14px rgba(0, 0, 0, 0.18);`

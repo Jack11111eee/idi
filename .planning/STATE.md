@@ -114,7 +114,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)
+- [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
 - [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
 
@@ -147,8 +147,8 @@ Resume file: /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration/.p
 ## Operator Next Steps
 
 - Plan the first v1.14 phase: `/gsd-plan-phase 4` — UI-SPEC 已就绪并通过 checker(APPROVED),7 个未决问题已全部关闭,不再是规划前置。
-  **规划时须先向用户呈上四个签核项 S-1…S-4**(见 `04-UI-SPEC.md` 的 `## Sign-Off Items`),它们是契约刻意不替用户做的决定:
-  - **S-1** 间距刻度偏离 TOKEN-05 的字面七档(保留 1/2/6/10/14 半步带;压平会移动像素、违反 SC2)
-  - **S-2** 字号锚点偏离 TOKEN-08 的"删除 14px"(保留 14px;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
-  - **S-3** 控件边框 `#ccc` → `#8a8a8a`(本阶段最大视觉变更,来源是研究调和范围而非编号需求,留有退出口)
-  - **S-4** 冻结轮裁定:保留结构性标记(删 opacity);改用 opacity 0.65 亦可,代价是 Phase 7 焦点环在冻结态降至 2.85:1、低于 3:1 非文本下限
+  ✅ **四个签核项 S-1…S-4 已于 2026-09-17 规划期呈上并获用户逐项批准(照契约原文)**——不再是待办,规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
+  - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
+  - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
+  - **S-3** ✅ 批准:控件边框 `#ccc` → `#8a8a8a`(10 处;本阶段最大视觉变更,依据 SC 1.4.11)
+  - **S-4** ✅ 批准:冻结轮删除 `opacity: 0.55`,改用 `filter: saturate(0.6)` + 琥珀色 `box-shadow: inset` 结构性标记(替代路线 opacity 0.65 会使 Phase 7 焦点环在冻结态降至 2.85:1、低于 3:1 非文本下限)

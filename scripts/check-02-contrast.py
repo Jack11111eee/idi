@@ -45,6 +45,16 @@ def read_fence(path):
     """Return the text between the two DESIGN TOKENS fence comments."""
     with open(path, encoding="utf-8") as handle:
         lines = handle.read().splitlines()
+
+    starts = sum(1 for line in lines if "===== DESIGN TOKENS: START" in line)
+    ends = sum(1 for line in lines if "===== DESIGN TOKENS: END" in line)
+    if starts != 1 or ends != 1:
+        print(
+            "FAIL: expected exactly 1 fence START and 1 fence END, found %d/%d"
+            % (starts, ends)
+        )
+        sys.exit(1)
+
     out = []
     inside = False
     for line in lines:

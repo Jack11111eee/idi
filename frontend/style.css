@@ -40,6 +40,34 @@
   --color-kind-default: var(--gray-600);
   --color-kind-result: var(--gray-700);
   --color-action-danger: var(--red-600);
+
+  /* Tier 2 — action families (Q1). Phase 4: the three green families share one value pair;
+     visual differentiation is Phase 5's one-line value edit. */
+  --color-action-primary: var(--blue-700);
+  --color-action-primary-fg: var(--white);
+  --color-action-danger-fg: var(--white);
+  --color-action-warning: var(--amber-800);
+  --color-action-warning-surface: var(--amber-50);
+  --color-action-routine: var(--green-700);
+  --color-action-routine-surface: var(--green-100);
+  --color-action-routine-fg: var(--green-700);
+  --color-action-commit: var(--green-700);
+  --color-action-commit-surface: var(--green-100);
+  --color-action-commit-fg: var(--green-700);
+  --color-action-irreversible: var(--green-700);
+  --color-action-irreversible-surface: var(--green-100);
+  --color-action-irreversible-fg: var(--green-700);
+
+  /* Tier 2 — event-kind vocabulary (its own closed group) */
+  --color-kind-say: var(--blue-700);
+  --color-kind-read: var(--purple-600);
+  --color-kind-write: var(--green-700);
+  --color-kind-command: var(--amber-800);
+  --color-kind-error: var(--red-600);
+  --color-kind-done: var(--black);
+
+  /* Tier 2 — completion boundary (a boundary, not an action) */
+  --color-border-success: var(--green-700);
 }
 /* ===== DESIGN TOKENS: END ===== */
 
@@ -134,7 +162,7 @@ button {
   cursor: pointer;
 }
 button:hover { background: #f0f0f0; }
-button.danger { color: #c0392b; border-color: #c0392b; }
+button.danger { color: var(--color-action-danger); border-color: var(--color-action-danger); }
 
 /* 事件列表与条目 */
 .event-list {
@@ -180,13 +208,13 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 .event-content p { margin: 4px 0; }
 
 /* kind 分级颜色 */
-.kind-say .event-kind { background: #2c7be5; }      /* 说话:蓝 */
-.kind-read .event-kind { background: #6f42c1; }    /* 读文件:紫 */
-.kind-write .event-kind { background: #2e8b57; }   /* 写文件:绿 */
-.kind-command .event-kind { background: #b8860b; } /* 执行:黄褐 */
+.kind-say .event-kind { background: var(--color-kind-say); }      /* 说话:蓝 */
+.kind-read .event-kind { background: var(--color-kind-read); }    /* 读文件:紫 */
+.kind-write .event-kind { background: var(--color-kind-write); }   /* 写文件:绿 */
+.kind-command .event-kind { background: var(--color-kind-command); } /* 执行:黄褐 */
 .kind-result .event-kind { background: var(--color-kind-result); }     /* 结果:灰 */
-.kind-error .event-kind { background: #c0392b; }   /* 错误:红 */
-.kind-done .event-kind { background: #000; }       /* 结束:黑 */
+.kind-error .event-kind { background: var(--color-kind-error); }   /* 错误:红 */
+.kind-done .event-kind { background: var(--color-kind-done); }       /* 结束:黑 */
 
 .kind-error .event-content { color: var(--color-action-danger); }
 
@@ -213,13 +241,13 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 .overlay-card p { color: var(--color-text-secondary); font-size: 14px; line-height: 1.6; }
 .overlay-card button {
   margin-top: 10px;
-  background: #2c7be5;
-  color: #fff;
-  border-color: #2c7be5;
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-fg);
+  border-color: var(--color-action-primary);
 }
 .overlay-card button.danger {
-  background: #c0392b;
-  color: #fff;
+  background: var(--color-action-danger);
+  color: var(--color-action-danger-fg);
 }
 
 /* 进入表单(FLOW-01) */
@@ -261,7 +289,7 @@ button.danger { color: #c0392b; border-color: #c0392b; }
   padding: 4px 12px;
   border-radius: 12px;
   background: #fff3c4;
-  color: #8a6508;
+  color: var(--color-action-warning);
   border: 1px solid #e8d9a8;
   font-size: 12px;
   font-weight: 600;
@@ -308,9 +336,9 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 #btn-approve-draft {
   margin-top: 18px;
   padding: 8px 18px;
-  background: #e9f7ef;
-  border-color: #2e8b57;
-  color: #2e8b57;
+  background: var(--color-action-commit-surface);
+  border-color: var(--color-action-commit);
+  color: var(--color-action-commit-fg);
   font-weight: 600;
 }
 #btn-approve-draft:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -320,9 +348,9 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 #divergence-entry { margin: 0 0 14px; }
 #btn-divergence {
   padding: 8px 16px;
-  background: #fdf6ec;
-  border-color: #b8860b;
-  color: #8a6508;
+  background: var(--color-action-warning-surface);
+  border-color: var(--color-action-warning);
+  color: var(--color-action-warning);
   font-weight: 600;
 }
 #btn-divergence:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -398,9 +426,9 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 }
 #chat-input-row button {
   padding: 8px 16px;
-  background: #2c7be5;
-  color: #fff;
-  border-color: #2c7be5;
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-fg);
+  border-color: var(--color-action-primary);
 }
 
 /* 权限确认弹窗按钮 */
@@ -412,9 +440,9 @@ button.danger { color: #c0392b; border-color: #c0392b; }
 }
 .modal-buttons button { min-width: 96px; }
 button.primary {
-  background: #2c7be5;
-  color: #fff;
-  border-color: #2c7be5;
+  background: var(--color-action-primary);
+  color: var(--color-action-primary-fg);
+  border-color: var(--color-action-primary);
 }
 
 /* =========================================================================
@@ -446,7 +474,7 @@ button.primary {
 #pending-count {
   font-size: 12px;
   font-weight: 600;
-  color: #b8860b;
+  color: var(--color-action-warning);
   background: #fdf6ec;
   border: 1px solid #e8d9a8;
   border-radius: 10px;
@@ -482,7 +510,7 @@ button.primary {
   font-weight: 600;
 }
 .badge-pending {
-  color: #b8860b;
+  color: var(--color-action-warning);
   background: #fdf6ec;
   border: 1px solid #e8d9a8; /* 待处理:橙 */
 }
@@ -514,9 +542,9 @@ button.primary {
 
 /* 处理本轮批注按钮(§4.1:工作面板区与「中止」同区) */
 #btn-process-round {
-  background: #e9f7ef;
-  border-color: #2e8b57;
-  color: #2e8b57;
+  background: var(--color-action-routine-surface);
+  border-color: var(--color-action-routine);
+  color: var(--color-action-routine-fg);
   font-weight: 600;
 }
 #btn-process-round:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -562,9 +590,9 @@ button.primary {
 #authorize-row { margin-top: 18px; }
 #btn-authorize {
   padding: 8px 18px;
-  background: #e9f7ef;
-  border-color: #2e8b57;
-  color: #2e8b57;
+  background: var(--color-action-irreversible-surface);
+  border-color: var(--color-action-irreversible);
+  color: var(--color-action-irreversible-fg);
   font-weight: 600;
 }
 #btn-authorize:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -574,9 +602,9 @@ button.primary {
 #writing-view { margin-top: 18px; }
 #btn-start-writing {
   padding: 8px 18px;
-  background: #e9f7ef;
-  border-color: #2e8b57;
-  color: #2e8b57;
+  background: var(--color-action-commit-surface);
+  border-color: var(--color-action-commit);
+  color: var(--color-action-commit-fg);
   font-weight: 600;
 }
 #btn-start-writing:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -633,9 +661,9 @@ button.primary {
 }
 #check-controls { display: flex; flex-direction: column; gap: 8px; }
 #btn-continue-check, #btn-continue-repair {
-  background: #e9f7ef;
-  border-color: #2e8b57;
-  color: #2e8b57;
+  background: var(--color-action-routine-surface);
+  border-color: var(--color-action-routine);
+  color: var(--color-action-routine-fg);
   font-weight: 600;
 }
 #btn-continue-check:disabled, #btn-continue-repair:disabled {
@@ -673,7 +701,7 @@ button.primary {
 #rounds-placeholder.archive-mode #round-doc { opacity: 0.75; }
 
 /* 使命完成欢呼模态(一次性;会话内存标记) */
-#mission-complete-modal .overlay-card { border: 2px solid #2e8b57; }
+#mission-complete-modal .overlay-card { border: 2px solid var(--color-border-success); }
 
 /* 已回应条目:文字弱化(A11Y-04b / D-11 的落地形态)。
    追加在文件末尾 —— 0-2-0 后代选择器,靠源码顺序压过 .annotation-plain .annotation-note(0-2-0)。

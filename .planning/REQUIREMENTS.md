@@ -113,26 +113,62 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ## Traceability
 
-由路线图创建时填充。
+由路线图创建时填充(2026-09-17,v1.14 路线图 Phases 4-8)。
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKEN-01 … TOKEN-08 | — | Pending |
-| VISUAL-01 … VISUAL-05 | — | Pending |
-| TYPE-01 … TYPE-03 | — | Pending |
-| A11Y-01 … A11Y-08 | — | Pending |
-| LAYOUT-01 … LAYOUT-04 | — | Pending |
-| INTERACT-01 … INTERACT-02 | — | Pending |
-| CHECK-01 … CHECK-04 | — | Pending |
-| REG-01 … REG-03 | — | Pending |
+| TOKEN-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-02 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
+| VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
+| VISUAL-03 | Phase 5: 排版与视觉层级 | Pending |
+| VISUAL-04 | Phase 5: 排版与视觉层级 | Pending |
+| VISUAL-05 | Phase 5: 排版与视觉层级 | Pending |
+| TYPE-01 | Phase 5: 排版与视觉层级 | Pending |
+| TYPE-02 | Phase 5: 排版与视觉层级 | Pending |
+| TYPE-03 | Phase 5: 排版与视觉层级 | Pending |
+| A11Y-01 | Phase 7: 交互状态与焦点样式 | Pending |
+| A11Y-02 | Phase 8: 可访问性语义与键盘 | Pending |
+| A11Y-03 | Phase 8: 可访问性语义与键盘 | Pending |
+| A11Y-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| A11Y-05 | Phase 8: 可访问性语义与键盘 | Pending |
+| A11Y-06 | Phase 8: 可访问性语义与键盘 | Pending |
+| A11Y-07 | Phase 6: 布局稳健性 | Pending |
+| A11Y-08 | Phase 8: 可访问性语义与键盘 | Pending |
+| LAYOUT-01 | Phase 6: 布局稳健性 | Pending |
+| LAYOUT-02 | Phase 6: 布局稳健性 | Pending |
+| LAYOUT-03 | Phase 6: 布局稳健性 | Pending |
+| LAYOUT-04 | Phase 6: 布局稳健性 | Pending |
+| INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |
+| INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
+| CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| REG-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| REG-02 | Phase 8: 可访问性语义与键盘 | Pending |
+| REG-03 | Phase 8: 可访问性语义与键盘 | Pending |
 
 **Coverage:**
 - v1 requirements: 37 total
-- Mapped to phases: 0
-- Unmapped: 37 ⚠️ (待路线图创建填充)
+- Mapped to phases: 37
+- Unmapped: 0 ✓
 
 **分类计数:** TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 8 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3
 
+**按阶段计数:** Phase 4 = 14 / Phase 5 = 8 / Phase 6 = 5 / Phase 7 = 3 / Phase 8 = 7
+
+**人工验收项(本环境无法自动化,不得因自动测试 FAIL 判定功能缺陷):**
+- **A11Y-08** — tab 序到达每一个交互控件;键盘划词路径可用
+- **A11Y-03 的键盘划词部分** — Shift+方向键选区 → 菜单出现 → 焦点入菜单 → Escape 关闭并交还焦点
+- **REG-03 中依赖键盘选区的项** — b9664e0 五条修复的人工验收项重跑
+
 ---
 *Requirements defined: 2026-09-17*
-*Last updated: 2026-09-17 after initial definition(v1.14 里程碑)*
+*Last updated: 2026-09-17 after roadmap creation(v1.14 里程碑,Phases 4-8,37/37 映射)*

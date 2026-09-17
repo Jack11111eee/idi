@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
 status: planning
-last_updated: "2026-09-17T02:04:42.614Z"
+last_updated: "2026-09-17T00:00:00.000Z"
 last_activity: 2026-09-17
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-17)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** v1.14 前端视觉与可访问性 — 定义需求中(v1.13 已 shipped 并归档)
+**Current focus:** v1.14 前端视觉与可访问性 — 路线图已创建(Phases 4-8),待规划 Phase 4(v1.13 已 shipped 并归档)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-09-17 — Milestone v1.14 started
+Phase: 4 of 8 (设计契约、令牌层与契约校验) — v1.14 第 1/5 阶段
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-09-17 — 路线图创建完成(Phases 4-8,37/37 需求映射)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -76,6 +78,13 @@ Last activity: 2026-09-17 — Milestone v1.14 started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Roadmap]: v1.14 阶段边界 = 5 阶段(Phases 4-8),按"风险面 + 契约依赖"切,而非按审计报告的六支柱切——P4 设计契约与令牌层(硬前置,唯一纯重构阶段)、P5 排版与视觉层级(承载核心价值修复)、P6 布局稳健性(回归风险最高的 CSS 阶段)、P7 交互状态与焦点样式(纯追加)、P8 可访问性语义与键盘(唯一触碰 app.js/index.html 的阶段)。四份研究的建序分歧按"Architecture 的骨架胜出、Pitfalls 的 Phase E 折入 P8 作收口 gate、STACK 的六步作为 P4 的提交序"调和
+- [Roadmap]: v1.14 压缩裁定——6 阶段压到 5 阶段,采用的唯一合并是研究自陈允许的那一条(交互状态 P3 并入焦点样式 P5,即本路线图 P7);**未**采用"P3 并入 P4"这一被研究明令禁止的合并。焦点规则在 P7 落地、`tabindex` 在 P8 落地,以满足"tabindex 与 :focus 同提交"硬规则的实质(不存在可聚焦而焦点不可见的中间状态)
+- [Roadmap]: CHECK-01/02 两条校验脚本并入 P4 而非独立前置阶段——它们校验的不变量(块外零 hex、声明令牌配对达 AA)正是 P4 的中心主张;在必须满足该不变量的同一阶段交付检查器,把该阶段的中心主张从散文变成一条命令,后续每个阶段免费继承该工具
+- [Roadmap]: A11Y-04(4 处对比度失败)归 P4 而非 a11y 阶段——AA 达标值是**令牌值决策**,在声明处选定;实测失败面为 ≥9 对(审计的 4 是抽样低估),含 `.annotation-answered` 1.88:1 等 opacity 合成项
+- [Roadmap]: A11Y-07(WCAG 2.5.8 命中区)归 P6——其边界条件由 420px 侧栏定义,必须与侧栏宽度决策同一次权衡;明确不得为此重构侧栏
+- [Roadmap]: REG-03(重跑 b9664e0 五条修复的全部人工验收项)作为 P8 的收口 gate 而非事后补记——五条修复无任何自动化覆盖,而本里程碑重写它们所依赖的 CSS;无重跑即无"未破坏它们"的证据
+- [Roadmap]: `#probe-controls` 的移除/重定位与暗色模式**不进本里程碑任何阶段**——前者是产品行为变更(且双路线界面契约是真功能),后者会翻倍对比度校验面;均记为独立未来候选
 - [Roadmap]: 阶段边界采用纵向 MVP 切法——P1 = 行走骨架(AI 调用链 + 阶段 1-2 会话 + G1),P2 = 轮次收敛循环(批注 + G2 + 机器文法),P3 = 门与终点(G3 + 自检 + 归档),而非按后端/前端/集成横向分层
 - [Roadmap]: 需求总数以 REQUIREMENTS.md 磁盘现状为准 = 20 条(编排器提示中的"17"为误计,FLOW 7 + UI 4 + AI 5 + DATA 4),覆盖率按 20/20 验证
 - [Phase 1]: idi-01-02: derive_state 返回 {state, current_round, current_check} 锁定——current_round 仅 phase3、current_check 仅 phase5_checking 有值,Phase 2/3 按钮逻辑消费此形状
@@ -100,7 +109,9 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- [v1.14 P4] 规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题(令牌命名与 positive/gate/irreversible 三分、不可逆动作处理方式、字号锚点 13px vs 14px、`--fw-medium: 500` 是否被消费、窄窗口范围、`#state-badge` 的 `calc()` vs `absolute`、两处 emoji 的图标机制)。这是设计决策而非研究缺口
+- [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
+- [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
 
 ### Quick Tasks Completed
 
@@ -123,10 +134,10 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-13T15:32:22Z
-Stopped at: Milestone v1.13 shipped and archived — 待开启下一里程碑
+Last session: 2026-09-17T02:04:42Z
+Stopped at: v1.14 路线图创建完成 — Phases 4-8,37/37 需求映射,待规划 Phase 4
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan the first v1.14 phase: /gsd-plan-phase 4 (先答复 P4 的 7 个 UI-SPEC 未决问题)

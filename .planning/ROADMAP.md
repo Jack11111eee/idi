@@ -95,7 +95,7 @@
 **Research flag**: **需要 UI-SPEC 决策,不是研究缺口。** ARCHITECTURE.md 向 UI-SPEC 作者提了 7 个未决问题(令牌命名与 positive/gate/irreversible 三分;不可逆动作的处理方式;字号锚点 13px vs 14px;`--fw-medium: 500` 是否真的被消费;窄窗口范围;`#state-badge` 的 `calc()` vs `absolute`;两处 emoji 的图标机制)。**这 7 个问题在 Phase 4 可被规划之前必须答复。** 令牌分类学的建议结论(三份研究分歧的调和):**颜色两层(primitive → semantic),间距/字号/圆角单层,无组件层**;硬不变量 = **primitive 名绝不出现在 `:root` 块之外**(机械可查)。
 
 **Gates**: CHECK-01(块外 hex = 0)、CHECK-02(全部声明令牌配对达 AA)、CHECK-03(`^\.hidden {` = 1)、CHECK-04(`!important` 声明 = 1);每个 `var(--x)` 都能解析到已声明的 `--x`;`node --check app.js`;pytest 基线不变(**注意:此处原写 219,但规划时实测收集数为 225** —— quick `260917-fqh` 之后新增了用例;门按"通过数 ≥ 执行前实测收集数"判定并记录实际数字,照抄 219 会造出必然失败的假门,正是本里程碑反复警告的 gate 算术错误);`git status --porcelain frontend/` 仅三个已知文件、`frontend/vendor/` 仍只有 `marked.min.js`;`app.js`/`index.html` 零改动。
-**Plans**: 3 plans
+**Plans**: 2/3 plans executed
 Plans:
 **Wave 1**
 
@@ -103,7 +103,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] idi-04-02-PLAN.md — 间距(12 档)/字号(6 档)/字重(2)/行高(3)/圆角(3)/z-index(4)+ `--sidebar-w`;冻结轮结构性标记(S-4)与 N-4 前景色规则
+- [x] idi-04-02-PLAN.md — 间距(12 档)/字号(6 档)/字重(2)/行高(3)/圆角(3)/z-index(4)+ `--sidebar-w`;冻结轮结构性标记(S-4)与 N-4 前景色规则
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -284,7 +284,7 @@ Plans:
 | 1. 行走骨架 | v1.13 | 4/4 | Complete | 2026-09-09 |
 | 2. 轮次收敛循环 | v1.13 | 4/4 | Complete | 2026-09-10 |
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
-| 4. 设计契约、令牌层与契约校验 | v1.14 | 1/3 | In Progress | - |
+| 4. 设计契约、令牌层与契约校验 | v1.14 | 2/3 | In Progress|  |
 | 5. 排版与视觉层级 | v1.14 | 0/0 | Not started | - |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |

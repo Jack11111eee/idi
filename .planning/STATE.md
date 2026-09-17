@@ -5,17 +5,17 @@ milestone_name: 前端视觉与可访问性
 current_phase: 04
 current_phase_name: tokens-contract
 status: executing
-stopped_at: Phase 4 Plan 01 complete (idi-04-01-SUMMARY.md); Plan 02 next
-last_updated: "2026-09-17T14:10:00.000Z"
+stopped_at: Phase 4 Plan 02 complete (idi-04-02-SUMMARY.md); Plan 03 next
+last_updated: "2026-09-17T14:40:00.000Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase idi-04 Plan 01 complete — colour token layer landed, CHECK-01 PASS
-state_head: f773355
+last_activity_desc: Phase idi-04 Plan 02 complete — non-colour token layer + S-4 frozen-round marker; CHECK-01/03/04 PASS
+state_head: 4f323c0
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 33
+  completed_plans: 2
+  percent: 67
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 ## Current Position
 
 Phase: idi-04 (tokens-contract) — EXECUTING
-Plan: 2 of 3
-Status: Executing Phase idi-04 — Plan 01 complete, Plan 02 next
-Last activity: 2026-09-17 — Phase idi-04 Plan 01 complete (colour token layer)
+Plan: 3 of 3
+Status: Executing Phase idi-04 — Plan 02 complete, Plan 03 next
+Last activity: 2026-09-17 — Phase idi-04 Plan 02 complete (non-colour token layer + S-4 frozen marker)
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 

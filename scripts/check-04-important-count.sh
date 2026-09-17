@@ -6,7 +6,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-n=$(grep -c '!important;' frontend/style.css || true)
+# grep -o | wc -l counts OCCURRENCES, so two declarations sharing one line
+# report 2 — a line-based grep -c would report 1 and pass.
+n=$(grep -o '!important;' frontend/style.css | wc -l | tr -d ' ' || true)
 
 if [ "$n" = "1" ]; then
   echo "PASS"

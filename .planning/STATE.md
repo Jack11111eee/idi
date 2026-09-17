@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 4
-current_phase_name: v1.14 第 1/5 阶段
+current_phase: 04
+current_phase_name: tokens-contract
 status: planning
 stopped_at: Phase 4 UI-SPEC approved (checker APPROVED; UI-consideration probe resolved)
-last_updated: "2026-09-17T08:57:15.197Z"
+last_updated: "2026-09-17T13:37:37.451Z"
 last_activity: 2026-09-17
 last_activity_desc: "完成 quick 260917-fqh:修复 b9664e0 自身引入的两条缺陷(REG-01/REG-02)"
-state_head: 24a9abefa7e1f7b1dab521e8ab02adc785f2b14a
+state_head: fc8cf5a1b413d2618d64e903a2b2be18d4d9c0e9
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 3
   completed_plans: 0
   percent: 0
 ---
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 
 ## Current Position
 
-Phase: 4 of 8 (设计契约、令牌层与契约校验) — v1.14 第 1/5 阶段
-Plan: 0 of TBD in current phase
-Status: UI-SPEC approved — ready to plan
-Last activity: 2026-09-17 — Phase 4 UI-SPEC 通过 checker(APPROVED)并经 UI-consideration 探针裁定(79 条:4 resolved / 1 backstop / 13 deferred / 61 dismissed),提交 `24a9abe`
+Phase: idi-04 (tokens-contract) — READY TO EXECUTE
+Plan: 0 of 3 in current phase
+Status: Ready to execute — 3 plans verified (plan-checker PASSED; 2 revision rounds closed 4 blockers + 2 warnings)
+Last activity: 2026-09-17 — Phase 4 规划完成:3 份计划经 plan-checker 通过(`2efee50` 初稿 → `aebde22` 修订一 → `3ee6daf` 补 SC3 层级校验 → `fc8cf5a` 修正 `--gray-100` 比值标注)
 
 Progress: [░░░░░░░░░░] 0%
 

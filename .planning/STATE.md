@@ -1,35 +1,33 @@
 ---
 gsd_state_version: "1.0"
-milestone: v1.13
-status: Awaiting next milestone
-stopped_at: Phase 3 complete — all phases complete
-last_updated: "2026-09-13T15:32:22.212Z"
-last_activity: 2026-09-13
-last_activity_desc: Milestone v1.13 completed and archived
-state_head: 776d3ebbfc38c291796bc076dc967f24217b075a
+milestone: v1.14
+milestone_name: 前端视觉与可访问性
+status: planning
+last_updated: "2026-09-17T02:04:42.614Z"
+last_activity: 2026-09-17
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
-current_phase: 3
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-13)
+See: .planning/PROJECT.md (updated 2026-09-17)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Planning next milestone(v1.13 已 shipped;用 `/gsd-new-milestone` 开启下一里程碑)
+**Current focus:** v1.14 前端视觉与可访问性 — 定义需求中(v1.13 已 shipped 并归档)
 
 ## Current Position
 
-Phase: Milestone v1.13 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-09-16 — Completed quick task 260916-t8g: 修复 UI 审计报告 5 条功能性 BLOCKER
+Status: Defining requirements
+Last activity: 2026-09-17 — Milestone v1.14 started
 
 ## Performance Metrics
 

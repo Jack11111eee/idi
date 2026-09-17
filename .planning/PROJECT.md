@@ -8,6 +8,20 @@
 
 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤——总设计文档通过自检、界面提示「使命完成」即为终点(只读归档态)。
 
+## Current Milestone: v1.14 前端视觉与可访问性
+
+**Goal:** 把前端从"零设计契约下长出来的功能骨架"变成有设计契约、键盘可用、视觉可信的工具界面。
+
+**Target features:**
+- **设计令牌体系** — 颜色/间距/字号/圆角四类 CSS 自定义属性 + 语义色分层,收掉 32 个硬编码 hex 与"0 个变量"的现状
+- **视觉层级** — G3 授权按钮的不可逆动作权重(现与例行「继续自检」视觉完全相同)、页面级层级(现全屏最大字是容器标签 `<h1>文档区</h1>`)、侧栏面板活动态、emoji 图标替代
+- **排版系统** — 字号阶梯(现 7 个字号、13px 用了 14 次)、字重层级(现仅 600/400 两档)、markdown 正文字号受控(现 `.markdown-body h1/h2/h3` 无 font-size 规则,落到浏览器默认)
+- **可访问性** — 全站 `:focus` 样式(现 grep 命中 0)、键盘可达性(`tabindex` 与 focus 样式必须一起定)、4 处 WCAG AA 对比度失败
+- **布局稳健性** — `#state-badge { right: 448px }` 魔法数、420px 侧栏内 4 个滚动容器套娃、窄窗口不破版
+- **交互状态** — hover/active/disabled/transition(现为 2/0/8/1)
+
+**Source:** 六支柱 UI 审计 13/24、7 个 BLOCKER(`.planning/milestones/v1.13-phases/idi-03-g3/03-UI-REVIEW.md`)。其中 5 条功能性 BLOCKER 已于 2026-09-16 修复并合入 main(`b9664e0`);本里程碑收的是被显式延后的部分——延后理由一致:修法本身就是设计决策,必须先定契约再落地。
+
 ## Requirements
 
 ### Validated
@@ -23,7 +37,9 @@
 
 ### Active
 
-v1.13 范围内工作已全部交付,当前无在办需求。下一里程碑的需求将在 `/gsd-new-milestone` 中重新定义(旧的 v1.13 需求清单已归档至 `.planning/milestones/v1.13-REQUIREMENTS.md`;`.planning/REQUIREMENTS.md` 保留在盘但内容已冻结)。
+**v1.14 前端视觉与可访问性** — 需求清单见 `.planning/REQUIREMENTS.md`(由 `/gsd-new-milestone` 定义)。范围来源为 UI 审计的延后项,不含新功能。
+
+v1.13 范围内工作已全部交付(旧的 v1.13 需求清单已归档至 `.planning/milestones/v1.13-REQUIREMENTS.md`)。
 
 ### Out of Scope
 
@@ -37,6 +53,8 @@ v1.13 范围内工作已全部交付,当前无在办需求。下一里程碑的�
 - **当前代码状态(v1.13 shipped, 2026-09-13):** 13,322 LOC(不含 vendor);Python + FastAPI 后端(`backend/` 15 个测试文件,219 passed / 6 skipped),原生 HTML/JS 前端(`frontend/`,仅 vendored `marked.min.js`);SSE 事件直播 + 双轨 AICaller(SDK / 子进程);纯模块 `grammar.py`/`annotations.py`/`g3.py`/`checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
 - **已知技术债:** ①`SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧"无脏状态"语义仍成立);②`annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口);③STATE.md 在 `phase.complete` 后偶发字段异常(需人工修正)。
 - **方法论教训:** 真浏览器 UAT 抓出了机器级验证漏掉的 6 处真实缺陷(含一处高危无界自动链);文本级 gate 通过不等于运行时语义成立(详见 `.planning/RETROSPECTIVE.md`)。
+- **前端设计债(v1.14 的处理对象):** v1.13 的前端在**零设计契约**下建成——`DESIGN.md` §4 只规定了布局区域与交互语义,未规定任何间距刻度、字号阶梯、颜色令牌、断点或文案契约。2026-09-16 的六支柱审计给出 13/24,7 个 BLOCKER。对一个自称价值是"无歧义对齐"的工具而言,2435 行 UI 无设计契约本身就是结构性缺口。
+- **UAT 环境事实(省得重踩):** Playwright 必须用 `chromium.launch({ channel: 'chrome' })`,捆绑版 chromium 版本对不上;键盘文本选区**无法自动化**(连 `contenteditable` 都选不中),依赖 Shift+方向键的验收项必须标注为人工检查。
 
 ## Constraints
 
@@ -69,4 +87,4 @@ v1.13 范围内工作已全部交付,当前无在办需求。下一里程碑的�
 | Phase 3:prompt 契约必须由测试锁死参数注入 | `build_check_prompt` 接受 `tier` 却未注入,AI 写出非法档位行导致 `parse_tier_line` 返回 None——靠真 CLI E2E 才暴露 | ✓ Good(已补 `test_build_check_prompt_injects_tier_line`) |
 
 ---
-*Last updated: 2026-09-13 after v1.13 milestone — 交互式讨论迭代系统 MVP shipped(3 phases / 13 plans / 28 tasks,20/20 REQ 交付并验证;真浏览器 UAT 抓出 6 处运行时缺陷并全部修复)*
+*Last updated: 2026-09-17 after starting v1.14 milestone — 前端视觉与可访问性(范围来源:UI 审计 13/24 的延后项;5 条功能性 BLOCKER 已于 2026-09-16 修复合入 main b9664e0)*

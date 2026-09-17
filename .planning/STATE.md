@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 Phase: 4 of 8 (设计契约、令牌层与契约校验) — v1.14 第 1/5 阶段
 Plan: 0 of TBD in current phase
 Status: Ready to plan
-Last activity: 2026-09-17 — 路线图创建完成(Phases 4-8,37/37 需求映射)
+Last activity: 2026-09-17 — 路线图创建完成(Phases 4-8,38/38 需求映射)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -135,7 +135,7 @@ Items acknowledged and deferred at milestone close, most recent first:
 ## Session Continuity
 
 Last session: 2026-09-17T02:04:42Z
-Stopped at: v1.14 路线图创建完成 — Phases 4-8,37/37 需求映射,待规划 Phase 4
+Stopped at: v1.14 路线图创建完成 — Phases 4-8,38/38 需求映射,待规划 Phase 4
 Resume file: None
 
 ## Operator Next Steps

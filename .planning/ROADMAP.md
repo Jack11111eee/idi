@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v1.13 交互式讨论迭代系统 MVP** — Phases 1-3 (shipped 2026-09-13) — 详见 `milestones/v1.13-ROADMAP.md`
-- 🚧 **v1.14 前端视觉与可访问性** — Phases 4-8 (in progress) — 37 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 8 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3)
+- 🚧 **v1.14 前端视觉与可访问性** — Phases 4-8 (in progress) — 38 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3)
 
 ## Phases
 
@@ -58,7 +58,7 @@
 ### Phase 4: 设计契约、令牌层与契约校验
 **Goal**: `style.css` 拥有一份书面设计契约与单一令牌来源;全部字面量被替换为 `var()`,令牌块之外零裸 `#hex`;四条契约校验命令可独立运行;AA 达标值在**声明处**即选定。
 **Depends on**: Nothing (v1.14 首个阶段;v1.13 三阶段已 shipped)
-**Requirements**: TOKEN-01, TOKEN-02, TOKEN-03, TOKEN-04, TOKEN-05, TOKEN-06, TOKEN-07, TOKEN-08, CHECK-01, CHECK-02, CHECK-03, CHECK-04, REG-01, A11Y-04
+**Requirements**: TOKEN-01, TOKEN-02, TOKEN-03, TOKEN-04, TOKEN-05, TOKEN-06, TOKEN-07, TOKEN-08, CHECK-01, CHECK-02, CHECK-03, CHECK-04, REG-01, A11Y-04, A11Y-04b
 
 **Rationale**: 硬前置——后续四个阶段全部消费它,且它是唯一一个成功判据是**纯重构**的阶段(除刻意修复的对比度外零视觉变化),因而是发现"迁移方法本身错了"最便宜的地方。它必须最先落地:后续每一个修复(对比度、层级、焦点)都是令牌**值**的改动,在存在两个事实源时无法验证。
 
@@ -67,7 +67,7 @@
 - `style.css` 顶部带围栏注释的**单一** `:root` 令牌块(插在 `* { box-sizing }` 之后、`html, body` 之前,`/* ===== DESIGN TOKENS: START/END ===== */` 围栏)。
 - 全部字面量的替换:34 个 hex(120 次出现)、3 处 `rgba()`、14 个 padding / 11 个 margin / 5 个 gap 值、7 个字号、8 个圆角、4 个 `z-index`。
 - 令牌块之外的 `style.css` 含**零**裸 hex;`--z-*` 序关系在块内注释中显式断言(badge 10 < banner 20 < overlay 100 < selection-menu 200)。
-- **AA 达标值在此选定**(`.hint` 用最浅的通过值而非"安全的"深灰;`opacity` 文字弱化改为颜色令牌)。这同时交付 A11Y-04。
+- **AA 达标值在此选定**(`.hint` 用最浅的通过值而非"安全的"深灰;`opacity` 文字弱化改为颜色令牌,含 `#round-doc.round-frozen` 0.55 与归档态 0.75 两处整篇文档灰化——冻结灰化与 AA 的冲突须在此裁定)。这同时交付 A11Y-04 / A11Y-04b。
 - CHECK-01/02/03/04 四条零依赖命令。
 - REG-01:修正 `.hidden` 注释的**错误理由**(现称 `.overlay`/`.doc-subview` 为 0-1-0 竞争者;`.doc-subview` 根本没有 `display` 声明,而决定性的三个 ID 特异性竞争者全部未被提及)。`!important` 的结论正确,理由在两个方向上都不对。
 

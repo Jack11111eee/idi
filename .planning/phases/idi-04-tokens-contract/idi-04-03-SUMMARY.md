@@ -75,11 +75,11 @@ coverage:
         status: pass
     human_judgment: false
   - id: C3
-    description: "Every ratio reproduces the UI-SPEC's recomputed values exactly, including the corrected --gray-100 pair (4.66) and the two alpha composites (12.63 / 7.49)"
+    description: "Every ratio reproduces the UI-SPEC's recomputed values exactly, including the corrected --gray-100 pair (4.66) and the two alpha composites (5.08 / 7.49). [Corrected 2026-09-17 after code review: the first alpha composite was 12.63 while the manifest modelled the fictional pair --black ON --white TEXT@0.8; the real pair --color-action-primary-fg ON --color-action-primary@0.9 measures 5.08.]"
     requirement: A11Y-04
     verification:
       - kind: other
-        ref: "checker stdout: muted 5.18 / 5.41 / 4.96 / 4.66; danger 5.44 / 5.21 / 4.69; border-strong 3.45 / 3.17; alpha 12.63 / 7.49"
+        ref: "checker stdout: muted 5.18 / 5.41 / 4.96 / 4.66; danger 5.44 / 5.21 / 4.69; border-strong 3.45 / 3.17; alpha 5.08 / 7.49"
         status: pass
     human_judgment: false
   - id: C4
@@ -147,7 +147,7 @@ status: complete
 - **`scripts/check-02-contrast.py`** — zero-dependency (python3 stdlib only: `re`, `sys`), read-only. It reads the fenced `:root` block, resolves `var()` chains to primitives, and measures every manifest pair. It never writes a file and never runs git.
 - **The manifest is co-located with the tokens** — 34 comment lines inside the fence, written in token names only (no hex). This is what makes "the contract is executable" true rather than asserted: a token renamed out from under a manifest entry fails loudly, so the two cannot drift.
 - **Coverage is the reconciled scope, not the audit's 4** — 29 TEXT + 5 NON-TEXT = 34 pairs (floors are ≥ 24 / ≥ 20 / ≥ 4). The four `--color-text-muted` grounds, all seven event-kind chips, the six green buttons (three families), the primary/info/danger pairs, the frozen-round marker, and the two surviving α composites are all present.
-- **Every ratio reproduces the UI-SPEC exactly**, including the corrected `--gray-100` pair (**4.66**, not the pre-collapse 4.75) and the two α composites (**12.63** / **7.49**).
+- **Every ratio reproduces the UI-SPEC exactly**, including the corrected `--gray-100` pair (**4.66**, not the pre-collapse 4.75) and the two α composites (**5.08** / **7.49**). *(Corrected 2026-09-17 after code review: the first α composite was reported as 12.63 because the manifest modelled the fictional pair `--black ON --white TEXT@0.8` — `--black` has no foreground consumer. The pair that actually renders is `--color-action-primary-fg ON --color-action-primary@0.9` = **5.08**. See `04-UI-SPEC.md` E6's corrected ruling.)*
 - **SC3's hierarchy half is machine-checked.** `ORDER 0.311  --color-text-muted before --color-text on --gray-25` turns the UI-SPEC's prose figure into executable output. It is a **strict ordering**, not a `≤ 0.30` threshold — the contract explicitly accepts 0.311 against that guide, so a threshold gate would have been false on HEAD.
 - **The ratio gates are provably blind to the edit the ORDER assertion catches.** Deepening `--gray-600` to `#000000` makes all four muted background pairs *easier* to pass (20.12 / 21.00 / 19.26 / 18.10) while `ORDER` alone reports `FAIL: hierarchy inverted  1.207` and exits 1.
 - **All four commands' failure directions are proven** (CHECK-02 twice), with the raw outputs recorded below.

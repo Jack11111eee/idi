@@ -191,8 +191,8 @@
   /* PAIR --color-action-danger ON --gray-25 TEXT */
   /* PAIR --color-action-danger ON --gray-100 TEXT */
 
-  /* the two surviving whole-subtree dims — covered, and both pass (A11Y-04b) */
-  /* PAIR --black ON --white TEXT@0.8 */
+  /* the two surviving dims — covered, and both pass (A11Y-04b) */
+  /* PAIR --color-action-primary-fg ON --color-action-primary TEXT@0.9 */
   /* PAIR --color-text ON --gray-25 TEXT@0.75 */
 
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
@@ -775,7 +775,7 @@ button.primary {
   padding: var(--space-2-5) var(--space-4);
   text-align: center;
 }
-.tier-desc { font-size: var(--text-sm); font-weight: var(--fw-regular); opacity: 0.8; }
+.tier-desc { font-size: var(--text-sm); font-weight: var(--fw-regular); opacity: 0.9; }
 
 /* 自检报告面板(阶段 5 侧栏;照 annotations-panel 形态) */
 #checks-panel {

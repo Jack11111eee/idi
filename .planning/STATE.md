@@ -2,9 +2,14 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
+current_phase: 4
+current_phase_name: v1.14 第 1/5 阶段
 status: planning
-last_updated: "2026-09-17T00:00:00.000Z"
+stopped_at: Phase 4 UI-SPEC approved (checker APPROVED; UI-consideration probe resolved)
+last_updated: "2026-09-17T08:57:15.197Z"
 last_activity: 2026-09-17
+last_activity_desc: "完成 quick 260917-fqh:修复 b9664e0 自身引入的两条缺陷(REG-01/REG-02)"
+state_head: 24a9abefa7e1f7b1dab521e8ab02adc785f2b14a
 progress:
   total_phases: 5
   completed_phases: 0
@@ -26,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 
 Phase: 4 of 8 (设计契约、令牌层与契约校验) — v1.14 第 1/5 阶段
 Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-09-17 — 完成 quick 260917-fqh:修复 b9664e0 自身引入的两条缺陷(REG-01/REG-02)
+Status: UI-SPEC approved — ready to plan
+Last activity: 2026-09-17 — Phase 4 UI-SPEC 通过 checker(APPROVED)并经 UI-consideration 探针裁定(79 条:4 resolved / 1 backstop / 13 deferred / 61 dismissed),提交 `24a9abe`
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -109,7 +114,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- [v1.14 P4] 规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题(令牌命名与 positive/gate/irreversible 三分、不可逆动作处理方式、字号锚点 13px vs 14px、`--fw-medium: 500` 是否被消费、窄窗口范围、`#state-badge` 的 `calc()` vs `absolute`、两处 emoji 的图标机制)。这是设计决策而非研究缺口
+- [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)
 - [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
 
@@ -135,10 +140,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-17T02:04:42Z
-Stopped at: v1.14 路线图创建完成 — Phases 4-8,38/38 需求映射,待规划 Phase 4
-Resume file: None
+Last session: 2026-09-17T08:57:15.180Z
+Stopped at: Phase 4 UI-SPEC approved (checker APPROVED; UI-consideration probe resolved)
+Resume file: /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration/.planning/phases/idi-04-tokens-contract/04-UI-SPEC.md
 
 ## Operator Next Steps
 
-- Plan the first v1.14 phase: /gsd-plan-phase 4 (先答复 P4 的 7 个 UI-SPEC 未决问题)
+- Plan the first v1.14 phase: `/gsd-plan-phase 4` — UI-SPEC 已就绪并通过 checker(APPROVED),7 个未决问题已全部关闭,不再是规划前置。
+  **规划时须先向用户呈上四个签核项 S-1…S-4**(见 `04-UI-SPEC.md` 的 `## Sign-Off Items`),它们是契约刻意不替用户做的决定:
+  - **S-1** 间距刻度偏离 TOKEN-05 的字面七档(保留 1/2/6/10/14 半步带;压平会移动像素、违反 SC2)
+  - **S-2** 字号锚点偏离 TOKEN-08 的"删除 14px"(保留 14px;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
+  - **S-3** 控件边框 `#ccc` → `#8a8a8a`(本阶段最大视觉变更,来源是研究调和范围而非编号需求,留有退出口)
+  - **S-4** 冻结轮裁定:保留结构性标记(删 opacity);改用 opacity 0.65 亦可,代价是 Phase 7 焦点环在冻结态降至 2.85:1、低于 3:1 非文本下限

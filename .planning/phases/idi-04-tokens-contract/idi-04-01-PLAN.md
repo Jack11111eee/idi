@@ -466,7 +466,7 @@ tier-2 事件类别(9):`--color-kind-say` `--color-kind-read` `--color-kind-writ
 |---|---|---|---|
 | SC1 | 单一 `:root` 令牌块,块外零裸 `#hex`,CHECK-01 一条命令即可证明 | 01 | Plan 01 Task 1 的 tracer verify + Task 3 的终局门 |
 | SC2 | 除刻意对比度修复外渲染与迁移前一致(纯值替换) | 01 + 02 | 每个 `<action>` 的"只改值、不重排、不增删其它声明"条款 + Deliberate Delta Ledger 作为**封闭清单** + `git diff` 面积检查 + DevTools Computed 抽验 |
-| SC3 | 闸门说明文字仍比主正文次要,且自身达 AA(层级与比值一起校验) | 01 + 03 | **比值半**:Plan 03 的 CHECK-02 `--color-text-muted` 四条背景对(5.18 / 5.41 / 4.96 / 4.75);**层级半**:Plan 03 的 `/* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */` 断言 —— 脚本打印 hint/正文比 **0.311**,并在层级倒置时 FAIL(Plan 03 Task 2 的失败方向实证)。Plan 01 只负责**取值**:`--gray-600: #6a6a6a;` 是每个背景上都通过的最浅值(acceptance 逐字断言),取更深即违反 Pitfall 4a |
+| SC3 | 闸门说明文字仍比主正文次要,且自身达 AA(层级与比值一起校验) | 01 + 03 | **比值半**:Plan 03 的 CHECK-02 `--color-text-muted` 四条背景对(5.18 / 5.41 / 4.96 / 4.66 —— 末位是 `--gray-100` = `#eeeeee` 上的实测值;UI-SPEC 矩阵第四列的 4.75 是 D-15 折叠前 `#f0f0f0` 上的值);**层级半**:Plan 03 的 `/* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */` 断言 —— 脚本打印 hint/正文比 **0.311**,并在层级倒置时 FAIL(Plan 03 Task 2 的失败方向实证)。Plan 01 只负责**取值**:`--gray-600: #6a6a6a;` 是每个背景上都通过的最浅值(acceptance 逐字断言),取更深即违反 Pitfall 4a |
 | SC4 | `.hidden` 仍是全站唯一 `!important` 声明;五个只依赖它的元素仍正确隐藏(实检) | 01 + 02 | CHECK-03/04 在每个任务里跑;浏览器实检见 flagged assumption #11(本环境只能人工) |
 | SC5 | CHECK-01/02/03/04 可独立运行,各自给出明确通过/失败结论 | 03 | Plan 03 Task 2 的四组失败方向实证 |
 

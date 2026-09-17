@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 0
+open_count: 2
 waived_count: 3
 fixed_count: 5
-total_count: 8
-last_updated: 2026-09-14T06:22:46.362Z
+total_count: 10
+last_updated: 2026-09-17T14:58:05.467Z
 ---
 
 # Broken Windows Ledger
@@ -23,6 +23,8 @@ last_updated: 2026-09-14T06:22:46.362Z
 | 6 | 2 | deviation | frontend/app.js |  | ui.safety-gate(wave3/idi-02-03)blocking 结果为项目级配置缺口而非本波缺陷:对 Phase 1 回跑同一 gate 同样 block:true(前端文件已改+无 UI-SPEC.md)而 Phase 1 verification passed——本项目从未生成 UI-SPEC(规划期 ui-phase 步骤未执行)。本项目唯一权威设计文档为根 DESIGN.md,.planning 皆为辅助视图;UI 契约即 DESIGN.md §4.1/§4.2,idi-02-03 must_haves 逐字复述该两节。处置:编排者接受 gate 报告为已记录偏差(Phase 1 同构先例+DESIGN.md 为契约权威+浏览器 UAT 六点清单为实际验证工具,UAT 结果落 02-VERIFICATION.md),不回滚不中途重构;gate 处方 /gsd-ui-phase 属规划期动作留给用户裁量。 | waived | 项目级配置缺口非本波缺陷:本项目唯一权威设计文档为根 DESIGN.md,UI 契约即 §4.1/§4.2,从未生成 UI-SPEC(规划期 ui-phase 步骤未执行);Phase 1 回跑同一 gate 亦 block:true 而 Phase 1 verification passed,属同构先例;实际验证工具为真浏览器 UAT(02-VERIFICATION.md) | 2026-09-10T02:42:58.000Z | 2026-09-14T06:22:46.362Z |
 | 7 | 2 | unrun-verify | backend/tests/test_e2e_rounds.py |  | UAT 六点浏览器人检待办(PHASE2 收口):划词菜单/批注流/高亮/大白话灰斜体/处理直播+冻结/反向划选——交接表在 idi-02-04-SUMMARY,造盘项目 /tmp/idi-02-04-uat-project;后端全链已由 IDI_E2E 真跑 2 passed 证明,浏览器视觉面 pending | fixed |  | 2026-09-09T22:49:11.296Z | 2026-09-14T06:21:08.828Z |
 | 8 | 2 | deviation | backend/prompts.py |  | idi-02-04 修复留痕:_ROUND_INSTRUCTIONS 补资料完备性段(AI 幻觉读不存在路径触发项目外读→confirm 无限挂;已修复,E2E 真跑复验通过)——记录 CLI 失眠窗口环境事实(约 05:00-06:00 CST 启动即挂死)与 answer_plain 一次 121.7s 高负载例外,供 Phase 3 真调用 E2E 预算参考 | fixed |  | 2026-09-09T22:49:33.210Z | 2026-09-14T06:22:46.025Z |
+| 9 | idi-04 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md |  | CHECK-02 DevTools Computed spot-checks (4 named items) not performed — auto mode, screenshots unavailable | open |  | 2026-09-17T14:58:05.360Z |  |
+| 10 | idi-04 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md |  | Stage close-out DevTools checks (6 named items incl. #brainstorm-view h2 14px/rgb(138,101,8) and frozen-round marker) not performed — auto mode | open |  | 2026-09-17T14:58:05.467Z |  |
 
 ````json
 [
@@ -121,6 +123,30 @@ last_updated: 2026-09-14T06:22:46.362Z
     "reason": "",
     "recorded_at": "2026-09-09T22:49:33.210Z",
     "resolved_at": "2026-09-14T06:22:46.025Z"
+  },
+  {
+    "id": 9,
+    "kind": "unrun-verify",
+    "phase": "idi-04",
+    "file": ".planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md",
+    "line": null,
+    "description": "CHECK-02 DevTools Computed spot-checks (4 named items) not performed — auto mode, screenshots unavailable",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-17T14:58:05.360Z",
+    "resolved_at": null
+  },
+  {
+    "id": 10,
+    "kind": "unrun-verify",
+    "phase": "idi-04",
+    "file": ".planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md",
+    "line": null,
+    "description": "Stage close-out DevTools checks (6 named items incl. #brainstorm-view h2 14px/rgb(138,101,8) and frozen-round marker) not performed — auto mode",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-17T14:58:05.467Z",
+    "resolved_at": null
   }
 ]
 ````

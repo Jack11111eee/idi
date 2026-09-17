@@ -5,17 +5,17 @@ milestone_name: 前端视觉与可访问性
 current_phase: 04
 current_phase_name: tokens-contract
 status: executing
-stopped_at: Phase 4 Plan 02 complete (idi-04-02-SUMMARY.md); Plan 03 next
-last_updated: "2026-09-17T14:40:00.000Z"
+stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
+last_updated: "2026-09-17T14:58:17.639Z"
 last_activity: 2026-09-17
-last_activity_desc: Phase idi-04 Plan 02 complete — non-colour token layer + S-4 frozen-round marker; CHECK-01/03/04 PASS
-state_head: 4f323c0
+last_activity_desc: Phase idi-04 Plan 03 complete — CHECK-02 contrast checker + pair manifest + failure-direction proofs; all 4 guard commands PASS
+state_head: 6dba970c89dc7d0508c4df709a13e175c77da8f5
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
-  percent: 67
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
@@ -29,12 +29,12 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 
 ## Current Position
 
-Phase: idi-04 (tokens-contract) — EXECUTING
+Phase: idi-04 (tokens-contract) — PLANS COMPLETE
 Plan: 3 of 3
-Status: Executing Phase idi-04 — Plan 02 complete, Plan 03 next
-Last activity: 2026-09-17 — Phase idi-04 Plan 02 complete (non-colour token layer + S-4 frozen marker)
+Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
+Last activity: 2026-09-17 — Phase idi-04 Plan 03 complete (CHECK-02 contrast checker + failure-direction proofs)
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ Progress: [███████░░░] 67%
 | Phase idi-03 P04 | - | 3 tasks | 3 files |
 | Phase idi-03 P05 | - | 2 tasks | 3 files |
 | Phase idi-04 P01 | ~30min | 3 tasks | 4 files |
+| Phase idi-04 P03 | 11min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -112,6 +113,10 @@ Recent decisions affecting current work:
 - [Phase 4]: idi-04-01 令牌声明采用「与消费者同提交」纪律(Hard Rule 5)——`--color-text-inverse`/`--color-kind-fg`/`--color-border-danger-subtle` 延至 Task 3 与其唯一消费者同提交声明;`--color-surface-success` 刻意**不声明**(其假想消费者各自已持 `-surface` 令牌,Phase 5 还会把两族改为实心填充)
 - [Phase 4]: idi-04-01 结构性纯度已机械复核——`f912c1a` 与工作树的「选择器行」diff 只多出 `:root {` 一行;无既有选择器改位、改名或增删声明。S-4(`#round-doc.round-frozen` 的 `opacity: 0.55`)**不属本计划**,由 Plan 02 落地
 - [Phase 4]: idi-04-01 pytest 基线照实记录为**实测 225 收集**(219 passed + 6 skipped),不照抄 ROADMAP/REQUIREMENTS 的陈旧 219;本计划的 actuals = 6584 tokens(chars/4 over 26334 字符),远低于 estimate 95000 —— 记录真实值以校准后续估算
+- [Phase 04]: idi-04-03: CHECK-02 对比度校验落地——配对清单以令牌名书写于 :root 围栏内(与令牌同一 diff,漂移可见),29 TEXT + 5 NON-TEXT = 34 对(下限 ≥24/≥20/≥4),另 1 条 ORDER 层级断言;脚本零依赖(仅 re/sys)、只读、对未声明令牌名与未列出的 ORDER 操作数大声失败(exit 1)
+- [Phase 04]: idi-04-03: ORDER 断言取严格序关系(ratio(quieter) < ratio(louder)),非 ≤0.30 阈值门——UI-SPEC 已显式接受 0.311 对 ≤~0.30 guide 的残差,阈值门会在 HEAD 上立即失败;实测打印 ORDER 0.311(=5.18/16.67)。失败方向已实证:把 --gray-600 加深到 #000000 时四条 muted 背景对全部 PASS(20.12/21.00/19.26/18.10),只有 ORDER 报 FAIL: hierarchy inverted 1.207 并 exit 1 —— 这正是 SC3「层级与比值一起校验」的机器化形态
+- [Phase 04]: idi-04-03: --gray-100 保持 #eeeeee,实测 muted 比值 4.66(非折叠前 #f0f0f0 上的 4.75);不得为凑 4.75 回改——那会违反 D-15 并带动 --color-surface-hover / --color-border-subtle 漂移
+- [Phase 04]: idi-04-03: 四条命令的失败方向全部实证(CHECK-02 两次:阈值失败 + 层级倒置);Task 2 为纯注入→观察→还原,净 diff 为零,故无独立提交——残留扫描即为验收(grep #deadbe=0 / 注入对=0 / !important;=1 / --gray-600:#6a6a6a=1)
 
 ### Pending Todos
 
@@ -146,9 +151,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-17T14:10:00.000Z
-Stopped at: Phase 4 Plan 01 complete (idi-04-01-SUMMARY.md); Plan 02 next
-Resume file: /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration/.planning/phases/idi-04-tokens-contract/idi-04-01-SUMMARY.md
+Last session: 2026-09-17T14:58:17.620Z
+Stopped at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
+Resume file: None
 
 ## Operator Next Steps
 

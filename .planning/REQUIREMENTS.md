@@ -39,8 +39,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - [ ] **A11Y-01**: 全站 `:focus-visible` 样式,覆盖 21 个按钮 / 8 个输入框 / 4 个下拉(基线:`:focus` 与 `outline` 规则均为 0)
 - [ ] **A11Y-02**: `#round-doc` 加 `tabindex="0"`,且 `tabindex` 与 `:focus` 样式落在**同一个提交**(只加 `tabindex` 会造出"可聚焦但焦点不可见"的元素,是拿一个 a11y 问题换另一个)
 - [ ] **A11Y-03**: 键盘用户能真实到达划词批注——`b9664e0` 装好的 `keyup` 监听器在 `tabindex` 落地后真正生效(基线:`tabindex` 计数 0,焦点永不进入该子树,监听器是死代码)
-- [ ] **A11Y-04**: WCAG AA 文本对比度失败**全部**修复——**范围以研究调和结果为准(≥9 处),不是审计的 4 处**。审计的 4 处正确但**不完整**(抽样 vs 全量扫描,漏计方向系统性一致):`.hint` `#999`/`#fafafa` **2.73:1**(最高价值项,全站每处闸门说明都用它)、`#pending-count`/`.badge-pending` `#b8860b`/`#fdf6ec` **3.03:1**、`.event-kind` 白字/`#b8860b` **3.25:1**、`.chat-user` 白字/`#2c7be5` **4.14:1**
-- [ ] **A11Y-04b**: **opacity 合成**导致的失败必须一并覆盖——全站 4 处非 `:disabled` 的 opacity 态:`style.css:454` `.annotation-answered { opacity: 0.65 }`、`style.css:508` `#round-doc.round-frozen { opacity: 0.55; filter: saturate(0.6) }`(**冻结轮整篇文档**)、`style.css:562` `.tier-desc { opacity: 0.8 }`、`style.css:628` `#rounds-placeholder.archive-mode #round-doc { opacity: 0.75 }`(**归档态整篇文档**)。其中 `round-frozen` 是**设计决策与 AA 的正面冲突**:灰化是 D-P2-21 的"这轮只读"信号,但冻结轮恰恰是要被阅读的内容——须在 UI-SPEC 中裁定(提高不透明度满足 AA,或保留灰化但改用别的方式表达冻结),**不得静默改动**。**例外**:8 处 `:disabled` 态上的 `opacity: 0.55/0.5` 不属 AA 范围(WCAG SC 1.4.3 豁免非活动组件),且不得为它们软化 `:disabled` 视觉(见 INTERACT-02)
+- [x] **A11Y-04**: WCAG AA 文本对比度失败**全部**修复——**范围以研究调和结果为准(≥9 处),不是审计的 4 处**。审计的 4 处正确但**不完整**(抽样 vs 全量扫描,漏计方向系统性一致):`.hint` `#999`/`#fafafa` **2.73:1**(最高价值项,全站每处闸门说明都用它)、`#pending-count`/`.badge-pending` `#b8860b`/`#fdf6ec` **3.03:1**、`.event-kind` 白字/`#b8860b` **3.25:1**、`.chat-user` 白字/`#2c7be5` **4.14:1**
+- [x] **A11Y-04b**: **opacity 合成**导致的失败必须一并覆盖——全站 4 处非 `:disabled` 的 opacity 态:`style.css:454` `.annotation-answered { opacity: 0.65 }`、`style.css:508` `#round-doc.round-frozen { opacity: 0.55; filter: saturate(0.6) }`(**冻结轮整篇文档**)、`style.css:562` `.tier-desc { opacity: 0.8 }`、`style.css:628` `#rounds-placeholder.archive-mode #round-doc { opacity: 0.75 }`(**归档态整篇文档**)。其中 `round-frozen` 是**设计决策与 AA 的正面冲突**:灰化是 D-P2-21 的"这轮只读"信号,但冻结轮恰恰是要被阅读的内容——须在 UI-SPEC 中裁定(提高不透明度满足 AA,或保留灰化但改用别的方式表达冻结),**不得静默改动**。**例外**:8 处 `:disabled` 态上的 `opacity: 0.55/0.5` 不属 AA 范围(WCAG SC 1.4.3 豁免非活动组件),且不得为它们软化 `:disabled` 视觉(见 INTERACT-02)
 - [ ] **A11Y-05**: 两个阻塞式弹窗(G3 确认、授权)支持 **Escape 关闭**——G3 确认弹窗按设计是默认拒绝,按不了 Escape 的键盘用户会被卡住
 - [ ] **A11Y-06**: 上述两个弹窗加 `role="dialog"` + `aria-modal="true"`(两个属性、零风险)
 - [ ] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
@@ -61,7 +61,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 ### CHECK — 契约校验(让契约可执行,而非一次性清理)
 
 - [ ] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
-- [ ] **CHECK-02**: 对比度自动校验脚本——对所有声明的令牌配对计算 WCAG 对比度(约 15 行,零依赖)
+- [x] **CHECK-02**: 对比度自动校验脚本——对所有声明的令牌配对计算 WCAG 对比度(约 15 行,零依赖)
 - [ ] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
 - [ ] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
 
@@ -137,8 +137,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | A11Y-01 | Phase 7: 交互状态与焦点样式 | Pending |
 | A11Y-02 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-03 | Phase 8: 可访问性语义与键盘 | Pending |
-| A11Y-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| A11Y-04b | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| A11Y-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| A11Y-04b | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | A11Y-05 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-06 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-07 | Phase 6: 布局稳健性 | Pending |
@@ -150,7 +150,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |
 | INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
 | CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | REG-01 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
@@ -158,6 +158,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | REG-03 | Phase 8: 可访问性语义与键盘 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 38 total
 - Mapped to phases: 36
 - 已完成(路线图之前由 quick 收口): 2 — REG-01 / REG-02
@@ -168,6 +169,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 **按阶段计数:** Phase 4 = 14 / Phase 5 = 8 / Phase 6 = 5 / Phase 7 = 3 / Phase 8 = 6
 
 **人工验收项(本环境无法自动化,不得因自动测试 FAIL 判定功能缺陷):**
+
 - **A11Y-08** — tab 序到达每一个交互控件;键盘划词路径可用
 - **A11Y-03 的键盘划词部分** — Shift+方向键选区 → 菜单出现 → 焦点入菜单 → Escape 关闭并交还焦点
 - **REG-03 中依赖键盘选区的项** — b9664e0 五条修复的人工验收项重跑

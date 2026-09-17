@@ -12,3 +12,6 @@ __pycache__/
 
 # GSD 里程碑锁(机器相关瞬时 claim:session id + pid;TTL 4h 自然过期)
 .planning/milestone.lock
+
+# GSD 研究员的网页抓取缓存(hash 命名的 JSON,机器本地,不属仓库内容)
+.planning/research/.cache/

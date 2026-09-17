@@ -4,18 +4,18 @@ milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: 04
 current_phase_name: tokens-contract
-status: planning
-stopped_at: Phase 4 UI-SPEC approved (checker APPROVED; UI-consideration probe resolved)
-last_updated: "2026-09-17T13:37:37.451Z"
+status: executing
+stopped_at: Phase 4 Plan 01 complete (idi-04-01-SUMMARY.md); Plan 02 next
+last_updated: "2026-09-17T14:10:00.000Z"
 last_activity: 2026-09-17
-last_activity_desc: "完成 quick 260917-fqh:修复 b9664e0 自身引入的两条缺陷(REG-01/REG-02)"
-state_head: fc8cf5a1b413d2618d64e903a2b2be18d4d9c0e9
+last_activity_desc: Phase idi-04 Plan 01 complete — colour token layer landed, CHECK-01 PASS
+state_head: f773355
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-17)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** v1.14 前端视觉与可访问性 — 路线图已创建(Phases 4-8),待规划 Phase 4(v1.13 已 shipped 并归档)
+**Current focus:** Phase idi-04 — tokens-contract
 
 ## Current Position
 
-Phase: idi-04 (tokens-contract) — READY TO EXECUTE
-Plan: 0 of 3 in current phase
-Status: Ready to execute — 3 plans verified (plan-checker PASSED; 2 revision rounds closed 4 blockers + 2 warnings)
-Last activity: 2026-09-17 — Phase 4 规划完成:3 份计划经 plan-checker 通过(`2efee50` 初稿 → `aebde22` 修订一 → `3ee6daf` 补 SC3 层级校验 → `fc8cf5a` 修正 `--gray-100` 比值标注)
+Phase: idi-04 (tokens-contract) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase idi-04 — Plan 01 complete, Plan 02 next
+Last activity: 2026-09-17 — Phase idi-04 Plan 01 complete (colour token layer)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -75,6 +75,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-03 P03 | - | 2 tasks | 3 files |
 | Phase idi-03 P04 | - | 3 tasks | 3 files |
 | Phase idi-03 P05 | - | 2 tasks | 3 files |
+| Phase idi-04 P01 | ~30min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,10 @@ Recent decisions affecting current work:
 - [Phase 3]: UAT 四处运行时缺陷修复(503f374,复验 862703c)——G-idi03-1(high):start_repair finally 守卫从「tmp 在盘即 return」改为 hop-local `tmp_consumed` 标志(仅 tmp_path.replace 实际执行处分支置 True),堵死严格档无界自动链(修复前实测 84 跳/1.5s→修复后恰 1 跳),命名 flake test_next_check_n_half_report_no_skip 转 10/10 确定;G-idi03-2:新增 session 层 _unpaired_pending_questions 以 unpaired 编号过滤锚点无关扫描,裁决与呈现共用同一配对空间(grammar.py 锁定语义零触碰);G-idi03-3:loadArchiveView 复位两推进按钮(归档态 继续自检/继续修复 不可见);G-idi03-4:applyPhase3Extras 隐藏 checksPanel(跨项目状态残留);修复仅 3 文件(session.py +35/−5、test_session.py +117、app.js +5),grammar/state/checks/g3/main/prompts 零改动
 - [Phase 3]: 决策覆盖 gate 30/30 通过 ≠ 运行时语义成立——G-idi03-1 是 D-P3-16 的活偏差,而该 gate 当时报 30/30(只扫 PLAN/SUMMARY 文本);记入方法论教训:门通过须以行为验证佐证
 - [Phase 3]: 遗留已知项(已闭合)——Phase 2 `02-VERIFICATION.md` 的 covered_digest 漂移,已在里程碑收口由复验代理刷新至当前冻结树(commit a5bfcad),三阶段验证指纹与代码树一致
+- [Phase 4]: idi-04-01 颜色契约落地——单一围栏 `:root` 块(25 tier-1 primitive + 50 tier-2 语义令牌 = 75);块外裸 hex 由 117 归 0(CHECK-01 PASS);S-3 已批准并落地(10 处控件边框 `#ccc`→`#8a8a8a`);`--gray-600: #6a6a6a` 为每个背景上都通过的最浅 muted 灰(`#767676` 在 `#fafafa` 仅 4.35:1);`--color-action-irreversible*` 机械确认只被 `#btn-authorize` 消费;12 个 `#2e8b57` 站点全部归位(含使命完成模态边框 → `--color-border-success`)
+- [Phase 4]: idi-04-01 令牌声明采用「与消费者同提交」纪律(Hard Rule 5)——`--color-text-inverse`/`--color-kind-fg`/`--color-border-danger-subtle` 延至 Task 3 与其唯一消费者同提交声明;`--color-surface-success` 刻意**不声明**(其假想消费者各自已持 `-surface` 令牌,Phase 5 还会把两族改为实心填充)
+- [Phase 4]: idi-04-01 结构性纯度已机械复核——`f912c1a` 与工作树的「选择器行」diff 只多出 `:root {` 一行;无既有选择器改位、改名或增删声明。S-4(`#round-doc.round-frozen` 的 `opacity: 0.55`)**不属本计划**,由 Plan 02 落地
+- [Phase 4]: idi-04-01 pytest 基线照实记录为**实测 225 收集**(219 passed + 6 skipped),不照抄 ROADMAP/REQUIREMENTS 的陈旧 219;本计划的 actuals = 6584 tokens(chars/4 over 26334 字符),远低于 estimate 95000 —— 记录真实值以校准后续估算
 
 ### Pending Todos
 
@@ -117,6 +122,7 @@ None yet.
 - [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
 - [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
+- [v1.14 P4] **idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行**(本计划在 auto 模式下运行,tracer 的 human-verify 门被自动批准)。13 项具名检查逐条记在 `idi-04-01-SUMMARY.md` 的「Manual / Pending Human Checks」表,状态一律 `pending`;**未声称任何证据**。阶段收口时须汇入 `idi-04-UAT.md`;冻结轮 backstop 无法确认时按 `human_needed`(`insufficient_spec`)上报,绝不静默判过
 
 ### Quick Tasks Completed
 
@@ -140,9 +146,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-17T08:57:15.180Z
-Stopped at: Phase 4 UI-SPEC approved (checker APPROVED; UI-consideration probe resolved)
-Resume file: /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration/.planning/phases/idi-04-tokens-contract/04-UI-SPEC.md
+Last session: 2026-09-17T14:10:00.000Z
+Stopped at: Phase 4 Plan 01 complete (idi-04-01-SUMMARY.md); Plan 02 next
+Resume file: /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration/.planning/phases/idi-04-tokens-contract/idi-04-01-SUMMARY.md
 
 ## Operator Next Steps
 

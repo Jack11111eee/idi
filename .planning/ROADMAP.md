@@ -99,7 +99,7 @@
 Plans:
 **Wave 1**
 
-- [ ] idi-04-01-PLAN.md — 围栏令牌块 + 颜色契约(25 primitive / 50 tier-2)+ CHECK-01/03/04 三条守卫命令;tracer 先行走通「校验层 ↔ 令牌层」端到端,CHECK-01 由 117 归 0
+- [x] idi-04-01-PLAN.md — 围栏令牌块 + 颜色契约(25 primitive / 50 tier-2)+ CHECK-01/03/04 三条守卫命令;tracer 先行走通「校验层 ↔ 令牌层」端到端,CHECK-01 由 117 归 0 ✅ 完成(8c9e6f9 / 5b898bf / f773355;CHECK-01 PASS,块外裸 hex = 0)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -284,7 +284,7 @@ Plans:
 | 1. 行走骨架 | v1.13 | 4/4 | Complete | 2026-09-09 |
 | 2. 轮次收敛循环 | v1.13 | 4/4 | Complete | 2026-09-10 |
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
-| 4. 设计契约、令牌层与契约校验 | v1.14 | 0/3 | Planned | - |
+| 4. 设计契约、令牌层与契约校验 | v1.14 | 1/3 | In Progress | - |
 | 5. 排版与视觉层级 | v1.14 | 0/0 | Not started | - |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |

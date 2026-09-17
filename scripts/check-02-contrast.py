@@ -144,12 +144,33 @@ def main():
     # Coverage floor: an empty or truncated manifest would otherwise satisfy
     # "failures == 0" trivially. Floors are >=24 pairs, >=20 TEXT, >=4 NON-TEXT.
     pairs = list(PAIR_RE.finditer(fence))
+    orders = list(ORDER_RE.finditer(fence))
     text_n = sum(1 for m in pairs if m.group(3) == "TEXT")
     nontext_n = len(pairs) - text_n
     if len(pairs) < 24 or text_n < 20 or nontext_n < 4:
         print(
             "FAIL: manifest coverage %d pairs (%d TEXT / %d NON-TEXT) below floor 24/20/4"
             % (len(pairs), text_n, nontext_n)
+        )
+        sys.exit(1)
+
+    # Every "/* PAIR" / "/* ORDER" marker must parse. An entry the regex cannot
+    # match would otherwise be dropped silently, so the docstring's "never
+    # silently skipped" promise only holds if the raw marker count equals the
+    # parsed count.
+    raw_pairs = fence.count("/* PAIR")
+    if raw_pairs != len(pairs):
+        print(
+            "FAIL: %d '/* PAIR' markers but only %d parsed — malformed manifest entry"
+            % (raw_pairs, len(pairs))
+        )
+        sys.exit(1)
+
+    raw_orders = fence.count("/* ORDER")
+    if raw_orders != len(orders):
+        print(
+            "FAIL: %d '/* ORDER' markers but only %d parsed — malformed manifest entry"
+            % (raw_orders, len(orders))
         )
         sys.exit(1)
 
@@ -175,7 +196,7 @@ def main():
         if kind == "TEXT" and alpha is None:
             text_pairs[(fg_name, bg_name)] = value
 
-    for match in ORDER_RE.finditer(fence):
+    for match in orders:
         quieter, louder, bg = match.groups()
         missing = [n for n in (quieter, louder) if (n, bg) not in text_pairs]
         if missing:

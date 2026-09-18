@@ -77,6 +77,10 @@ const continueRepairBtn = document.getElementById('btn-continue-repair');
 const missionCompleteModal = document.getElementById('mission-complete-modal');
 const missionCloseBtn = document.getElementById('btn-mission-close');
 
+// 文档面板句柄(260918-qrq:面板可折叠)
+const docPanel = document.getElementById('doc-panel');
+const docPanelHeader = document.getElementById('doc-panel-header');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
@@ -1552,6 +1556,12 @@ approveDraftBtn.addEventListener('click', async () => {
 panelHeader.addEventListener('click', () => {
   const collapsed = panelBody.classList.toggle('collapsed');
   panelHeader.querySelector('.collapse-indicator').textContent = collapsed ? '▸' : '▾';
+});
+
+// 文档面板折叠(与 AI 工作面板同形;重复 5 行好过为一个消费者造一个抽象)
+docPanelHeader.addEventListener('click', () => {
+  const collapsed = docPanel.classList.toggle('collapsed');
+  docPanelHeader.querySelector('.collapse-indicator').textContent = collapsed ? '▸' : '▾';
 });
 
 // ---------------------------------------------------------------------------

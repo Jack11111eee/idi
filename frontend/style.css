@@ -1,4 +1,4 @@
-/* 骨架布局:左文档区 / 右侧栏(§4.1 flex 双栏)+ 面板折叠 + 事件分级颜色 */
+/* 骨架布局:左主区 / 右文档面板(§4.1 flex 双栏)+ 面板折叠 + 事件分级颜色 */
 
 * { box-sizing: border-box; }
 
@@ -110,8 +110,12 @@
   --space-8: 32px;
   --space-10: 40px;
 
-  /* Layout — sidebar fixed width (consumed by #sidebar) */
-  --sidebar-w: 420px;
+  /* Layout — 文档面板宽度由单一令牌控制(consumed by #doc-panel):
+     窄屏下面板收窄、主区保住阅读列,宽屏下面板最多 620px。
+     "主区阅读列够不够宽"这一张力因此收敛成一个取值问题——值交由用户裁决,
+     执行器不得自行改动。收起态宽度同理由第二个令牌控制。 */
+  --doc-panel-w: clamp(360px, 38vw, 620px);
+  --doc-panel-w-collapsed: 48px;
 
   /* Type scale — 6 sizes + the 14px reading anchor (S-2). All consumed. */
   --text-xs: 11px;
@@ -229,22 +233,55 @@ html, body {
   height: 100vh;
 }
 
-/* 左:文档区 */
-#doc-pane {
+/* 左:主区(自适应宽度;内容列 768px 居中,四块面板同宽同列) */
+#main-pane {
   flex: 1 1 auto;
-  overflow-y: auto;
-  padding: var(--space-8) var(--space-10);
-  border-right: 1px solid var(--color-border-subtle);
-}
-
-/* 右:侧栏(固定宽,会话流与工作面板纵向排布) */
-#sidebar {
-  flex: 0 0 var(--sidebar-w);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  align-items: center;
+}
+
+#main-pane > section {
+  width: 100%;
+  max-width: 768px;
+}
+
+/* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条) */
+#doc-panel {
+  flex: 0 0 var(--doc-panel-w);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-left: 1px solid var(--color-border-subtle);
   background: var(--color-surface);
 }
+
+#doc-panel.collapsed {
+  flex-basis: var(--doc-panel-w-collapsed);
+  overflow: hidden;
+}
+
+/* 收起态:只留标题行与折叠指示符(折叠指示符落在 48px 竖条正中) */
+#doc-panel.collapsed #doc-panel-body,
+#doc-panel.collapsed #doc-panel-header h1,
+#doc-panel.collapsed #state-badge { display: none; }
+
+#doc-panel.collapsed #doc-panel-header {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+/* 文档面板标题行:安静的容器标签,不是全屏最大最重的文字 */
+#doc-panel-header h1 {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+}
+
+/* 沿用原文档区的内边距:面板呼吸空间不缩水 */
+#doc-panel-body { padding: var(--space-8) var(--space-10); }
 
 .hint { color: var(--color-text-muted); font-size: var(--text-base); }
 
@@ -405,18 +442,16 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 }
 #enter-form .hint { margin: var(--space-1-5) 0 0; }
 
-/* 状态徽标(右上角,当前推导状态中文名) */
+/* 状态徽标(落在文档面板标题行内,随面板滚动/收起)。
+   它不再是 position: fixed 浮层 ⇒ 不遮挡从底下穿过的正文,也不再需要与面板宽度
+   做算术耦合——改用 calc() 只是把一个魔法数换成另一个耦合,面板收起时还会失真。 */
 #state-badge {
-  position: fixed;
-  top: 12px;
-  right: 448px; /* 侧栏 420px + 呼吸空隙 */
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-surface-info);
   color: var(--color-text-info);
   font-size: var(--text-sm);
   font-weight: var(--fw-semibold);
-  z-index: var(--z-badge);
 }
 
 /* SSE 断流横幅(UI-6.2:琥珀=重连中,红色致命态见下;z-index 高于状态徽标防遮挡) */

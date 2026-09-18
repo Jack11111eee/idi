@@ -360,6 +360,15 @@ HIDDEN_MATRIX = {
         "checking": "visible",
         "archive": "visible",
     },
+    "#session-panel": {
+        # 主区承载「操作对象」:阶段 1-2 会话流 / 阶段 3+ 批注流——是切换不是叠加
+        # (§4.1 说明 1、§4.2 第 4 条,D-P2-2)。app.js 在 applySessionGates 单点 toggle。
+        "p1": "visible",
+        "p12": "visible",
+        "p3": "hidden",
+        "checking": "hidden",
+        "archive": "hidden",
+    },
 }
 
 # 三个 1-0-0 竞争者:#selection-menu / #annotations-panel / #checks-panel
@@ -371,7 +380,10 @@ STATES = ["p1", "p12", "p3", "checking", "archive"]
 
 def item1(page, tmp_root):
     item = "1"
-    print("\n=== UAT 1: SC4 browser 实检 — five .hidden-only elements ===", flush=True)
+    # 注:#session-panel 同时是 1-0-0 的 display:flex 竞争者(style.css:566),
+    # 但它不进 COMPETITORS —— 那个列表的既有语义专指 CHECK-03 的三元素。
+    # 其「强制加类 → 隐藏」的层叠证据由下方 list(HIDDEN_MATRIX) + COMPETITORS 循环覆盖。
+    print("\n=== UAT 1: SC4 browser 实检 — six .hidden-only elements ===", flush=True)
     for state in STATES:
         proj = make_fixture(state, tmp_root)
         enter_project(page, proj)

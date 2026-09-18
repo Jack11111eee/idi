@@ -7,18 +7,19 @@
   /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence. */
   --white: #ffffff;
   --black: #000000;
-  --gray-900: #1a1a1a;
-  --gray-700: #555555;
-  --gray-600: #6a6a6a; /* new — AA-safe muted grey; the reflexive "safe" greys fail on this file's grounds */
-  --gray-500: #8a8a8a; /* new — control boundary (SC 1.4.11) */
+  --gray-900: #0d0d0d;
+  --gray-700: #8f8f8f;
+  --gray-600: #8f8f8f; /* 与 --gray-700 同值:规格只给一档次要文字色,两个语义角色各自保留;AA 倒退为用户知情决策 */
+  --gray-500: #d9d9d9; /* 组件描边 rgba(0,0,0,.15) 的白底不透明等价(check-02 只对前景做 alpha 合成) */
   --gray-300: #dddddd;
-  --gray-100: #eeeeee;
-  --gray-50: #f5f5f5;
-  --gray-25: #fafafa;
+  --gray-200: #ececec; /* 用户消息气泡 */
+  --gray-100: #f2f2f2; /* 分割线 rgba(0,0,0,.05) 的白底不透明等价 */
+  --gray-50: #f3f3f3;
+  --gray-25: #ffffff;
   --green-800: #1f5c3a; /* new — Phase 5 destination for --color-action-irreversible */
   --green-700: #26754a;
   --green-100: #e9f7ef;
-  --blue-700: #1f63bd;
+  --blue-700: #3a83f7;
   --blue-100: #eef4ff;
   --blue-50: #f0f7ff;
   --amber-800: #8a6508;
@@ -72,6 +73,7 @@
   /* Tier 2 — surface / border */
   --color-surface: var(--white);
   --color-surface-hover: var(--gray-100);
+  --color-surface-user: var(--gray-200);
   --color-surface-info: var(--blue-100);
   --color-surface-warning: var(--amber-50);
   --color-surface-warning-subtle: var(--amber-25);
@@ -83,15 +85,19 @@
   --color-border-subtle: var(--gray-100);
   --color-border-warning-subtle: var(--amber-300);
   --color-border-streaming: var(--blue-700);
+  /* 保留 --color-surface-info-strong 这一声明 —— 其消费者 .chat-user 已改引 --color-surface-user,
+     但 check-02 清单按名引用它(PAIR --color-text-inverse ON --color-surface-info-strong),
+     删除声明会让脚本以 unknown token 提前退出,偏差证据表随之失效。 */
   --color-surface-info-strong: var(--blue-700);
   --color-text-info: var(--blue-700);
 
-  /* Tier 2 — overlay backdrop and shadows */
+  /* Tier 2 — overlay backdrop and the single shadow token (composer, three layers) */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.45);
-  --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
-  --shadow-menu: 0 4px 14px rgba(0, 0, 0, 0.18);
+  --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
 
-  /* Tier 2 — declared with their consumers (Hard Rule 5): .chat-user / .event-kind / .fatal */
+  /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal.
+     保留 --color-text-inverse 这一声明 —— .chat-user 已改引 --color-text,但 check-02 清单按名引用它,
+     删除声明会让脚本以 unknown token 提前退出。 */
   --color-text-inverse: var(--white);
   --color-kind-fg: var(--white);
   --color-border-danger-subtle: var(--red-200);
@@ -117,26 +123,29 @@
   --doc-panel-w: clamp(360px, 38vw, 620px);
   --doc-panel-w-collapsed: 48px;
 
-  /* Type scale — 6 sizes + the 14px reading anchor (S-2). All consumed. */
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-base: 13px;
-  --text-md: 14px;
-  --text-lg: 15px;
-  --text-xl: 16px;
+  /* Type scale — 5 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed. */
+  --text-xs: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
 
-  /* Weight — two ranks, both consumed; the 500 rank is deliberately NOT declared (Q4). */
+  /* Weight — three ranks, all consumed. The 500 rank is declared because the target
+     chrome scale requires w400/500/600; the former "no consumer" reason no longer holds. */
   --fw-regular: 400;
+  --fw-medium: 500;
   --fw-semibold: 600;
 
-  /* Line height — three, all consumed. */
-  --lh-tight: 1.35;
-  --lh-compact: 1.6;
-  --lh-reading: 1.75;
+  /* Line height — four, paired with the size scale (24/32, 12/16, 14/20, 18/28, 16/26). */
+  --lh-tight: 1.3333;
+  --lh-snug: 1.4286;
+  --lh-compact: 1.5556;
+  --lh-reading: 1.625;
 
-  /* Radius — three values covering all eight existing radii (TOKEN-06). */
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  /* Radius — four values. */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 28px;
   --radius-pill: 999px;
 
   /* z-index ordering assertion (TOKEN-07): --z-badge (10) < --z-banner (20)
@@ -366,7 +375,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 
 .event-kind {
   flex: 0 0 48px;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--fw-semibold);
   text-align: center;
   padding: var(--space-px) var(--space-1);
@@ -410,7 +419,6 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   border-radius: var(--radius-md);
   padding: var(--space-6) var(--space-8);
   max-width: 420px;
-  box-shadow: var(--shadow-overlay);
   text-align: center;
 }
 .overlay-card h3 { margin-top: 0; font-size: var(--text-xl); }
@@ -450,7 +458,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   border-radius: var(--radius-pill);
   background: var(--color-surface-info);
   color: var(--color-text-info);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--fw-semibold);
 }
 
@@ -465,7 +473,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   background: var(--color-surface-mark);
   color: var(--color-action-warning);
   border: 1px solid var(--color-action-warning);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--fw-semibold);
   z-index: var(--z-banner);
 }
@@ -572,14 +580,18 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 }
 .chat-user {
   align-self: flex-end;
-  background: var(--color-surface-info-strong);
-  color: var(--color-text-inverse);
+  background: var(--color-surface-user);
+  color: var(--color-text);
   border-bottom-right-radius: var(--radius-sm);
 }
+/* 助手消息:全宽裸排的正文,不是盒子。四条覆盖声明缺一都会让盒子回来;
+   与 .chat-bubble 同特异性(0-1-0),靠源码顺序取胜——不得移到 .chat-bubble 之前。 */
 .chat-ai {
   align-self: flex-start;
-  background: var(--color-surface-sunken);
-  border-bottom-left-radius: var(--radius-sm);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  max-width: 100%;
 }
 .chat-ai.streaming-ai { border-left: 3px solid var(--color-border-streaming); }
 .chat-ai p { margin: var(--space-1) 0; }
@@ -646,7 +658,7 @@ button.primary {
 }
 #annotations-panel .panel-header { cursor: default; }
 #pending-count {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--fw-semibold);
   color: var(--color-action-warning);
   background: var(--color-surface-warning);
@@ -709,7 +721,7 @@ button.primary {
 .annotation-answer summary {
   cursor: pointer;
   color: var(--color-text-muted);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   margin-top: var(--space-1);
 }
 .annotation-answer-body { margin-top: var(--space-half); }
@@ -733,7 +745,6 @@ button.primary {
   background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-menu);
 }
 #selection-menu button {
   border: none;
@@ -810,7 +821,7 @@ button.primary {
   padding: var(--space-2-5) var(--space-4);
   text-align: center;
 }
-.tier-desc { font-size: var(--text-sm); font-weight: var(--fw-regular); opacity: 0.9; }
+.tier-desc { font-size: var(--text-xs); font-weight: var(--fw-regular); opacity: 0.9; }
 
 /* 自检报告面板(阶段 5 侧栏;照 annotations-panel 形态) */
 #checks-panel {

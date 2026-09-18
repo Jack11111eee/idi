@@ -1,28 +1,53 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v1.13",
+  "milestone": "v1.14 — 前端视觉与可访问性",
   "phases": [
     {
       "number": "1",
-      "name": "行走骨架——服务器、单界面与阶段 1-2 会话",
+      "name": "行走骨架",
       "status": "complete"
     },
     {
       "number": "2",
-      "name": "轮次收敛循环——划词批注、G2 与机器文法",
+      "name": "轮次收敛循环",
       "status": "complete"
     },
     {
       "number": "3",
-      "name": "授权、自检与终点——G3、档位、使命完成归档",
+      "name": "授权、自检与终点",
       "status": "complete"
+    },
+    {
+      "number": "4",
+      "name": "设计契约、令牌层与契约校验",
+      "status": "pending"
+    },
+    {
+      "number": "5",
+      "name": "排版与视觉层级",
+      "status": "pending"
+    },
+    {
+      "number": "6",
+      "name": "布局稳健性",
+      "status": "pending"
+    },
+    {
+      "number": "7",
+      "name": "交互状态与焦点样式",
+      "status": "pending"
+    },
+    {
+      "number": "8",
+      "name": "可访问性语义与键盘",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd:progress",
-    "label": "Show progress",
-    "reason": "Unsure of state — showing progress"
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step (plan phase 4)",
+    "reason": "Phase 4 of 5 — needs a plan"
   },
-  "updated_at": "2026-09-13T15:32:22.249Z"
+  "updated_at": "2026-09-17T03:18:26.411Z"
 }

@@ -45,6 +45,7 @@ const annotationsPanel = document.getElementById('annotations-panel');
 const pendingCount = document.getElementById('pending-count');
 const annotationList = document.getElementById('annotation-list');
 const processRoundBtn = document.getElementById('btn-process-round');
+const probeControls = document.getElementById('probe-controls');
 
 // 划词小菜单句柄(D-P2-1)
 const selectionMenu = document.getElementById('selection-menu');
@@ -75,6 +76,10 @@ const continueCheckBtn = document.getElementById('btn-continue-check');
 const continueRepairBtn = document.getElementById('btn-continue-repair');
 const missionCompleteModal = document.getElementById('mission-complete-modal');
 const missionCloseBtn = document.getElementById('btn-mission-close');
+
+// 文档面板句柄(260918-qrq:面板可折叠)
+const docPanel = document.getElementById('doc-panel');
+const docPanelHeader = document.getElementById('doc-panel-header');
 
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
@@ -448,6 +453,7 @@ function applyPhase3Extras(data) {
 
 // phase4:撰写视图(按钮文案二态纯消费 snapshot.writing_tmp_exists,D-P3-10 字面)
 function applyWritingView(data) {
+  clearInlineError();
   roundsHint.classList.add('hidden');
   roundTitle.textContent = '撰写总设计文档';
   roundSwitcher.classList.add('hidden');
@@ -808,6 +814,7 @@ async function refreshChecksAfterStream() {
 
 // mission_complete:只读归档视图(D-P3-25;呈现 = 推导态,零归档标志)
 function applyArchiveView(data) {
+  clearInlineError();
   roundsPlaceholder.classList.add('archive-mode');
   roundsHint.classList.add('hidden');
   roundTitle.textContent = '总设计文档(只读归档)';
@@ -1237,6 +1244,7 @@ messageInput.addEventListener('keydown', (e) => {
 roundSwitcher.addEventListener('change', () => {
   const n = parseInt(roundSwitcher.value, 10);
   if (!Number.isFinite(n)) return;
+  clearInlineError();
   if (currentState === 'mission_complete') {
     loadArchiveRoundDoc(n); // 归档态:切历史轮只读浏览(D-P3-25)
     return;
@@ -1449,7 +1457,7 @@ processRoundBtn.addEventListener('click', async () => {
     const resp = await fetch('/api/rounds/process', { method: 'POST' });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      showInlineError(processRoundBtn, `处理发起失败:${err.message || resp.status}`);
+      showInlineError(probeControls, `处理发起失败:${err.message || resp.status}`);
       // 202 未受理(非 phase3/在飞):恢复按钮;done 链不会来
       processInFlight = false;
       processRoundBtn.disabled = false;
@@ -1458,7 +1466,7 @@ processRoundBtn.addEventListener('click', async () => {
     }
     // 202 受理:保持处理中禁用态直至 SSE done(refreshRoundsAfterStream 收尾)
   } catch {
-    showInlineError(processRoundBtn, '处理请求失败(网络)');
+    showInlineError(probeControls, '处理请求失败(网络)');
     processInFlight = false;
     processRoundBtn.disabled = false;
     processRoundBtn.textContent = originalText;
@@ -1548,6 +1556,12 @@ approveDraftBtn.addEventListener('click', async () => {
 panelHeader.addEventListener('click', () => {
   const collapsed = panelBody.classList.toggle('collapsed');
   panelHeader.querySelector('.collapse-indicator').textContent = collapsed ? '▸' : '▾';
+});
+
+// 文档面板折叠(与 AI 工作面板同形;重复 5 行好过为一个消费者造一个抽象)
+docPanelHeader.addEventListener('click', () => {
+  const collapsed = docPanel.classList.toggle('collapsed');
+  docPanelHeader.querySelector('.collapse-indicator').textContent = collapsed ? '▸' : '▾';
 });
 
 // ---------------------------------------------------------------------------

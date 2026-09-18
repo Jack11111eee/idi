@@ -8,83 +8,15 @@
 </head>
 <body>
   <div id="app">
-    <!-- 左:文档区(阶段 1-2 = 草稿视图;阶段 3+ = 轮次占位) -->
-    <main id="doc-pane">
-      <h1>文档区</h1>
-
-      <!-- 进入表单(FLOW-01:目录路径输入 + 进入按钮) -->
-      <div id="enter-form">
-        <input type="text" id="enter-path-input" placeholder="输入项目目录绝对路径(如 /Users/you/my-project)">
-        <button id="btn-enter">进入</button>
-        <p class="hint">讨论文档由 AI 直接读写该目录下的 docs/ 子目录。</p>
-      </div>
-
-      <!-- 状态徽标(页面右上角,当前推导状态中文名) -->
-      <div id="state-badge" class="hidden"></div>
-
-      <!-- SSE 断流横幅(UI-6.2:断流与空闲必须可区分;JS 控制显隐与致命态配色) -->
-      <div id="stream-banner" class="hidden"></div>
-
-      <!-- 子视图:draft-view(阶段 1-2:草稿 markdown 渲染 + 认可雏形按钮) -->
-      <div id="draft-view" class="doc-subview hidden">
-        <h2>雏形草稿(draft.md)</h2>
-
-        <!-- 发散入口(FLOW-06 §3.7:仅阶段 1-2 雏形诞生前;JS 控制显隐) -->
-        <div id="divergence-entry" class="hidden">
-          <button id="btn-divergence">没想法?让 AI 发散出候选方向</button>
-          <p class="hint">发散模式:多视角风暴出 3~5 个候选方向写入 docs/brainstorm.md,可反复覆盖。挑中方向后在会话流告诉 AI即可(它会深化为雏形)。</p>
-        </div>
-
-        <div id="draft-content" class="markdown-body"><!-- markdown 渲染区 --></div>
-        <div class="draft-empty hidden" id="draft-empty">
-          <p class="hint">尚无草稿——和 AI 讨论出实质进展后,它会写入 docs/draft.md。</p>
-        </div>
-
-        <!-- 发散产物区(FLOW-06:brainstorm.md 候选列表渲染;有内容才显示) -->
-        <div id="brainstorm-view" class="hidden">
-          <h2>发散候选(brainstorm.md)</h2>
-          <div id="brainstorm-content" class="markdown-body"></div>
-        </div>
-
-        <!-- §4.4:草稿区末尾常驻「认可雏形」;交互形态 = 决策门 direct-through(点击即定稿,零确认) -->
-        <div id="approve-row">
-          <button id="btn-approve-draft" disabled title="先要有雏形草稿才能认可">认可雏形</button>
-          <p class="hint" id="approve-hint"></p>
-        </div>
-      </div>
-
-      <!-- 子视图:rounds-placeholder(阶段 3:轮次视图 = 切换器 + 文档渲染 + 冻结提示位;
-           阶段 4+ 仍为占位语义,本计划不触碰其内容) -->
-      <div id="rounds-placeholder" class="doc-subview hidden">
-        <div class="round-view-header" id="round-view-header">
-          <h2 id="round-title">轮次视图</h2>
-          <select id="round-switcher" title="切换轮次(历史轮只读)"></select>
-        </div>
-        <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
-        <div id="round-doc" class="markdown-body"><!-- 当前轮文档 markdown 渲染区 --></div>
-
-        <!-- G3 授权入口(FLOW-05 §4.4:仅阶段 3 呈现;按钮三态由 g3_available 驱动) -->
-        <div id="authorize-row" class="hidden">
-          <button id="btn-authorize" disabled title="四处机械校验尚未全部通过">授权撰写总设计文档</button>
-          <p class="hint" id="authorize-hint"></p>
-        </div>
-
-        <!-- 阶段 4 撰写视图(D-P3-10:按钮文案二态由 writing_tmp_exists 驱动) -->
-        <div id="writing-view" class="hidden">
-          <button id="btn-start-writing">撰写总设计文档</button>
-          <p class="hint" id="writing-hint"></p>
-        </div>
-      </div>
-    </main>
-
-    <!-- 右:侧栏(会话流 + AI 工作面板,§4.1) -->
-    <aside id="sidebar">
+    <!-- 左:主区(操作对象所在——会话流 / 本轮批注流 / 自检报告 / AI 工作面板,§4.1) -->
+    <main id="main-pane">
       <!-- 会话流(阶段 1-2:消息列表 + 输入框) -->
       <section id="session-panel">
         <header class="panel-header">
           <h2>会话流</h2>
         </header>
         <div class="panel-body">
+          <p id="chat-greeting">说点什么,开始这次讨论。</p>
           <div id="chat-messages"><!-- 消息气泡动态追加 --></div>
           <div id="chat-input-row">
             <input type="text" id="message-input" placeholder="输入消息,回车或点发送">
@@ -93,7 +25,7 @@
         </div>
       </section>
 
-      <!-- 本轮批注流(阶段 3:D-P2-20 侧栏切换为批注流;阶段 1-2 由 JS 隐藏) -->
+      <!-- 本轮批注流(阶段 3:D-P2-20 主区切换为批注流;阶段 1-2 由 JS 隐藏) -->
       <section id="annotations-panel" class="hidden">
         <header class="panel-header">
           <h2>本轮批注流</h2>
@@ -144,6 +76,81 @@
           <div id="ai-events" class="event-list"><!-- 事件条目动态追加 --></div>
         </div>
       </section>
+    </main>
+
+    <!-- 右:文档面板(阅读对象所在——阶段 1-2 = 草稿;阶段 3+ = 轮次文档;可折叠,§4.1) -->
+    <aside id="doc-panel">
+      <!-- 面板标题行:折叠控件 + 当前推导状态徽标(流内元素,不是浮层) -->
+      <header class="panel-header" id="doc-panel-header">
+        <h1>文档区</h1>
+        <div class="panel-header-right">
+          <span id="state-badge" class="hidden"></span>
+          <span class="collapse-indicator">▾</span>
+        </div>
+      </header>
+
+      <div id="doc-panel-body">
+        <!-- 进入表单(FLOW-01:目录路径输入 + 进入按钮) -->
+        <div id="enter-form">
+          <input type="text" id="enter-path-input" placeholder="输入项目目录绝对路径(如 /Users/you/my-project)">
+          <button id="btn-enter">进入</button>
+        </div>
+        <p class="hint">讨论文档由 AI 直接读写该目录下的 docs/ 子目录。</p>
+
+        <!-- SSE 断流横幅(UI-6.2:断流与空闲必须可区分;JS 控制显隐与致命态配色) -->
+        <div id="stream-banner" class="hidden"></div>
+
+        <!-- 子视图:draft-view(阶段 1-2:草稿 markdown 渲染 + 认可雏形按钮) -->
+        <div id="draft-view" class="doc-subview hidden">
+          <h2>雏形草稿(draft.md)</h2>
+
+          <!-- 发散入口(FLOW-06 §3.7:仅阶段 1-2 雏形诞生前;JS 控制显隐) -->
+          <div id="divergence-entry" class="hidden">
+            <button id="btn-divergence">没想法?让 AI 发散出候选方向</button>
+            <p class="hint">发散模式:多视角风暴出 3~5 个候选方向写入 docs/brainstorm.md,可反复覆盖。挑中方向后在会话流告诉 AI即可(它会深化为雏形)。</p>
+          </div>
+
+          <div id="draft-content" class="markdown-body"><!-- markdown 渲染区 --></div>
+          <div class="draft-empty hidden" id="draft-empty">
+            <p class="hint">尚无草稿——和 AI 讨论出实质进展后,它会写入 docs/draft.md。</p>
+          </div>
+
+          <!-- 发散产物区(FLOW-06:brainstorm.md 候选列表渲染;有内容才显示) -->
+          <div id="brainstorm-view" class="hidden">
+            <h2>发散候选(brainstorm.md)</h2>
+            <div id="brainstorm-content" class="markdown-body"></div>
+          </div>
+
+          <!-- §4.4:草稿区末尾常驻「认可雏形」;交互形态 = 决策门 direct-through(点击即定稿,零确认) -->
+          <div id="approve-row">
+            <button id="btn-approve-draft" disabled title="先要有雏形草稿才能认可">认可雏形</button>
+            <p class="hint" id="approve-hint"></p>
+          </div>
+        </div>
+
+        <!-- 子视图:rounds-placeholder(阶段 3:轮次视图 = 切换器 + 文档渲染 + 冻结提示位;
+             阶段 4+ 仍为占位语义,本计划不触碰其内容) -->
+        <div id="rounds-placeholder" class="doc-subview hidden">
+          <div class="round-view-header" id="round-view-header">
+            <h2 id="round-title">轮次视图</h2>
+            <select id="round-switcher" title="切换轮次(历史轮只读)"></select>
+          </div>
+          <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
+          <div id="round-doc" class="markdown-body"><!-- 当前轮文档 markdown 渲染区 --></div>
+
+          <!-- G3 授权入口(FLOW-05 §4.4:仅阶段 3 呈现;按钮三态由 g3_available 驱动) -->
+          <div id="authorize-row" class="hidden">
+            <button id="btn-authorize" disabled title="四处机械校验尚未全部通过">授权撰写总设计文档</button>
+            <p class="hint" id="authorize-hint"></p>
+          </div>
+
+          <!-- 阶段 4 撰写视图(D-P3-10:按钮文案二态由 writing_tmp_exists 驱动) -->
+          <div id="writing-view" class="hidden">
+            <button id="btn-start-writing">撰写总设计文档</button>
+            <p class="hint" id="writing-hint"></p>
+          </div>
+        </div>
+      </div>
     </aside>
   </div>
 

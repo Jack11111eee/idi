@@ -1,35 +1,40 @@
 ---
 gsd_state_version: "1.0"
-milestone: v1.13
-status: Awaiting next milestone
-stopped_at: Phase 3 complete — all phases complete
-last_updated: "2026-09-13T15:32:22.212Z"
-last_activity: 2026-09-13
-last_activity_desc: Milestone v1.13 completed and archived
-state_head: 776d3ebbfc38c291796bc076dc967f24217b075a
+milestone: v1.14
+milestone_name: 前端视觉与可访问性
+current_phase: 04
+current_phase_name: tokens-contract
+status: executing
+stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
+last_updated: "2026-09-18T13:55:04.869Z"
+last_activity: 2026-09-18
+last_activity_desc: Phase idi-04 Plan 03 complete — CHECK-02 contrast checker + pair manifest + failure-direction proofs; all 4 guard commands PASS
+state_head: 253d4d329ccd7be28542578e20102f3aa0a218cf
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
-current_phase: 3
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 3
+  completed_plans: 3
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-13)
+See: .planning/PROJECT.md (updated 2026-09-17)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Planning next milestone(v1.13 已 shipped;用 `/gsd-new-milestone` 开启下一里程碑)
+**Current focus:** Phase idi-04 — tokens-contract
 
 ## Current Position
 
-Phase: Milestone v1.13 complete
-Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-09-16 — Completed quick task 260916-t8g: 修复 UI 审计报告 5 条功能性 BLOCKER
+Phase: idi-04 (tokens-contract) — PLANS COMPLETE
+Plan: 3 of 3
+Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
+Last activity: 2026-09-18 — Completed quick task 260918-qrq: 信息架构对调 + ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订
+
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -70,6 +75,8 @@ Last activity: 2026-09-16 — Completed quick task 260916-t8g: 修复 UI 审计�
 | Phase idi-03 P03 | - | 2 tasks | 3 files |
 | Phase idi-03 P04 | - | 3 tasks | 3 files |
 | Phase idi-03 P05 | - | 2 tasks | 3 files |
+| Phase idi-04 P01 | ~30min | 3 tasks | 4 files |
+| Phase idi-04 P03 | 11min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -78,6 +85,13 @@ Last activity: 2026-09-16 — Completed quick task 260916-t8g: 修复 UI 审计�
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Roadmap]: v1.14 阶段边界 = 5 阶段(Phases 4-8),按"风险面 + 契约依赖"切,而非按审计报告的六支柱切——P4 设计契约与令牌层(硬前置,唯一纯重构阶段)、P5 排版与视觉层级(承载核心价值修复)、P6 布局稳健性(回归风险最高的 CSS 阶段)、P7 交互状态与焦点样式(纯追加)、P8 可访问性语义与键盘(唯一触碰 app.js/index.html 的阶段)。四份研究的建序分歧按"Architecture 的骨架胜出、Pitfalls 的 Phase E 折入 P8 作收口 gate、STACK 的六步作为 P4 的提交序"调和
+- [Roadmap]: v1.14 压缩裁定——6 阶段压到 5 阶段,采用的唯一合并是研究自陈允许的那一条(交互状态 P3 并入焦点样式 P5,即本路线图 P7);**未**采用"P3 并入 P4"这一被研究明令禁止的合并。焦点规则在 P7 落地、`tabindex` 在 P8 落地,以满足"tabindex 与 :focus 同提交"硬规则的实质(不存在可聚焦而焦点不可见的中间状态)
+- [Roadmap]: CHECK-01/02 两条校验脚本并入 P4 而非独立前置阶段——它们校验的不变量(块外零 hex、声明令牌配对达 AA)正是 P4 的中心主张;在必须满足该不变量的同一阶段交付检查器,把该阶段的中心主张从散文变成一条命令,后续每个阶段免费继承该工具
+- [Roadmap]: A11Y-04(4 处对比度失败)归 P4 而非 a11y 阶段——AA 达标值是**令牌值决策**,在声明处选定;实测失败面为 ≥9 对(审计的 4 是抽样低估),含 `.annotation-answered` 1.88:1 等 opacity 合成项
+- [Roadmap]: A11Y-07(WCAG 2.5.8 命中区)归 P6——其边界条件由 420px 侧栏定义,必须与侧栏宽度决策同一次权衡;明确不得为此重构侧栏
+- [Roadmap]: REG-03(重跑 b9664e0 五条修复的全部人工验收项)作为 P8 的收口 gate 而非事后补记——五条修复无任何自动化覆盖,而本里程碑重写它们所依赖的 CSS;无重跑即无"未破坏它们"的证据
+- [Roadmap]: `#probe-controls` 的移除/重定位与暗色模式**不进本里程碑任何阶段**——前者是产品行为变更(且双路线界面契约是真功能),后者会翻倍对比度校验面;均记为独立未来候选
 - [Roadmap]: 阶段边界采用纵向 MVP 切法——P1 = 行走骨架(AI 调用链 + 阶段 1-2 会话 + G1),P2 = 轮次收敛循环(批注 + G2 + 机器文法),P3 = 门与终点(G3 + 自检 + 归档),而非按后端/前端/集成横向分层
 - [Roadmap]: 需求总数以 REQUIREMENTS.md 磁盘现状为准 = 20 条(编排器提示中的"17"为误计,FLOW 7 + UI 4 + AI 5 + DATA 4),覆盖率按 20/20 验证
 - [Phase 1]: idi-01-02: derive_state 返回 {state, current_round, current_check} 锁定——current_round 仅 phase3、current_check 仅 phase5_checking 有值,Phase 2/3 按钮逻辑消费此形状
@@ -95,6 +109,14 @@ Recent decisions affecting current work:
 - [Phase 3]: UAT 四处运行时缺陷修复(503f374,复验 862703c)——G-idi03-1(high):start_repair finally 守卫从「tmp 在盘即 return」改为 hop-local `tmp_consumed` 标志(仅 tmp_path.replace 实际执行处分支置 True),堵死严格档无界自动链(修复前实测 84 跳/1.5s→修复后恰 1 跳),命名 flake test_next_check_n_half_report_no_skip 转 10/10 确定;G-idi03-2:新增 session 层 _unpaired_pending_questions 以 unpaired 编号过滤锚点无关扫描,裁决与呈现共用同一配对空间(grammar.py 锁定语义零触碰);G-idi03-3:loadArchiveView 复位两推进按钮(归档态 继续自检/继续修复 不可见);G-idi03-4:applyPhase3Extras 隐藏 checksPanel(跨项目状态残留);修复仅 3 文件(session.py +35/−5、test_session.py +117、app.js +5),grammar/state/checks/g3/main/prompts 零改动
 - [Phase 3]: 决策覆盖 gate 30/30 通过 ≠ 运行时语义成立——G-idi03-1 是 D-P3-16 的活偏差,而该 gate 当时报 30/30(只扫 PLAN/SUMMARY 文本);记入方法论教训:门通过须以行为验证佐证
 - [Phase 3]: 遗留已知项(已闭合)——Phase 2 `02-VERIFICATION.md` 的 covered_digest 漂移,已在里程碑收口由复验代理刷新至当前冻结树(commit a5bfcad),三阶段验证指纹与代码树一致
+- [Phase 4]: idi-04-01 颜色契约落地——单一围栏 `:root` 块(25 tier-1 primitive + 50 tier-2 语义令牌 = 75);块外裸 hex 由 117 归 0(CHECK-01 PASS);S-3 已批准并落地(10 处控件边框 `#ccc`→`#8a8a8a`);`--gray-600: #6a6a6a` 为每个背景上都通过的最浅 muted 灰(`#767676` 在 `#fafafa` 仅 4.35:1);`--color-action-irreversible*` 机械确认只被 `#btn-authorize` 消费;12 个 `#2e8b57` 站点全部归位(含使命完成模态边框 → `--color-border-success`)
+- [Phase 4]: idi-04-01 令牌声明采用「与消费者同提交」纪律(Hard Rule 5)——`--color-text-inverse`/`--color-kind-fg`/`--color-border-danger-subtle` 延至 Task 3 与其唯一消费者同提交声明;`--color-surface-success` 刻意**不声明**(其假想消费者各自已持 `-surface` 令牌,Phase 5 还会把两族改为实心填充)
+- [Phase 4]: idi-04-01 结构性纯度已机械复核——`f912c1a` 与工作树的「选择器行」diff 只多出 `:root {` 一行;无既有选择器改位、改名或增删声明。S-4(`#round-doc.round-frozen` 的 `opacity: 0.55`)**不属本计划**,由 Plan 02 落地
+- [Phase 4]: idi-04-01 pytest 基线照实记录为**实测 225 收集**(219 passed + 6 skipped),不照抄 ROADMAP/REQUIREMENTS 的陈旧 219;本计划的 actuals = 6584 tokens(chars/4 over 26334 字符),远低于 estimate 95000 —— 记录真实值以校准后续估算
+- [Phase 04]: idi-04-03: CHECK-02 对比度校验落地——配对清单以令牌名书写于 :root 围栏内(与令牌同一 diff,漂移可见),29 TEXT + 5 NON-TEXT = 34 对(下限 ≥24/≥20/≥4),另 1 条 ORDER 层级断言;脚本零依赖(仅 re/sys)、只读、对未声明令牌名与未列出的 ORDER 操作数大声失败(exit 1)
+- [Phase 04]: idi-04-03: ORDER 断言取严格序关系(ratio(quieter) < ratio(louder)),非 ≤0.30 阈值门——UI-SPEC 已显式接受 0.311 对 ≤~0.30 guide 的残差,阈值门会在 HEAD 上立即失败;实测打印 ORDER 0.311(=5.18/16.67)。失败方向已实证:把 --gray-600 加深到 #000000 时四条 muted 背景对全部 PASS(20.12/21.00/19.26/18.10),只有 ORDER 报 FAIL: hierarchy inverted 1.207 并 exit 1 —— 这正是 SC3「层级与比值一起校验」的机器化形态
+- [Phase 04]: idi-04-03: --gray-100 保持 #eeeeee,实测 muted 比值 4.66(非折叠前 #f0f0f0 上的 4.75);不得为凑 4.75 回改——那会违反 D-15 并带动 --color-surface-hover / --color-border-subtle 漂移
+- [Phase 04]: idi-04-03: 四条命令的失败方向全部实证(CHECK-02 两次:阈值失败 + 层级倒置);Task 2 为纯注入→观察→还原,净 diff 为零,故无独立提交——残留扫描即为验收(grep #deadbe=0 / 注入对=0 / !important;=1 / --gray-600:#6a6a6a=1)
 
 ### Pending Todos
 
@@ -102,13 +124,19 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+- [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
+- [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
+- [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
+- [v1.14 P4] **idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行**(本计划在 auto 模式下运行,tracer 的 human-verify 门被自动批准)。13 项具名检查逐条记在 `idi-04-01-SUMMARY.md` 的「Manual / Pending Human Checks」表,状态一律 `pending`;**未声称任何证据**。阶段收口时须汇入 `idi-04-UAT.md`;冻结轮 backstop 无法确认时按 `human_needed`(`insufficient_spec`)上报,绝不静默判过
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260916-t8g | 修复 UI 审计报告 5 条功能性 BLOCKER(.hidden 全局规则 / SSE 断流可见化 / 归档只读态加固 / 键盘划词路径 / 错误内联) | 2026-09-16 | 0912429 | [260916-t8g-ui-5-blocker-hidden-sse-onerror](./quick/260916-t8g-ui-5-blocker-hidden-sse-onerror/) |
+| 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
+| 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
+| 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
 
 ## Deferred Items
 
@@ -125,10 +153,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-13T15:32:22Z
-Stopped at: Milestone v1.13 shipped and archived — 待开启下一里程碑
+Last session: 2026-09-17T14:58:17.620Z
+Stopped at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan the first v1.14 phase: `/gsd-plan-phase 4` — UI-SPEC 已就绪并通过 checker(APPROVED),7 个未决问题已全部关闭,不再是规划前置。
+  ✅ **四个签核项 S-1…S-4 已于 2026-09-17 规划期呈上并获用户逐项批准(照契约原文)**——不再是待办,规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
+  - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
+  - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
+  - **S-3** ✅ 批准:控件边框 `#ccc` → `#8a8a8a`(10 处;本阶段最大视觉变更,依据 SC 1.4.11)
+  - **S-4** ✅ 批准:冻结轮删除 `opacity: 0.55`,改用 `filter: saturate(0.6)` + 琥珀色 `box-shadow: inset` 结构性标记(替代路线 opacity 0.65 会使 Phase 7 焦点环在冻结态降至 2.85:1、低于 3:1 非文本下限)

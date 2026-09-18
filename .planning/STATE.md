@@ -8,7 +8,7 @@ status: executing
 stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
 last_updated: "2026-09-18T13:55:04.869Z"
 last_activity: 2026-09-19
-last_activity_desc: Quick task 260919-0h3 — 前端验证 harness (scripts/check-05-ui-uat.py) 建成;idi-04 UAT 6 项实跑,3 pass / 3 fail(FAIL 全部为 260918-qrq 令牌值漂移,非新缺陷)
+last_activity_desc: Quick task 260919-1w1 — `#session-panel` 在阶段 3+ 隐藏(applySessionGates 单点切换);D1/D2/发送按钮不可点三症状同源修复,harness 加五态显隐守卫(RED→GREEN 实证)
 state_head: 253d4d329ccd7be28542578e20102f3aa0a218cf
 progress:
   total_phases: 5
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 Phase: idi-04 (tokens-contract) — PLANS COMPLETE
 Plan: 3 of 3
 Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
-Last activity: 2026-09-19 — Completed quick task 260919-0h3: 建立前端验证 harness 并跑掉 idi-04 UAT 6 项(3 pass / 3 fail)
+Last activity: 2026-09-19 — Completed quick task 260919-1w1: `#session-panel` 阶段 3+ 隐藏(D1/D2/发送按钮不可点 三症状同源修复)
 
 Progress: [██████████] 100%
 
@@ -133,7 +133,7 @@ None yet.
   - **S-2 依赖 PASS**:`--text-base` = 14px 存活(Phase 5 SC5 / Phase 6 SC5 的下游门仍可满足)
   - **UAT 里「本环境无法自动化」的三条理由,两条被证伪**:screenshots 可用(`channel` 与 headless 策略见 `scripts/check-05-ui-uat.py` 头部注释),DevTools computed-style 有等价物(`getComputedStyle`)。**「键盘文本选区无法自动化」仍成立**,保留
 - [v1.14 P4] **对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**(换肤前 `#6a6a6a` 在 `#fafafa` 上 5.18:1),低于 AA 正文门槛 4.5:1。`style.css:12` 注释自陈「AA 倒退为用户知情决策」。受影响的消费者含 `.hint` / `.badge-answered` / `.annotation-note` / `.annotation-answer-body`。**与 260918-qrq 的 check-02 14 条失败同源**;Radix Colors 重写应结构性解决
-- [v1.14 P4] **阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**:实测 `document.elementFromPoint()` 在 `#btn-send` 中心返回 `#annotations-panel` 的 `.panel-body`——app.js 从不隐藏 `#session-panel`,故阶段 3 主区同时渲染会话流与批注流,后者覆盖前者。与 UI 诊断 D1(主区内容被推到底部)同源。修复归入 P6 前置修正(见 Operator Next Steps)
+- [v1.14 P4] ~~**阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**~~ **已修复(2026-09-19,`1d849b1`)** — 根因与 D1/D2 同源:`app.js` **从未引用过** `#session-panel`(grep 零匹配;`git log -S` 证明是长期 bug,非 260918-qrq 引入),而 `style.css:566` 的 `flex: 1 1 auto` 让它吃掉主区全部剩余高度。修复 = 在 `applySessionGates`(`app.js:343`,唯一必经派发点)加一行 `classList.toggle('hidden', !isSessionPhase)`。**实测五个样本:`p1=flex` / `p12=flex` / `p3=none` / `checking=none` / `archive=none`**。`.hidden` 靠 `style.css:238` 的 `!important` 压过 `display:flex`,**无需改 CSS**;`style.css`/`index.html` 零改动。守卫经 RED→GREEN 实证非空转(修前 3 条 `FAIL expected=none actual=flex`)
 
 ### Quick Tasks Completed
 
@@ -144,6 +144,7 @@ None yet.
 | 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
 | 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
 | 260919-0h3 | 建立前端验证 harness(`scripts/check-05-ui-uat.py` + `scripts/ui-states/` 5 个磁盘状态样本 + `requirements-dev.txt`),跑掉 idi-04 UAT 6 项。**结果 3 pass / 3 fail**——FAIL 全部是 260918-qrq 令牌值漂移(UAT 期望值定稿于 `0c658aa`,其后 `448686b` 换了令牌值层),非新缺陷;已按 YAML 写入 UAT `## Gaps` | 2026-09-19 | cc11e9f | [260919-0h3-harness-idi-04-uat-6](./quick/260919-0h3-harness-idi-04-uat-6/) |
+| 260919-1w1 | **P6 前置修正**:`#session-panel` 在阶段 3+ 该隐藏却从未隐藏(DESIGN.md §4.1/§4.2 明文「切换」非「叠加」)。一次修掉 D1(主区 90% 空白)/ D2(归档态与阶段5 仍渲染输入框)/ 发送按钮被批注流覆盖不可点 三个症状。harness 加五态显隐守卫,经 RED→GREEN 实证非空转 | 2026-09-19 | 1d849b1 | [260919-1w1-session-panel-3-d1-d2](./quick/260919-1w1-session-panel-3-d1-d2/) |
 
 ## Deferred Items
 

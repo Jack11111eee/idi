@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 Phase: idi-04 (tokens-contract) — PLANS COMPLETE
 Plan: 3 of 3
 Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
-Last activity: 2026-09-17 — Phase idi-04 Plan 03 complete (CHECK-02 contrast checker + failure-direction proofs)
+Last activity: 2026-09-18 — Completed quick task 260918-qrq: 信息架构对调 + ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订
 
 Progress: [██████████] 100%
 
@@ -135,6 +135,7 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260916-t8g | 修复 UI 审计报告 5 条功能性 BLOCKER(.hidden 全局规则 / SSE 断流可见化 / 归档只读态加固 / 键盘划词路径 / 错误内联) | 2026-09-16 | 0912429 | [260916-t8g-ui-5-blocker-hidden-sse-onerror](./quick/260916-t8g-ui-5-blocker-hidden-sse-onerror/) |
 | 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
+| 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
 
 ## Deferred Items
 

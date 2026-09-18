@@ -117,10 +117,10 @@
   --space-10: 40px;
 
   /* Layout — 文档面板宽度由单一令牌控制(consumed by #doc-panel):
-     窄屏下面板收窄、主区保住阅读列,宽屏下面板最多 620px。
+     窄屏下面板收窄、主区保住阅读列,宽屏下面板最多 480px。
      "主区阅读列够不够宽"这一张力因此收敛成一个取值问题——值交由用户裁决,
      执行器不得自行改动。收起态宽度同理由第二个令牌控制。 */
-  --doc-panel-w: clamp(360px, 38vw, 620px);
+  --doc-panel-w: clamp(340px, 30vw, 480px);
   --doc-panel-w-collapsed: 48px;
 
   /* Type scale — 5 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed. */
@@ -443,16 +443,19 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
 }
 #enter-form input[type="text"] {
   flex: 1;
+  min-width: 0;
   padding: var(--space-2) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   font-size: var(--text-base);
 }
-#enter-form .hint { margin: var(--space-1-5) 0 0; }
+#btn-enter { white-space: nowrap; }
+/* 提示语是说明文字而非表单控件,移出 flex 行后独占一行(否则会被挤成竖排) */
+#enter-form + .hint { margin: 0 0 var(--space-4); }
 
 /* 状态徽标(落在文档面板标题行内,随面板滚动/收起)。
    它不再是 position: fixed 浮层 ⇒ 不遮挡从底下穿过的正文,也不再需要与面板宽度
@@ -559,7 +562,8 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 }
 
 /* 会话流:消息气泡(用户右对齐、AI 左对齐) */
-#session-panel { display: flex; flex-direction: column; min-height: 320px; }
+/* 会话流撑满主区:消息区吃掉剩余高度,输入行自然贴底(不再吊在半空) */
+#session-panel { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 200px; }
 #session-panel .panel-body {
   display: flex;
   flex-direction: column;
@@ -569,13 +573,25 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 #chat-messages {
   flex: 1;
   min-height: 160px;
-  max-height: 40vh;
   overflow-y: auto;
   padding: var(--space-1) var(--space-half);
   display: flex;
   flex-direction: column;
   gap: var(--space-2-5);
 }
+
+/* 空态:消息区不占位,问候语与输入行在面板内垂直居中(纯 CSS,零 JS)。
+   #chat-messages 只含注释节点时仍匹配 :empty,故无需 JS 协作。 */
+#session-panel .panel-body:has(#chat-messages:empty) { justify-content: center; }
+#session-panel .panel-body:has(#chat-messages:empty) #chat-messages { flex: 0 0 auto; min-height: 0; }
+#chat-greeting {
+  display: none;
+  margin: 0 0 var(--space-6);
+  text-align: center;
+  font-size: var(--text-xl);
+  color: var(--color-text);
+}
+#session-panel .panel-body:has(#chat-messages:empty) #chat-greeting { display: block; }
 .chat-bubble {
   max-width: 86%;
   padding: var(--space-2) var(--space-3);

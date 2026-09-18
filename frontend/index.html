@@ -16,6 +16,7 @@
           <h2>会话流</h2>
         </header>
         <div class="panel-body">
+          <p id="chat-greeting">说点什么,开始这次讨论。</p>
           <div id="chat-messages"><!-- 消息气泡动态追加 --></div>
           <div id="chat-input-row">
             <input type="text" id="message-input" placeholder="输入消息,回车或点发送">
@@ -93,8 +94,8 @@
         <div id="enter-form">
           <input type="text" id="enter-path-input" placeholder="输入项目目录绝对路径(如 /Users/you/my-project)">
           <button id="btn-enter">进入</button>
-          <p class="hint">讨论文档由 AI 直接读写该目录下的 docs/ 子目录。</p>
         </div>
+        <p class="hint">讨论文档由 AI 直接读写该目录下的 docs/ 子目录。</p>
 
         <!-- SSE 断流横幅(UI-6.2:断流与空闲必须可区分;JS 控制显隐与致命态配色) -->
         <div id="stream-banner" class="hidden"></div>

@@ -247,6 +247,7 @@ html, body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  gap: var(--space-1-5);
   overflow-y: auto;
   align-items: center;
 }
@@ -285,14 +286,14 @@ html, body {
 #doc-panel-header h1 {
   margin: 0;
   font-size: var(--text-base);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
   color: var(--color-text-secondary);
 }
 
 /* 沿用原文档区的内边距:面板呼吸空间不缩水 */
 #doc-panel-body { padding: var(--space-8) var(--space-10); }
 
-.hint { color: var(--color-text-muted); font-size: var(--text-base); }
+.hint { color: var(--color-text-muted); font-size: var(--text-base); line-height: var(--lh-snug); }
 
 /* 失败内联提示(UI-1.4):落在发起控件正下方,与 .hint 同阶、同间距 */
 .inline-error { color: var(--color-action-danger); font-size: var(--text-base); margin: var(--space-1-5) 0 0; }
@@ -302,16 +303,18 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-2-5) var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
-  background: var(--color-surface-sunken);
+  height: 36px;
+  padding: var(--space-1-5) var(--space-2-5);
+  border-radius: var(--radius-md);
   cursor: pointer;
   user-select: none;
 }
 
-.panel-header h2 { margin: 0; font-size: var(--text-md); font-weight: var(--fw-semibold); }
+.panel-header h2 { margin: 0; font-size: var(--text-base); font-weight: var(--fw-medium); }
 
-.panel-body { padding: var(--space-3) var(--space-4); }
+.collapse-indicator { font-size: 20px; line-height: 1; }
+
+.panel-body { padding: var(--space-2-5); }
 .panel-body.collapsed { display: none; }
 
 /* 探针控制行 */
@@ -344,6 +347,7 @@ button {
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   font-size: var(--text-base);
+  font-weight: var(--fw-medium);
   cursor: pointer;
 }
 button:hover { background: var(--color-surface-hover); }
@@ -486,14 +490,16 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   color: var(--color-text-secondary);
 }
 .markdown-body {
-  max-width: 720px;
   line-height: var(--lh-reading);
   font-size: var(--text-md);
 }
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
-  margin: var(--space-4) 0 var(--space-2);
-  line-height: var(--lh-tight);
-}
+/* 标题字号显式化,作用域限定在 .markdown-body 内——不写全局 h1/h2/h3,
+   那会与四处 chrome 覆盖(.panel-header h2 / #draft-view h2 / #brainstorm-view h2 / .overlay-card h3)碰撞。
+   阅读列宽度由 #main-pane > section 的 max-width 承担,此处不再重复声明(面板内它本就不生效)。 */
+.markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: var(--space-4) 0 var(--space-2); line-height: var(--lh-tight); font-weight: var(--fw-semibold); }
+.markdown-body h1 { font-size: var(--text-xl); }
+.markdown-body h2 { font-size: var(--text-lg); }
+.markdown-body h3 { font-size: var(--text-md); }
 .markdown-body p { margin: var(--space-2) 0; }
 .markdown-body ul, .markdown-body ol { padding-left: var(--space-6); }
 .markdown-body blockquote {
@@ -574,12 +580,13 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   max-width: 86%;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  line-height: var(--lh-compact);
+  font-size: var(--text-md);
+  line-height: var(--lh-reading);
   word-break: break-word;
 }
 .chat-user {
   align-self: flex-end;
+  border-radius: var(--radius-lg);
   background: var(--color-surface-user);
   color: var(--color-text);
   border-bottom-right-radius: var(--radius-sm);
@@ -605,16 +612,21 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 }
 #chat-input-row input {
   flex: 1;
-  padding: var(--space-2) var(--space-2-5);
+  min-height: 52px;
+  padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-base);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-composer);
+  font-size: var(--text-md);
 }
 #chat-input-row button {
   padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
   background: var(--color-action-primary);
   color: var(--color-action-primary-fg);
   border-color: var(--color-action-primary);
+  font-size: var(--text-base);
+  font-weight: var(--fw-medium);
 }
 
 /* 权限确认弹窗按钮 */
@@ -654,7 +666,6 @@ button.primary {
 #annotations-panel {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--color-border-subtle);
 }
 #annotations-panel .panel-header { cursor: default; }
 #pending-count {
@@ -827,7 +838,6 @@ button.primary {
 #checks-panel {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--color-border-subtle);
 }
 #checks-panel .panel-header { cursor: default; }
 #checks-panel .panel-body { display: flex; flex-direction: column; gap: var(--space-2-5); }

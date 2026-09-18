@@ -6,10 +6,10 @@ current_phase: 04
 current_phase_name: tokens-contract
 status: executing
 stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
-last_updated: "2026-09-17T14:58:17.639Z"
-last_activity: 2026-09-17
+last_updated: "2026-09-18T13:55:04.869Z"
+last_activity: 2026-09-18
 last_activity_desc: Phase idi-04 Plan 03 complete — CHECK-02 contrast checker + pair manifest + failure-direction proofs; all 4 guard commands PASS
-state_head: 6dba970c89dc7d0508c4df709a13e175c77da8f5
+state_head: 253d4d329ccd7be28542578e20102f3aa0a218cf
 progress:
   total_phases: 5
   completed_phases: 0
@@ -136,6 +136,7 @@ None yet.
 | 260916-t8g | 修复 UI 审计报告 5 条功能性 BLOCKER(.hidden 全局规则 / SSE 断流可见化 / 归档只读态加固 / 键盘划词路径 / 错误内联) | 2026-09-16 | 0912429 | [260916-t8g-ui-5-blocker-hidden-sse-onerror](./quick/260916-t8g-ui-5-blocker-hidden-sse-onerror/) |
 | 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
 | 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
+| 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
 
 ## Deferred Items
 

@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 2
+open_count: 5
 waived_count: 3
 fixed_count: 5
-total_count: 10
-last_updated: 2026-09-17T14:58:05.467Z
+total_count: 13
+last_updated: 2026-09-18T17:09:50.180Z
 ---
 
 # Broken Windows Ledger
@@ -25,6 +25,9 @@ last_updated: 2026-09-17T14:58:05.467Z
 | 8 | 2 | deviation | backend/prompts.py |  | idi-02-04 修复留痕:_ROUND_INSTRUCTIONS 补资料完备性段(AI 幻觉读不存在路径触发项目外读→confirm 无限挂;已修复,E2E 真跑复验通过)——记录 CLI 失眠窗口环境事实(约 05:00-06:00 CST 启动即挂死)与 answer_plain 一次 121.7s 高负载例外,供 Phase 3 真调用 E2E 预算参考 | fixed |  | 2026-09-09T22:49:33.210Z | 2026-09-14T06:22:46.025Z |
 | 9 | idi-04 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md |  | CHECK-02 DevTools Computed spot-checks (4 named items) not performed — auto mode, screenshots unavailable | open |  | 2026-09-17T14:58:05.360Z |  |
 | 10 | idi-04 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md |  | Stage close-out DevTools checks (6 named items incl. #brainstorm-view h2 14px/rgb(138,101,8) and frozen-round marker) not performed — auto mode | open |  | 2026-09-17T14:58:05.467Z |  |
+| 11 | 260919-0h3 | unmet-truth | .planning/phases/idi-04-tokens-contract/idi-04-UAT.md |  | UAT 第 3/4/5 项 fail(7+9+4 条 FAIL 断言):期望值定稿于 0c658aa,被 448686b 令牌值层换肤作废;待裁:更新期望值或回退令牌值 | open |  | 2026-09-18T17:09:49.959Z |  |
+| 12 | 260919-0h3 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-UAT.md |  | UAT 第 4 项 #doc-pane 选择器不存在(index.html 实际为 #doc-panel-body),该格如实记 blocked | open |  | 2026-09-18T17:09:50.074Z |  |
+| 13 | 260919-0h3 | deviation | scripts/check-05-ui-uat.py |  | 浏览器由 channel=chrome 改为 Playwright 自带 chromium:计划的两条理由均失效(1243 已缓存;x86_64 venv 下 chrome 无头走 Rosetta 会 CDP 挂死) | open |  | 2026-09-18T17:09:50.180Z |  |
 
 ````json
 [
@@ -146,6 +149,42 @@ last_updated: 2026-09-17T14:58:05.467Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-09-17T14:58:05.467Z",
+    "resolved_at": null
+  },
+  {
+    "id": 11,
+    "kind": "unmet-truth",
+    "phase": "260919-0h3",
+    "file": ".planning/phases/idi-04-tokens-contract/idi-04-UAT.md",
+    "line": null,
+    "description": "UAT 第 3/4/5 项 fail(7+9+4 条 FAIL 断言):期望值定稿于 0c658aa,被 448686b 令牌值层换肤作废;待裁:更新期望值或回退令牌值",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-18T17:09:49.959Z",
+    "resolved_at": null
+  },
+  {
+    "id": 12,
+    "kind": "unrun-verify",
+    "phase": "260919-0h3",
+    "file": ".planning/phases/idi-04-tokens-contract/idi-04-UAT.md",
+    "line": null,
+    "description": "UAT 第 4 项 #doc-pane 选择器不存在(index.html 实际为 #doc-panel-body),该格如实记 blocked",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-18T17:09:50.074Z",
+    "resolved_at": null
+  },
+  {
+    "id": 13,
+    "kind": "deviation",
+    "phase": "260919-0h3",
+    "file": "scripts/check-05-ui-uat.py",
+    "line": null,
+    "description": "浏览器由 channel=chrome 改为 Playwright 自带 chromium:计划的两条理由均失效(1243 已缓存;x86_64 venv 下 chrome 无头走 Rosetta 会 CDP 挂死)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-09-18T17:09:50.180Z",
     "resolved_at": null
   }
 ]

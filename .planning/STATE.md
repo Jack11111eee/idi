@@ -7,8 +7,8 @@ current_phase_name: tokens-contract
 status: executing
 stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
 last_updated: "2026-09-18T13:55:04.869Z"
-last_activity: 2026-09-18
-last_activity_desc: Phase idi-04 Plan 03 complete — CHECK-02 contrast checker + pair manifest + failure-direction proofs; all 4 guard commands PASS
+last_activity: 2026-09-19
+last_activity_desc: Quick task 260919-0h3 — 前端验证 harness (scripts/check-05-ui-uat.py) 建成;idi-04 UAT 6 项实跑,3 pass / 3 fail(FAIL 全部为 260918-qrq 令牌值漂移,非新缺陷)
 state_head: 253d4d329ccd7be28542578e20102f3aa0a218cf
 progress:
   total_phases: 5
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 Phase: idi-04 (tokens-contract) — PLANS COMPLETE
 Plan: 3 of 3
 Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
-Last activity: 2026-09-18 — Completed quick task 260918-qrq: 信息架构对调 + ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订
+Last activity: 2026-09-19 — Completed quick task 260919-0h3: 建立前端验证 harness 并跑掉 idi-04 UAT 6 项(3 pass / 3 fail)
 
 Progress: [██████████] 100%
 
@@ -127,7 +127,13 @@ None yet.
 - [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
 - [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
-- [v1.14 P4] **idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行**(本计划在 auto 模式下运行,tracer 的 human-verify 门被自动批准)。13 项具名检查逐条记在 `idi-04-01-SUMMARY.md` 的「Manual / Pending Human Checks」表,状态一律 `pending`;**未声称任何证据**。阶段收口时须汇入 `idi-04-UAT.md`;冻结轮 backstop 无法确认时按 `human_needed`(`insufficient_spec`)上报,绝不静默判过
+- [v1.14 P4] ~~idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行~~ **已执行(2026-09-19,`cc11e9f`)** — `scripts/check-05-ui-uat.py` 把 6 项全部自动化并实跑。**结果 3 pass / 3 fail**:
+  - **PASS**:① SC4 `.hidden` 实检(38 断言,含 3 个 1-0-0 竞争者);② 冻结轮 backstop(`inset 3px 0 0 rgb(138,101,8)` / `opacity 1` / `filter saturate(0.6)` / 正文对比度 19.44:1);⑥ CR-06(两侧均为运行时 `--color-text-muted`)
+  - **FAIL**:③④⑤ 共 20 条断言失败。**根因单一**:UAT 期望值定稿于 `0c658aa`(2026-09-17),其后 `448686b`「令牌值层换血」(属 quick 260918-qrq)改动了令牌值——`--gray-600 #6a6a6a→#8f8f8f`、`--gray-500 #8a8a8a→#d9d9d9`、`--blue-700 #1f63bd→#3a83f7`、`--gray-900 #1a1a1a→#0d0d0d`、`--gray-25 #fafafa→#ffffff`、字号 13/14/15/16→14/16/18/24,并删除 `.overlay-card` box-shadow 与 `#state-badge` z-index。**不是新缺陷,是「UAT 期望值 vs HEAD 现状」差异待裁**;已按 YAML 写入 UAT `## Gaps` 供 `/gsd-plan-phase --gaps` 消费。待裁:更新 UAT 期望值,或回退令牌值(注:令牌颜色族已定于 v1.14 重写为 Radix Colors,该裁决将随之消解)
+  - **S-2 依赖 PASS**:`--text-base` = 14px 存活(Phase 5 SC5 / Phase 6 SC5 的下游门仍可满足)
+  - **UAT 里「本环境无法自动化」的三条理由,两条被证伪**:screenshots 可用(`channel` 与 headless 策略见 `scripts/check-05-ui-uat.py` 头部注释),DevTools computed-style 有等价物(`getComputedStyle`)。**「键盘文本选区无法自动化」仍成立**,保留
+- [v1.14 P4] **对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**(换肤前 `#6a6a6a` 在 `#fafafa` 上 5.18:1),低于 AA 正文门槛 4.5:1。`style.css:12` 注释自陈「AA 倒退为用户知情决策」。受影响的消费者含 `.hint` / `.badge-answered` / `.annotation-note` / `.annotation-answer-body`。**与 260918-qrq 的 check-02 14 条失败同源**;Radix Colors 重写应结构性解决
+- [v1.14 P4] **阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**:实测 `document.elementFromPoint()` 在 `#btn-send` 中心返回 `#annotations-panel` 的 `.panel-body`——app.js 从不隐藏 `#session-panel`,故阶段 3 主区同时渲染会话流与批注流,后者覆盖前者。与 UI 诊断 D1(主区内容被推到底部)同源。修复归入 P6 前置修正(见 Operator Next Steps)
 
 ### Quick Tasks Completed
 
@@ -137,6 +143,7 @@ None yet.
 | 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
 | 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
 | 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
+| 260919-0h3 | 建立前端验证 harness(`scripts/check-05-ui-uat.py` + `scripts/ui-states/` 5 个磁盘状态样本 + `requirements-dev.txt`),跑掉 idi-04 UAT 6 项。**结果 3 pass / 3 fail**——FAIL 全部是 260918-qrq 令牌值漂移(UAT 期望值定稿于 `0c658aa`,其后 `448686b` 换了令牌值层),非新缺陷;已按 YAML 写入 UAT `## Gaps` | 2026-09-19 | cc11e9f | [260919-0h3-harness-idi-04-uat-6](./quick/260919-0h3-harness-idi-04-uat-6/) |
 
 ## Deferred Items
 

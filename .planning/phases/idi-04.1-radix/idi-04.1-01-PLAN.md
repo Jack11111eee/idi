@@ -400,7 +400,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     <automated>grep -c 'box-shadow: var(--shadow-overlay);' frontend/style.css; grep -c '^  --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);' frontend/style.css</automated>
     <fails_when>两个计数不是 1 与 1</fails_when>
     <automated>grep -c 'opacity: 0.9' frontend/style.css; grep -c 'opacity: 0.55' frontend/style.css; grep -c 'opacity: 0.5;' frontend/style.css</automated>
-    <fails_when>第一个计数不为 0(未删净),或第二/三个计数发生变化(误动了 :disabled 的豁免站点)</fails_when>
+    <fails_when>第一个计数不为 0(R-3 未删净),或第二个计数不为 **6**,或第三个计数不为 **2**。后两个是本任务动手前在 HEAD 上实测的基线(即 8 处 `:disabled` 的豁免站点),必须写成与基线的等值比较 —— 只说「发生变化」而不给出基线,单看输出无法判定</fails_when>
     <automated>grep -c 'position:' frontend/style.css; grep -n -A 8 '^#state-badge {' frontend/style.css | grep -c 'position'</automated>
     <fails_when>第二个计数不为 0(给 #state-badge 加了 position,违反 R-1 的边界)</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh && python3 scripts/check-02-contrast.py | tail -1</automated>
@@ -417,7 +417,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
   <acceptance_criteria>
     - `#state-badge` 规则内恰有一条 `z-index: var(--z-badge);`,且该规则内**无** `position` 声明
     - 围栏内恰有一条 `--shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);`,`.overlay-card` 规则内恰有一条 `box-shadow: var(--shadow-overlay);`
-    - `grep -c 'opacity: 0.9' frontend/style.css` == 0,而 `opacity: 0.55` 与 `opacity: 0.5;` 的计数与本任务前一致(8 处 `:disabled` 未被软化)
+    - `grep -c 'opacity: 0.9' frontend/style.css` == 0,而 `opacity: 0.55` == **6** 与 `opacity: 0.5;` == **2**(HEAD 实测基线,即 8 处 `:disabled` 未被软化)
     - `.tier-desc` 规则仍含 `font-size: var(--text-xs)` 与 `font-weight: var(--fw-regular)`
     - `.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6` 退出码 0;`item smoke` 结论为 `PASS`(其中含新增的三条接线断言)
     - `grep -c 'rgba(0, 0, 0, 0.2)' scripts/check-05-ui-uat.py` == 1(`item_smoke` 的 R-2 断言用的是 needle `"0.2"`,没有把 `item3` 那条完整字面复制一份)

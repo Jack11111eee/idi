@@ -32,7 +32,7 @@ must_haves:
     - "D-12 的 7 条间距/字号漂移以**更新期望值**的方式接受 HEAD 现状,`frontend/style.css` 一字未动:`.panel-header` padding `6px` / `10px`、`#brainstorm-view h2` 16px、`#draft-view h2` 18px、`.overlay-card h3` 24px、`.markdown-body`(探针 `#draft-content`)16px、`.markdown-body code` 14px、`button` color 由 `--color-text` 解析 ← D-12"
     - "z-index 三条断言也走令牌接线:`#selection-menu` / `#state-badge` / `#stream-banner` 的 computed `z-index` 分别等于运行时解析出的 `--z-selection-menu` / `--z-badge` / `--z-banner`,使 `badge < banner` 的承重序关系在**渲染层**被断言(而不只在围栏注释里被声明)← TOKEN-07 / R-1 / D-11"
     - "D-14 已接受的检测力损失被显式补偿:每条接线断言旁都有 `info()` 记录运行时解析出的令牌值(`--color-text-muted` → `rgb(100, 100, 100)`、`--color-border-strong` → `rgb(141, 141, 141)`、`--color-action-warning` → `rgb(79, 52, 34)`、`--color-kind-done` → `rgb(32, 32, 32)`、`--color-surface` → `rgb(249, 249, 249)`),使「接线对但值错」留下可人工核对的痕迹;值本身的仲裁者是 `check-02-contrast.py`,不是本 harness ← D-14 的代价条款 / 携带项 #2"
-    - "`.venv/bin/python scripts/check-05-ui-uat.py` 全量运行(默认 item 1..6,捆绑 chromium-1243 无头)退出码 **0**,0 FAIL / 0 BLOCKED;`smoke` 项亦 PASS ← 携带项 #9 / 硬规则 7"
+    - "`.venv/bin/python scripts/check-05-ui-uat.py` 全量运行(默认 item 1..6,捆绑 chromium-1243 无头):**0 FAIL**,`item 1` / `2` / `3` / `4` / `6` 全部 `PASS` 且 0 BLOCKED,`item 5` 为 `BLOCKED` 且其 BLOCKED **恰为已记录的两条交互冒烟**(`idi-04-UAT.md:262` 逐字写明「默认运行的 blocked 不构成待办」),全量退出码因此为 **2** —— 按 harness 的 `code = 1 if any_fail else (2 if any_blocked else 0)`(L1036),**不带 `--ai-smoke` 时 0 BLOCKED 不可达**;`smoke` 项亦 PASS ← 携带项 #9 / 硬规则 7"
     - "`idi-04-UAT.md` 的三条 gap 按 D-10 / D-12 / D-13 消解并留证:颜色漂移类随值层重写消解、间距字号类更新期望值、`#doc-pane` 改名;`## Gaps` 的 YAML 块不再列出任何未决项,`## Summary` 的 passed / issues 计数按新结果更新 ← D-10 / D-12 / D-13 / 携带项 #6"
     - "C-1 的下游门引用复核完成并留证:`#brainstorm-view h2` 在 HEAD 上计算为 **16px**(不是 `04-UI-SPEC.md` 携带项 #7 与 ROADMAP 五处所写的 14px),其颜色为 `--color-action-warning` = `#4f3422`(不是那五处所写的 `#8a6508`);五处按**内容**识别(同一行同时含 `#brainstorm-view h2` 与 `8a6508`,共 5 行),节名为硬规则 3、Phase 5 Pitfall 9、§Phase 5 Gates、§Phase 6 SC5、§Phase 6 Gates(复核时分别位于 L37 / L169 / L172 / L200 / L212 —— 行号只是当时的定位辅助,任何 ROADMAP 编辑都会移动它,**不是判据**);全部失真引用作为**下游义务**记入 SUMMARY 与 UAT 记录,**不在本阶段单方面改写未来阶段的验收判据** ← D-12 附带必做 / 携带项 #7"
     - "携带项 #8 被记录而非执行:Phase 7 的焦点环 `--color-focus: #1f63bd` 必须在 Phase 7 自己的门里对 `--color-surface`(`#f9f9f9`)与 `--color-surface-page`(`#fcfcfc`)重新测 ≥3:1 —— 本阶段不改环色,只改它所落的地面 ← 携带项 #8"
@@ -257,10 +257,8 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <fails_when>计数不为 0(item4 里仍有读取 `#doc-pane` 选择器的调用 —— D-13 未改净)。**门锚在代码形态,不是词形**:`doc-pane` 是 `doc-panel-body` 的**子串**,裸 `grep -c 'doc-pane'` 会被**正确**的 `#doc-panel-body` 命中(同一行同时命中两者),那样的门永远归不了零,而且唯一能让它变绿的办法是删掉 D-13 的交付物本身;注释里为了说明「原串写错了名字」而提到 `#doc-pane` 也不该判失败 —— 被判失败的是**仍在读那个选择器**这件事</fails_when>
     <automated>grep -cE 'read_style\(page, .#doc-panel-body\b' scripts/check-05-ui-uat.py</automated>
     <fails_when>计数少于 1(item4 的 D-13 断言没有指向 `#doc-panel-body`)</fails_when>
-    <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 4,5</automated>
-    <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item 4` / `item 5` 的结论不是 `PASS`</fails_when>
-    <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 4,5 2>&1 | grep -E 'item (4|5):'</automated>
-    <fails_when>输出的两行里出现 `BLOCKED`(D-13 的 `#doc-pane` 项必须由 BLOCKED 转为 PASS,不得残留任何阻塞项)</fails_when>
+    <automated>OUT=$(.venv/bin/python scripts/check-05-ui-uat.py --item 4,5 2>&1); EC=$?; printf '%s\n' "$OUT" | grep -E '^item (4|5):'; printf 'ai-smoke-blocked='; printf '%s\n' "$OUT" | grep -cE '^BLOCKED \[p3\] 交互冒烟'; printf 'exit=%s\n' "$EC"</automated>
+    <fails_when>`item 4` 行不是 `PASS … 0 FAIL,0 BLOCKED`(D-13 的 `#doc-pane` 那条 BLOCKED 必须转为 ok —— 这正是本任务的交付物),或 `item 5` 行不是 `BLOCKED … 0 FAIL,2 BLOCKED`,或 `ai-smoke-blocked` 不等于 2,或 `exit` 不等于 2。**`exit=2` 与 `item 5: BLOCKED` 是本任务修好之后的正确结果,不是缺陷**:`item 5` 的两条交互冒烟在默认运行下**按设计**记 BLOCKED(需要真实 AI 调用),`idi-04-UAT.md:262` 已逐字记明「默认运行的 blocked 不构成待办」、`:171` 记明理由为「加 --ai-smoke 重跑」;harness 的 `code = 1 if any_fail else (2 if any_blocked else 0)`(L1036)意味着**不带 `--ai-smoke` 时 `exit=0` 不可达**。把 `0 BLOCKED` 写成本任务的门,等于要求执行器删掉那两次 `blocked()` 调用 —— 而那正是 T-idi041-09 所依赖的信号。`exit=1` 仍表示有真 FAIL,必须为 0</fails_when>
     <automated>git diff --name-only HEAD -- . ':!.claude/settings.local.json'</automated>
     <fails_when>输出的文件清单超出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`。**范围刻意排除 `.claude/settings.local.json`**:它是长期跟踪的会话本地文件,在本任务动手之前就已是 modified,不是本任务的产出、也不得被本任务提交;裸 `git diff --name-only HEAD` 会把它算成本任务的改动,那不是关于本任务的信号</fails_when>
   </verify>
@@ -270,11 +268,11 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     - `item5` 含 ≥6 处 `resolve_color`(border-top-color、background-color、`.hint` color、`.hint` 背景、`#stream-banner` border、`.markdown-body` color)
     - `item4` 里不存在任何读取 `#doc-pane` 选择器的 `read_style` 调用(词边界形式 `read_style(page, …#doc-pane\b` 计数为 0),而读取 `#doc-panel-body` 的调用至少 1 处;该条断言为 `ok` 且期望 `32px 40px`。**判据刻意不写「全文件 `doc-pane` 计数为 0」** —— `doc-pane` 是 `doc-panel-body` 的子串,那个判据与它自己的另一半互斥
     - D-12 的六条期望值逐条落位:`.panel-header` 6px / 10px、`#brainstorm-view h2` 16px、`#draft-view h2` 18px、`.overlay-card h3` 24px、`#draft-content` 16px、`#draft-content code` 14px
-    - `.venv/bin/python scripts/check-05-ui-uat.py --item 4,5` 退出码 0,两项均 `PASS`(0 FAIL / 0 BLOCKED)
+    - `.venv/bin/python scripts/check-05-ui-uat.py --item 4,5`:0 FAIL;`item 4` 为 `PASS` 且 **0 BLOCKED**(D-13 的 `#doc-pane` 项由 BLOCKED 转 ok),`item 5` 为 `BLOCKED` 且其 2 条 BLOCKED 恰为已记录的两条交互冒烟(`idi-04-UAT.md:262`);退出码 `2` —— 这是设计使然,不是缺陷
     - `--text-base` == `14px` 的 S-2 依赖断言仍在且 PASS
     - `item1` / `item2` / `item3` / `item6` / `item_smoke` / `main()` 与全部辅助函数逐字未变
   </acceptance_criteria>
-  <done>`item4` 与 `item5` 的期望侧全部改为令牌接线,z-index 三条走 `resolve_token`,`#doc-pane` → `#doc-panel-body` 由 BLOCKED 转 PASS,D-12 的六条期望值更新;两项在真实浏览器里 `PASS`。</done>
+  <done>`item4` 与 `item5` 的期望侧全部改为令牌接线,z-index 三条走 `resolve_token`,`#doc-pane` → `#doc-panel-body` 由 BLOCKED 转 ok(故 `item 4` 0 BLOCKED、结论 `PASS`),D-12 的六条期望值更新;两项均 0 FAIL,`item 5` 剩余的 2 条 BLOCKED 是 `idi-04-UAT.md:262` 已记录的默认运行交互冒烟(按设计,不构成待办)。</done>
 </task>
 
 <task type="auto">
@@ -363,7 +361,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 
 | Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
 |-----------|----------|-----------|----------|-------------|-----------------|
-| T-idi041-09 | Repudiation | 「运行时验证」被断言而非执行 | high | mitigate | 携带项 #9 的九组具名检查逐条落到 `item_smoke`(01 的三条)与 `item3` / `item4` / `item5`(本计划的六组),每一条都配可运行的 `<automated>` 命令与 `<fails_when>`;`.venv/bin/python scripts/check-05-ui-uat.py` 全量退出码必须是 0,且 `grep -c 'var(--'` 这类静态计数被明确拒绝作为证据。**这是本计划唯一的高危项,因为「验证没做却写成做了」是本阶段最容易发生的失败** |
+| T-idi041-09 | Repudiation | 「运行时验证」被断言而非执行 | high | mitigate | 携带项 #9 的九组具名检查逐条落到 `item_smoke`(01 的三条)与 `item3` / `item4` / `item5`(本计划的六组),每一条都配可运行的 `<automated>` 命令与 `<fails_when>`;`.venv/bin/python scripts/check-05-ui-uat.py` 全量必须 **0 FAIL**、`item 4` 的 `#doc-pane` 项必须由 BLOCKED 转 ok,剩余的 BLOCKED 必须**恰为已记录的两条交互冒烟**(`idi-04-UAT.md:262`)—— 用 `--ai-smoke` 之外的任何手段把那两条变绿,都等于抹掉本计划自己的证据;`grep -c 'var(--'` 这类静态计数被明确拒绝作为证据。**这是本计划唯一的高危项,因为「验证没做却写成做了」是本阶段最容易发生的失败** |
 | T-idi041-10 | Repudiation | 令牌接线断言掩盖「值本身错了」 | medium | mitigate | D-14 已接受该检测力损失(它换掉了「硬编码值能抓令牌接错线」的能力),本计划用两条措施补偿:①每条接线断言旁的 `info()` 打印运行时解析值,值错时在日志里看得见;②值的仲裁者是 `check-02-contrast.py` 的 43 对实测比值,不由 harness 承担。二者合起来覆盖「接线」与「值」两个轴 |
 | T-idi041-11 | Tampering | 为让断言通过而改 `frontend/style.css` | medium | mitigate | 本计划的 `files_modified` 不含 `frontend/style.css`;verify 以 `git status --porcelain -- frontend/style.css frontend/app.js frontend/index.html frontend/vendor/` 断言输出为空,并以 `git diff --name-only HEAD -- . ':!.claude/settings.local.json'` 断言改动面只有两个计划文件(排除项是既有工作树状态,不是本计划的改动) |
 | T-idi041-12 | Spoofing | 用无头系统 Chrome 或静态分析冒充真实渲染 | low | mitigate | `.venv` 的 Python 是 x86_64,系统 Chrome 走 Rosetta,`channel='chrome'` + headless 在本机会挂死(CDP 180s 连不上);harness 的正确路线是默认的捆绑 chromium-1243 无头(arm64 原生、零下载)。verify 命令一律不传 `--browser`,并在 prohibitions 里禁止换路线 |
@@ -374,7 +372,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 </threat_model>
 
 <verification>
-- `.venv/bin/python scripts/check-05-ui-uat.py` 全量(默认 item 1..6 + 不跑 smoke 之外的额外项)→ 退出码 0,`item 1..6` 全部 `PASS`
+- `.venv/bin/python scripts/check-05-ui-uat.py` 全量(默认 item 1..6)→ **0 FAIL**;`item 1` / `2` / `3` / `4` / `6` 全部 `PASS`(0 BLOCKED),`item 5` 为 `BLOCKED` 且其 2 条 BLOCKED 恰为已记录的两条交互冒烟 → 退出码 **2**(设计使然:不带 `--ai-smoke` 时 0 BLOCKED 不可达,见 `idi-04-UAT.md:262`)
 - `.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6` → 退出码 0(含 01 的三条令牌接线断言)
 - `python3 scripts/check-02-contrast.py` → 末行 `PASS: 0 failures`,43 条配对 + `ORDER 0.363`
 - `bash scripts/check-01-token-conformance.sh` / `check-03-hidden-uniqueness.sh` / `check-04-important-count.sh` → 各自 `PASS`
@@ -389,7 +387,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 2. `scripts/check-05-ui-uat.py` 的颜色断言全部改为令牌接线形式,`FROZEN_AMBER` 删除,`#doc-pane` → `#doc-panel-body`
 3. `idi-04-UAT.md` 六项全 `pass`,三条 gap 标为已消解,AA 倒退记为已修复
 4. C-1 的两处下游门失真引用被实测确认并留证(不在本阶段单方面改写 ROADMAP §Phase 6 SC5)
-5. 全量 harness + 四条守卫 + `check-02` + pytest 基线 + 零 diff 门全部通过
+5. 全量 harness(0 FAIL;唯一的 BLOCKED 是已记录的两条交互冒烟)+ 四条守卫 + `check-02` + pytest 基线 + 零 diff 门全部通过
 6. `frontend/app.js` / `frontend/index.html` / `frontend/vendor/` 零改动
 </success_criteria>
 

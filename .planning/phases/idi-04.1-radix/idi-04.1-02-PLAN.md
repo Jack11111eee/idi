@@ -110,7 +110,7 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
     `var\(--(white|black|gray|green|blue|amber|red|purple|radix)(-[0-9]+)?`
     —— 其余一切逐字不动:L27-L28 的裸 hex 半场、L17-L20 的围栏成对断言、L11 的文件存在断言、L5 的 `set -euo pipefail`、L6 的 `cd "$(dirname "$0")/.."`、L45 的 `echo "PASS"` / `exit 0`。
 
-    **在 L35-L36 的既有注释里补一句说明**为什么 `radix` 在交替式里:改名前 tier-1 名是 `--gray-*` 形态,改名后是 `--radix-<family>-<step>` 形态,旧的交替式对后者不匹配,守卫会**静默空转而仍打印 PASS**;`radix` 分支正是让这条硬不变量继续可机械查的东西。注释语言沿用文件现有的英文风格。
+    **在 L35-L36 的既有注释里补一句说明**为什么 `radix` 在交替式里:改名前 tier-1 名是 `--gray-*` 形态,改名后是 `--radix-<family>-<step>` 形态,旧的交替式对后者不匹配,守卫会**静默空转而仍打印 PASS**;`radix` 分支正是让这条硬不变量继续可机械查的东西。注释语言沿用文件现有的英文风格。**这句注释不得逐字引用交替式本身**(不要写成 `(white|black|gray|green|blue|amber|red|purple|radix)` 那样的完整列举)—— 下面的门按 `grep -c` 计数该交替式,注释里再抄一遍会让计数变成 2;用散文说明「新增了 radix 这一支」即可。
 
     **变异测试(必须做,且必须在临时副本上做 —— 真实 `frontend/style.css` 是本阶段已提交的交付物,不得被变异污染)。** 构造一个临时仓库根,只放守卫需要的两个路径,然后注入三种变异、每次单独跑:
 

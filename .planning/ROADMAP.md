@@ -111,6 +111,19 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 04.1: Radix 颜色族重写 (INSERTED)
+
+**Goal:** 把颜色族从手调 hex 换成 Radix Colors 的 12 步语义刻度(1-2 底 / 3-5 组件底 / 6-8 边框 / 9-10 实心填充 / 11-12 文字),并据此重算 UI-SPEC 令牌清单与 CHECK-02 的 34 对对比度配对。
+**非紧急插入**:这是 Phase 4 **值层**的刻意重写(结构产出——围栏 `:root`、75 个令牌、四条守卫命令——不动),同时吸收 idi-04 UAT 的 3 项 FAIL 与 `--color-text-muted` 3.23:1 的 AA 倒退。
+**不含暗色模式**(与 v1.14 的已记录排除项一致);**不改** S-1 间距 12 档与 S-2 的 14px 一级字号档。
+**Requirements**: TBD
+**Depends on:** Phase 4
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 04.1 to break down)
+
 ### Phase 5: 排版与视觉层级
 
 **Goal**: 渲染出的文档与界面 chrome 各有一套受控的排版刻度;产品最重要的一步(不可逆的 G3 授权)在视觉上不再与例行按钮混同;页面级层级正确。
@@ -285,11 +298,12 @@ Plans:
 | 2. 轮次收敛循环 | v1.13 | 4/4 | Complete | 2026-09-10 |
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
 | 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | In Progress|  |
+| 4.1. Radix 颜色族重写 | v1.14 | 0/0 | Not started | - |
 | 5. 排版与视觉层级 | v1.14 | 0/0 | Not started | - |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |
 
-**Execution Order:** Phases execute in numeric order: 4 → 5 → 6 → 7 → 8
+**Execution Order:** Phases execute in numeric order: 4 → 4.1 → 5 → 6 → 7 → 8
 
 Phase 5/6/7 相互独立,理论上可重排——但有两条不可动:**Phase 4 不得移动**(四个阶段消费它),**Phase 6 不得移到 Phase 7 之后**(焦点环依赖布局稳定)。

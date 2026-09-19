@@ -6,16 +6,16 @@ current_phase: 04
 current_phase_name: tokens-contract
 status: executing
 stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
-last_updated: "2026-09-18T13:55:04.869Z"
+last_updated: "2026-09-19T05:06:26.451Z"
 last_activity: 2026-09-19
-last_activity_desc: Quick task 260919-1w1 — `#session-panel` 在阶段 3+ 隐藏(applySessionGates 单点切换);D1/D2/发送按钮不可点三症状同源修复,harness 加五态显隐守卫(RED→GREEN 实证)
-state_head: 253d4d329ccd7be28542578e20102f3aa0a218cf
+last_activity_desc: "Quick task 260919-1w1 — `#session-panel` 在阶段 3+ 隐藏(applySessionGates 单点切换);D1/D2/发送按钮不可点三症状同源修复,harness 加五态显隐守卫(RED→GREEN 实证)"
+state_head: 9988df7a5b28988d60fb4568a97585283f37fb77
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 0
   total_plans: 3
   completed_plans: 3
-  percent: 100
+  percent: 0
 ---
 
 # Project State
@@ -25,7 +25,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-17)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-04 — tokens-contract
+**Current focus:** Phase 04.1 — Radix 颜色族重写
 
 ## Current Position
 
@@ -34,7 +34,7 @@ Plan: 3 of 3
 Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
 Last activity: 2026-09-19 — Completed quick task 260919-1w1: `#session-panel` 阶段 3+ 隐藏(D1/D2/发送按钮不可点 三症状同源修复)
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -146,6 +146,10 @@ None yet.
 | 260919-0h3 | 建立前端验证 harness(`scripts/check-05-ui-uat.py` + `scripts/ui-states/` 5 个磁盘状态样本 + `requirements-dev.txt`),跑掉 idi-04 UAT 6 项。**结果 3 pass / 3 fail**——FAIL 全部是 260918-qrq 令牌值漂移(UAT 期望值定稿于 `0c658aa`,其后 `448686b` 换了令牌值层),非新缺陷;已按 YAML 写入 UAT `## Gaps` | 2026-09-19 | cc11e9f | [260919-0h3-harness-idi-04-uat-6](./quick/260919-0h3-harness-idi-04-uat-6/) |
 | 260919-1w1 | **P6 前置修正**:`#session-panel` 在阶段 3+ 该隐藏却从未隐藏(DESIGN.md §4.1/§4.2 明文「切换」非「叠加」)。一次修掉 D1(主区 90% 空白)/ D2(归档态与阶段5 仍渲染输入框)/ 发送按钮被批注流覆盖不可点 三个症状。harness 加五态显隐守卫,经 RED→GREEN 实证非空转 | 2026-09-19 | 1d849b1 | [260919-1w1-session-panel-3-d1-d2](./quick/260919-1w1-session-panel-3-d1-d2/) |
 
+### Roadmap Evolution
+
+- Phase 04.1 inserted after Phase 4: Radix 颜色族重写
+
 ## Deferred Items
 
 Items acknowledged and deferred at milestone close, most recent first:
@@ -167,8 +171,10 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Plan the first v1.14 phase: `/gsd-plan-phase 4` — UI-SPEC 已就绪并通过 checker(APPROVED),7 个未决问题已全部关闭,不再是规划前置。
-  ✅ **四个签核项 S-1…S-4 已于 2026-09-17 规划期呈上并获用户逐项批准(照契约原文)**——不再是待办,规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
+- Plan the next v1.14 phase: `/gsd-plan-phase 04.1`(Radix 颜色族重写,2026-09-19 插入)。
+  Phase 4 的 3/3 计划已执行完毕,尚待阶段验证;其值层由 04.1 重写,idi-04 UAT 的 3 项 FAIL 与
+  `--color-text-muted` 3.23:1 的 AA 倒退一并归入 04.1 消解,不再单独裁定 UAT 期望值。
+  以下 S-1…S-4 签核项仍然有效(04.1 明令不改 S-1/S-2),规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
   - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
   - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
   - **S-3** ✅ 批准:控件边框 `#ccc` → `#8a8a8a`(10 处;本阶段最大视觉变更,依据 SC 1.4.11)

@@ -21,6 +21,11 @@
     {
       "number": "4",
       "name": "设计契约、令牌层与契约校验",
+      "status": "in_progress"
+    },
+    {
+      "number": "04.1",
+      "name": "Radix 颜色族重写",
       "status": "pending"
     },
     {
@@ -46,8 +51,8 @@
   ],
   "next": {
     "command": "/gsd:progress --next",
-    "label": "Advance to the next step (plan phase 4)",
-    "reason": "Phase 4 of 5 — needs a plan"
+    "label": "Advance to the next step",
+    "reason": "Phase 04 of 6 · 0% · executing"
   },
-  "updated_at": "2026-09-17T03:18:26.411Z"
+  "updated_at": "2026-09-19T05:06:06.490Z"
 }

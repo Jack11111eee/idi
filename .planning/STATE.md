@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: "04.1"
-current_phase_name: radix
+current_phase_name: Radix 颜色族重写 (INSERTED)
 status: executing
-stopped_at: Phase 04.1 UI-SPEC approved (7/7 dimensions, S-5/S-6 signed off, FLAG corrected)
-last_updated: "2026-09-19T12:21:23.729Z"
+stopped_at: Completed idi-04.1-01-PLAN.md
+last_updated: "2026-09-19T13:04:47.369Z"
 last_activity: 2026-09-19
-last_activity_desc: "Quick task 260919-1w1 — `#session-panel` 在阶段 3+ 隐藏(applySessionGates 单点切换);D1/D2/发送按钮不可点三症状同源修复,harness 加五态显隐守卫(RED→GREEN 实证)"
-state_head: ba85183d2e394a928d3728dca449d4215a2fe89e
+last_activity_desc: Phase idi-04.1 execution started
+state_head: bcab577f5b9fb38ce653a67bd3d3ba52984ea441
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-17)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase 04.1 — Radix 颜色族重写
+**Current focus:** Phase idi-04.1 — Radix 颜色族重写 (INSERTED)
 
 ## Current Position
 
-Phase: idi-04.1 (radix) — READY TO EXECUTE
-Plan: 3 of 3
-Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
-Last activity: 2026-09-19 — Completed quick task 260919-1w1: `#session-panel` 阶段 3+ 隐藏(D1/D2/发送按钮不可点 三症状同源修复)
+Phase: idi-04.1 (Radix 颜色族重写 (INSERTED)) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase idi-04.1
+Last activity: 2026-09-19 — Phase idi-04.1 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -77,6 +77,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-03 P05 | - | 2 tasks | 3 files |
 | Phase idi-04 P01 | ~30min | 3 tasks | 4 files |
 | Phase idi-04 P03 | 11min | 2 tasks | 2 files |
+| Phase 04.1 P01 | 22min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -117,6 +118,9 @@ Recent decisions affecting current work:
 - [Phase 04]: idi-04-03: ORDER 断言取严格序关系(ratio(quieter) < ratio(louder)),非 ≤0.30 阈值门——UI-SPEC 已显式接受 0.311 对 ≤~0.30 guide 的残差,阈值门会在 HEAD 上立即失败;实测打印 ORDER 0.311(=5.18/16.67)。失败方向已实证:把 --gray-600 加深到 #000000 时四条 muted 背景对全部 PASS(20.12/21.00/19.26/18.10),只有 ORDER 报 FAIL: hierarchy inverted 1.207 并 exit 1 —— 这正是 SC3「层级与比值一起校验」的机器化形态
 - [Phase 04]: idi-04-03: --gray-100 保持 #eeeeee,实测 muted 比值 4.66(非折叠前 #f0f0f0 上的 4.75);不得为凑 4.75 回改——那会违反 D-15 并带动 --color-surface-hover / --color-border-subtle 漂移
 - [Phase 04]: idi-04-03: 四条命令的失败方向全部实证(CHECK-02 两次:阈值失败 + 层级倒置);Task 2 为纯注入→观察→还原,净 diff 为零,故无独立提交——残留扫描即为验收(grep #deadbe=0 / 注入对=0 / !important;=1 / --gray-600:#6a6a6a=1)
+- [Phase 04.1]: D-16 核实成立:无 muted-text 类元素落在 <button> 内,PAIR --color-text-muted ON --color-surface-hover 不进清单,CHECK-02 清单为 43 对(34 TEXT + 9 NON-TEXT)+ 1 ORDER
+- [Phase 04.1]: R-3 只删 .tier-desc 的 opacity: 0.9 一条声明,font-size/font-weight 一字未动;R-1 只加 z-index 一条声明,不加 position(#state-badge 刻意不是 position: fixed 浮层)
+- [Phase 04.1]: 新 shadow 令牌 shadow-overlay 与 .overlay-card 的 box-shadow 消费者同一次提交落地(Hard Rule 5);item_smoke 的 R-2 断言用短 needle "0.2",守住 wave 3 的「全文件唯一颜色字面」计数不变量
 
 ### Pending Todos
 
@@ -165,9 +169,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-19T09:20:04.976Z
-Stopped at: Phase 04.1 UI-SPEC approved (7/7 dimensions, S-5/S-6 signed off, FLAG corrected)
-Resume file: .planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md
+Last session: 2026-09-19T13:04:47.269Z
+Stopped at: Completed idi-04.1-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

@@ -11,13 +11,13 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### TOKEN — 设计令牌体系
 
-- [ ] **TOKEN-01**: `style.css` 顶部含**单一** `:root` 令牌块,用原生 CSS 自定义属性;零构建步骤、零新增依赖
-- [ ] **TOKEN-02**: 令牌分类学——三份研究**真实分歧**,SUMMARY 已调和,UI-SPEC 拥有最终裁定权。**调和结论:颜色两层(primitive → semantic),间距/字号/圆角单层,无组件层。** 硬不变量:**primitive(tier-1)名绝不出现在 `:root` 块之外**(机械可查,与 CHECK-01 同源)。理由(STACK 与 ARCHITECTURE 各自独立得出):①有了 primitive,两个近乎相同的蓝 `#2c7be5` / `#2c5fb8` 会因相隔 30 行而**可见**,进而有一个被删掉——没有 primitive 层时这个重复是隐形的;②"不可逆授权"没有 `--green-500` 这类语义别名可被冒充,选择器**物理上无法**拿"绿"当"正向"的替身。FEATURES 的反对理由(无主题/品牌可重映射)被这两条**同一上下文内**的收益回答。**注意**:PITFALLS 的"语义命名而非字面命名"规则适用于**被消费**的令牌——调和方案与它不冲突
+- [x] **TOKEN-01**: `style.css` 顶部含**单一** `:root` 令牌块,用原生 CSS 自定义属性;零构建步骤、零新增依赖
+- [x] **TOKEN-02**: 令牌分类学——三份研究**真实分歧**,SUMMARY 已调和,UI-SPEC 拥有最终裁定权。**调和结论:颜色两层(primitive → semantic),间距/字号/圆角单层,无组件层。** 硬不变量:**primitive(tier-1)名绝不出现在 `:root` 块之外**(机械可查,与 CHECK-01 同源)。理由(STACK 与 ARCHITECTURE 各自独立得出):①有了 primitive,两个近乎相同的蓝 `#2c7be5` / `#2c5fb8` 会因相隔 30 行而**可见**,进而有一个被删掉——没有 primitive 层时这个重复是隐形的;②"不可逆授权"没有 `--green-500` 这类语义别名可被冒充,选择器**物理上无法**拿"绿"当"正向"的替身。FEATURES 的反对理由(无主题/品牌可重映射)被这两条**同一上下文内**的收益回答。**注意**:PITFALLS 的"语义命名而非字面命名"规则适用于**被消费**的令牌——调和方案与它不冲突
 - [ ] **TOKEN-03**: 先产出**含义清单**(每个颜色名对应哪一语义),再据此把四套竞争强调色收敛为主色 / 危险 / 中性三族
-- [ ] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
+- [x] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
 - [ ] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
 - [ ] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
-- [ ] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200
+- [x] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200
 - [ ] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
 
 ### VISUAL — 视觉层级
@@ -62,8 +62,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 - [ ] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
 - [x] **CHECK-02**: 对比度自动校验脚本——对所有声明的令牌配对计算 WCAG 对比度(约 15 行,零依赖)
-- [ ] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
-- [ ] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
+- [x] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
+- [x] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
 
 ### REG — 回归防护与继承缺陷
 
@@ -118,13 +118,13 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKEN-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-02 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
@@ -151,8 +151,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
 | CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
-| CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | REG-01 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
 | REG-02 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
 | REG-03 | Phase 8: 可访问性语义与键盘 | Pending |

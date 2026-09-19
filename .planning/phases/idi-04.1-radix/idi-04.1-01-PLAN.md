@@ -204,6 +204,11 @@ must_haves:
       verification: flagged
 ---
 
+<!-- planner-discipline-allow: opacity: 0.9 -->
+<!-- 本计划正文必须写出字面量 `opacity: 0.9`,因为 R-3 的任务就是删除 `.tier-desc` 上这一条
+     精确声明(执行器需要知道删哪一条),而 Task 3 的验收对源文件做 `grep -c 'opacity: 0.9' == 0`
+     来证明删净。字面量在此是承重的,不是散漫的散文引用。 -->
+
 <objective>
 把 `frontend/style.css` 的颜色**值层**从手调 hex 换成 Radix Colors 的 12 步语义刻度,并据此重算围栏内的 `/* PAIR */` 对比度清单;同时恢复 `260918-qrq` 删掉的两条声明并删除一条由算术强制的声明。
 

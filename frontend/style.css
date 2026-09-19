@@ -6,101 +6,93 @@
 :root {
   /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence. */
   --white: #ffffff;
-  --black: #000000;
-  --gray-900: #0d0d0d;
-  --gray-700: #8f8f8f;
-  --gray-600: #8f8f8f; /* 与 --gray-700 同值:规格只给一档次要文字色,两个语义角色各自保留;AA 倒退为用户知情决策 */
-  --gray-500: #d9d9d9; /* 组件描边 rgba(0,0,0,.15) 的白底不透明等价(check-02 只对前景做 alpha 合成) */
-  --gray-300: #dddddd;
-  --gray-200: #ececec; /* 用户消息气泡 */
-  --gray-100: #f2f2f2; /* 分割线 rgba(0,0,0,.05) 的白底不透明等价 */
-  --gray-50: #f3f3f3;
-  --gray-25: #ffffff;
-  --green-800: #1f5c3a; /* new — Phase 5 destination for --color-action-irreversible */
-  --green-700: #26754a;
-  --green-100: #e9f7ef;
-  --blue-700: #3a83f7;
-  --blue-100: #eef4ff;
-  --blue-50: #f0f7ff;
-  --amber-800: #8a6508;
-  --amber-300: #d9c58a;
-  --amber-100: #fff3c4;
-  --amber-50: #fdf6ec;
-  --amber-25: #fffdf5;
-  --red-600: #c0392b;
-  --red-200: #e8b4ae;
-  --red-50: #fdecea;
-  --purple-600: #6f42c1;
+  --radix-gray-1: #fcfcfc;
+  --radix-gray-2: #f9f9f9;
+  --radix-gray-3: #f0f0f0;
+  --radix-gray-4: #e8e8e8;
+  --radix-gray-6: #d9d9d9;
+  --radix-gray-7: #cecece;
+  --radix-gray-9: #8d8d8d;
+  --radix-gray-11: #646464;
+  --radix-gray-12: #202020;
+  --radix-blue-2: #f4faff;
+  --radix-blue-11: #0d74ce;
+  --radix-green-3: #e6f6eb;
+  --radix-green-11: #218358;
+  --radix-green-12: #193b2d;
+  --radix-amber-1: #fefdfb;
+  --radix-amber-2: #fefbe9;
+  --radix-amber-3: #fff7c2;
+  --radix-amber-6: #f3d673;
+  --radix-amber-11: #ab6400;
+  --radix-amber-12: #4f3422;
+  --radix-red-2: #fff7f7;
+  --radix-red-7: #f4a9aa;
+  --radix-red-11: #ce2c31;
+  --radix-violet-11: #6550b9;
 
   /* Tier 2 — semantic. The only names any selector outside the fence may reference. */
-  --color-text: var(--gray-900);
-  --color-text-secondary: var(--gray-700);
-  --color-text-muted: var(--gray-600);
-  --color-surface-page: var(--gray-25);
-  --color-surface-sunken: var(--gray-50);
-  --color-kind-default: var(--gray-600);
-  --color-kind-result: var(--gray-700);
-  --color-action-danger: var(--red-600);
+  --color-text: var(--radix-gray-12);
+  --color-text-secondary: var(--radix-gray-11);
+  --color-text-muted: var(--radix-gray-11);
+  --color-surface-page: var(--radix-gray-1);
+  --color-surface-sunken: var(--radix-gray-3);
+  --color-kind-default: var(--radix-gray-11);
+  --color-kind-result: var(--radix-gray-11);
+  --color-action-danger: var(--radix-red-11);
 
   /* Tier 2 — action families (Q1). Phase 4: the three green families share one value pair;
      visual differentiation is Phase 5's one-line value edit. */
-  --color-action-primary: var(--blue-700);
+  --color-action-primary: var(--radix-blue-11);
   --color-action-primary-fg: var(--white);
   --color-action-danger-fg: var(--white);
-  --color-action-warning: var(--amber-800);
-  --color-action-warning-surface: var(--amber-50);
-  --color-action-routine: var(--green-700);
-  --color-action-routine-surface: var(--green-100);
-  --color-action-routine-fg: var(--green-700);
-  --color-action-commit: var(--green-700);
-  --color-action-commit-surface: var(--green-100);
-  --color-action-commit-fg: var(--green-700);
-  --color-action-irreversible: var(--green-700);
-  --color-action-irreversible-surface: var(--green-100);
-  --color-action-irreversible-fg: var(--green-700);
+  --color-action-warning: var(--radix-amber-12);
+  --color-action-warning-surface: var(--radix-amber-2);
+  --color-action-routine: var(--radix-green-11);
+  --color-action-routine-surface: var(--radix-green-3);
+  --color-action-routine-fg: var(--radix-green-12);
+  --color-action-commit: var(--radix-green-11);
+  --color-action-commit-surface: var(--radix-green-3);
+  --color-action-commit-fg: var(--radix-green-12);
+  --color-action-irreversible: var(--radix-green-11);
+  --color-action-irreversible-surface: var(--radix-green-3);
+  --color-action-irreversible-fg: var(--radix-green-12);
 
   /* Tier 2 — event-kind vocabulary (its own closed group) */
-  --color-kind-say: var(--blue-700);
-  --color-kind-read: var(--purple-600);
-  --color-kind-write: var(--green-700);
-  --color-kind-command: var(--amber-800);
-  --color-kind-error: var(--red-600);
-  --color-kind-done: var(--black);
+  --color-kind-say: var(--radix-blue-11);
+  --color-kind-read: var(--radix-violet-11);
+  --color-kind-write: var(--radix-green-11);
+  --color-kind-command: var(--radix-amber-11);
+  --color-kind-error: var(--radix-red-11);
+  --color-kind-done: var(--radix-gray-12);
 
   /* Tier 2 — completion boundary (a boundary, not an action) */
-  --color-border-success: var(--green-700);
+  --color-border-success: var(--radix-green-11);
 
   /* Tier 2 — surface / border */
-  --color-surface: var(--white);
-  --color-surface-hover: var(--gray-100);
-  --color-surface-user: var(--gray-200);
-  --color-surface-info: var(--blue-100);
-  --color-surface-warning: var(--amber-50);
-  --color-surface-warning-subtle: var(--amber-25);
-  --color-surface-mark: var(--amber-100);
-  --color-surface-danger: var(--red-50);
-  --color-surface-streaming: var(--blue-50);
-  --color-border-strong: var(--gray-500);
-  --color-border: var(--gray-300);
-  --color-border-subtle: var(--gray-100);
-  --color-border-warning-subtle: var(--amber-300);
-  --color-border-streaming: var(--blue-700);
-  /* 保留 --color-surface-info-strong 这一声明 —— 其消费者 .chat-user 已改引 --color-surface-user,
-     但 check-02 清单按名引用它(PAIR --color-text-inverse ON --color-surface-info-strong),
-     删除声明会让脚本以 unknown token 提前退出,偏差证据表随之失效。 */
-  --color-surface-info-strong: var(--blue-700);
-  --color-text-info: var(--blue-700);
+  --color-surface: var(--radix-gray-2);
+  --color-surface-hover: var(--radix-gray-3);
+  --color-surface-user: var(--radix-gray-4);
+  --color-surface-info: var(--radix-blue-2);
+  --color-surface-warning: var(--radix-amber-2);
+  --color-surface-warning-subtle: var(--radix-amber-1);
+  --color-surface-mark: var(--radix-amber-3);
+  --color-surface-danger: var(--radix-red-2);
+  --color-surface-streaming: var(--radix-blue-2);
+  --color-border-strong: var(--radix-gray-9);
+  --color-border: var(--radix-gray-7);
+  --color-border-subtle: var(--radix-gray-6);
+  --color-border-warning-subtle: var(--radix-amber-6);
+  --color-border-streaming: var(--radix-blue-11);
+  --color-text-info: var(--radix-blue-11);
 
   /* Tier 2 — overlay backdrop and the single shadow token (composer, three layers) */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.45);
   --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
 
-  /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal.
-     保留 --color-text-inverse 这一声明 —— .chat-user 已改引 --color-text,但 check-02 清单按名引用它,
-     删除声明会让脚本以 unknown token 提前退出。 */
-  --color-text-inverse: var(--white);
+  /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
-  --color-border-danger-subtle: var(--red-200);
+  --color-border-danger-subtle: var(--radix-red-7);
 
   /* Spacing scale — 4px base + the half-step band (S-1). All 12 steps are consumed. */
   --space-px: 1px;
@@ -163,18 +155,34 @@
      apart. Thresholds: TEXT 4.5:1, NON-TEXT 3:1; an optional @<alpha> suffix on
      TEXT composites the foreground over the background before measuring. The
      single ordering entry asserts a strict ratio ordering on one shared ground.
-     Token names only — never hex. */
+     Token names only — never hex.
+     Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
+     combination that actually renders. Decorative separators are deliberately
+     absent — SC 1.4.11 does not apply to a border that identifies nothing. */
 
-  /* text — the four grounds --color-text-muted actually lands on (note N-1) */
-  /* PAIR --color-text-muted ON --gray-25 TEXT */
-  /* PAIR --color-text-muted ON --white TEXT */
-  /* PAIR --color-text-muted ON --gray-50 TEXT */
-  /* PAIR --color-text-muted ON --gray-100 TEXT */
+  /* body text on its four real grounds (page, panel, sunken, amber container) */
+  /* PAIR --color-text ON --color-surface-page TEXT */
+  /* PAIR --color-text ON --color-surface TEXT */
+  /* PAIR --color-text ON --color-surface-sunken TEXT */
+  /* PAIR --color-text ON --color-surface-user TEXT */
+  /* PAIR --color-text ON --color-surface-info TEXT */
+  /* PAIR --color-text ON --color-surface-danger TEXT */
+  /* PAIR --color-text ON --color-surface-streaming TEXT */
+  /* PAIR --color-text ON --color-surface-warning-subtle TEXT */
 
-  /* text — reading and structural text on their real grounds */
-  /* PAIR --color-text ON --gray-25 TEXT */
-  /* PAIR --color-text-secondary ON --gray-25 TEXT */
-  /* PAIR --color-text-secondary ON --amber-25 TEXT */
+  /* structural / attribution text */
+  /* PAIR --color-text-secondary ON --color-surface-page TEXT */
+  /* PAIR --color-text-secondary ON --color-surface TEXT */
+  /* PAIR --color-text-secondary ON --color-surface-warning-subtle TEXT */
+
+  /* the hint grey on its four real grounds (note 04.1-N-3) */
+  /* PAIR --color-text-muted ON --color-surface-page TEXT */
+  /* PAIR --color-text-muted ON --color-surface TEXT */
+  /* PAIR --color-text-muted ON --color-surface-sunken TEXT */
+  /* PAIR --color-text-muted ON --color-surface-warning-subtle TEXT */
+
+  /* the state badge foreground on its own filled ground */
+  /* PAIR --color-text-info ON --color-surface-info TEXT */
 
   /* event-kind chips: the shared foreground on all seven chip grounds */
   /* PAIR --color-kind-fg ON --color-kind-default TEXT */
@@ -185,41 +193,37 @@
   /* PAIR --color-kind-fg ON --color-kind-read TEXT */
   /* PAIR --color-kind-fg ON --color-kind-done TEXT */
 
-  /* pending badge, the six green buttons (three families, one Phase-4 value) */
+  /* amber text on its three real grounds, and the six green buttons (three families, one value) */
   /* PAIR --color-action-warning ON --color-surface-warning TEXT */
+  /* PAIR --color-action-warning ON --color-surface-warning-subtle TEXT */
+  /* PAIR --color-action-warning ON --color-surface-mark TEXT */
   /* PAIR --color-action-routine-fg ON --color-action-routine-surface TEXT */
   /* PAIR --color-action-commit-fg ON --color-action-commit-surface TEXT */
   /* PAIR --color-action-irreversible-fg ON --color-action-irreversible-surface TEXT */
 
-  /* primary action, filled informational surface, informational accent text */
+  /* filled primary and destructive buttons, and danger text on its grounds */
   /* PAIR --color-action-primary-fg ON --color-action-primary TEXT */
-  /* PAIR --color-text-inverse ON --color-surface-info-strong TEXT */
-  /* PAIR --color-text-info ON --color-surface-info TEXT */
+  /* PAIR --color-action-danger-fg ON --color-action-danger TEXT */
+  /* PAIR --color-action-danger ON --color-surface TEXT */
+  /* PAIR --color-action-danger ON --color-surface-danger TEXT */
 
-  /* amber and danger text on the grounds they actually land on */
-  /* PAIR --color-action-warning ON --amber-25 TEXT */
-  /* PAIR --color-action-warning ON --white TEXT */
-  /* PAIR --color-action-warning ON --gray-25 TEXT */
-  /* PAIR --color-action-danger ON --white TEXT */
-  /* PAIR --color-action-danger ON --gray-25 TEXT */
-  /* PAIR --color-action-danger ON --gray-100 TEXT */
-
-  /* the two surviving dims — covered, and both pass (A11Y-04b) */
-  /* PAIR --color-action-primary-fg ON --color-action-primary TEXT@0.9 */
-  /* PAIR --color-text ON --gray-25 TEXT@0.75 */
+  /* the surviving whole-document dim — the archive view (A11Y-04b) */
+  /* PAIR --color-text ON --color-surface TEXT@0.75 */
 
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
-  /* PAIR --color-border-strong ON --white NON-TEXT */
-  /* PAIR --color-border-strong ON --gray-50 NON-TEXT */
-  /* PAIR --color-border-streaming ON --gray-50 NON-TEXT */
-  /* PAIR --color-border-success ON --white NON-TEXT */
-
-  /* the frozen-round structural marker (S-4) must clear the 3:1 floor */
-  /* PAIR --color-action-warning ON --gray-25 NON-TEXT */
+  /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
+  /* PAIR --color-border-strong ON --color-surface NON-TEXT */
+  /* PAIR --color-border-streaming ON --color-surface-sunken NON-TEXT */
+  /* PAIR --color-border-success ON --color-surface NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface-warning NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface-mark NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface-warning-subtle NON-TEXT */
+  /* PAIR --color-action-routine ON --color-action-routine-surface NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than
      body text on the same ground. Both operands above are TEXT pairs. */
-  /* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */
+  /* ORDER --color-text-muted BEFORE --color-text ON --color-surface */
 }
 /* ===== DESIGN TOKENS: END ===== */
 

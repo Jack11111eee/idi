@@ -257,7 +257,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     - `frontend/app.js` —— **D-16 的核实对象**:所有动态构建 `<button>` 的路径(重点 `renderVerdictCard`,约 `app.js:709-713`)与所有 muted-text 类(`.hint` / `.badge-answered` / `.annotation-note` / `.annotation-answer-body` / `.verdict-suggestion`)的使用点
   </read_first>
   <action>
-    **第 0 步 —— D-16 前置核实(必须先做,结论写进 SUMMARY)。** 在 `frontend/app.js` 中穷举所有创建 `<button>` 的路径(至少覆盖 `renderVerdictCard` 的「修」/「接受现状」两处、`renderEvent`、`appendChatMessage`、以及任何 `createElement("button")` / `innerHTML` 含 `<button` 的写法),并穷举五个 muted-text 类在 `app.js` 与 `frontend/index.html` 中的全部使用点。判定:是否存在任何 muted-text 类元素落在 `<button>` 内部。把逐条 `文件:行号` 证据与结论写进 SUMMARY。**若结论为「不成立」**(即确实存在这样的组合):保留 `/* PAIR --color-text-muted ON --color-surface-hover TEXT */` 于清单中,并把 `--color-surface-hover` 保持在一个与该文字足够可见的步上,在 SUMMARY 记明这是对 UI-SPEC 的偏离及理由。若结论为「成立」(与 UI-SPEC 的记载一致):该对不进清单,`--color-surface-hover` 继续与 `--color-sunken` 共享 `--radix-gray-3`。
+    **第 0 步 —— D-16 前置核实(必须先做,结论写进 SUMMARY)。** 在 `frontend/app.js` 中穷举所有创建 `<button>` 的路径(至少覆盖 `renderVerdictCard` 的「修」/「接受现状」两处、`renderEvent`、`appendChatMessage`、以及任何 `createElement("button")` / `innerHTML` 含 `<button` 的写法),并穷举五个 muted-text 类在 `app.js` 与 `frontend/index.html` 中的全部使用点。判定:是否存在任何 muted-text 类元素落在 `<button>` 内部。把逐条 `文件:行号` 证据与结论写进 SUMMARY。**若结论为「不成立」**(即确实存在 muted-text 类元素落在 `<button>` 内部,与 UI-SPEC 04.1-N-4 / D-16 的记载相反):**停止并上报,不得自行把该对写回清单。** 本任务的全部闸门、UI-SPEC `### The manifest, verbatim` 的逐字清单、以及 `### The measured table` 都是 **43 对**(34 TEXT + 9 NON-TEXT)+ 1 ORDER;写回该对会变成 44 对,与它们全部冲突 —— 那不是执行器的裁量范围,而是与已签核事实的冲突。把逐条 `文件:行号` 证据写进 SUMMARY,并在返回中标记该冲突交由用户裁决,不要静默偏离。若结论为「成立」(与 UI-SPEC 的记载一致):该对不进清单,`--color-surface-hover` 继续与 `--color-sunken` 共享 `--radix-gray-3`。
 
     **第 1 步 —— tier-1:26 → 25 条,改名 + 换值。** 严格按 UI-SPEC `### Tier 1 — primitives` 表执行,逐字转抄 hex(不得 round、不得「顺手」调整)。具体:
     - 删除 `--black: #000000;`(L9)—— `--color-kind-done` 改指 `--radix-gray-12` 后它没有消费者,而 Hard Rule 5 禁止声明不消费的 primitive。
@@ -293,8 +293,8 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     <fails_when>两个计数不是 43 与 1</fails_when>
     <automated>comm -23 <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u) <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u)</automated>
     <fails_when>输出非空(存在引用了未声明令牌的 var())</fails_when>
-    <automated>comm -23 <(grep -o '\-\-[a-z0-9-]*:' frontend/style.css | sed 's/:$//' | sort -u) <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u)</automated>
-    <fails_when>输出非空(存在已声明但零消费者的颜色令牌 —— Hard Rule 5 禁止;`--shadow-overlay` 不在此任务落地,故此处不应有孤儿)</fails_when>
+    <automated>comm -23 <(grep -oE '^[[:space:]]*--color-[a-z0-9-]+:' frontend/style.css | tr -d ' :' | sort -u) <(grep -o 'var(--[a-z0-9-]*' frontend/style.css | sed 's/var(//' | sort -u)</automated>
+    <fails_when>输出非空(存在已声明但零消费者的 `--color-*` 令牌 —— Hard Rule 5 禁止)。范围**刻意**限定在 `--color-*` 声明:非颜色的 tier-2 令牌在本任务结束时本就还没有消费者 —— `--z-badge` 的消费者是 Task 3 的 R-1,`--shadow-overlay` 由 Task 3 与消费者同一次提交落地 —— 把整个声明集纳入会让闸门在一个正确的中间态上失败。Phase 级 `<verification>` 里的反向 comm 覆盖全部声明,那一条在所有任务之后运行</fails_when>
     <automated>awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c '#[0-9a-fA-F]\{3,6\}'</automated>
     <fails_when>计数不为 0(围栏外出现裸 hex)</fails_when>
     <automated>grep -cE '^  --(gray|green|blue|amber|red|purple)-[0-9]+:|^  --black:' frontend/style.css; grep -c -- '--color-text-inverse\|--color-surface-info-strong' frontend/style.css</automated>
@@ -309,7 +309,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     - `--color-border-strong: var(--radix-gray-9)` 逐字成立
     - 围栏外裸 hex 计数为 0;每个 `var(--x)` 都能解析到围栏内声明的 `--x`
     - `grep -c '^\.hidden {'` == 1 且 `grep -c '!important;'` == 1
-    - SUMMARY 中写有 D-16 的逐条 `文件:行号` 核实证据与结论(成立 → 该对不进清单;不成立 → 保留该对并记明偏离)
+    - SUMMARY 中写有 D-16 的逐条 `文件:行号` 核实证据与结论(成立 → 该对不进清单,清单为 43 对;不成立 → 停手上报冲突,不得自行写回该对)
     - `git diff --name-only HEAD -- frontend/app.js frontend/index.html` 输出为空
   </acceptance_criteria>
   <done>围栏的值层已整体换成 Radix 步,43 条清单在 `check-02-contrast.py` 上 `PASS: 0 failures`(含 `ORDER 0.363`),三条结构守卫仍 PASS,围栏外零裸 hex、零未解析 `var()`;D-16 已按 `app.js` 的动态渲染核实并留证。</done>
@@ -440,7 +440,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
 |-----------|----------|-----------|----------|-------------|-----------------|
 | T-idi041-01 | Tampering | `frontend/style.css` 围栏内的令牌值 | low | accept | 令牌值是仓库内静态文本,无运行时注入路径(应用不写 CSS 变量、不拼接 style 属性)。篡改者需要写权限,而写权限已经等于完全控制。不制造虚假的高危项 |
 | T-idi041-02 | Tampering | 令牌值流向 `url()` / `content:` 汇点 | none | accept | 本阶段新增的 `--shadow-overlay` 与全部 Radix hex 只流向 `background` / `color` / `border-*` / `box-shadow`;`url()` 在本文件中只出现在两处 data-URI 图标(Phase 5),`content:` 只出现在 emoji 图标(Phase 5)。本阶段**不新增任何** `url()` / `content:` 汇点,故 CSS 值注入无可达汇点 |
-| T-idi041-03 | Spoofing | tier-1 名改名为 `--radix-*` 后,围栏外可冒充 primitive | low | mitigate | D-03 的改名会让 `check-01-token-conformance.sh:37-39` 的交替式(`white\|black\|gray\|green\|blue\|amber\|red\|purple`)不再匹配 `var(--radix-…`,使 TOKEN-02 的守卫**静默空转而仍打印 PASS**。本计划以「围栏外 `comm -23` 未解析 var() 为空」+ 人工 diff 复核作为过渡证据;守卫本身的加固与变异证明在 `idi-04.1-02-PLAN.md`(同一 wave,不同文件) |
+| T-idi041-03 | Spoofing | tier-1 名改名为 `--radix-*` 后,围栏外可冒充 primitive | low | mitigate | D-03 的改名会让 `check-01-token-conformance.sh:37-39` 的交替式(`white\|black\|gray\|green\|blue\|amber\|red\|purple`)不再匹配 `var(--radix-…`,使 TOKEN-02 的守卫**静默空转而仍打印 PASS**。本计划以「围栏外 `comm -23` 未解析 var() 为空」+ 人工 diff 复核作为过渡证据;守卫本身的加固与变异证明在 `idi-04.1-02-PLAN.md`(wave 2,依赖本计划,不同文件) |
 | T-idi041-04 | Repudiation | 「渲染未变」被断言而非证明 | low | mitigate | 本计划不为值层改动主张「渲染未变」—— 它主张的是**刻意的渲染变更**(V-4…V-11 的 Delta Ledger)。逐条运行时证据由 `item_smoke` 的三条新断言给出;完整的携带项 #9 运行时清单(含 `.hint` / `#btn-authorize` / `#ai-route-select` / `#selection-menu` 等)在 `idi-04.1-03-PLAN.md` 收口 |
 | T-idi041-SC | Tampering | npm / pip / cargo 安装 | none | accept | **本阶段不安装任何包。** D-01 明确禁止 vendor Radix 的 CSS,色值以手工转抄 hex 落地;`frontend/vendor/` 必须仍只含 `marked.min.js`(硬规则 6)。故供应链面为零,无需包合法性门与人工 checkpoint |
 

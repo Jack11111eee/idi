@@ -124,9 +124,12 @@ Plans:
 **Wave 1**
 
 - [ ] idi-04.1-01-PLAN.md — 围栏值层与对比度清单的原子重写(tracer:25 个 Radix primitive / 47 个 `--color-*` / 43 对清单)+ 围栏注释 V-12 + 围栏外三处声明(R-1 / R-2 / R-3)与运行时接线证据
-- [ ] idi-04.1-02-PLAN.md — 守卫加固:CHECK-01 的 tier-1 交替式加宽到覆盖 `radix` 并做变异证明(含「旧交替式会空转」的对照证据);复证 `check-02-contrast.py` 的四条硬失败路径
 
 **Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-04.1-02-PLAN.md — 守卫加固:CHECK-01 的 tier-1 交替式加宽到覆盖 `radix` 并做变异证明(含「旧交替式会空转」的对照证据);复证 `check-02-contrast.py` 的四条硬失败路径(依赖 01 —— 复证对象是重算后的 43 对清单)
+
+**Wave 3** *(blocked on Wave 2 completion)*
 
 - [ ] idi-04.1-03-PLAN.md — UAT 断言改令牌接线(D-14)+ D-13 选择器名 / D-12 期望值修正 + `idi-04-UAT.md` 更新 + C-1 下游门引用复核 + 全量门禁收口
 

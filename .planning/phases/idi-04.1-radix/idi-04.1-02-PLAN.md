@@ -2,8 +2,9 @@
 phase: idi-04.1-radix
 plan: 02
 type: execute
-wave: 1
-depends_on: []
+wave: 2
+depends_on:
+  - idi-04.1-01
 files_modified:
   - scripts/check-01-token-conformance.sh
 autonomous: true
@@ -48,7 +49,7 @@ must_haves:
     - statement: "不得放宽或删除 CHECK-01 的任何断言来「让守卫通过」—— 裸 hex 半场、围栏成对断言、tier-1 泄漏半场三者都必须保留且必须仍会失败"
       status: active
       verification: flagged
-    - statement: "不得在真实 `frontend/style.css` 上做变异测试 —— 同 wave 的 `idi-04.1-01-PLAN.md` 正在编辑该文件。全部变异必须在临时副本上进行,仓库工作树在变异前后逐字节一致"
+    - statement: "不得在真实 `frontend/style.css` 上做变异测试 —— 它是本阶段已提交的交付物(Plan 01 落地),污染它等于污染被验证的对象。全部变异必须在临时副本上进行,仓库工作树在变异前后逐字节一致"
       status: active
       verification: flagged
     - statement: "不得改动 `scripts/check-02-contrast.py` 的任何守卫逻辑 —— 本阶段它在代码层的期望 delta 为零或近零(它读的清单在 `style.css` 里,不在这里)"
@@ -69,7 +70,9 @@ Purpose: `scripts/check-01-token-conformance.sh:37-39` 用 `grep -oE 'var\(--(wh
 
 Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条守卫的变异测试证据(含「旧交替式会空转」的对照证据)写入 SUMMARY;`check-02-contrast.py` 四条硬失败路径在 43 对清单上的复证。
 
-**为什么这是本 wave 的独立计划而不是 Plan 01 的一个任务:** `scripts/` 不在 CONTEXT.md 命名的改动集里(它只列了 `check-02-contrast.py` 与 `check-05-ui-uat.py`),所以这是一处**真实的范围问题**,不是机械编辑。它与 Plan 01 的 `frontend/style.css` 零文件重叠,故可同 wave 并行;变异测试全部在临时副本上进行,不会碰到 Plan 01 正在编辑的文件。
+**为什么这是独立计划而不是 Plan 01 的一个任务:** `scripts/` 不在 CONTEXT.md 命名的改动集里(它只列了 `check-02-contrast.py` 与 `check-05-ui-uat.py`),所以这是一处**真实的范围问题**,不是机械编辑。
+
+**为什么它在 wave 2、依赖 `idi-04.1-01`:** 本计划的 Task 2 复证的是 **Plan 01 重算之后**那份清单 —— 它的正向基线要求末行 `PASS: 0 failures`、它的变异目标是重算后的 43 条 `/* PAIR */` 与那条 `/* ORDER --color-text-muted BEFORE --color-text ON --color-surface */`。在 HEAD 上这些前提都不成立(HEAD 的清单是 34 对、ORDER 落在 `--gray-25` 上、且 `check-02-contrast.py` 在 HEAD 打印 `FAIL: 14 failures`),所以本计划的闸门在 HEAD 上会因**与被测守卫无关的原因**失败。声明这条边之后,Task 2 的变异与基线都在「Plan 01 已落地」的世界里运行,断言才真的在测那条守卫。**全部变异仍在 `mktemp -d` 临时仓库根上进行** —— 真实 `frontend/style.css` 现在是本阶段已提交的交付物,污染它等于污染被验证的对象。
 
 **本计划关闭 vs 沿用:** **关闭** CHECK-01 在 D-03 改名后失效的那一半(守卫加固 + 变异证明);**沿用/复证** TOKEN-02、CHECK-03、CHECK-04。
 </objective>
@@ -109,7 +112,7 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
 
     **在 L35-L36 的既有注释里补一句说明**为什么 `radix` 在交替式里:改名前 tier-1 名是 `--gray-*` 形态,改名后是 `--radix-<family>-<step>` 形态,旧的交替式对后者不匹配,守卫会**静默空转而仍打印 PASS**;`radix` 分支正是让这条硬不变量继续可机械查的东西。注释语言沿用文件现有的英文风格。
 
-    **变异测试(必须做,且必须在临时副本上做 —— 同 wave 的 Plan 01 正在编辑 `frontend/style.css`)。** 构造一个临时仓库根,只放守卫需要的两个路径,然后注入三种变异、每次单独跑:
+    **变异测试(必须做,且必须在临时副本上做 —— 真实 `frontend/style.css` 是本阶段已提交的交付物,不得被变异污染)。** 构造一个临时仓库根,只放守卫需要的两个路径,然后注入三种变异、每次单独跑:
 
     1. **tier-1 泄漏变异**:在临时副本的 `frontend/style.css` 末尾(围栏 END 之后)追加一行 `.leak { color: var(--radix-gray-11); }`。跑**新**守卫 → 必须非零退出并打印 `FAIL: 1 tier-1 primitive reference(s) outside the fence`。
     2. **空转对照**:用 `sed 's/|radix//' scripts/check-01-token-conformance.sh` 从新守卫重建一份**旧交替式**守卫,对同一份被注入泄漏的样式表跑它 → 必须打印 `PASS` 且退出码 0。这条对照证据是本次修复的全部理由,必须写进 SUMMARY。
@@ -161,29 +164,31 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
     - `frontend/style.css` 围栏内 Task 1(Plan 01)写入的 43 条 `/* PAIR */` + 1 条 `/* ORDER */`
   </read_first>
   <action>
-    **本任务对 `scripts/check-02-contrast.py` 的期望代码 delta 是零。** 它的职责是复证:在清单从 34 对重算为 43 对之后,它的四条硬失败路径**仍然各自可失败**——一条「永远返回 0」的守卫与没有守卫等价。
+    **本任务对 `scripts/check-02-contrast.py` 的期望代码 delta 是零。** 它的职责是复证:在清单从 34 对重算为 43 对之后,它的四条硬失败路径**仍然各自可失败**——一条「永远返回 0」的守卫与没有守卫等价。本计划依赖 `idi-04.1-01`,故本任务运行时清单必已是 43 对(34 TEXT + 9 NON-TEXT)+ 1 ORDER。
 
-    全部变异在**临时仓库根**上做(脚本的 `CSS_PATH = "frontend/style.css"` 是相对路径,从 cwd 解析,所以把脚本放到 `<tmp>/scripts/`、样式表放到 `<tmp>/frontend/`、在 `<tmp>` 里跑即可)。**绝不在真实 `frontend/style.css` 上做变异**(同 wave 的 Plan 01 正在编辑它)。
+    全部变异在**临时仓库根**上做(脚本的 `CSS_PATH = "frontend/style.css"` 是相对路径,从 cwd 解析,所以把脚本放到 `<tmp>/scripts/`、样式表放到 `<tmp>/frontend/`、在 `<tmp>` 里跑即可)。**绝不在真实 `frontend/style.css` 上做变异**(它是本阶段已提交的交付物)。
+
+    **变异命令的平台纪律(承重):** 本机是 darwin,**BSD `sed` 不支持 `0,/re/` 地址**(实测:对两行样本跑 `sed '0,/PAIR/s//X/'`,`diff` 为 0 行,即静默不替换)。用 `0,` 地址的变异会让样式表**逐字节不变**,于是被测守卫在未被变异的世界里打印 `PASS`、退出码 0,而闸门自身的 `<fails_when>` 触发 —— 变异测试变成空转。故本任务的全部变异一律用 **`awk` 或普通 `sed -E`** 完成,且**不写死任何具体令牌名或具体清单条目**:变异的目标由「第一条 `/* PAIR */` 条目」「ORDER 行的两个操作数」这类结构性位置确定,故与清单的规模/内容无关。
 
     四条变异,各自单独跑并记录逐字输出与退出码:
 
-    1. **未声明令牌名**:在临时样式表的清单块里把某一条 `/* PAIR --color-text ON --color-surface TEXT */` 的**前景**名改成一个未声明的名字(例如 `--color-text-typo`)。期望:打印 `FAIL: unknown token --color-text-typo` 并以退出码 1 结束 —— 即清单与令牌块无法漂移。
-    2. **标记数不匹配**:在清单块里插入一行 `/* PAIR --color-text ON --color-surface TEXT`(**故意不闭合** `*/`)。期望:打印 `FAIL: 43 '/* PAIR' markers but only 42 parsed — malformed manifest entry`(计数以实际数字为准)并以退出码 1 结束 —— 即「条目被静默丢弃」不可能发生。
-    3. **覆盖率下限**:把清单块删到只剩 10 条 `/* PAIR */`。期望:打印 `FAIL: manifest coverage 10 pairs (...) below floor 24/20/4` 并以退出码 1 结束 —— 即截断的清单不会「trivially 0 failures」。
-    4. **ORDER 反转**:把 `/* ORDER --color-text-muted BEFORE --color-text ON --color-surface */` 的两个操作数对调(改成 `--color-text BEFORE --color-text-muted`)。期望:打印以 `FAIL: hierarchy inverted` 开头的行并以退出码 1 结束 —— 即层级断言不是恒真。
+    1. **未声明令牌名**:用 `awk` 把**第一条** `/* PAIR ... */` 条目的**前景**名改成一个未声明的名字(`awk '/^[[:space:]]*\/\* PAIR / && !d { sub(/--[a-z0-9-]+/, "--color-text-typo"); d=1 } { print }'`)。期望:打印 `FAIL: unknown token --color-text-typo` 并以退出码 1 结束 —— 即清单与令牌块无法漂移。
+    2. **标记数不匹配**:用 `awk` 在**第一条** `/* PAIR ... */` 条目之后插入一行 `  /* PAIR --color-text ON --color-surface TEXT`(**故意不闭合** `*/`),使 raw 标记数比可解析条目多 1。期望:打印 `FAIL: 44 '/* PAIR' markers but only 43 parsed — malformed manifest entry`(两个数字以当时的实际值为准)并以退出码 1 结束 —— 即「条目被静默丢弃」不可能发生。
+    3. **覆盖率下限**:用 `awk` 只保留前 10 条 `/* PAIR */` 条目、丢弃其余。期望:打印 `FAIL: manifest coverage 10 pairs (...) below floor 24/20/4` 并以退出码 1 结束 —— 即截断的清单不会「trivially 0 failures」。
+    4. **ORDER 反转**:用 `sed -E` 的通配捕获把 ORDER 行的两个操作数对调(`sed -E 's#(/\* ORDER )([^ ]+) BEFORE ([^ ]+)#\1\3 BEFORE \2#'`),不写死令牌名。期望:打印以 `FAIL: hierarchy inverted` 开头的行并以退出码 1 结束 —— 即层级断言不是恒真。
 
-    另跑一条**正向基线**:在临时副本上不做任何变异,期望末行 `PASS: 0 failures` 且退出码 0(若 Plan 01 尚未落地,则如实记录当时的清单规模与结果,不得把「尚未落地」写成失败)。
+    另跑一条**正向基线**:在临时副本上不做任何变异,期望末行 `PASS: 0 failures` 且退出码 0 —— 这条基线之所以成立,正是因为本计划依赖 Plan 01(在 HEAD 上同一命令打印 `FAIL: 14 failures`)。它是四条变异有意义的前提:同一个未变异的输入上守卫必须绿,变异才是在测那条守卫。
 
     把五条运行的命令与逐字输出写进 SUMMARY,并写明 `scripts/check-02-contrast.py` 的代码 delta 为 0。
   </action>
   <verify>
-    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && sed '0,/PAIR --color-text ON/s//PAIR --color-text-typo ON/' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
+    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && awk '/^[[:space:]]*\/\* PAIR / && !d { sub(/--[a-z0-9-]+/, "--color-text-typo"); d=1 } { print }' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
     <fails_when>输出不含 `FAIL: unknown token`,或 `exit=0`(未声明名不再大声失败)</fails_when>
-    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && sed '0,/^  \/\* PAIR /s//  \/* PAIR /' frontend/style.css | sed '0,/^  \/\* PAIR --color-text ON --color-surface TEXT \*\//s//  \/* PAIR --color-text ON --color-surface TEXT/' > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
+    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && awk '{ print } /^[[:space:]]*\/\* PAIR / && !d { print "  /* PAIR --color-text ON --color-surface TEXT"; d=1 }' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
     <fails_when>输出不含 `markers but only`,或 `exit=0`(标记数与解析数不再比对)</fails_when>
-    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && awk '!/^  \/\* PAIR / || n++ < 10' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
+    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && awk '/^[[:space:]]*\/\* PAIR / { n++; if (n > 10) next } { print }' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
     <fails_when>输出不含 `below floor 24/20/4`,或 `exit=0`(覆盖率下限失效,截断的清单会 trivially 通过)</fails_when>
-    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && sed 's/ORDER --color-text-muted BEFORE --color-text ON/ORDER --color-text BEFORE --color-text-muted ON/' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
+    <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && sed -E 's#(/\* ORDER )([^ ]+) BEFORE ([^ ]+)#\1\3 BEFORE \2#' frontend/style.css > "$tmp/frontend/style.css" && (cd "$tmp" && python3 scripts/check-02-contrast.py); echo "exit=$?"</automated>
     <fails_when>输出不含 `hierarchy inverted`,或 `exit=0`(ORDER 断言恒真)</fails_when>
     <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && cp frontend/style.css "$tmp/frontend/" && (cd "$tmp" && python3 scripts/check-02-contrast.py | tail -1); echo "exit=$?"</automated>
     <fails_when>末行不是 `PASS: 0 failures`,或 `exit` 不为 0(正向基线不成立)</fails_when>
@@ -217,7 +222,7 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
 | Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
 |-----------|----------|-----------|----------|-------------|-----------------|
 | T-idi041-05 | Tampering | `scripts/check-01-token-conformance.sh` 的 tier-1 交替式 | medium | mitigate | D-03 改名后旧交替式不再匹配 `var(--radix-…`,使 TOKEN-02 的硬不变量**静默空转而 CHECK-01 仍打印 PASS**。本计划加宽交替式到含 `radix`,并以变异测试证明「有泄漏时会 FAIL、旧交替式会 PASS」——空转被实证而非被假设 |
-| T-idi041-06 | Tampering | 变异测试误改真实工作树 | medium | mitigate | 全部变异在 `mktemp -d` 临时仓库根上进行(脚本以 `$(dirname $0)/..` 定位根、以相对 `CSS_PATH` 解析样式表,故临时根可行);每个任务末尾以 `git status --porcelain` 断言工作树无多余改动。**不在真实 `frontend/style.css` 上变异** —— 同 wave 的 Plan 01 正在编辑它 |
+| T-idi041-06 | Tampering | 变异测试误改真实工作树 | medium | mitigate | 全部变异在 `mktemp -d` 临时仓库根上进行(脚本以 `$(dirname $0)/..` 定位根、以相对 `CSS_PATH` 解析样式表,故临时根可行);每个任务末尾以 `git status --porcelain` 断言工作树无多余改动。**不在真实 `frontend/style.css` 上变异** —— 它是 Plan 01 已提交的本阶段交付物 |
 | T-idi041-07 | Repudiation | 守卫被断言为「有效」而非被证明 | medium | mitigate | 每条守卫断言都配一条变异运行;「旧交替式打印 PASS」的对照证据是修复理由的直接证明,写进 SUMMARY。这正是本项目已记录的教训(变异测试是唯一能证明守卫真的会失败的手段) |
 | T-idi041-08 | Information disclosure | 守卫脚本读取的内容 | none | accept | 两个脚本只读仓库内的 `frontend/style.css`,不含任何凭据、网络调用或用户数据 |
 | T-idi041-SC | Tampering | npm / pip / cargo 安装 | none | accept | **本阶段不安装任何包**,且硬规则 6 要求两个守卫零依赖(`check-01` 只用 bash 内建 + `grep`/`awk`/`wc`/`printf`;`check-02` 只 `import re, sys`)。故供应链面为零 |

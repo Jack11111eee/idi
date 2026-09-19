@@ -4,7 +4,45 @@
 
 /* ===== DESIGN TOKENS: START ===== */
 :root {
-  /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence. */
+  /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence.
+
+     Name ↔ step mapping (D-03 / V-12), written down so an upstream Radix update
+     can be synced mechanically. Family choice (D-07): the Radix family closest
+     in hue to the value it replaces — neutral→gray, blue→blue, green→green,
+     amber→amber, red→red, purple→violet. The AA guarantee comes from the STEP,
+     never from the family, so no hue had to be sacrificed for contrast.
+
+       --white            family: none   step: —    (the light scales are 1-12
+                          and none of them is white; its name does not lie)
+       --radix-gray-1     family: gray   step: 1    band 1-2
+       --radix-gray-2     family: gray   step: 2    band 1-2
+       --radix-gray-3     family: gray   step: 3    band 3-5
+       --radix-gray-4     family: gray   step: 4    band 3-5
+       --radix-gray-6     family: gray   step: 6    band 6-8
+       --radix-gray-7     family: gray   step: 7    band 6-8
+       --radix-gray-9     family: gray   step: 9    band 9-10  (forced — see below)
+       --radix-gray-11    family: gray   step: 11   band 11-12
+       --radix-gray-12    family: gray   step: 12   band 11-12
+       --radix-blue-2     family: blue   step: 2    band 1-2
+       --radix-blue-11    family: blue   step: 11   band 11-12
+       --radix-green-3    family: green  step: 3    band 3-5
+       --radix-green-11   family: green  step: 11   band 11-12
+       --radix-green-12   family: green  step: 12   band 11-12 (forced — see below)
+       --radix-amber-1    family: amber  step: 1    band 1-2
+       --radix-amber-2    family: amber  step: 2    band 1-2
+       --radix-amber-3    family: amber  step: 3    band 3-5
+       --radix-amber-6    family: amber  step: 6    band 6-8
+       --radix-amber-11   family: amber  step: 11   band 11-12
+       --radix-amber-12   family: amber  step: 12   band 11-12 (forced — see below)
+       --radix-red-2      family: red    step: 2    band 1-2
+       --radix-red-7      family: red    step: 7    band 6-8
+       --radix-red-11     family: red    step: 11   band 11-12
+       --radix-violet-11  family: violet step: 11   band 11-12
+
+     Only the steps a tier-2 token consumes in this same commit are declared
+     (D-04 / Hard Rule 5 — never declare a token you are not consuming), so the
+     1-12 scale is deliberately incomplete; Phase 5 declares the 9/10 fill steps
+     together with their consumers. */
   --white: #ffffff;
   --radix-gray-1: #fcfcfc;
   --radix-gray-2: #f9f9f9;
@@ -30,6 +68,51 @@
   --radix-red-7: #f4a9aa;
   --radix-red-11: #ce2c31;
   --radix-violet-11: #6550b9;
+
+  /* Role bands (D-09) — a working assumption, and the four places it fails.
+
+     Radix's 12 steps are read as: 1-2 ground / 3-5 component surface / 6-8
+     border / 9-10 solid fill / 11-12 text. Two of those bands survive
+     measurement intact (1-2 and 3-5). Four do not, on THIS project's real
+     background combinations — the arithmetic wins and each override is
+     recorded here with its numbers (scripts/check-02-contrast.py is the
+     arbiter; Radix's own AA documentation is deliberately not adopted):
+
+       · solid fill band 9-10 → step 11 for every fill that carries white text.
+         White on 9/10 fails 4.5:1 in every family: blue-9 3.26, blue-10 3.63,
+         green-9 3.16, green-10 3.55, red-10 4.37, amber-9 1.58. Step 11 is in
+         each case the LIGHTEST step that passes — blue 4.77, green 4.72,
+         red 5.21, amber 4.61, gray 5.92 — i.e. the signed-off "lightest passing
+         value" rule applied to fills instead of to text.
+
+       · border band 6-8 → step 9 for --color-border-strong. Nothing in 6-8
+         clears SC 1.4.11's 3:1 on any surface: gray-6 1.34, gray-7 1.49,
+         gray-8 1.82 on --color-surface. This border is the control boundary —
+         the only thing identifying a text input's edge — so it has to leave the
+         band. gray-9 = 3.24 / 3.15, which restores the intent signed off as S-3
+         (#8a8a8a, 3.45:1) in Radix terms rather than re-deciding it. The other
+         three borders stay in band 6-8: they are decorative, and SC 1.4.11 does
+         not apply to a border that identifies nothing.
+
+       · text band 11-12 → step 12 for the three green -fg tokens. Step 11 is AA
+         on step-1/2 grounds but not on step-3 grounds: green-11 on green-3 =
+         4.21 and FAILS. Only green-1 (4.65) would pass, and green-1 is
+         near-white — it would erase the routine buttons' green tint entirely.
+         green-12 on green-3 = 11.00.
+
+       · text band 11-12 → step 12 for --color-action-warning. amber-11 fails as
+         text on amber-2 (4.43), on amber-3 (4.25), and misses even on gray-1
+         (4.49). D-08's mechanism — lighten the ground — cannot rescue it: the
+         amber grounds would have to become amber-1, which would make `mark`
+         (the "highlighted = has annotation" affordance) and #stream-banner
+         effectively white and delete the affordance. amber-12 = 10.93 / 11.19 /
+         10.47; the amber hue identity is carried by the amber-1/2/3 grounds and
+         by amber-6 on the decorative container border.
+
+     D-08 governs the two text overrides: when step 11 fails on some ground,
+     move the GROUND to a lighter step and keep the muted = 11 / body = 12
+     same-family hierarchy — do NOT promote muted to step 12. That is why the
+     grounds moved step and the text steps did not. */
 
   /* Tier 2 — semantic. The only names any selector outside the fence may reference. */
   --color-text: var(--radix-gray-12);
@@ -148,6 +231,28 @@
   --z-overlay: 100;
   --z-selection-menu: 200;
 
+  /* Three values that must NOT be "helpfully" changed back.
+
+     1. --color-text-muted stays --radix-gray-11 (step 11). Step 10 measures
+        3.79 on --color-surface and FAILS AA; step 12 is occupied by body text.
+        The ordering residual 0.363 below is therefore forced by the scale, not
+        a lapse of judgement (04.1-N-1). Darkening muted "to restore the
+        hierarchy" is the N-1 trap from 04-UI-SPEC wearing new clothes — it
+        would break the AA pair it was meant to improve.
+
+     2. --color-text-info on --color-surface-info measures 4.53 — a 0.03 margin.
+        It is the LIGHTEST passing combination (04.1-N-3). The tempting "safer"
+        moves are both wrong: blue-12 would abandon the lightest-passing rule and
+        turn the state badge's foreground dark navy, and moving the ground to
+        blue-3 drops the ratio to 4.25 and fails. 4.53 passes the closed-interval
+        rule; do not round it up to feel safer.
+
+     3. --color-surface-hover and --color-surface-sunken deliberately share
+        --radix-gray-3 (04.1-N-4). gray-3 is the canonical next step above the
+        default component surface (gray-2), which is what makes button:hover
+        perceptible; gray-4 would double the hover delta and collide with
+        --color-surface-user. */
+
   /* ---- Contrast pair manifest (CHECK-02) -----------------------------------
      Every entry below names two tokens declared in this fence. The checker
      scripts/check-02-contrast.py reads this manifest and fails loudly on a name
@@ -158,7 +263,14 @@
      Token names only — never hex.
      Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
      combination that actually renders. Decorative separators are deliberately
-     absent — SC 1.4.11 does not apply to a border that identifies nothing. */
+     absent — SC 1.4.11 does not apply to a border that identifies nothing.
+     Manifest size across three value layers (D-15): 24 / 34 / 43 — ROADMAP
+     Phase 4 wrote 24 pairs (20 text + 4 non-text); the disk state Phase 4
+     actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; this
+     rewrite re-enumerates 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry.
+     The three numbers are not drift: the contract is "enumerate the combinations
+     that actually render", and each successive value layer changes which
+     combinations occur. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */

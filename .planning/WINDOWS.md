@@ -2,9 +2,9 @@
 schema_version: 1
 open_count: 5
 waived_count: 3
-fixed_count: 5
-total_count: 13
-last_updated: 2026-09-18T17:09:50.180Z
+fixed_count: 6
+total_count: 14
+last_updated: 2026-09-19T13:10:43.199Z
 ---
 
 # Broken Windows Ledger
@@ -28,6 +28,7 @@ last_updated: 2026-09-18T17:09:50.180Z
 | 11 | 260919-0h3 | unmet-truth | .planning/phases/idi-04-tokens-contract/idi-04-UAT.md |  | UAT 第 3/4/5 项 fail(7+9+4 条 FAIL 断言):期望值定稿于 0c658aa,被 448686b 令牌值层换肤作废;待裁:更新期望值或回退令牌值 | open |  | 2026-09-18T17:09:49.959Z |  |
 | 12 | 260919-0h3 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-UAT.md |  | UAT 第 4 项 #doc-pane 选择器不存在(index.html 实际为 #doc-panel-body),该格如实记 blocked | open |  | 2026-09-18T17:09:50.074Z |  |
 | 13 | 260919-0h3 | deviation | scripts/check-05-ui-uat.py |  | 浏览器由 channel=chrome 改为 Playwright 自带 chromium:计划的两条理由均失效(1243 已缓存;x86_64 venv 下 chrome 无头走 Rosetta 会 CDP 挂死) | open |  | 2026-09-18T17:09:50.180Z |  |
+| 14 | 04.1 | deviation | frontend/style.css |  | Rule 2 自动修正:--shadow-overlay 紧邻的分节注释原文写 'the single shadow token',Task 3 新增第二个 shadow 令牌后成为假陈述;已在 Task 3 内改为 'the shadow tokens' 并与声明同提交落地 (00c6073) | fixed |  | 2026-09-19T13:08:41.612Z | 2026-09-19T13:10:43.199Z |
 
 ````json
 [
@@ -186,6 +187,18 @@ last_updated: 2026-09-18T17:09:50.180Z
     "reason": "",
     "recorded_at": "2026-09-18T17:09:50.180Z",
     "resolved_at": null
+  },
+  {
+    "id": 14,
+    "kind": "deviation",
+    "phase": "04.1",
+    "file": "frontend/style.css",
+    "line": null,
+    "description": "Rule 2 自动修正:--shadow-overlay 紧邻的分节注释原文写 'the single shadow token',Task 3 新增第二个 shadow 令牌后成为假陈述;已在 Task 3 内改为 'the shadow tokens' 并与声明同提交落地 (00c6073)",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-09-19T13:08:41.612Z",
+    "resolved_at": "2026-09-19T13:10:43.199Z"
   }
 ]
 ````

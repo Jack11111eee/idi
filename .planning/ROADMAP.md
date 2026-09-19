@@ -116,13 +116,19 @@ Plans:
 **Goal:** 把颜色族从手调 hex 换成 Radix Colors 的 12 步语义刻度(1-2 底 / 3-5 组件底 / 6-8 边框 / 9-10 实心填充 / 11-12 文字),并据此重算 UI-SPEC 令牌清单与 CHECK-02 的 34 对对比度配对。
 **非紧急插入**:这是 Phase 4 **值层**的刻意重写(结构产出——围栏 `:root`、75 个令牌、四条守卫命令——不动),同时吸收 idi-04 UAT 的 3 项 FAIL 与 `--color-text-muted` 3.23:1 的 AA 倒退。
 **不含暗色模式**(与 v1.14 的已记录排除项一致);**不改** S-1 间距 12 档与 S-2 的 14px 一级字号档。
-**Requirements**: TBD
+**Requirements**: TOKEN-01, TOKEN-02, TOKEN-04, TOKEN-07, CHECK-01, CHECK-02, CHECK-03, CHECK-04, A11Y-04, A11Y-04b(全部是 Phase 4 已列需求 —— 04.1 是它们的**值层重写**,不新增需求。口径:本阶段**实质关闭** A11Y-04 / A11Y-04b / CHECK-02 / TOKEN-07 / CHECK-01(AA 倒退、`.tier-desc` 的 opacity 越轨、43 对清单重算、z-index 序断言重新有消费者、D-03 改名后空转的 tier-1 守卫);**沿用并复证** TOKEN-01 / TOKEN-02 / TOKEN-04 / CHECK-03 / CHECK-04。**不触碰** TOKEN-03 / TOKEN-05 / TOKEN-06 / TOKEN-08)
 **Depends on:** Phase 4
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
+**Wave 1**
 
-- [ ] TBD (run /gsd-plan-phase 04.1 to break down)
+- [ ] idi-04.1-01-PLAN.md — 围栏值层与对比度清单的原子重写(tracer:25 个 Radix primitive / 47 个 `--color-*` / 43 对清单)+ 围栏注释 V-12 + 围栏外三处声明(R-1 / R-2 / R-3)与运行时接线证据
+- [ ] idi-04.1-02-PLAN.md — 守卫加固:CHECK-01 的 tier-1 交替式加宽到覆盖 `radix` 并做变异证明(含「旧交替式会空转」的对照证据);复证 `check-02-contrast.py` 的四条硬失败路径
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-04.1-03-PLAN.md — UAT 断言改令牌接线(D-14)+ D-13 选择器名 / D-12 期望值修正 + `idi-04-UAT.md` 更新 + C-1 下游门引用复核 + 全量门禁收口
 
 **UI hint**: yes
 

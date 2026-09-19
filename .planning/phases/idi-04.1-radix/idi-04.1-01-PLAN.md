@@ -252,7 +252,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     - `.planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md` `### The role bands, and the three places the arithmetic overrides them` 与 `### The four computed results a naive Radix port gets wrong` —— 四步越轨的算术依据
     - `.planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md` `### opacity rulings` —— `.tier-desc` 与 8 处 `:disabled` 的裁定
     - `.planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md` `## Carry-Forward Obligations` 第 1/2/3/4 条 —— 清单替换、`PASS: 0 failures`、CHECK-01 仍为 0、hex 逐字转抄
-    - `.planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md` D-02 / D-03 / D-04 / D-06…D-09 / D-15 / D-16
+    - `.planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md` D-02 / D-03 / D-04 / D-06 / D-07 / D-08 / D-09 / D-15 / D-16(逐条展开,不用 `…` 省略号 —— 决策覆盖门按 `D-NN` 字面 token 扫描,`D-06…D-09` 只会被读成 D-06 与 D-09 两条)
     - `scripts/check-02-contrast.py` —— 解析契约:`DECL_RE` / `PAIR_RE` / `ORDER_RE` / `VAR_RE`、未声明名 `sys.exit(1)`、raw `/* PAIR` 标记数必须等于解析数、覆盖率下限 24/20/4、闭区间比较
     - `frontend/app.js` —— **D-16 的核实对象**:所有动态构建 `<button>` 的路径(重点 `renderVerdictCard`,约 `app.js:709-713`)与所有 muted-text 类(`.hint` / `.badge-answered` / `.annotation-note` / `.annotation-answer-body` / `.verdict-suggestion`)的使用点
   </read_first>
@@ -330,9 +330,9 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
   <action>
     重写围栏内**块级注释**(不改任何声明、不改清单条目、不改围栏标记):
 
-    1. **名↔步映射表。** 在 tier-1 区块上方写一段注释,给出「旧名 → `--radix-<family>-<step>` → 语义步带」的对照,使上游 Radix 更新时可机械同步(D-03 明写「映射关系靠围栏内注释记录」)。必须让 25 条 primitive 的族与步都可从注释中读出。
+    1. **名↔步映射表。** 在 tier-1 区块上方写一段注释,给出「旧名 → `--radix-<family>-<step>` → 语义步带」的对照,使上游 Radix 更新时可机械同步(D-03 明写「映射关系靠围栏内注释记录」)。**本段注释同时是 D-07 的落点** —— D-07 要求「逐族取与现有色相最接近的 Radix 族」的族-步对应写进围栏注释,故注释须让每个强调族的**族名**与**步号**都可读出(如 `amber → --radix-amber-12`),而不只是给出 `--radix-*` 名本身。必须让 25 条 primitive 的族与步都可从注释中读出。
 
-    2. **12 步语义与四处越轨。** 写一段注释说明 D-09 的角色步带(1-2 底 / 3-5 组件底 / 6-8 边框 / 9-10 实心填充 / 11-12 文字)是**工作假设**,并逐条记录它在**本项目的真实背景组合**上失效的四处:实心填充的每个载白字的填充面移到**第 11 步**(9/10 步在各族都过不了白字 4.5:1:blue-9 3.26 / blue-10 3.63 / green-9 3.16 / green-10 3.55 / red-10 4.37 / amber-9 1.58;第 11 步是各族**最浅的通过值**);`--color-border-strong` 移到**第 9 步**(6-8 步在 `--color-surface` 上最好也只有 gray-8 1.82,过不了 SC 1.4.11 的 3:1);三个绿色 `-fg` 移到**第 12 步**(green-11 在 green-3 上 4.21 ✗);`--color-action-warning` 移到**第 12 步**(amber-11 在 amber-2 上 4.43 ✗、在 gray-1 上 4.49 ✗)。
+    2. **12 步语义与四处越轨。** 写一段注释说明 D-09 的角色步带(1-2 底 / 3-5 组件底 / 6-8 边框 / 9-10 实心填充 / 11-12 文字)是**工作假设**,并逐条记录它在**本项目的真实背景组合**上失效的四处。**D-08 的规则正是这四处越轨的判据** —— 第 11 步在某背景上过不了 4.5:1 时**换背景步**、保住 muted = 11 / 正文 = 12 的同族层级结构,而不是把 muted 提到 12 步;注释须点明这一点,否则「为什么底换了步而文字没换」不可读。四处越轨:实心填充的每个载白字的填充面移到**第 11 步**(9/10 步在各族都过不了白字 4.5:1:blue-9 3.26 / blue-10 3.63 / green-9 3.16 / green-10 3.55 / red-10 4.37 / amber-9 1.58;第 11 步是各族**最浅的通过值**);`--color-border-strong` 移到**第 9 步**(6-8 步在 `--color-surface` 上最好也只有 gray-8 1.82,过不了 SC 1.4.11 的 3:1);三个绿色 `-fg` 移到**第 12 步**(green-11 在 green-3 上 4.21 ✗);`--color-action-warning` 移到**第 12 步**(amber-11 在 amber-2 上 4.43 ✗、在 gray-1 上 4.49 ✗)。
 
     3. **D-15 的三数差异。** 在清单块头注释里补一句说明:ROADMAP Phase 4 写 24 对、Phase 4 落地时磁盘上是 34 对、本阶段重算后是 43 对(34 TEXT + 9 NON-TEXT)+ 1 ORDER;差异来源是「清单枚举**真实发生**的组合」这条契约在三代值层上各算了一次,不是漂移。
 

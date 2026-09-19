@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 04
-current_phase_name: tokens-contract
+current_phase: "04.1"
+current_phase_name: radix
 status: executing
 stopped_at: Phase 04.1 UI-SPEC approved (7/7 dimensions, S-5/S-6 signed off, FLAG corrected)
-last_updated: "2026-09-19T09:20:05.063Z"
+last_updated: "2026-09-19T12:21:23.729Z"
 last_activity: 2026-09-19
 last_activity_desc: "Quick task 260919-1w1 — `#session-panel` 在阶段 3+ 隐藏(applySessionGates 单点切换);D1/D2/发送按钮不可点三症状同源修复,harness 加五态显隐守卫(RED→GREEN 实证)"
-state_head: b2f67cfa71a809cb54bef340ebd760aabf3b3fdf
+state_head: ba85183d2e394a928d3728dca449d4215a2fe89e
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 3
+  total_plans: 6
   completed_plans: 3
   percent: 0
 ---
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 
 ## Current Position
 
-Phase: idi-04 (tokens-contract) — PLANS COMPLETE
+Phase: idi-04.1 (radix) — READY TO EXECUTE
 Plan: 3 of 3
 Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
 Last activity: 2026-09-19 — Completed quick task 260919-1w1: `#session-panel` 阶段 3+ 隐藏(D1/D2/发送按钮不可点 三症状同源修复)

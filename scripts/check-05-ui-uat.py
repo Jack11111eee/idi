@@ -262,6 +262,19 @@ def resolve_color(page, token):
     )
 
 
+def resolve_token(page, name):
+    """把任意令牌解析成它的运行时值(字符串)——
+    与 resolve_color 并列:后者只能解析颜色,而 --z-badge 是数字、--shadow-*
+    是多段阴影,探针 color 读不出它们。"""
+    return page.evaluate(
+        """(t) => {
+            const v = getComputedStyle(document.documentElement).getPropertyValue(t);
+            return v ? v.trim() : null;
+        }""",
+        name,
+    )
+
+
 def effective_bg(page, selector):
     """沿祖先链找到第一个非透明 background-color(元素自身优先)。"""
     return page.evaluate(
@@ -924,6 +937,17 @@ def item_smoke(page, tmp_root):
        color_token, read_style(page, "#state-badge", "color"))
     ok(item, "smoke #state-badge background == var(--color-surface-info)",
        bg_token, read_style(page, "#state-badge", "background-color"))
+    # 令牌接线(R-1 / R-2 / R-3):围栏外三处声明必须真的接上围栏内的令牌。
+    # 判据取「消费者 computed 值 == 令牌运行时值」,值层再改也不产生假 FAIL。
+    z_token = resolve_token(page, "--z-badge")
+    info("smoke 令牌解析", f"--z-badge={z_token}")
+    ok(item, "smoke #state-badge z-index == var(--z-badge)",
+       z_token, read_style(page, "#state-badge", "z-index"))
+    shadow = read_style(page, ".overlay-card", "box-shadow")
+    ok_contains(item, "smoke .overlay-card box-shadow 接上 var(--shadow-overlay)",
+                "0.2", shadow, "needle 只用短串 0.2,不复用 item3 的完整 rgba 字面")
+    ok(item, "smoke .tier-desc opacity == 1(R-3 已删除 opacity: 0.9)",
+       "1", read_style(page, ".tier-desc", "opacity"))
     # 透明记录:UAT/PLAN 里写的字面值 rgb(31,99,189) 是 260918-qrq 换肤前的 --blue-700;
     # 该字面值由 UAT 第 3 项逐字断言,故此处只作 INFO,不参与本切片的判定。
     info("smoke UAT 字面值对照",

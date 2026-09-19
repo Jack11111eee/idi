@@ -169,9 +169,12 @@
   --color-border-streaming: var(--radix-blue-11);
   --color-text-info: var(--radix-blue-11);
 
-  /* Tier 2 — overlay backdrop and the single shadow token (composer, three layers) */
+  /* Tier 2 — overlay backdrop and the shadow tokens (composer: three layers;
+     overlay: the modal card's elevation, restored by R-2 so that no bare
+     rgba() appears outside the fence). */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.45);
   --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
+  --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
 
   /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
@@ -540,6 +543,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   padding: var(--space-6) var(--space-8);
   max-width: 420px;
   text-align: center;
+  box-shadow: var(--shadow-overlay);
 }
 .overlay-card h3 { margin-top: 0; font-size: var(--text-xl); }
 .overlay-card p { color: var(--color-text-secondary); font-size: var(--text-md); line-height: var(--lh-compact); }
@@ -583,6 +587,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   color: var(--color-text-info);
   font-size: var(--text-xs);
   font-weight: var(--fw-semibold);
+  z-index: var(--z-badge);
 }
 
 /* SSE 断流横幅(UI-6.2:琥珀=重连中,红色致命态见下;z-index 高于状态徽标防遮挡) */
@@ -964,7 +969,7 @@ button.primary {
   padding: var(--space-2-5) var(--space-4);
   text-align: center;
 }
-.tier-desc { font-size: var(--text-xs); font-weight: var(--fw-regular); opacity: 0.9; }
+.tier-desc { font-size: var(--text-xs); font-weight: var(--fw-regular); }
 
 /* 自检报告面板(阶段 5 侧栏;照 annotations-panel 形态) */
 #checks-panel {

@@ -361,7 +361,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     - `check-02-contrast.py` 仍 `PASS: 0 failures`,`/* PAIR ` 仍为 43、`/* ORDER ` 仍为 1
     - 围栏标记 `/* ===== DESIGN TOKENS: START ===== */` 与 `/* ===== DESIGN TOKENS: END ===== */` 各恰一行且措辞未变
     - 围栏内声明数未变(25 个 tier-1 颜色 primitive / 47 个 `--color-*`)
-    - `git diff --numstat frontend/style.css` 的本任务增量中不含对任何 `--*: ...;` 声明行的增删
+    - `git diff --numstat -- frontend/style.css` 的本任务增量中不含对任何 `--*: ...;` 声明行的增删
   </acceptance_criteria>
   <done>围栏注释承载了名↔步映射、12 步语义与四处越轨的算术、D-15 的三数差异、以及三处「不得好心改回」的警告;四个锚点字符串可 grep;`check-02-contrast.py` 仍 `PASS: 0 failures`。</done>
 </task>
@@ -409,8 +409,8 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item smoke` 结论不是 `PASS`</fails_when>
     <automated>test -z "$(git diff --name-only HEAD -- frontend/app.js frontend/index.html)" && test -z "$(git ls-files --others --exclude-standard frontend/)" && test "$(ls frontend/vendor/)" = "marked.min.js"</automated>
     <fails_when>任一 test 非零退出(app.js/index.html 被改动、frontend/ 出现未跟踪文件、或 vendor/ 不再只有 marked.min.js)</fails_when>
-    <automated>git diff --name-only HEAD</automated>
-    <fails_when>输出的文件清单超出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`</fails_when>
+    <automated>git diff --name-only HEAD -- . ':!.claude/settings.local.json'</automated>
+    <fails_when>输出的文件清单超出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`。**范围刻意排除 `.claude/settings.local.json`**:它是长期跟踪的会话本地文件,在本计划动手之前就已是 modified,不是本计划的产出、也不得被本计划提交;裸 `git diff --name-only HEAD` 会把它算成本计划的改动,那不是关于本计划的信号</fails_when>
   </verify>
   <acceptance_criteria>
     - `#state-badge` 规则内恰有一条 `z-index: var(--z-badge);`,且该规则内**无** `position` 声明
@@ -419,8 +419,8 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     - `.tier-desc` 规则仍含 `font-size: var(--text-xs)` 与 `font-weight: var(--fw-regular)`
     - `.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6` 退出码 0;`item smoke` 结论为 `PASS`(其中含新增的三条接线断言)
     - 四条守卫命令全部 PASS,`check-02-contrast.py` 仍 `PASS: 0 failures`
-    - `git diff --name-only HEAD` 只列出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`;`frontend/vendor/` 仍只有 `marked.min.js`
-    - 本次改动全部为原位追加/删除,无任何规则重排(`git diff` 中不出现被移动的既有规则块)
+    - `git diff --name-only HEAD -- . ':!.claude/settings.local.json'` 只列出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`(排除项是本计划动手前既有的工作树状态);`frontend/vendor/` 仍只有 `marked.min.js`
+    - 本次改动全部为原位追加/删除,无任何规则重排(`git diff -- frontend/style.css` 中不出现被移动的既有规则块)
   </acceptance_criteria>
   <done>R-1 / R-2 / R-3 三处声明落地并各带一条运行时接线断言;`item smoke` 在真实浏览器里确认 `#state-badge` 的 z-index 接线、`.overlay-card` 的 box-shadow 存在、`.tier-desc` 的 opacity 为 1;四条守卫与 `check-02` 仍全绿。</done>
 </task>
@@ -454,7 +454,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
 - `comm -23 <(var 引用) <(声明)` 输出为空;反向 `comm -23 <(声明) <(var 引用)` 亦为空(无声明未消费的令牌)
 - `.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6` → 退出码 0
 - `node --check frontend/app.js` 与 `.venv/bin/python -m pytest -q`(基线 225 collected / 219 passed / 6 skipped)不变
-- `git diff --name-only HEAD` 只列出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`
+- `git diff --name-only HEAD -- . ':!.claude/settings.local.json'` 只列出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`
 - `frontend/vendor/` 仍只含 `marked.min.js`
 </verification>
 

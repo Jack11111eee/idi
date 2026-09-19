@@ -119,7 +119,7 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
     3. **裸 hex 变异**:另取一份干净的临时副本,在围栏 END 之后追加 `.leak { color: #abc; }`。跑新守卫 → 必须非零退出并打印 `FAIL: 1 bare hex outside the token block`。
     4. **围栏成对变异**:另取一份干净的临时副本,删掉 `/* ===== DESIGN TOKENS: END ===== */` 那一行。跑新守卫 → 必须非零退出并打印 `FAIL: expected exactly 1 fence START and 1 fence END`。
 
-    临时副本的构造方式:守卫用 `cd "$(dirname "$0")/.."` 定位仓库根,所以只要把脚本放到 `<tmp>/scripts/`、把样式表放到 `<tmp>/frontend/` 即可从任意 cwd 运行。**每次变异后都必须确认仓库工作树逐字节未变**(`git diff --exit-code -- frontend/style.css scripts/check-01-token-conformance.sh` 之外,`git status --porcelain` 不得出现新增的未跟踪文件)。
+    临时副本的构造方式:守卫用 `cd "$(dirname "$0")/.."` 定位仓库根,所以只要把脚本放到 `<tmp>/scripts/`、把样式表放到 `<tmp>/frontend/` 即可从任意 cwd 运行。**每次变异后都必须确认仓库工作树逐字节未变**(`git diff --exit-code -- frontend/style.css scripts/check-01-token-conformance.sh` 之外,`git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'` 不得出现新增的未跟踪文件 —— 两个排除项是本计划动手前既有的工作树状态)。
 
     最后把四次运行的命令与逐字输出(含退出码)写进 SUMMARY,并明确记明「旧交替式空转」这一条。
   </action>
@@ -138,8 +138,8 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
     <fails_when>输出不含 `expected exactly 1 fence START and 1 fence END`,或 `exit=0`(围栏成对断言被削弱)</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh</automated>
     <fails_when>任一条非零退出,或任一条 stdout 不含 `PASS`(在真实树上守卫必须仍然通过)</fails_when>
-    <automated>git status --porcelain</automated>
-    <fails_when>输出中出现除 `scripts/check-01-token-conformance.sh` 之外的改动路径,或出现任何未跟踪的临时文件(变异测试必须完全在 `mktemp -d` 目录内完成)</fails_when>
+    <automated>git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'</automated>
+    <fails_when>输出中出现除 `scripts/check-01-token-conformance.sh` 之外的路径,或出现任何未跟踪的临时文件(变异测试必须完全在 `mktemp -d` 目录内完成)。**范围刻意排除两个既有工作树条目**:长期跟踪的 `.claude/settings.local.json` 与 discuss 阶段留下的未跟踪件 `idi-04.1-DISCUSS-CHECKPOINT.json` —— 二者在本计划动手之前就已是 modified / untracked,不是本计划的产出、也不得被本计划提交;裸 `git status --porcelain` 会同时列出它们,那不是关于本计划的信号</fails_when>
   </verify>
   <acceptance_criteria>
     - `scripts/check-01-token-conformance.sh` 的 tier-1 交替式恰为 `(white|black|gray|green|blue|amber|red|purple|radix)`,其余各行逐字未动
@@ -148,7 +148,7 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
     - 围栏外注入 `#abc` 时守卫仍以非零码退出并打印裸 hex 诊断
     - 删掉 END 标记时守卫仍以非零码退出并打印围栏成对诊断
     - 在真实仓库上 `bash scripts/check-01-token-conformance.sh` 打印 `PASS` 且退出码 0
-    - `git status --porcelain` 除本任务改动的脚本外无新增路径;`frontend/style.css` 的 `git diff` 为空
+    - `git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'` 除本任务改动的脚本外无新增路径;`git diff -- frontend/style.css` 为空(排除项是本计划动手前既有的工作树状态)
     - SUMMARY 中逐字记录四次变异运行的命令、输出与退出码
   </acceptance_criteria>
   <done>CHECK-01 的 tier-1 隐私半场在 D-03 改名后重新可机械查;变异测试证明它在真实泄漏面前会失败,并留下「旧交替式会空转」的对照证据;裸 hex 与围栏成对两个半场均未被削弱。</done>
@@ -192,17 +192,19 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
     <fails_when>输出不含 `hierarchy inverted`,或 `exit=0`(ORDER 断言恒真)</fails_when>
     <automated>tmp=$(mktemp -d) && mkdir -p "$tmp/scripts" "$tmp/frontend" && cp scripts/check-02-contrast.py "$tmp/scripts/" && cp frontend/style.css "$tmp/frontend/" && (cd "$tmp" && python3 scripts/check-02-contrast.py | tail -1); echo "exit=$?"</automated>
     <fails_when>末行不是 `PASS: 0 failures`,或 `exit` 不为 0(正向基线不成立)</fails_when>
-    <automated>git status --porcelain -- scripts/check-02-contrast.py; python3 -c "import ast; t=ast.parse(open('scripts/check-02-contrast.py').read()); print(sorted({n.names[0].name.split('.')[0] for n in ast.walk(t) if isinstance(n,ast.Import)} | {n.module.split('.')[0] for n in ast.walk(t) if isinstance(n,ast.ImportFrom) and n.module}))"</automated>
-    <fails_when>第一条输出非空(脚本被改动,期望 delta 为零),或第二条打印的模块集合不是 `['re', 'sys']`(零依赖被破坏)</fails_when>
-    <automated>git status --porcelain</automated>
-    <fails_when>输出中出现除 `scripts/check-01-token-conformance.sh` 之外的改动路径,或任何未跟踪的临时文件</fails_when>
+    <automated>git status --porcelain -- scripts/check-02-contrast.py</automated>
+    <fails_when>输出非空(脚本被改动,期望 delta 为零)</fails_when>
+    <automated>python3 -c "import ast; t=ast.parse(open('scripts/check-02-contrast.py').read()); print(sorted({n.names[0].name.split('.')[0] for n in ast.walk(t) if isinstance(n,ast.Import)} | {n.module.split('.')[0] for n in ast.walk(t) if isinstance(n,ast.ImportFrom) and n.module}))"</automated>
+    <fails_when>打印的模块集合不是 `['re', 'sys']`(零依赖被破坏)</fails_when>
+    <automated>git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'</automated>
+    <fails_when>输出中出现除 `scripts/check-01-token-conformance.sh` 之外的路径,或任何未跟踪的临时文件。**范围刻意排除两个既有工作树条目**(`.claude/settings.local.json` 与 `idi-04.1-DISCUSS-CHECKPOINT.json`):它们在本计划动手之前就已存在,不是本计划的产出</fails_when>
   </verify>
   <acceptance_criteria>
     - 四条变异各自以非零码退出,并分别打印 `FAIL: unknown token`、`markers but only`、`below floor 24/20/4`、`hierarchy inverted`
     - 无变异的临时副本上脚本末行 `PASS: 0 failures` 且退出码 0
     - `git status --porcelain -- scripts/check-02-contrast.py` 输出为空(代码 delta 为零)
     - `scripts/check-02-contrast.py` 的 import 集合仍恰为 `['re', 'sys']`(零依赖)
-    - `git status --porcelain` 除 `scripts/check-01-token-conformance.sh` 外无改动路径,无未跟踪文件
+    - `git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'` 除 `scripts/check-01-token-conformance.sh` 外无改动路径,无未跟踪文件(排除项是本计划动手前既有的工作树状态)
     - SUMMARY 中逐字记录五条运行的命令、输出与退出码
   </acceptance_criteria>
   <done>check-02 的四条硬失败路径在 43 对清单上逐一被证明仍会失败;脚本代码 delta 为零;零依赖契约未变。</done>
@@ -222,7 +224,7 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
 | Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
 |-----------|----------|-----------|----------|-------------|-----------------|
 | T-idi041-05 | Tampering | `scripts/check-01-token-conformance.sh` 的 tier-1 交替式 | medium | mitigate | D-03 改名后旧交替式不再匹配 `var(--radix-…`,使 TOKEN-02 的硬不变量**静默空转而 CHECK-01 仍打印 PASS**。本计划加宽交替式到含 `radix`,并以变异测试证明「有泄漏时会 FAIL、旧交替式会 PASS」——空转被实证而非被假设 |
-| T-idi041-06 | Tampering | 变异测试误改真实工作树 | medium | mitigate | 全部变异在 `mktemp -d` 临时仓库根上进行(脚本以 `$(dirname $0)/..` 定位根、以相对 `CSS_PATH` 解析样式表,故临时根可行);每个任务末尾以 `git status --porcelain` 断言工作树无多余改动。**不在真实 `frontend/style.css` 上变异** —— 它是 Plan 01 已提交的本阶段交付物 |
+| T-idi041-06 | Tampering | 变异测试误改真实工作树 | medium | mitigate | 全部变异在 `mktemp -d` 临时仓库根上进行(脚本以 `$(dirname $0)/..` 定位根、以相对 `CSS_PATH` 解析样式表,故临时根可行);每个任务末尾以 `git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'` 断言工作树无多余改动(两个排除项是本计划动手前既有的工作树状态)。**不在真实 `frontend/style.css` 上变异** —— 它是 Plan 01 已提交的本阶段交付物 |
 | T-idi041-07 | Repudiation | 守卫被断言为「有效」而非被证明 | medium | mitigate | 每条守卫断言都配一条变异运行;「旧交替式打印 PASS」的对照证据是修复理由的直接证明,写进 SUMMARY。这正是本项目已记录的教训(变异测试是唯一能证明守卫真的会失败的手段) |
 | T-idi041-08 | Information disclosure | 守卫脚本读取的内容 | none | accept | 两个脚本只读仓库内的 `frontend/style.css`,不含任何凭据、网络调用或用户数据 |
 | T-idi041-SC | Tampering | npm / pip / cargo 安装 | none | accept | **本阶段不安装任何包**,且硬规则 6 要求两个守卫零依赖(`check-01` 只用 bash 内建 + `grep`/`awk`/`wc`/`printf`;`check-02` 只 `import re, sys`)。故供应链面为零 |
@@ -235,8 +237,8 @@ Output: 交替式含 `radix` 的 `scripts/check-01-token-conformance.sh`;两条�
 - 四条变异(radix 泄漏 / 裸 hex / 围栏成对 / 旧交替式对照)全部在临时副本上复现预期输出与退出码
 - 四条 check-02 变异(未知名 / 标记数 / 覆盖率 / ORDER 反转)全部复现预期输出与退出码
 - 真实树上 `bash scripts/check-01-token-conformance.sh` / `check-03` / `check-04` 全部 `PASS`
-- `scripts/check-02-contrast.py` 的 `git status` 干净、import 集合为 `['re', 'sys']`
-- `git status --porcelain` 只出现 `scripts/check-01-token-conformance.sh`
+- `git status --porcelain -- scripts/check-02-contrast.py` 输出为空、import 集合为 `['re', 'sys']`
+- `git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/phases/idi-04.1-radix/idi-04.1-DISCUSS-CHECKPOINT.json'` 只出现 `scripts/check-01-token-conformance.sh`(排除项是本计划动手前既有的工作树状态)
 </verification>
 
 <success_criteria>

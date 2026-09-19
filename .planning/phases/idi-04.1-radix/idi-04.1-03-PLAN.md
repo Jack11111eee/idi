@@ -34,7 +34,7 @@ must_haves:
     - "D-14 已接受的检测力损失被显式补偿:每条接线断言旁都有 `info()` 记录运行时解析出的令牌值(`--color-text-muted` → `rgb(100, 100, 100)`、`--color-border-strong` → `rgb(141, 141, 141)`、`--color-action-warning` → `rgb(79, 52, 34)`、`--color-kind-done` → `rgb(32, 32, 32)`、`--color-surface` → `rgb(249, 249, 249)`),使「接线对但值错」留下可人工核对的痕迹;值本身的仲裁者是 `check-02-contrast.py`,不是本 harness ← D-14 的代价条款 / 携带项 #2"
     - "`.venv/bin/python scripts/check-05-ui-uat.py` 全量运行(默认 item 1..6,捆绑 chromium-1243 无头)退出码 **0**,0 FAIL / 0 BLOCKED;`smoke` 项亦 PASS ← 携带项 #9 / 硬规则 7"
     - "`idi-04-UAT.md` 的三条 gap 按 D-10 / D-12 / D-13 消解并留证:颜色漂移类随值层重写消解、间距字号类更新期望值、`#doc-pane` 改名;`## Gaps` 的 YAML 块不再列出任何未决项,`## Summary` 的 passed / issues 计数按新结果更新 ← D-10 / D-12 / D-13 / 携带项 #6"
-    - "C-1 的下游门引用复核完成并留证:`#brainstorm-view h2` 在 HEAD 上计算为 **16px**(不是 `04-UI-SPEC.md` 携带项 #7 与 `ROADMAP.md:37` / `:166` / `:169` / `:197` / `:209` 五处所写的 14px),其颜色为 `--color-action-warning` = `#4f3422`(不是那五处所写的 `#8a6508`);全部失真引用作为**下游义务**记入 SUMMARY 与 UAT 记录,**不在本阶段单方面改写未来阶段的验收判据** ← D-12 附带必做 / 携带项 #7"
+    - "C-1 的下游门引用复核完成并留证:`#brainstorm-view h2` 在 HEAD 上计算为 **16px**(不是 `04-UI-SPEC.md` 携带项 #7 与 ROADMAP 五处所写的 14px),其颜色为 `--color-action-warning` = `#4f3422`(不是那五处所写的 `#8a6508`);五处按**内容**识别(同一行同时含 `#brainstorm-view h2` 与 `8a6508`,共 5 行),节名为硬规则 3、Phase 5 Pitfall 9、§Phase 5 Gates、§Phase 6 SC5、§Phase 6 Gates(复核时分别位于 L37 / L169 / L172 / L200 / L212 —— 行号只是当时的定位辅助,任何 ROADMAP 编辑都会移动它,**不是判据**);全部失真引用作为**下游义务**记入 SUMMARY 与 UAT 记录,**不在本阶段单方面改写未来阶段的验收判据** ← D-12 附带必做 / 携带项 #7"
     - "携带项 #8 被记录而非执行:Phase 7 的焦点环 `--color-focus: #1f63bd` 必须在 Phase 7 自己的门里对 `--color-surface`(`#f9f9f9`)与 `--color-surface-page`(`#fcfcfc`)重新测 ≥3:1 —— 本阶段不改环色,只改它所落的地面 ← 携带项 #8"
     - "`frontend/app.js` / `frontend/index.html` / `frontend/vendor/` 零改动,`frontend/vendor/` 仍只含 `marked.min.js` ← 携带项 #10"
 
@@ -180,8 +180,8 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item 2` / `item 3` 的结论不是 `PASS`</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 2,3 2>&1 | grep -E 'item (2|3):'</automated>
     <fails_when>输出的两行里出现 `BLOCKED`(元素缺失或令牌解析失败必须显式暴露,不得静默)</fails_when>
-    <automated>git diff --name-only HEAD</automated>
-    <fails_when>输出的文件清单超出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`</fails_when>
+    <automated>git diff --name-only HEAD -- . ':!.claude/settings.local.json'</automated>
+    <fails_when>输出的文件清单超出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`。**范围刻意排除 `.claude/settings.local.json`**:它是长期跟踪的会话本地文件,在本任务动手之前就已是 modified,不是本任务的产出、也不得被本任务提交;裸 `git diff --name-only HEAD` 会把它算成本任务的改动,那不是关于本任务的信号</fails_when>
   </verify>
   <acceptance_criteria>
     - `grep -c 'FROZEN_AMBER' scripts/check-05-ui-uat.py` == 0,且 `check_frozen_marker` 的期望色来自 `resolve_color(page, "--color-action-warning")`
@@ -259,8 +259,8 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item 4` / `item 5` 的结论不是 `PASS`</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 4,5 2>&1 | grep -E 'item (4|5):'</automated>
     <fails_when>输出的两行里出现 `BLOCKED`(D-13 的 `#doc-pane` 项必须由 BLOCKED 转为 PASS,不得残留任何阻塞项)</fails_when>
-    <automated>git diff --name-only HEAD</automated>
-    <fails_when>输出的文件清单超出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`</fails_when>
+    <automated>git diff --name-only HEAD -- . ':!.claude/settings.local.json'</automated>
+    <fails_when>输出的文件清单超出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`。**范围刻意排除 `.claude/settings.local.json`**:它是长期跟踪的会话本地文件,在本任务动手之前就已是 modified,不是本任务的产出、也不得被本任务提交;裸 `git diff --name-only HEAD` 会把它算成本任务的改动,那不是关于本任务的信号</fails_when>
   </verify>
   <acceptance_criteria>
     - `item4` 与 `item5` 函数体内不含任何字面 `"rgb(` 期望值
@@ -297,15 +297,17 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 
     **2. 重写 `## Gaps` 块。** 三条 gap 逐条标为**已消解**,每条写一句消解口径(颜色类随值层重写消解 / 间距字号类更新期望值 / `#doc-pane` 改名),并保留原 gap 的 `observed` 与 `failing` 作为历史对照(不要删掉原始证据 —— 它是「假 FAIL 的根因」这条教训的载体)。末尾那段「另记:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 3.23:1 的 AA 倒退」改写为**已修复**:新值 `--radix-gray-11` `#646464` 在 `--color-surface` `#f9f9f9` 上 **5.62:1**(由 `check-02-contrast.py` 实测)。更新 `## Summary` 的 `passed` / `issues` 计数与 `updated` 时间戳。
 
-    **3. C-1 的下游门引用复核(携带项 #7)—— 必须实测,不得照抄。** 用真实浏览器读 `#brainstorm-view h2` 的 computed `font-size` 与 `color`(可以直接用刚改好的 `.venv/bin/python scripts/check-05-ui-uat.py --item 4` 的输出,它已断言这两条),并对照**全部**下游引用点(同一句 `#brainstorm-view h2` = `14px` / `#8a6508` 的说法在 ROADMAP 里出现多次,复核时逐点列全,不要只点其中一处):
-    - `.planning/ROADMAP.md:197` §Phase 6 SC5 写「`#brainstorm-view h2` 仍计算为 **14px** / **`#8a6508`**」。
-    - `.planning/ROADMAP.md:37`(硬规则「追加,不重排」)写「后者胜出 → 14px / `#8a6508`」。
-    - `.planning/ROADMAP.md:166`(Pitfall 9)写「`#brainstorm-view h2` 的 14px / `#8a6508` 是顺序决定的」。
-    - `.planning/ROADMAP.md:169` §Phase 5 Gates 写「`#brainstorm-view h2` 仍计算为 14px / `#8a6508`」。
-    - `.planning/ROADMAP.md:209` §Phase 7/8 Gates 写「`#brainstorm-view h2` 仍 14px / `#8a6508`」。
+    **3. C-1 的下游门引用复核(携带项 #7)—— 必须实测,不得照抄。** 用真实浏览器读 `#brainstorm-view h2` 的 computed `font-size` 与 `color`(可以直接用刚改好的 `.venv/bin/python scripts/check-05-ui-uat.py --item 4` 的输出,它已断言这两条),并对照**全部**下游引用点。
+
+    **枚举基准是内容,不是行号。** 同一句 `#brainstorm-view h2` = `14px` / `#8a6508` 在 ROADMAP 里的判据是「**同一行同时含 `#brainstorm-view h2` 与 `8a6508`**」,`grep -cE '#brainstorm-view h2.*8a6508' .planning/ROADMAP.md` 当前为 **5**。行号会随任何 ROADMAP 编辑移动 —— 本阶段自己的 wave 重排就移动过它们,而上一轮计划把编辑**之前**的行号冻进了门里,于是门只在这个错误的答案被抄进去时才通过。故行号只作为**复核当时的定位辅助**写进正文,绝不作为判据或任何门的通过条件。当前五处(按内容识别;节名由 `### Phase` 标题与 `**Gates**` 行共同确定):
+    - 硬规则 3「追加,不重排」(现 L37)写「`#draft-view h2` L230 与 `#brainstorm-view h2` L296 同为 1-0-1,后者胜出 → 14px / `#8a6508`」。
+    - Phase 5 Pitfall 9(现 L169)写「`#brainstorm-view h2` 的 14px / `#8a6508` 是顺序决定的」。
+    - §Phase 5 Gates(现 L172)写「`#brainstorm-view h2` 仍计算为 14px / `#8a6508`」。
+    - §Phase 6 SC5(现 L200)写「`#brainstorm-view h2` 仍计算为 14px / `#8a6508`(未因结构性改动而变)」。
+    - §Phase 6 Gates(现 L212)写「`#brainstorm-view h2` 仍 14px / `#8a6508`」。
     - `04-UI-SPEC.md` 的携带项 #7(§Q3)写「`#brainstorm-view h2` = 14px is confirmed alive at HEAD」。
     - 静态事实:`frontend/style.css` 的 `#brainstorm-view h2` 用的是 `font-size: var(--text-md)`,而围栏内 `--text-md: 16px`;它的颜色是 `var(--color-action-warning)`,本阶段后等于 `--radix-amber-12` = `#4f3422`。
-    - 把实测值、上述六个引用点的原文(逐点写出行号)、以及「这些引用在本阶段之后失真」的结论写进 `## Gaps` 块之后的 `## Carry-Forward`(若该节不存在则新建一节)。**同时明确写下:本阶段不单方面改写 `ROADMAP.md` §Phase 6 SC5 的验收判据** —— 那是未来阶段已签核的门,改它属于范围外,须由用户裁决。给出一行式修正建议(`14px` → 实测值;`#8a6508` → `#4f3422`)供用户直接采纳。
+    - 把实测值、上述引用点的**节名与原文**(逐点一行,每行同时含 `#brainstorm-view h2` 与 `8a6508`)、以及「这些引用在本阶段之后失真」的结论写进 `## Gaps` 块之后的 `## Carry-Forward`(若该节不存在则新建一节)。**同时明确写下:本阶段不单方面改写 `ROADMAP.md` §Phase 6 SC5 的验收判据** —— 那是未来阶段已签核的门,改它属于范围外,须由用户裁决。给出一行式修正建议(`14px` → 实测值 `16px`;`#8a6508` → `#4f3422`)供用户直接采纳。
 
     **4. 记录携带项 #8(不执行)。** 在 `## Carry-Forward` 里记一条:Phase 7 的焦点环 `--color-focus: #1f63bd` 必须在 Phase 7 自己的门里对**新的**地面重新测 ≥3:1(`--color-surface` `#f9f9f9`、`--color-surface-page` `#fcfcfc`);本阶段不改环色,只改它落的地面。
 
@@ -322,8 +324,12 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <fails_when>计数为 0(C-1 的 14px/16px 复核结论未写入)</fails_when>
     <automated>grep -n 'Phase 6 SC5\|Phase 5 SC5' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md | head -5</automated>
     <fails_when>无输出(C-1 复核未点名下游门)</fails_when>
-    <automated>grep -cE 'ROADMAP\.md:(37|166|169|197|209)' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
-    <fails_when>计数少于 5(C-1 的引用点枚举不完整 —— 同一句 `14px` / `#8a6508` 在 ROADMAP 里出现于 L37 / L166 / L169 / L197 / L209 五处,复核须逐点列出,不得只点其中一处)</fails_when>
+    <automated>grep -cE '#brainstorm-view h2.*8a6508' .planning/ROADMAP.md</automated>
+    <fails_when>计数不为 5(ROADMAP 里这句 `14px` / `#8a6508` 的站点数变了 —— 枚举基准失效,须重新枚举后再落纸)。这是**内容**锚,不是行号锚:任何 ROADMAP 编辑移动行号都不会触发它,只有真的增删了这个说法才会</fails_when>
+    <automated>grep -cE '#brainstorm-view h2.*8a6508' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
+    <fails_when>计数少于 5(C-1 的引用点枚举不完整 —— 五个站点须**逐点一行**、每行同时含 `#brainstorm-view h2` 与 `8a6508` 的原文;行号写在行内可以,但不是判据)</fails_when>
+    <automated>for s in '硬规则 3' 'Pitfall 9' 'Phase 5 Gates' 'Phase 6 SC5' 'Phase 6 Gates'; do printf '%s=' "$s"; grep -c "$s" .planning/phases/idi-04-tokens-contract/idi-04-UAT.md; done</automated>
+    <fails_when>五个节名中任何一个在 UAT 里计数为 0(站点未被逐个点名 —— 「只点其中一处」正是这条复核要防的事)</fails_when>
     <automated>git status --porcelain -- .planning/ROADMAP.md frontend/style.css frontend/app.js frontend/index.html frontend/vendor/</automated>
     <fails_when>输出非空(ROADMAP 或任何 frontend/ 源文件被改动 —— 本任务只允许改 idi-04-UAT.md)</fails_when>
   </verify>
@@ -332,7 +338,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     - `## Tests` 的六项 `result:` 全部为 `[pass]`,无 `[fail]`;每项 evidence 写入本阶段实跑的断言数与退出码
     - `## Gaps` 的三条 gap 逐条标为已消解,原始 `observed` / `failing` 保留为历史对照;末尾的 AA 倒退段改为已修复并给出新值 `#646464` / 5.62:1
     - `## Summary` 的 `passed` / `issues` 计数与时间戳更新为 6 / 0
-    - 新增 `## Carry-Forward` 一节,含三条:①C-1 的 `#brainstorm-view h2` 实测(16px / `#4f3422`)与**五个 ROADMAP 引用点**的原文(`ROADMAP.md:37` 硬规则、`:166` Pitfall 9、`:169` §Phase 5 Gates、`:197` §Phase 6 SC5、`:209` §Phase 7/8 Gates 各自的 `14px` / `#8a6508`)+ `04-UI-SPEC.md` 携带项 #7 的 14px + 一行式修正建议 + 「本阶段不改写未来阶段验收判据」的说明;②携带项 #8 的 Phase 7 焦点环重测义务;③D-15 的三数差异(24 / 34 / 43)留档
+    - 新增 `## Carry-Forward` 一节,含三条:①C-1 的 `#brainstorm-view h2` 实测(16px / `#4f3422`)与**五个 ROADMAP 引用点**的原文 —— **格式为每个站点一行,每行同时含该站点的节名与原文引用**,即每行都必须出现 `#brainstorm-view h2` 与 `8a6508` 两者(五个节名:硬规则 3、Phase 5 Pitfall 9、§Phase 5 Gates、§Phase 6 SC5、§Phase 6 Gates),使 `grep -cE '#brainstorm-view h2.*8a6508'` 在该文件上得到 ≥5;行号可写在行内作定位辅助但不得作为判据;另加 `04-UI-SPEC.md` 携带项 #7 的 14px、一行式修正建议(`14px` → `16px`;`#8a6508` → `#4f3422`)、以及「本阶段不改写未来阶段验收判据」的说明;②携带项 #8 的 Phase 7 焦点环重测义务;③D-15 的三数差异(24 / 34 / 43)留档
     - `.planning/ROADMAP.md`、`frontend/style.css`、`frontend/app.js`、`frontend/index.html`、`frontend/vendor/` 在本任务中零改动
     - 本文件不复制 `idi-04.1-UI-SPEC.md` 的任何表格,引用一律写路径与节名
   </acceptance_criteria>
@@ -355,7 +361,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 |-----------|----------|-----------|----------|-------------|-----------------|
 | T-idi041-09 | Repudiation | 「运行时验证」被断言而非执行 | high | mitigate | 携带项 #9 的九组具名检查逐条落到 `item_smoke`(01 的三条)与 `item3` / `item4` / `item5`(本计划的六组),每一条都配可运行的 `<automated>` 命令与 `<fails_when>`;`.venv/bin/python scripts/check-05-ui-uat.py` 全量退出码必须是 0,且 `grep -c 'var(--'` 这类静态计数被明确拒绝作为证据。**这是本计划唯一的高危项,因为「验证没做却写成做了」是本阶段最容易发生的失败** |
 | T-idi041-10 | Repudiation | 令牌接线断言掩盖「值本身错了」 | medium | mitigate | D-14 已接受该检测力损失(它换掉了「硬编码值能抓令牌接错线」的能力),本计划用两条措施补偿:①每条接线断言旁的 `info()` 打印运行时解析值,值错时在日志里看得见;②值的仲裁者是 `check-02-contrast.py` 的 43 对实测比值,不由 harness 承担。二者合起来覆盖「接线」与「值」两个轴 |
-| T-idi041-11 | Tampering | 为让断言通过而改 `frontend/style.css` | medium | mitigate | 本计划的 `files_modified` 不含 `frontend/style.css`;verify 以 `git status --porcelain -- frontend/style.css frontend/app.js frontend/index.html frontend/vendor/` 断言输出为空,并以 `git diff --name-only HEAD` 断言改动面只有两个计划文件 |
+| T-idi041-11 | Tampering | 为让断言通过而改 `frontend/style.css` | medium | mitigate | 本计划的 `files_modified` 不含 `frontend/style.css`;verify 以 `git status --porcelain -- frontend/style.css frontend/app.js frontend/index.html frontend/vendor/` 断言输出为空,并以 `git diff --name-only HEAD -- . ':!.claude/settings.local.json'` 断言改动面只有两个计划文件(排除项是既有工作树状态,不是本计划的改动) |
 | T-idi041-12 | Spoofing | 用无头系统 Chrome 或静态分析冒充真实渲染 | low | mitigate | `.venv` 的 Python 是 x86_64,系统 Chrome 走 Rosetta,`channel='chrome'` + headless 在本机会挂死(CDP 180s 连不上);harness 的正确路线是默认的捆绑 chromium-1243 无头(arm64 原生、零下载)。verify 命令一律不传 `--browser`,并在 prohibitions 里禁止换路线 |
 | T-idi041-13 | Information disclosure | harness 读取的内容 | none | accept | 只读本地磁盘状态样本与本地应用的 computed style,不含凭据、不外联 |
 | T-idi041-SC | Tampering | npm / pip / cargo 安装 | none | accept | **本阶段不安装任何包。** Playwright 1.63.0 已在 `.venv` 中就位且**不得跑 `playwright install`**(捆绑 chromium-1243 已在本机缓存);硬规则 6 要求零新增依赖 |
@@ -370,7 +376,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 - `bash scripts/check-01-token-conformance.sh` / `check-03-hidden-uniqueness.sh` / `check-04-important-count.sh` → 各自 `PASS`
 - `node --check frontend/app.js` 与 `.venv/bin/python -m pytest -q`(基线 225 collected / 219 passed / 6 skipped)不变
 - `git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/` 输出为空;`test "$(ls frontend/vendor/)" = "marked.min.js"`
-- `git diff --name-only HEAD` 只列出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`
+- `git diff --name-only HEAD -- . ':!.claude/settings.local.json'` 只列出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`(排除项是本阶段动手前既有的工作树状态)
 - 断言脚本里除 `.overlay-card` box-shadow 的 needle 外,无其它硬编码颜色期望值
 </verification>
 

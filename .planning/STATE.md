@@ -171,7 +171,13 @@ Resume file: None
 
 ## Operator Next Steps
 
-- Plan the next v1.14 phase: `/gsd-plan-phase 04.1`(Radix 颜色族重写,2026-09-19 插入)。
+- **04.1 的上游路线已定为三步(2026-09-19,用户选定)**:`/gsd-discuss-phase 04.1` → `/gsd-ui-phase 04.1` → `/gsd-plan-phase 04.1`。**不要跳过 discuss 直接 plan** —— Phase 4 能走 `ui-phase → plan` 短路径,是因为它上游已有 ARCHITECTURE.md / PITFALLS.md 把实现路线定死;04.1 没有那个条件,且持有一处 ui-phase 答不了的硬冲突(见下)。
+- **04.1 待 discuss 裁定的实现决策(至少这三条)**:
+  1. **Radix 交付方式**:ROADMAP 全局硬规则 6 要求零新增运行时依赖 / 零构建步骤,而 Phase 4 的 gate 明写 `frontend/vendor/` 仍只有 `marked.min.js`;Radix Colors 是约 126 个纯 CSS 文件。**vendor 进来撞不撞 gate,还是手工转抄 hex** —— 必须落定,规划器不得自行猜测。
+  2. **令牌名存废**:75 个令牌名是否原样保留(它们被 CHECK-01 围栏与 CHECK-02 的按名配对清单引用)。
+  3. **primitive 层形状**:25 个 tier-1 是否换成 Radix 自有的色阶。
+  另需裁定:UI-SPEC 是**就地改 `04-UI-SPEC.md`** 还是另起 `04.1-UI-SPEC.md`(另起会把契约分叉成两份事实源)。
+- Plan the next v1.14 phase: `/gsd-plan-phase 04.1`(Radix 颜色族重写,2026-09-19 插入;须先走完上面两步)。
   Phase 4 的 3/3 计划已执行完毕,尚待阶段验证;其值层由 04.1 重写,idi-04 UAT 的 3 项 FAIL 与
   `--color-text-muted` 3.23:1 的 AA 倒退一并归入 04.1 消解,不再单独裁定 UAT 期望值。
   以下 S-1…S-4 签核项仍然有效(04.1 明令不改 S-1/S-2),规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:

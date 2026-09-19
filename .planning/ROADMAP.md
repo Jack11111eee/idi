@@ -124,6 +124,8 @@ Plans:
 
 - [ ] TBD (run /gsd-plan-phase 04.1 to break down)
 
+**UI hint**: yes
+
 ### Phase 5: 排版与视觉层级
 
 **Goal**: 渲染出的文档与界面 chrome 各有一套受控的排版刻度;产品最重要的一步(不可逆的 G3 授权)在视觉上不再与例行按钮混同;页面级层级正确。

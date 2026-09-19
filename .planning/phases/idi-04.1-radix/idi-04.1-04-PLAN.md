@@ -178,7 +178,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 
     **改动 2 —— `ok()`(L102-114)加一条「期望值解析不出」的分支。** 在现有 `if actual is None:` 分支**之前**插入 `if expected is None:` 分支:`_emit(item, "BLOCKED", label, "<UNRESOLVED>", actual, "令牌未声明或期望值解析失败")`。其余三条路径(`actual is None` → BLOCKED、`norm(actual) == norm(expected)` → PASS、否则 FAIL)与 `norm` 本身**逐字保留**。docstring 补一句说明这两类 BLOCKED 的区别(实际值读不到 vs 期望值解析不出)。
 
-    **为什么必须加改动 2(把它写进 SUMMARY 的理由段):** `ok()` 现有的 `actual is None` 分支只看**实际值**。`resolve_color` 未声明时返回的是**期望值**侧的 `None`,不加这一支会落进比较分支 —— `norm(actual) == norm(None)` 恒为 False —— 于是记 **FAIL**。FAIL 同样**不是**假 PASS(证伪能力已经恢复),但本次 `--gaps` 的 binding scope 明写「使 `ok()` 记 BLOCKED 而非假 PASS」,故必须补上这一支才能兑现该措辞。附带收益:走 `resolve_token` 的三条 z-index 断言(`#selection-menu` / `#state-badge` / `#stream-banner`)本来就该有这个对称保护。
+    **为什么必须加改动 2(把它写进 SUMMARY 的理由段):** `ok()` 现有的 `actual is None` 分支只看**实际值**。`resolve_color` 未声明时返回的是**期望值**侧的 `None`,不加这一支会落进比较分支 —— `norm(actual) == norm(None)` 恒为 False —— 于是记 **FAIL**。FAIL 同样**不是**假 PASS(证伪能力已经恢复),但本次 `--gaps` 的 binding scope 明写「使 `ok()` 记 BLOCKED 而非假 PASS」,故必须补上这一支才能兑现该措辞。附带收益:走 `resolve_token` 的**四条**断言(L750-752 的三条 item4 z-index 断言 `#selection-menu` / `#state-badge` / `#stream-banner`,加 L1008 smoke 的 `--z-badge` 断言)本来就该有这个对称保护。
 
     **改动 3 —— 模块 docstring L42 的退出码释义对齐。** 把 `2` 的括号释义从「状态造不出 / 元素不可见 / 选择器不存在」扩为「状态造不出 / 元素不可见 / 选择器不存在 / 期望值解析不出」。**只改这一处括号,不动 L39-41 的 `0` / `1` 释义,也不动文件其余任何散文。**
 
@@ -297,7 +297,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
     - 四条守卫:`bash scripts/check-01-token-conformance.sh` / `python3 scripts/check-02-contrast.py`(末行必须是 `PASS: 0 failures`,且含 `ORDER 0.363`)/ `bash scripts/check-03-hidden-uniqueness.sh` / `bash scripts/check-04-important-count.sh` —— 各自 `PASS` / 退出码 0
     - 全量 harness:`.venv/bin/python scripts/check-05-ui-uat.py` —— 0 条 `FAIL`;item 1/2/3/4/6 为 `PASS` 且 0 BLOCKED;item 5 为 `BLOCKED  (9,0,2)`;末行 `exit=2`。**逐项与 VERIFICATION.md P3.7 基线对照,逐项写明「一致」**
     - 变异证明:`.venv/bin/python scripts/probe-05-resolve-color.py` —— 退出码 0 与四行 `PROBE …` 输出
-    - 回归:`.venv/bin/python -m pytest -q` —— 尾行必须是 `219 passed, 6 skipped`(**必须走项目 venv**;环境 `python3` 是 miniconda,会让四个 `ai_caller` 测试假失败)
+    - 回归:`.venv/bin/python -m pytest -q 2>&1 | grep -c '219 passed, 6 skipped'` —— 计数必须为 1,**按子串判定而不是匹配整行**(pytest 汇总行永远带 warning 计数与耗时后缀,实测 `219 passed, 6 skipped, 1 warning in 5.91s`,耗时每次不同);**必须走项目 venv**;环境 `python3` 是 miniconda,会让四个 `ai_caller` 测试假失败
     - 零改动面:`git status --porcelain -- frontend/` 为空;`git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/config.json'` 只出现 `scripts/check-05-ui-uat.py` / `scripts/probe-05-resolve-color.py` / 本 SUMMARY(两个排除项是本 run 动手前既有的工作树状态)
 
     **2. CR-01 的对照证据块(本 SUMMARY 的承重内容)。** 逐字抄进探针打印的那行四值对照表:`pre_fix_expected`(修复前的期望值 = 继承色,如 `rgb(32, 32, 32)`)、`hint_computed`(真实消费者的 computed 值)、**修复前判定 = PASS**(渲染已坏 —— 提示灰变成正文黑 —— 而 harness 记 PASS)、**修复后判定 = BLOCKED**。同时写明两条修复的**形状**:`resolve_color` 先读 `documentElement` 上该令牌的声明、为空即返回 `None`;`ok()` 把 `None` 期望值记 BLOCKED(并写明「不加这一支会落进比较分支记 FAIL —— FAIL 同样不是假 PASS,但 binding scope 明写 BLOCKED」)。再写明缺陷的**成因链**:D-14 把 22 条硬编码 `rgb(...)` 断言换成 `resolve_color` 调用,移除了假 FAIL 的根因,**同时**移除了改名/删除时的 FAIL 能力,而计划与 SUMMARY 当时只写了收益、未披露这一损失。
@@ -313,22 +313,22 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
     <fails_when>输出中出现任何 `FAIL` 行;或 `item 1`/`2`/`3`/`4`/`6` 任一行的结论不是 `PASS (n,0,0)`;或 `item 5` 那行不是 `BLOCKED  (9,0,2)`;或末行不是 `exit=2  (0=全 pass,1=有 fail,2=有 blocked)`</fails_when>
     <automated>.venv/bin/python scripts/probe-05-resolve-color.py; echo "exit=$?"</automated>
     <fails_when>输出不含 `PROBE mutated-prefix-verdict=PASS` 或 `PROBE mutated-postfix-verdict=BLOCKED` 或 `PROBE control-verdict=PASS`,或 `exit=` 不是 0</fails_when>
-    <automated>.venv/bin/python -m pytest -q 2>&1 | tail -1</automated>
-    <fails_when>末行不是 `219 passed, 6 skipped`(基线偏移 —— 注意必须用 `.venv/bin/python`,环境 `python3` 是 miniconda,会让四个 `ai_caller` 测试假失败)</fails_when>
+    <automated>.venv/bin/python -m pytest -q 2>&1 | grep -c '219 passed, 6 skipped'</automated>
+    <fails_when>计数小于 1(基线偏移)。**按子串判定,不要匹配整行** —— pytest 的汇总行永远带 warning 计数与耗时后缀(实测 `219 passed, 6 skipped, 1 warning in 5.91s`,耗时每次不同),故整行匹配必然失败;有测试失败时该行变成 `… failed, … passed, 6 skipped`,子串即消失。必须用 `.venv/bin/python`,环境 `python3` 是 miniconda,会让四个 `ai_caller` 测试假失败</fails_when>
     <automated>git status --porcelain -- frontend/</automated>
     <fails_when>输出非空(`frontend/` 下任何文件被改动 —— 本 run 不得触碰被验证对象)</fails_when>
     <automated>git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/config.json'</automated>
     <fails_when>输出中出现除 `scripts/check-05-ui-uat.py` / `scripts/probe-05-resolve-color.py` / `.planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md` 之外的路径,或出现任何未跟踪的临时文件(探针的临时目录必须自清)。**范围刻意排除两个既有工作树条目**:`.claude/settings.local.json` 与 `.planning/config.json` —— 二者在本 run 动手之前就已是 modified,不是本 run 的产出</fails_when>
     <automated>grep -c 'PROBE mutated-postfix-verdict=BLOCKED' .planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md</automated>
     <fails_when>计数小于 1(修复后的对照判定未进 SUMMARY)</fails_when>
-    <automated>grep -cE 'W-2|W-3|W-4|W-5|W-6|CR-02|IN-01|IN-02|IN-03' .planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md</automated>
-    <fails_when>计数小于 9(范围外项未被逐条登记 —— 九条各自至少出现一次)</fails_when>
+    <automated>grep -oE 'W-2|W-3|W-4|W-5|W-6|CR-02|IN-01|IN-02|IN-03' .planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md | sort -u | wc -l</automated>
+    <fails_when>计数小于 9(范围外项未被逐条登记 —— 九条各自至少出现一次)。**必须数去重后的匹配项**:`grep -c` 数的是命中**行数**,九条写在同一行只会得 1,会把登记齐全的 SUMMARY 误判为失败</fails_when>
   </verify>
   <acceptance_criteria>
     - 四条守卫命令全部 `PASS` / 退出码 0;`check-02` 末行 `PASS: 0 failures` 且输出含 `ORDER 0.363`
     - `.venv/bin/python scripts/check-05-ui-uat.py` 输出 0 条 `FAIL`;item 1/2/3/4/6 为 `PASS` 且 0 BLOCKED;item 5 为 `BLOCKED  (9,0,2)`;末行 `exit=2` —— 与 VERIFICATION.md P3.7 基线**逐项**对照并写明一致
     - `.venv/bin/python scripts/probe-05-resolve-color.py` 退出码 0,输出含四行 `PROBE …`
-    - `.venv/bin/python -m pytest -q` 尾行 `219 passed, 6 skipped`
+    - `.venv/bin/python -m pytest -q 2>&1 | grep -c '219 passed, 6 skipped'` 计数为 1(pytest 汇总行永远带 warning 计数与耗时后缀,故按子串判定、不按整行)
     - SUMMARY 里有一块 CR-01 对照证据:四值对照表(`pre_fix_expected` / `hint_computed` / 修复前判定 PASS / 修复后判定 BLOCKED)+ 两条修复的形状 + 缺陷的成因链(D-14 的收益与代价)
     - SUMMARY 里逐条登记 W-2 / W-3 / W-4 / W-5 / W-6 / CR-02 / IN-01 / IN-02 / IN-03 为 deferred 且未修(CR-02 注明预先存在于 `6f52602`);逐条登记两条人工项为未解决;逐条登记 12 行 unclassified 沿用 plans 01–03 的处置
     - SUMMARY 里写明「CR-01 的关闭不依赖上述任何一条范围外项」
@@ -368,7 +368,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 - `.venv/bin/python scripts/check-05-ui-uat.py` 0 FAIL;item 1/2/3/4/6 `PASS` 且 0 BLOCKED;item 5 `BLOCKED (9,0,2)`;`exit=2` —— 与 VERIFICATION.md P3.7 基线逐项一致
 - `.venv/bin/python scripts/probe-05-resolve-color.py` 退出码 0,含 `PROBE mutation-applied=yes` / `PROBE mutated-prefix-verdict=PASS` / `PROBE mutated-postfix-verdict=BLOCKED` / `PROBE control-verdict=PASS`
 - `bash scripts/check-01-token-conformance.sh` / `bash scripts/check-03-hidden-uniqueness.sh` / `bash scripts/check-04-important-count.sh` 各自 `PASS`;`python3 scripts/check-02-contrast.py` 末行 `PASS: 0 failures` 且含 `ORDER 0.363`
-- `.venv/bin/python -m pytest -q` 尾行 `219 passed, 6 skipped`
+- `.venv/bin/python -m pytest -q 2>&1 | grep -c '219 passed, 6 skipped'` 计数为 1(pytest 汇总行永远带 warning 计数与耗时后缀,故按子串判定、不按整行)
 - `git status --porcelain -- frontend/` 为空;`git diff --exit-code -- frontend/style.css` 退出码 0
 - `git status --porcelain -- . ':!.claude/settings.local.json' ':!.planning/config.json'` 只出现 `scripts/check-05-ui-uat.py` / `scripts/probe-05-resolve-color.py` / `idi-04.1-04-SUMMARY.md`
 - SUMMARY 含 CR-01 四值对照表、两条修复的形状、成因链,以及九条范围外项 + 两条人工项 + 12 行 unclassified 的逐条登记

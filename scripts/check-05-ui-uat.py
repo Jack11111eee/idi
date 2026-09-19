@@ -693,20 +693,19 @@ def item4(page, tmp_root):
     print("\n=== UAT 4: DevTools computed-style 抽查 — Plan 02(16 项)===", flush=True)
     proj = make_fixture("p1", tmp_root)
     enter_project(page, proj)
+    # D-14:期望侧来自运行时解析的令牌,不再硬编码 rgb(值的仲裁者是 check-02-contrast.py)。
+    brainstorm_warning = resolve_color(page, "--color-action-warning")
+    info("item4 令牌解析", f"--color-action-warning={brainstorm_warning}")
 
-    ok(item, "[p1] .panel-header padding-top", "10px", read_style(page, ".panel-header", "padding-top"))
-    ok(item, "[p1] .panel-header padding-left", "16px", read_style(page, ".panel-header", "padding-left"))
-    # #doc-pane 在 index.html 里不存在(实际 id 是 #doc-panel / #doc-panel-body)
-    doc_pane = read_style(page, "#doc-pane", "padding")
-    blocked(
-        item,
-        "[p1] #doc-pane padding",
-        "32px 40px",
-        "<MISSING>",
-        "选择器 #doc-pane 不存在(index.html 里实际为 #doc-panel-body)——"
-        f"诊断:#doc-panel-body padding={read_style(page, '#doc-panel-body', 'padding')}",
-    )
-    info("item4 #doc-pane", f"raw read={doc_pane}")
+    # D-12:该值在 HEAD 上是刻度内的合法档(6px = --space-1-5、10px = --space-2-5),
+    # 04.1 明令不改 S-1/S-2,故更新期望值而非改 CSS。
+    ok(item, "[p1] .panel-header padding-top", "6px", read_style(page, ".panel-header", "padding-top"))
+    ok(item, "[p1] .panel-header padding-left", "10px", read_style(page, ".panel-header", "padding-left"))
+    # D-13:原期望串写错了名字 —— index.html 里从来没有 #doc-pane 这个 id,实际是
+    # #doc-panel-body。实测其 padding 一直是 32px/40px,与期望值一致,只是名对不上。
+    # 改的是 UAT 的期望字符串,不是 id(硬规则 5:约 70 个 getElementById id 一字未动)。
+    ok(item, "[p1] #doc-panel-body padding", "32px 40px",
+       read_style(page, "#doc-panel-body", "padding"))
     # 探针说明:`button` 指的是**通用 button 规则**(D-16 账本里的 6px/10px)。
     # 用 #btn-enter —— 它没有更具体的选择器覆盖 padding/color;而 document.querySelector('button')
     # 落在 #btn-send 上(#chat-input-row button,0-1-1,8px/16px + 主色前景),不是通用规则的探针。
@@ -722,16 +721,18 @@ def item4(page, tmp_root):
     info("item4 #brainstorm-view",
          f"padding={read_style(page, '#brainstorm-view', 'padding')}(D-16 映射值,非 24px)")
 
-    ok(item, "[p1] #brainstorm-view h2 font-size", "14px", read_style(page, "#brainstorm-view h2", "font-size"))
-    ok(item, "[p1] #brainstorm-view h2 color", "rgb(138,101,8)",
-       read_style(page, "#brainstorm-view h2", "color"))
-    ok(item, "[p1] #draft-view h2 font-size", "15px", read_style(page, "#draft-view h2", "font-size"))
+    # D-12:以下五条字号同样是「更新期望值接受 HEAD 现状」(16px = --text-md、
+    # 18px = --text-lg、24px = --text-xl 都是 S-2 刻度内的合法档),frontend/style.css 一字未动。
+    ok(item, "[p1] #brainstorm-view h2 font-size", "16px", read_style(page, "#brainstorm-view h2", "font-size"))
+    ok(item, "[p1] #brainstorm-view h2 color == var(--color-action-warning)",
+       brainstorm_warning, read_style(page, "#brainstorm-view h2", "color"))
+    ok(item, "[p1] #draft-view h2 font-size", "18px", read_style(page, "#draft-view h2", "font-size"))
     ok(item, "[p1] .panel-header h2 font-size", "14px", read_style(page, ".panel-header h2", "font-size"))
-    ok(item, "[p1] .overlay-card h3 font-size", "16px", read_style(page, ".overlay-card h3", "font-size"))
+    ok(item, "[p1] .overlay-card h3 font-size", "24px", read_style(page, ".overlay-card h3", "font-size"))
     # `.markdown-body` 的规范消费者是 #draft-content(文档区正文渲染区)。
     # document.querySelector('.markdown-body') 会落到 #latest-check(它也带该类且自带
     # font-size 覆盖),那不是 `.markdown-body` 规则本身的探针。
-    ok(item, "[p1] .markdown-body font-size(探针 #draft-content)", "14px",
+    ok(item, "[p1] .markdown-body font-size(探针 #draft-content)", "16px",
        read_style(page, "#draft-content", "font-size"))
     # `.markdown-body code` 需要真实 <code> 元素:用应用自身的 renderMarkdown 渲染一个代码跨度
     # (真实渲染路径,零网络、零 AI 调用)。
@@ -740,12 +741,23 @@ def item4(page, tmp_root):
         host.innerHTML = '';
         host.appendChild(renderMarkdown('harness `probe` 探针'));
     }""")
-    ok(item, "[p1] .markdown-body code font-size", "13px",
+    ok(item, "[p1] .markdown-body code font-size", "14px",
        read_style(page, "#draft-content code", "font-size"))
 
-    ok(item, "[p1] #selection-menu z-index", "200", read_style(page, "#selection-menu", "z-index"))
-    ok(item, "[p1] #state-badge z-index", "10", read_style(page, "#state-badge", "z-index"))
-    ok(item, "[p1] #stream-banner z-index", "20", read_style(page, "#stream-banner", "z-index"))
+    # TOKEN-07 / R-1 的渲染层证据:三条 z-index 走令牌接线,值层再改也不产生假 FAIL。
+    # #state-badge 的 z-index 由 R-1 恢复后 --z-badge 才重新有消费者,
+    # 围栏断言的 `badge < banner` 承重序关系两端都在真实 DOM 上被读到。
+    z_menu = resolve_token(page, "--z-selection-menu")
+    z_badge = resolve_token(page, "--z-badge")
+    z_banner = resolve_token(page, "--z-banner")
+    info("item4 令牌解析(z-index)", f"--z-selection-menu={z_menu} --z-badge={z_badge} "
+         f"--z-banner={z_banner}")
+    ok(item, "[p1] #selection-menu z-index == var(--z-selection-menu)", z_menu,
+       read_style(page, "#selection-menu", "z-index"))
+    ok(item, "[p1] #state-badge z-index == var(--z-badge)", z_badge,
+       read_style(page, "#state-badge", "z-index"))
+    ok(item, "[p1] #stream-banner z-index == var(--z-banner)", z_banner,
+       read_style(page, "#stream-banner", "z-index"))
 
     # 冻结轮(与第 2 项共用读取器)
     proj = make_fixture("p3", tmp_root)
@@ -759,9 +771,11 @@ def item4(page, tmp_root):
     ok(item, "[archive] #rounds-placeholder.archive-mode #round-doc opacity", "0.75",
        read_style(page, "#rounds-placeholder.archive-mode #round-doc", "opacity"))
 
-    # 任意 button color(通用规则,探针同上)
-    ok(item, "[archive] button color(通用规则,探针 #btn-enter)", "rgb(26,26,26)",
-       read_style(page, "#btn-enter", "color"))
+    # 任意 button color(通用规则,探针同上)。D-14:期望侧来自 --color-text 的运行时解析。
+    text_token = resolve_color(page, "--color-text")
+    info("item4 令牌解析", f"--color-text={text_token}")
+    ok(item, "[archive] button color(通用规则,探针 #btn-enter) == var(--color-text)",
+       text_token, read_style(page, "#btn-enter", "color"))
 
     # S-2 依赖:14px 必须作为一级字号档存活
     base = page.evaluate(
@@ -785,22 +799,31 @@ def item5(page, tmp_root, ai_smoke):
     print("\n=== UAT 5: DevTools computed-style 抽查 — Plan 03(10 项)===", flush=True)
     proj = make_fixture("p1", tmp_root)
     enter_project(page, proj)
-
-    ok(item, "[p1] #ai-route-select border-top-color", "rgb(138,138,138)",
+    # D-14:六条颜色断言的期望侧全部来自运行时解析的令牌,不再硬编码 rgb。
+    ok(item, "[p1] #ai-route-select border-top-color == var(--color-border-strong)",
+       resolve_color(page, "--color-border-strong"),
        read_style(page, "#ai-route-select", "border-top-color"))
-    ok(item, "[p1] #ai-route-select background-color", "rgb(255,255,255)",
+    ok(item, "[p1] #ai-route-select background-color == var(--color-surface)",
+       resolve_color(page, "--color-surface"),
        read_style(page, "#ai-route-select", "background-color"))
-    ok(item, "[p1] .hint color", "rgb(106,106,106)", read_style(page, ".hint", "color"))
-    hint_bg = effective_bg(page, ".hint")
-    ok(item, "[p1] .hint 实际背景", "rgb(250,250,250)", hint_bg,
+    ok(item, "[p1] .hint color == var(--color-text-muted)",
+       resolve_color(page, "--color-text-muted"), read_style(page, ".hint", "color"))
+    # .hint 自身无背景,沿祖先链取到的实际底色。实测:命中的是 index.html 里
+    # #doc-panel-body → #doc-panel 内的那条,而 #doc-panel { background: var(--color-surface) }
+    # —— 故是 --color-surface,不是 --color-surface-page(两者在 04.1 之后是 #f9f9f9 / #fcfcfc)。
+    ok(item, "[p1] .hint 实际背景 == var(--color-surface)",
+       resolve_color(page, "--color-surface"), effective_bg(page, ".hint"),
        note=".hint 自身无背景,沿祖先链取到的实际底色")
-    ok(item, "[p1] #stream-banner border-top-color", "rgb(138,101,8)",
+    ok(item, "[p1] #stream-banner border-top-color == var(--color-action-warning)",
+       resolve_color(page, "--color-action-warning"),
        read_style(page, "#stream-banner", "border-top-color"))
 
-    # ORDER 0.311 的可观察形态:.markdown-body 必须明显比 .hint 更深
+    # ORDER 0.363 的可观察形态:.markdown-body 必须明显比 .hint 更深
+    # (该比值由 0.311 放宽到 0.363 是刻度强制的,见 UI-SPEC 04.1-N-1,不是判断失误)。
     body_color = read_style(page, ".markdown-body", "color")
     hint_color = read_style(page, ".hint", "color")
-    ok(item, "[p1] .markdown-body color", "rgb(26,26,26)", body_color)
+    ok(item, "[p1] .markdown-body color == var(--color-text)",
+       resolve_color(page, "--color-text"), body_color)
     body_rgb, hint_rgb = parse_rgb(body_color), parse_rgb(hint_color)
     if body_rgb is None or hint_rgb is None:
         blocked(item, "[p1] .markdown-body 亮度显著低于 .hint", "<", "取色失败", "取色失败")
@@ -812,7 +835,7 @@ def item5(page, tmp_root, ai_smoke):
             lb < lh,
             "<",
             f"lum(.markdown-body)={lb:.4f} lum(.hint)={lh:.4f}",
-            "ORDER 0.311 的可观察形态",
+            "ORDER 0.363 的可观察形态",
         )
 
     # 交互冒烟:「处理本轮批注」与「发送」

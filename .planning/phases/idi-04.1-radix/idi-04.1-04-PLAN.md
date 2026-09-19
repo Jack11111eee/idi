@@ -32,7 +32,7 @@ must_haves:
 
   artifacts:
     - path: "scripts/check-05-ui-uat.py"
-      provides: "`resolve_color` 的「令牌未声明 → None」分支 + `ok()` 的「期望值为 None → BLOCKED」分支;27 处调用点与全部期望值一字未动"
+      provides: "`resolve_color` 的「令牌未声明 → None」分支 + `ok()` 的「期望值为 None → BLOCKED」分支;24 处调用点与全部期望值一字未动"
       contains: "expected is None"
     - path: "scripts/probe-05-resolve-color.py"
       provides: "CR-01 的变异证明:路由拦截 `/style.css`、只删 `--color-text-muted` 声明,打印修复前 PASS / 修复后 BLOCKED 的四行对照;不是门,不进四条守卫命令契约"
@@ -77,7 +77,7 @@ must_haves:
 ---
 
 <objective>
-关闭 VERIFICATION.md 的唯一 BLOCKER **CR-01**:`scripts/check-05-ui-uat.py` 的 `resolve_color` 不区分「令牌已声明」与「令牌未声明」,使 27 处调用点里的颜色断言在令牌改名/删除下**恒真**(假 PASS)。修法是让 `resolve_color` 在令牌未声明时返回 `None`,并让 `ok()` 把 `None` 期望值记成 BLOCKED;随后用一条与 plan 02 同规格的**变异证明**把「修复前 PASS / 修复后 BLOCKED」的对照钉死。
+关闭 VERIFICATION.md 的唯一 BLOCKER **CR-01**:`scripts/check-05-ui-uat.py` 的 `resolve_color` 不区分「令牌已声明」与「令牌未声明」,使 24 处调用点里的颜色断言在令牌改名/删除下**恒真**(假 PASS)。修法是让 `resolve_color` 在令牌未声明时返回 `None`,并让 `ok()` 把 `None` 期望值记成 BLOCKED;随后用一条与 plan 02 同规格的**变异证明**把「修复前 PASS / 修复后 BLOCKED」的对照钉死。
 
 Purpose: `0 FAIL` 是本阶段(idi-04.1)的头条证据,而 `check-05` 正是产出它的验收仪器。D-14 把 22 条硬编码 `rgb(...)` 断言换成 `resolve_color` 调用,移除了「值层改动产生假 FAIL」的根因 —— 代价是本阶段**同时**移除了「令牌接错线/被改名时响亮 FAIL」的能力。这不是推测:VERIFICATION.md 的 B-1 在真实 chromium-1243 上拦截 `/style.css` 删掉 `--color-text-muted` 声明后复现 —— `.hint` computed 与 `resolve_color` 都变成 `rgb(32, 32, 32)`(提示灰已变成正文黑,渲染明显是坏的),而 harness 记 **PASS**。计划 02 在**同一阶段内**刚修掉一个同类的空转守卫(`check-01` 的 tier-1 交替式),并专门要求用变异证明修复不是修辞;本 run 用同一把尺子补上 `check-05` 这一处。
 
@@ -164,7 +164,9 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
     - `scripts/check-05-ui-uat.py` L1-58 —— 模块 docstring:退出码语义(`0/1/2` 的定义在 L39-42,`2` 的释义含「状态造不出 / 元素不可见 / 选择器不存在」)、设计要点
     - `scripts/check-05-ui-uat.py` L80-160 —— 断言记录器:`_emit`、`ok`(L102-114)、`norm`(L117-121)、`ok_true`、`ok_contains`、`blocked`、`info`、`item_verdict`
     - `scripts/check-05-ui-uat.py` L229-292 —— `_READ_JS`、`read_style`、`read_classlist`、`resolve_color`(L250-262)、`resolve_token`(L265-275,参照形状)、`effective_bg`
-    - `scripts/check-05-ui-uat.py` L580-690 / L795-840 / L965-1005 —— 27 处 `resolve_color` 调用点的代表样本,确认已声明令牌下的行为**一字不改**
+    - `scripts/check-05-ui-uat.py` L490-500 / L580-690 / L770-840 / L965-1005 —— 24 处 `resolve_color` 调用点的全部聚集区(含 L775、L804-826),确认已声明令牌下的行为**一字不改**
+    - `scripts/check-05-ui-uat.py` **L271** 与 **L782** —— 仓库里**仅有的两处** `getPropertyValue`:L271 在 `resolve_token`(本次修复的参照形状),L782 在 item4 的 `--text-base` 存活断言里(与本 run 无关,但它在下面那条 `grep -c` 门里计入分母 —— 漏读它正是本计划早先算错这个数的原因)
+    - `.planning/phases/idi-04.1-radix/idi-04.1-PATTERNS.md` §check-05(L220-283,尤其 L278-279)—— 该 Pattern Map 已把本 run 要恢复的不变量写成纪律:「`resolve_color` return `None` … `ok()` turns `None` into `BLOCKED`, never a pass — preserve that」
     - `.planning/phases/idi-04.1-radix/idi-04.1-VERIFICATION.md` `## Gaps Summary` 与 `## Behavioral Spot-Checks` 的 **B-1** 行 —— 缺陷的独立复现与「修复面很小且有验证过的形态」的原文
     - `.planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md` **D-14** —— 「全部改为令牌接线表述」的决定与它自陈的代价条款(「这确实牺牲了『硬编码值能抓令牌接错线』的那部分检测力」);本 run 正是补这个代价
     - `.planning/phases/idi-04.1-radix/idi-04.1-03-PLAN.md` —— D-14 的落地条款与「每条接线断言旁 `info()`」的补偿条款
@@ -172,7 +174,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
   <action>
     **本任务只动 `scripts/check-05-ui-uat.py` 的两个 helper,不动任何调用点、期望值或断言。**
 
-    **改动 1 —— `resolve_color`(L250-262)加一条「令牌未声明」的前置分支。** 在探针 div 被创建**之前**,先在页面里读 `getComputedStyle(document.documentElement).getPropertyValue(t)`;把该字符串 `trim()` 后若为空(空串或纯空白),直接返回 `null`(Python 侧即 `None`)。**已声明令牌的路径逐字保留**:创建 `div` → `p.style.color = \`var(${t})\`` → `document.body.appendChild(p)` → 读 `getComputedStyle(p).color` → `p.remove()` → 返回该值。docstring 补一句:未声明令牌返回 `None`,与 `resolve_token`(L265-275)同形 —— 后者已是这个形状,是本次修复的参照。**该 docstring 不得逐字复述那串读取表达式**(照 plan 02 Task 1 的同款纪律:注释里再抄一遍会让下面的 `grep -c` 计数从 2 变成 3);用散文说「先确认 `documentElement` 上该令牌确有声明」即可。
+    **改动 1 —— `resolve_color`(L250-262)加一条「令牌未声明」的前置分支。** 在探针 div 被创建**之前**,先在页面里读 `getComputedStyle(document.documentElement).getPropertyValue(t)`;把该字符串 `trim()` 后若为空(空串或纯空白),直接返回 `null`(Python 侧即 `None`)。**已声明令牌的路径逐字保留**:创建 `div` → `p.style.color = \`var(${t})\`` → `document.body.appendChild(p)` → 读 `getComputedStyle(p).color` → `p.remove()` → 返回该值。docstring 补一句:未声明令牌返回 `None`,与 `resolve_token`(L265-275)同形 —— 后者已是这个形状,是本次修复的参照。**该 docstring 不得逐字复述那串读取表达式**(照 plan 02 Task 1 的同款纪律:仓库里现有 2 处 `getPropertyValue` —— L271 的 `resolve_token` 与 L782 的 item4 `--text-base` 断言,本改动加第 3 处;注释里再抄一遍会让下面的 `grep -c` 计数从 3 变成 4);用散文说「先确认 `documentElement` 上该令牌确有声明」即可。
 
     **改动 2 —— `ok()`(L102-114)加一条「期望值解析不出」的分支。** 在现有 `if actual is None:` 分支**之前**插入 `if expected is None:` 分支:`_emit(item, "BLOCKED", label, "<UNRESOLVED>", actual, "令牌未声明或期望值解析失败")`。其余三条路径(`actual is None` → BLOCKED、`norm(actual) == norm(expected)` → PASS、否则 FAIL)与 `norm` 本身**逐字保留**。docstring 补一句说明这两类 BLOCKED 的区别(实际值读不到 vs 期望值解析不出)。
 
@@ -180,13 +182,13 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 
     **改动 3 —— 模块 docstring L42 的退出码释义对齐。** 把 `2` 的括号释义从「状态造不出 / 元素不可见 / 选择器不存在」扩为「状态造不出 / 元素不可见 / 选择器不存在 / 期望值解析不出」。**只改这一处括号,不动 L39-41 的 `0` / `1` 释义,也不动文件其余任何散文。**
 
-    **明确不做:** 不改 27 处调用点、不改任何 `expected` 字面值、不改 `read_style` / `effective_bg` / `resolve_token` / `norm` / `parse_rgb` / `item_verdict` / `_emit`;不修 W-5(`item_smoke` 的 `!= "none"`)与 CR-02(`wait_done` 的谓词)—— 两者都是范围外;不重构本文件。
+    **明确不做:** 不改 24 处调用点、不改任何 `expected` 字面值、不改 `read_style` / `effective_bg` / `resolve_token` / `norm` / `parse_rgb` / `item_verdict` / `_emit`;不修 W-5(`item_smoke` 的 `!= "none"`)与 CR-02(`wait_done` 的谓词)—— 两者都是范围外;不重构本文件。
 
     **证伪由 Task 2 承担。** 本任务的门是「不回归」:在真实树上全量 harness 的逐项结论必须与 VERIFICATION.md P3.7 基线逐项一致(见下)。
   </action>
   <verify>
     <automated>grep -c 'getPropertyValue' scripts/check-05-ui-uat.py</automated>
-    <fails_when>计数不等于 2(`resolve_token` 原有 1 处 + `resolve_color` 新增 1 处;若为 3 说明 docstring 逐字复述了那串读取表达式,若为 1 说明前置分支没写进去)</fails_when>
+    <fails_when>计数不等于 3(`resolve_token` L271 原有 1 处 + item4 的 `--text-base` 存活断言 L782 原有 1 处 + `resolve_color` 新增 1 处;若为 4 说明 `resolve_color` 的 docstring 逐字复述了那串读取表达式,若为 2 说明前置分支没写进去 —— 先跑 `grep -n 'getPropertyValue' scripts/check-05-ui-uat.py` 看命中的行号再判因,不要凭计数猜)</fails_when>
     <automated>grep -c 'expected is None' scripts/check-05-ui-uat.py</automated>
     <fails_when>计数不等于 1(`ok()` 的新分支缺失,或被重复写入)</fails_when>
     <automated>.venv/bin/python -m py_compile scripts/check-05-ui-uat.py</automated>
@@ -198,12 +200,12 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
   </verify>
   <acceptance_criteria>
     - `resolve_color` 的 JS 里存在「先读 `documentElement` 上该令牌的声明、为空即返回 `null`」的前置分支;已声明令牌的探针路径(建 div → `var()` → appendChild → 读 computed color → remove → 返回)逐字保留
-    - `grep -c 'getPropertyValue' scripts/check-05-ui-uat.py` 等于 2;`grep -c 'expected is None' scripts/check-05-ui-uat.py` 等于 1
+    - `grep -c 'getPropertyValue' scripts/check-05-ui-uat.py` 等于 3(仓库原有 2 处:L271 的 `resolve_token`、L782 的 item4 `--text-base` 断言;加 `resolve_color` 新增 1 处);`grep -c 'expected is None' scripts/check-05-ui-uat.py` 等于 1
     - `ok()` 的 `expected is None` 分支在 `actual is None` 分支之前,记 `BLOCKED`;其余三条路径与 `norm` 一字未动
     - 模块 docstring L42 的 `2` 释义已含「期望值解析不出」,`0`/`1` 释义未动
     - `.venv/bin/python scripts/check-05-ui-uat.py` 输出 0 条 `FAIL`;item 1/2/3/4/6 结论为 `PASS` 且 BLOCKED 计数为 0;item 5 为 `BLOCKED  (9,0,2)`;末行 `exit=2` —— 与 VERIFICATION.md P3.7 基线逐项一致
     - `git status --porcelain -- frontend/` 输出为空
-    - 27 处 `resolve_color` 调用点、`resolve_token`、`read_style`、`effective_bg`、`item_smoke` 的 `!= "none"` 写法、`wait_done` 的谓词全部一字未动
+    - 24 处 `resolve_color` 调用点、`resolve_token`、`read_style`、`effective_bg`、`item_smoke` 的 `!= "none"` 写法、`wait_done` 的谓词全部一字未动
   </acceptance_criteria>
   <done>`resolve_color` 在令牌未声明时返回 `None`(不再是继承色),`ok()` 把 `None` 期望值记 BLOCKED;真实树上全量 harness 的逐项结论与基线逐项一致(0 FAIL、item 5 恰两条 BLOCKED、`exit=2`),`frontend/` 零改动。</done>
 </task>
@@ -362,7 +364,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 </threat_model>
 
 <verification>
-- `grep -c 'getPropertyValue' scripts/check-05-ui-uat.py` == 2;`grep -c 'expected is None' scripts/check-05-ui-uat.py` == 1
+- `grep -c 'getPropertyValue' scripts/check-05-ui-uat.py` == 3(仓库原有 2 处 + `resolve_color` 新增 1 处);`grep -c 'expected is None' scripts/check-05-ui-uat.py` == 1
 - `.venv/bin/python scripts/check-05-ui-uat.py` 0 FAIL;item 1/2/3/4/6 `PASS` 且 0 BLOCKED;item 5 `BLOCKED (9,0,2)`;`exit=2` —— 与 VERIFICATION.md P3.7 基线逐项一致
 - `.venv/bin/python scripts/probe-05-resolve-color.py` 退出码 0,含 `PROBE mutation-applied=yes` / `PROBE mutated-prefix-verdict=PASS` / `PROBE mutated-postfix-verdict=BLOCKED` / `PROBE control-verdict=PASS`
 - `bash scripts/check-01-token-conformance.sh` / `bash scripts/check-03-hidden-uniqueness.sh` / `bash scripts/check-04-important-count.sh` 各自 `PASS`;`python3 scripts/check-02-contrast.py` 末行 `PASS: 0 failures` 且含 `ORDER 0.363`
@@ -373,7 +375,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 </verification>
 
 <success_criteria>
-1. CR-01 关闭:`resolve_color` 区分「令牌已声明 / 未声明」,未声明时返回 `None`;`ok()` 把 `None` 期望值记 BLOCKED —— 27 处颜色断言在令牌改名/删除下重新具备证伪能力
+1. CR-01 关闭:`resolve_color` 区分「令牌已声明 / 未声明」,未声明时返回 `None`;`ok()` 把 `None` 期望值记 BLOCKED —— 24 处颜色断言在令牌改名/删除下重新具备证伪能力
 2. 修复被**证明**而非被断言:同一份被删掉 `--color-text-muted` 声明的副本上,修复前记 PASS、修复后记 BLOCKED,对照逐字进 SUMMARY
 3. 修复没有引入另一种空转:未变异的对照仍记 PASS,全量 harness 的逐项结论与 VERIFICATION.md P3.7 基线逐项一致
 4. 被验证对象未被污染:`frontend/` 零改动,变异只活在浏览器侧被拦截的副本里
@@ -390,7 +392,7 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 - **新文件** `scripts/probe-05-resolve-color.py` —— CR-01 的变异证明。内部符号(命名可调,行为契约固定):`PREFIX_PROBE_JS`(修复前探针体的反事实常量,引自 `68309d0`)、`main()`、退出码 `0`(全部断言成立)/ `1`(任一条不成立)。**输出契约(逐字)**:`PROBE mutation-applied=yes` / `PROBE mutated-prefix-verdict=PASS` / `PROBE mutated-postfix-verdict=BLOCKED` / `PROBE control-verdict=PASS`。它**不是**门,不进四条守卫命令契约
 - **新文件** `.planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md` —— 本计划执行时由 executor 产出(CR-01 对照证据块 + 范围登记块)
 
-**删除的符号:** 无。27 处 `resolve_color` 调用点、全部 `expected` 字面值、`resolve_token` / `read_style` / `effective_bg` / `norm` / `item_smoke` / `wait_done` 一字未动。
+**删除的符号:** 无。24 处 `resolve_color` 调用点、全部 `expected` 字面值、`resolve_token` / `read_style` / `effective_bg` / `norm` / `item_smoke` / `wait_done` 一字未动。
 
 **`files_modified` 之外的一切均不改动** —— 特别是 `frontend/style.css`(被验证对象)、`frontend/app.js`、`frontend/index.html`、`frontend/vendor/`、`scripts/check-01-token-conformance.sh`、`scripts/check-02-contrast.py`、`scripts/check-03-hidden-uniqueness.sh`、`scripts/check-04-important-count.sh`、`.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`。
 </artifacts_this_phase_produces>

@@ -90,6 +90,8 @@ Output: `scripts/check-05-ui-uat.py` 里 `resolve_color` 的未声明分支与 `
 **为什么不是 tracer:** TRACER_MODE 为 true,但本阶段是 gap-closure 而非 greenfield —— tracer 切片由**已执行的 plan 01** 承载(围栏值层 + 43 对清单 + 运行时接线断言,一条竖切贯穿 `style.css` → `check-02` → `check-05`)。本计划不新写 tracer 任务,而是按 orchestrator 的指示,以「修 `resolve_color` → 用变异证明它 → 复跑全量 harness」这条**最小的端到端切片**领起。
 
 **两个 checkpoint 探测器的结论(留档,避免复核时再问):** `api-coverage` 与 `assumption-delta` 对 phase scope 均返回 `detected: false`(本阶段不集成任何外部 API/SDK;不引入第二平台/可选字段/由导出变选定的假设)。故不产出 `COVERAGE.md`,也不产出 assumption-delta 决策块。
+
+**决策归属(可追溯性,不是覆盖声明):** 本 run **只落地 D-14 的代价条款** —— D-14 把断言改成令牌接线时自陈「这确实牺牲了『硬编码值能抓令牌接错线』的那部分检测力」,CR-01 正是那部分检测力丧失后的具体形态,本 run 把它补回。**D-01…D-13、D-15、D-16 已由已执行的 plans 01–03 落地**,本 run 不重做、不改写它们的口径,也不重新认领它们的交付物。
 </objective>
 
 <execution_context>

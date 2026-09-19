@@ -1,10 +1,11 @@
 ---
 phase: "04.1"
 slug: "idi-04.1-radix"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-09-19"
+reviewed_at: "2026-09-19"
 supersedes_sections: ["Color", "Contrast Verification"]
 ---
 
@@ -697,19 +698,90 @@ The one sentence that moves is a *design-document* note, not UI copy: `04-UI-SPE
 
 ## UI Considerations
 
-`04-UI-SPEC.md`'s probe result stands: **79 considerations raised — 4 resolved, 1 backstop, 13
-deferred, 61 dismissed.** This phase is a **pure value-layer rewrite**: it introduces no element and
-no state, so every `empty` / `loading` / `error` / `populated` / `partial` / `zero-one-many` /
-`long-text` row keeps its existing disposition for the same reason (a `var()` value substitution
-cannot change a state's behaviour), and the 13 `overflow` deferrals still belong to Phase 6.
+**Probe run for this phase, 2026-09-19** — `ui-consideration-probe.cjs` over the 16 surfaces this
+contract re-values. **58 considerations raised — 30 resolved (explicit), 28 resolved (backstop),
+0 unresolved, 0 dismissed.**
 
-**One backstop is re-opened and re-specified**, because its acceptance criterion was tied to a value
-this phase replaces:
+**Kind-confirmation was applied first** (under `--auto` the orchestrator authors the kind union
+instead of prompting). The heuristic matched no cue for four surfaces — `#doc-panel`,
+`#round-doc.round-frozen`, `#stream-banner`, the archive view — and each was authored as
+`static-content`, which raised `overflow` + `long-text` for all four. **No `unclassified` candidate
+remains.** Element IDs below are this section's own; they do not renumber `04-UI-SPEC.md`'s.
 
-| Category | Element(s) | Status | Resolution / Reason |
+**Why nothing is dismissed, and why the split falls where it does.** This phase is a pure
+value-layer rewrite: it changes colour *values* inside one fence and touches **zero selectors and
+zero copy**. A state's *content* therefore cannot move, while its *fit* can interact with the new
+values.
+
+| Tier | Categories | Basis |
+|---|---|---|
+| **explicit** (30) | `empty` / `loading` / `error` / `populated` / `partial` / `zero-one-many` | Truth, per consideration: **the state is unchanged by this phase.** Wired evidence: the zero-diff gate on `frontend/app.js` + `frontend/index.html`, plus CHECK-03 (`^\.hidden {` count = 1) and CHECK-04 (`!important` declarations = 1) — no state structure or copy can have moved. The state's colours are separately pinned by `scripts/check-02-contrast.py`. |
+| **backstop** (28) | `overflow` / `long-text` | Text fit is the one axis the value layer can touch: R-3 removes `.tier-desc`'s dimming alpha, and `--color-text-muted` on `--color-surface-sunken` is the thinnest text ground in the contract at **5.19**. Each is confirmed only by explicit held-out/visual evidence at verify time, else `human_needed` — never a silent pass. |
+
+### Per-surface coverage
+
+| Element | Kinds | explicit (unchanged) | backstop (held-out visual) |
 |---|---|---|---|
-| `long-text` | E8 `#round-doc.round-frozen` | 🧪 backstop | Held-out visual check: open a historical round and confirm (a) the amber inset rule is present, (b) the round switcher shows the historical round, (c) body text is readable at ≥4.5:1. **The marker's colour changes** from `#8a6508` to `#4f3422` — the check is re-run against the new value (10.80:1 ✓, still a clear amber-brown rule). Renders in Phase 5; **not automatable** in this environment. A backstop is confirmed only by explicit evidence or routes to `human_needed` — never a silent pass. |
-| `partial` | E5 `#annotation-listed` / E6 `#checks-panel` / E8 `#doc-pane` | ✖ superseded | The four Phase-4 `opacity` rulings are **carried forward unchanged** except `.tier-desc` (R-3). No new element×state consideration arises. |
+| E1 Event-kind chip | static-content | — | `overflow`, `long-text` |
+| E2 Gate / loop action buttons | interactive-control, static-content | `loading`, `error` | `overflow`, `long-text` |
+| E3 Primary / destructive filled buttons | interactive-control | `loading`, `error` | `long-text` |
+| E4 `#state-badge` | static-content | — | `overflow`, `long-text` |
+| E5 `#doc-panel` / `#doc-panel-body` | static-content | — | `overflow`, `long-text` |
+| E6 Hint / muted-text surfaces | static-content | — | `overflow`, `long-text` |
+| E7 `#round-doc.round-frozen` | static-content | — | `overflow`, `long-text` |
+| E8 `#stream-banner` | static-content | — | `overflow`, `long-text` |
+| E9 Composer | form, interactive-control, static-content | `empty`, `loading`, `error`, `partial` | `overflow`, `long-text` |
+| E10 `.overlay-card` | list-collection, static-content | `empty`, `loading`, `error`, `populated`, `partial`, `zero-one-many` | `overflow`, `long-text` |
+| E11 `#annotation-listed` | list-collection | `empty`, `loading`, `error`, `populated`, `partial`, `zero-one-many` | `overflow` |
+| E12 `#checks-panel` | list-collection | `empty`, `loading`, `error`, `populated`, `partial`, `zero-one-many` | `overflow` |
+| E13 Archive view | static-content | — | `overflow`, `long-text` |
+| E14 `#selection-menu` | nav, static-content | `loading`, `error` | `overflow`, `long-text` |
+| E15 `#ai-route-select` | interactive-control | `loading`, `error` | `long-text` |
+| E16 `mark` | static-content | — | `overflow`, `long-text` |
+
+### Backstop statements (28)
+
+Each is a held-out visual check. `verification: backstop` — confirmed only by explicit evidence, or
+routed to `human_needed`.
+
+| Element | Category | Statement |
+|---|---|---|
+| E1 | `overflow` | Render all seven chips inside a narrow event row; no chip label wraps or clips. |
+| E1 | `long-text` | At 200% zoom, every chip label stays on one line and `--color-kind-fg` reads on all seven grounds (CHECK-02: 4.61–16.29). |
+| E2 | `overflow` | At the narrowest supported pane width, the six-button row wraps rather than overflowing the panel. |
+| E2 | `long-text` | The longest gate label (授权撰写总设计文档) does not clip, and its green-12-on-green-3 label stays legible (CHECK-02: 11.00). |
+| E3 | `long-text` | 认可雏形 / 重新检测 in the narrowest pane do not clip their white-on-blue / white-on-red fills. |
+| E4 | `overflow` | `#state-badge` with its longest streaming state string does not clip its pill. |
+| E4 | `long-text` | The badge's `--color-text-info` on `--color-surface-info` stays ≥4.5:1 (4.53) with the restored `z-index` keeping it above the banner. |
+| E5 | `overflow` | A document long enough to scroll scrolls the panel body, not the page. |
+| E5 | `long-text` | The panel ground (`#f9f9f9`) reads distinct from the page ground (`#fcfcfc`) — the N-7 delta is what to look at. |
+| E6 | `overflow` | A wrapped multi-line `.hint` and a long blockquote do not clip. |
+| E6 | `long-text` | After wrapping, the muted grey stays ≥4.5:1 on all four grounds (CHECK-02: 5.19–5.82). |
+| E7 | `overflow` | A historical round long enough to scroll keeps its amber inset rule pinned to the block edge. |
+| E7 | `long-text` | The frozen-round marker reads as a clear amber-brown rule at the new `#4f3422` (CHECK-02: 10.80), and the round switcher shows the historical round. |
+| E8 | `overflow` | A long fatal error message wraps inside the banner rather than overflowing it. |
+| E8 | `long-text` | The amber warning ground and the red fatal ground both keep their foregrounds ≥4.5:1 with a long message. |
+| E9 | `overflow` | A very long unbroken message grows or scrolls the composer rather than overflowing it. |
+| E9 | `long-text` | With a long draft, `--shadow-composer` still reads as a distinct edge and the placeholder stays legible. |
+| E10 | `overflow` | The tier modal and the confirm dialog fit the viewport with their longest content. |
+| E10 | `long-text` | `.tier-desc` at **full opacity** (R-3) stays legible on blue-11 (4.77), and `--shadow-overlay` reads. |
+| E11 | `overflow` | Many long annotations scroll the list rather than the panel. |
+| E12 | `overflow` | Many checks scroll the panel rather than the page. |
+| E13 | `overflow` | A long archived document does not clip under the archive-mode dim. |
+| E13 | `long-text` | Body text under the 0.75 dim stays ≥4.5:1 (CHECK-02: 6.97). |
+| E14 | `overflow` | The selection menu opened near a pane edge repositions rather than clipping. |
+| E14 | `long-text` | A long menu entry does not truncate its label. |
+| E15 | `long-text` | `#ai-route-select` with its longest route label shows the label without truncation. |
+| E16 | `overflow` | A `mark` run crossing a line break keeps its amber-3 ground on both lines. |
+| E16 | `long-text` | Text on a long `mark` run stays ≥4.5:1 (CHECK-02: `--color-text` on `--color-surface-mark` = 15.88). |
+
+**One predecessor backstop is re-opened and re-specified**, because its acceptance criterion was
+tied to a value this phase replaces: `04-UI-SPEC.md`'s `long-text` backstop on
+`#round-doc.round-frozen` (E7 above) — the marker's colour changes from `#8a6508` to `#4f3422`, so
+the check is re-run against the new value. It renders in Phase 5 and is **not automatable** in this
+environment. `04-UI-SPEC.md`'s other dispositions (13 `overflow` deferrals, the resolved and
+dismissed rows) are **superseded by this probe run**, not carried: this section replaces them
+rather than restating them.
 
 ---
 
@@ -733,15 +805,17 @@ sync is mechanical (N-5, V-12).
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS (N/A — `Tool: none`, no design system to enumerate)
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS (1 non-blocking FLAG — two wrong HEAD baseline figures in `### What this phase fixes that Phase 4 could not`; neither is used by any contract value or by any of the 43 pairs)
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS (N/A — `Tool: none`, no design system to enumerate)
 
-**Approval:** pending
+**Approval:** approved 2026-09-19 — 7/7 dimensions PASS, 1 FLAG accepted (documentation accuracy only).
+Checker independently reproduced the contract's central claim: `scripts/check-02-contrast.py` returns
+`PASS: 0 failures` over 43 pairs + `ORDER 0.363`, every ratio matching this document's tables.
 
 ---
 

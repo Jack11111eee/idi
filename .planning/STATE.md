@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: "04.1"
 current_phase_name: Radix 颜色族重写 (INSERTED)
 status: executing
-stopped_at: Completed idi-04.1-01-PLAN.md
-last_updated: "2026-09-19T13:04:47.369Z"
+stopped_at: Completed idi-04.1-02-PLAN.md
+last_updated: "2026-09-19T13:18:19.449Z"
 last_activity: 2026-09-19
 last_activity_desc: Phase idi-04.1 execution started
-state_head: bcab577f5b9fb38ce653a67bd3d3ba52984ea441
+state_head: ecae6cb044672a0d09fc694afe7490a460908f57
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 ## Current Position
 
 Phase: idi-04.1 (Radix 颜色族重写 (INSERTED)) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Executing Phase idi-04.1
 Last activity: 2026-09-19 — Phase idi-04.1 execution started
 
@@ -78,6 +78,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-04 P01 | ~30min | 3 tasks | 4 files |
 | Phase idi-04 P03 | 11min | 2 tasks | 2 files |
 | Phase 04.1 P01 | 22min | 3 tasks | 2 files |
+| Phase 04.1 P02 | 2min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,10 @@ Recent decisions affecting current work:
 - [Phase 04.1]: D-16 核实成立:无 muted-text 类元素落在 <button> 内,PAIR --color-text-muted ON --color-surface-hover 不进清单,CHECK-02 清单为 43 对(34 TEXT + 9 NON-TEXT)+ 1 ORDER
 - [Phase 04.1]: R-3 只删 .tier-desc 的 opacity: 0.9 一条声明,font-size/font-weight 一字未动;R-1 只加 z-index 一条声明,不加 position(#state-badge 刻意不是 position: fixed 浮层)
 - [Phase 04.1]: 新 shadow 令牌 shadow-overlay 与 .overlay-card 的 box-shadow 消费者同一次提交落地(Hard Rule 5);item_smoke 的 R-2 断言用短 needle "0.2",守住 wave 3 的「全文件唯一颜色字面」计数不变量
+- [Phase 04.1]: CHECK-01 的 tier-1 交替式加宽为含 radix(仅一处正则),其余断言逐字未动;D-03 改名后旧交替式对 var(--radix-… 不匹配,守卫静默空转而仍打印 PASS,加宽后重新可机械查
+- [Phase 04.1]: 空转对照被实证:同一份注入 var(--radix-gray-11) 的样式表,新守卫 FAIL/exit=1,用 sed 's/|radix//' 重建的旧守卫 PASS/exit=0 —— 这是本次修复的全部理由,不是推论
+- [Phase 04.1]: check-02-contrast.py 在 43 对清单上四条硬失败路径逐一复证(未知名/标记数 44 vs 43/覆盖率 10 below floor 24/20/4/ORDER inverted 2.753),代码 delta 为零故无独立提交,沿 idi-04-03 先例
+- [Phase 04.1]: 全部八次变异运行在 mktemp -d 临时仓库根上完成;frontend/style.css 是本阶段已提交的交付物,变异前后逐字节一致(git diff --exit-code 为空)
 
 ### Pending Todos
 
@@ -169,8 +174,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-19T13:04:47.269Z
-Stopped at: Completed idi-04.1-01-PLAN.md
+Last session: 2026-09-19T13:18:19.412Z
+Stopped at: Completed idi-04.1-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

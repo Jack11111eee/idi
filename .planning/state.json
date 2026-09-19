@@ -26,7 +26,7 @@
     {
       "number": "4.1",
       "name": "Radix 颜色族重写",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "5",
@@ -54,5 +54,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 04.1 of 6 · 0% · executing"
   },
-  "updated_at": "2026-09-19T13:04:15.509Z"
+  "updated_at": "2026-09-19T13:18:12.163Z"
 }

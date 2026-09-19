@@ -60,7 +60,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### CHECK — 契约校验(让契约可执行,而非一次性清理)
 
-- [ ] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
+- [x] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
 - [x] **CHECK-02**: 对比度自动校验脚本——对所有声明的令牌配对计算 WCAG 对比度(约 15 行,零依赖)
 - [x] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
 - [x] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
@@ -149,7 +149,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | LAYOUT-04 | Phase 6: 布局稳健性 | Pending |
 | INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |
 | INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
-| CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |

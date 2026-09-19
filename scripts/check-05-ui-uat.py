@@ -455,7 +455,9 @@ def item1(page, tmp_root):
 # ---------------------------------------------------------------------------
 # 冻结轮读取器(第 2 项与第 4 项共用)
 # ---------------------------------------------------------------------------
-FROZEN_AMBER = "rgb(138, 101, 8)"
+# D-14:冻结轮的琥珀色不再硬编码 —— 期望侧由 resolve_color(page, "--color-action-warning")
+# 在运行时解析。原先那个模块常量(及其三处字面串)已整体删除:
+# 它是「值层一改就产生假 FAIL」这条单条根因在 check_frozen_marker 里的那一份。
 
 
 def parse_box_shadow(raw):
@@ -489,14 +491,18 @@ def check_frozen_marker(page, item, label_prefix):
     )
     raw = read_style(page, "#round-doc", "box-shadow")
     info(f"{label_prefix} box-shadow 原始值", repr(raw))
+    # D-14:期望侧来自运行时解析的令牌(值层的仲裁者是 check-02-contrast.py,不是本 harness)
+    frozen_amber = resolve_color(page, "--color-action-warning")
+    info(f"{label_prefix} 令牌解析 --color-action-warning", frozen_amber)
+    expected_shadow = f"inset 3px 0 0 {frozen_amber}"
     parsed = parse_box_shadow(raw) if raw else None
-    if parsed is None:
+    if parsed is None or frozen_amber is None:
         blocked(
             item,
             f"{label_prefix} 冻结轮 box-shadow 语义",
-            "inset 3px 0 0 rgb(138, 101, 8)",
+            expected_shadow,
             raw,
-            "box-shadow 缺失或无法解析",
+            "box-shadow 缺失或无法解析,或 --color-action-warning 解析失败",
         )
     else:
         semantic_ok = (
@@ -505,19 +511,19 @@ def check_frozen_marker(page, item, label_prefix):
             and parsed["y"] == "0px"
             and parsed["blur"] == "0px"
             and parsed["spread"] == "0px"
-            and parsed["color"] == FROZEN_AMBER
+            and norm(parsed["color"]) == norm(frozen_amber)
         )
         ok_true(
             item,
             f"{label_prefix} 冻结轮 box-shadow 语义(inset/3px/0/0/0/amber)",
             semantic_ok,
-            "inset 3px 0 0 rgb(138, 101, 8)",
+            expected_shadow,
             raw,
             "Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等",
         )
         info(
             f"{label_prefix} UAT 字面子串",
-            f"'inset 3px 0 0 rgb(138, 101, 8)' present={('inset 3px 0 0 rgb(138, 101, 8)' in (raw or ''))}"
+            f"'{expected_shadow}' present={expected_shadow in (raw or '')}"
             " —— Chrome 把颜色放在最前、inset 放在最后,该字面序不存在(harness 规格修正,非产品缺陷)",
         )
     ok(item, f"{label_prefix} 冻结轮 opacity", "1", read_style(page, "#round-doc", "opacity"))
@@ -576,13 +582,31 @@ def item3(page, tmp_root):
     # --- p1:.hint(说明文字,文档面板内)---
     proj = make_fixture("p1", tmp_root)
     enter_project(page, proj)
-    ok(item, "[p1] .hint color", "rgb(106,106,106)", read_style(page, ".hint", "color"))
-    ok(item, "[p1] #ai-route-select border-top-color", "rgb(138,138,138)",
+    # D-14:期望侧一律来自运行时解析出的令牌,不再硬编码 rgb。
+    # 每条断言旁的 info() 打印解析值 —— 这是「接线对但值错」留下的人工核对痕迹;
+    # 值本身的仲裁者是 scripts/check-02-contrast.py,不是本 harness。
+    muted = resolve_color(page, "--color-text-muted")
+    border_strong = resolve_color(page, "--color-border-strong")
+    warning = resolve_color(page, "--color-action-warning")
+    kind_write = resolve_color(page, "--color-kind-write")
+    kind_done = resolve_color(page, "--color-kind-done")
+    surface_user = resolve_color(page, "--color-surface-user")
+    info("item3 令牌解析(p1)",
+         f"--color-text-muted={muted} --color-border-strong={border_strong} "
+         f"--color-action-warning={warning}")
+    info("item3 令牌解析(p1)",
+         f"--color-kind-write={kind_write} --color-kind-done={kind_done} "
+         f"--color-surface-user={surface_user}")
+    ok(item, "[p1] .hint color == var(--color-text-muted)", muted,
+       read_style(page, ".hint", "color"))
+    ok(item, "[p1] #ai-route-select border-top-color == var(--color-border-strong)", border_strong,
        read_style(page, "#ai-route-select", "border-top-color"))
-    ok(item, "[p1] #selection-menu border-top-color", "rgb(138,138,138)",
+    ok(item, "[p1] #selection-menu border-top-color == var(--color-border-strong)", border_strong,
        read_style(page, "#selection-menu", "border-top-color"))
-    ok(item, "[p1] #stream-banner border-top-color", "rgb(138,101,8)",
+    ok(item, "[p1] #stream-banner border-top-color == var(--color-action-warning)", warning,
        read_style(page, "#stream-banner", "border-top-color"))
+    # box-shadow 不是颜色令牌:该 needle 由 R-2 的令牌形状(--shadow-overlay 的 0.2 alpha)
+    # 固定,是本文件里唯一保留的颜色字面(D-14 的例外条款)。
     ok_contains(item, "[p1] .overlay-card box-shadow 含 rgba(0,0,0,0.2)",
                 "rgba(0, 0, 0, 0.2)", read_style(page, ".overlay-card", "box-shadow"))
     # .kind-write / .kind-done 事件行:用应用自身的 renderEvent 渲染(不触发 AI 调用)
@@ -590,13 +614,13 @@ def item3(page, tmp_root):
         renderEvent({ kind: 'write', content: 'harness: kind-write 探针', raw: null });
         renderEvent({ kind: 'done', content: 'harness: kind-done 探针', raw: null });
     }""")
-    ok(item, "[p1] .kind-write .event-kind background", "rgb(38,117,74)",
+    ok(item, "[p1] .kind-write .event-kind background == var(--color-kind-write)", kind_write,
        read_style(page, ".kind-write .event-kind", "background-color"))
-    ok(item, "[p1] .kind-done .event-kind background", "rgb(0,0,0)",
+    ok(item, "[p1] .kind-done .event-kind background == var(--color-kind-done)", kind_done,
        read_style(page, ".kind-done .event-kind", "background-color"))
     # .chat-user:用应用自身的 appendChatMessage 渲染(不触发 AI 调用)
     page.evaluate("() => { appendChatMessage('user', 'harness: .chat-user 探针'); }")
-    ok(item, "[p1] .chat-user background", "rgb(31,99,189)",
+    ok(item, "[p1] .chat-user background == var(--color-surface-user)", surface_user,
        read_style(page, ".chat-user", "background-color"))
     info("item3 构造说明",
          ".kind-write/.kind-done/.chat-user 三处用应用自身的 renderEvent/appendChatMessage 渲染探针节点"
@@ -617,11 +641,29 @@ def item3(page, tmp_root):
         }
     ])
     enter_project(page, proj)
-    ok(item, "[p3] #btn-authorize color", "rgb(38,117,74)", read_style(page, "#btn-authorize", "color"))
-    ok(item, "[p3] #btn-authorize border-color", "rgb(38,117,74)",
+    irreversible = resolve_color(page, "--color-action-irreversible")
+    irreversible_fg = resolve_color(page, "--color-action-irreversible-fg")
+    irreversible_surface = resolve_color(page, "--color-action-irreversible-surface")
+    text_info = resolve_color(page, "--color-text-info")
+    surface_info = resolve_color(page, "--color-surface-info")
+    muted_p3 = resolve_color(page, "--color-text-muted")
+    info("item3 令牌解析(p3)",
+         f"--color-action-irreversible={irreversible} "
+         f"--color-action-irreversible-fg={irreversible_fg} "
+         f"--color-action-irreversible-surface={irreversible_surface}")
+    info("item3 令牌解析(p3)",
+         f"--color-text-info={text_info} --color-surface-info={surface_info} "
+         f"--color-text-muted={muted_p3}")
+    # 接线按 style.css:928-934 的三条声明逐条对位:
+    #   color → --color-action-irreversible-fg(green-12)
+    #   border-color → --color-action-irreversible(green-11)
+    #   background → --color-action-irreversible-surface(green-3)
+    ok(item, "[p3] #btn-authorize color == var(--color-action-irreversible-fg)", irreversible_fg,
+       read_style(page, "#btn-authorize", "color"))
+    ok(item, "[p3] #btn-authorize border-color == var(--color-action-irreversible)", irreversible,
        read_style(page, "#btn-authorize", "border-top-color"))
-    ok(item, "[p3] #btn-authorize background-color", "rgb(233,247,239)",
-       read_style(page, "#btn-authorize", "background-color"))
+    ok(item, "[p3] #btn-authorize background-color == var(--color-action-irreversible-surface)",
+       irreversible_surface, read_style(page, "#btn-authorize", "background-color"))
     proc_color = read_style(page, "#btn-process-round", "color")
     proc_border = read_style(page, "#btn-process-round", "border-top-color")
     proc_bg = read_style(page, "#btn-process-round", "background-color")
@@ -635,10 +677,11 @@ def item3(page, tmp_root):
         f"({auth_color}, {auth_border}, {auth_bg})",
         f"({proc_color}, {proc_border}, {proc_bg})",
     )
-    ok(item, "[p3] #state-badge color", "rgb(31,99,189)", read_style(page, "#state-badge", "color"))
-    ok(item, "[p3] #state-badge background-color", "rgb(238,244,255)",
+    ok(item, "[p3] #state-badge color == var(--color-text-info)", text_info,
+       read_style(page, "#state-badge", "color"))
+    ok(item, "[p3] #state-badge background-color == var(--color-surface-info)", surface_info,
        read_style(page, "#state-badge", "background-color"))
-    ok(item, "[p3] .badge-answered color", "rgb(106,106,106)",
+    ok(item, "[p3] .badge-answered color == var(--color-text-muted)", muted_p3,
        read_style(page, ".badge-answered", "color"))
 
 

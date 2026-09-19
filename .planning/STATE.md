@@ -5,11 +5,11 @@ milestone_name: 前端视觉与可访问性
 current_phase: 04
 current_phase_name: tokens-contract
 status: executing
-stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
-last_updated: "2026-09-19T05:06:26.451Z"
+stopped_at: Phase 04.1 context gathered
+last_updated: "2026-09-19T05:41:24.087Z"
 last_activity: 2026-09-19
 last_activity_desc: "Quick task 260919-1w1 — `#session-panel` 在阶段 3+ 隐藏(applySessionGates 单点切换);D1/D2/发送按钮不可点三症状同源修复,harness 加五态显隐守卫(RED→GREEN 实证)"
-state_head: 9988df7a5b28988d60fb4568a97585283f37fb77
+state_head: 247e8301047d1ba722b762c7249f19b0f8626029
 progress:
   total_phases: 6
   completed_phases: 0
@@ -165,9 +165,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-17T14:58:17.620Z
-Stopped at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
-Resume file: None
+Last session: 2026-09-19T05:41:24.052Z
+Stopped at: Phase 04.1 context gathered
+Resume file: .planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md
 
 ## Operator Next Steps
 

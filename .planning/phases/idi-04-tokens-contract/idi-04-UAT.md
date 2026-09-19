@@ -1,9 +1,9 @@
 ---
-status: testing
+status: resolved
 phase: idi-04-tokens-contract
 source: [idi-04-01-SUMMARY.md, idi-04-02-SUMMARY.md, idi-04-03-SUMMARY.md]
 started: 2026-09-17T16:10:40Z
-updated: 2026-09-19T13:41:47Z
+updated: 2026-09-19T14:05:00Z
 ---
 
 ## Current Test

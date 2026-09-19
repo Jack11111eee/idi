@@ -208,7 +208,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     - `.planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md` D-12 / D-13 / D-14
   </read_first>
   <action>
-    **1. D-13 —— `#doc-pane` 的期望字符串改为 `#doc-panel-body`。** 把 L644-L653 的 `blocked(...)` 块换成一条正常的 `ok()`:选择器 `#doc-panel-body`,属性 `padding`,期望 `32px 40px`。**这不是 id 改名** —— `frontend/index.html` 里本来就没有 `#doc-pane`,`app.js` 的 id 一字不动;改的是 UAT 的期望字符串。保留一句注释说明原期望串写错了名字(实测 `#doc-panel-body` 的 padding 一直是 32px/40px,与期望值一致,只是名对不上)。
+    **1. D-13 —— `#doc-pane` 的期望字符串改为 `#doc-panel-body`。** 把 L644-L653 的 `blocked(...)` 块换成一条正常的 `ok()`:选择器 `#doc-panel-body`,属性 `padding`,期望 `32px 40px`。**这不是 id 改名** —— `frontend/index.html` 里本来就没有 `#doc-pane`,`app.js` 的 id 一字不动;改的是 UAT 的期望字符串。保留一句注释说明原期望串写错了名字(实测 `#doc-panel-body` 的 padding 一直是 32px/40px,与期望值一致,只是名对不上)。**注释里可以直接写出原串 `#doc-pane`** —— 本任务的负向门判的是「是否还有 `read_style` 调用在读那个选择器」,不是「注释里有没有提到它」,所以把原串写清楚反而更好。
 
     **2. D-12 —— 7 条间距/字号漂移更新期望值接受 HEAD 现状**(`frontend/style.css` 一字不动):
     - `.panel-header` `padding-top` → `6px`;`padding-left` → `10px`
@@ -253,8 +253,10 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <fails_when>第一个计数少于 3(z-index 三条未走 `resolve_token`),或第二个计数少于 2(`item4` 的两条颜色断言未接线)</fails_when>
     <automated>awk '/^def item5\(/,/^def item6\(/' scripts/check-05-ui-uat.py | grep -c 'resolve_color'</automated>
     <fails_when>计数少于 6(`item5` 的六条颜色断言未全部接线)</fails_when>
-    <automated>grep -c 'doc-pane' scripts/check-05-ui-uat.py; grep -c 'doc-panel-body' scripts/check-05-ui-uat.py</automated>
-    <fails_when>第一个计数不为 0(D-13 未改净),或第二个计数少于 1</fails_when>
+    <automated>grep -cE 'read_style\(page, .#doc-pane\b' scripts/check-05-ui-uat.py</automated>
+    <fails_when>计数不为 0(item4 里仍有读取 `#doc-pane` 选择器的调用 —— D-13 未改净)。**门锚在代码形态,不是词形**:`doc-pane` 是 `doc-panel-body` 的**子串**,裸 `grep -c 'doc-pane'` 会被**正确**的 `#doc-panel-body` 命中(同一行同时命中两者),那样的门永远归不了零,而且唯一能让它变绿的办法是删掉 D-13 的交付物本身;注释里为了说明「原串写错了名字」而提到 `#doc-pane` 也不该判失败 —— 被判失败的是**仍在读那个选择器**这件事</fails_when>
+    <automated>grep -cE 'read_style\(page, .#doc-panel-body\b' scripts/check-05-ui-uat.py</automated>
+    <fails_when>计数少于 1(item4 的 D-13 断言没有指向 `#doc-panel-body`)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 4,5</automated>
     <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item 4` / `item 5` 的结论不是 `PASS`</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 4,5 2>&1 | grep -E 'item (4|5):'</automated>
@@ -266,7 +268,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     - `item4` 与 `item5` 函数体内不含任何字面 `"rgb(` 期望值
     - `item4` 含 ≥3 处 `resolve_token`(三条 z-index)与 ≥2 处 `resolve_color`(`#brainstorm-view h2` color、button color)
     - `item5` 含 ≥6 处 `resolve_color`(border-top-color、background-color、`.hint` color、`.hint` 背景、`#stream-banner` border、`.markdown-body` color)
-    - `grep -c 'doc-pane' scripts/check-05-ui-uat.py` == 0 且 `grep -c 'doc-panel-body'` ≥ 1;`item4` 中该条断言为 `ok` 且期望 `32px 40px`
+    - `item4` 里不存在任何读取 `#doc-pane` 选择器的 `read_style` 调用(词边界形式 `read_style(page, …#doc-pane\b` 计数为 0),而读取 `#doc-panel-body` 的调用至少 1 处;该条断言为 `ok` 且期望 `32px 40px`。**判据刻意不写「全文件 `doc-pane` 计数为 0」** —— `doc-pane` 是 `doc-panel-body` 的子串,那个判据与它自己的另一半互斥
     - D-12 的六条期望值逐条落位:`.panel-header` 6px / 10px、`#brainstorm-view h2` 16px、`#draft-view h2` 18px、`.overlay-card h3` 24px、`#draft-content` 16px、`#draft-content code` 14px
     - `.venv/bin/python scripts/check-05-ui-uat.py --item 4,5` 退出码 0,两项均 `PASS`(0 FAIL / 0 BLOCKED)
     - `--text-base` == `14px` 的 S-2 依赖断言仍在且 PASS
@@ -292,7 +294,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     - **D-10(颜色漂移,随值层重写消解)**:第 3 项的 7 条失败中属于颜色值的那些(`.hint` color、`.badge-answered` color、`#state-badge` color、`.chat-user` background、`#ai-route-select` / `#selection-menu` border-top-color)与第 5 项的四条失败,期望值改为**令牌接线表述**(「消费者 computed 值 == 运行时解析出的 `--<token>`」),并在 evidence 里写明:重写后的实测值由 `scripts/check-05-ui-uat.py` 逐条给出,值本身的仲裁者是 `scripts/check-02-contrast.py`。
     - **D-11(两条声明恢复)**:`.overlay-card box-shadow` 与 `#state-badge z-index` 两条失败改为「R-1 / R-2 恢复后 PASS」,并写明 `#state-badge` 的 z-index 恢复是**正确性**修复(否则 `--z-badge` 无消费者、围栏断言的 `badge < banner` 序关系空转)。
     - **D-12(间距/字号漂移,更新期望值接受 HEAD)**:第 4 项的 7 条间距/字号失败改为 HEAD 实测值(`.panel-header` `6px` / `10px`、`#brainstorm-view h2` 16px、`#draft-view h2` 18px、`.overlay-card h3` 24px、`.markdown-body` 16px、`.markdown-body code` 14px、`button` color 走 `--color-text`),并写明理由(04.1 明令不改 S-1/S-2;`6px` = `--space-1-5`、`10px` = `--space-2-5` 都是刻度内合法档)。
-    - **D-13**:第 4 项的 BLOCKED 条目 `#doc-pane` 改为 `#doc-panel-body`,并写明「改的是期望字符串,不是 id —— 硬规则 5 的约 70 个 `getElementById` id 一字未动」。
+    - **D-13**:第 4 项的 BLOCKED 条目 `#doc-pane` 改为 `#doc-panel-body`,并写明「改的是期望字符串,不是 id —— 硬规则 5 的约 70 个 `getElementById` id 一字未动」。**`expected:` 行只写新选择器 `#doc-panel-body`**;「原串写错了名字」的说明放在 `evidence:` 里,而 `## Gaps` 的历史 `observed` / `failing` 原文一字不动 —— 本任务的负向门限定在 `expected:` 行,历史原文里保留的 `#doc-pane` 是要求保留的对照证据。
     - 每项的 `result:` 更新为 `pass`,并在 `evidence:` 里写入**本阶段实跑的输出**(逐项断言数、FAIL / BLOCKED 计数、退出码),不要写「预计通过」这类无证据的表述。
 
     **2. 重写 `## Gaps` 块。** 三条 gap 逐条标为**已消解**,每条写一句消解口径(颜色类随值层重写消解 / 间距字号类更新期望值 / `#doc-pane` 改名),并保留原 gap 的 `observed` 与 `failing` 作为历史对照(不要删掉原始证据 —— 它是「假 FAIL 的根因」这条教训的载体)。末尾那段「另记:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 3.23:1 的 AA 倒退」改写为**已修复**:新值 `--radix-gray-11` `#646464` 在 `--color-surface` `#f9f9f9` 上 **5.62:1**(由 `check-02-contrast.py` 实测)。更新 `## Summary` 的 `passed` / `issues` 计数与 `updated` 时间戳。
@@ -314,8 +316,10 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     **5. 不要在本文件里写实现细节。** 它是 UAT 记录,不是计划;不复制 `idi-04.1-UI-SPEC.md` 的表格(那会造出第二份事实源 —— 正是本阶段要消除的东西)。引用一律写路径与节名。
   </action>
   <verify>
-    <automated>grep -c 'doc-pane' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md; grep -c 'doc-panel-body' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
-    <fails_when>第一个计数不为 0(D-13 未改净),或第二个计数少于 1</fails_when>
+    <automated>grep -cE 'expected:.*#doc-panel-body' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
+    <fails_when>计数少于 1(第 4 项的 `expected:` 行未改指 `#doc-panel-body` —— D-13 未落纸)</fails_when>
+    <automated>grep -cE 'expected:.*#doc-pane\b' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
+    <fails_when>计数不为 0(仍有 `expected:` 行指向 `#doc-pane`)。**门刻意限定在 `expected:` 行,不是全文件**:`## Gaps` 与 `evidence:` 里为对照而保留的历史原文提到 `#doc-pane` 是**要求保留**的(它们是「假 FAIL 的根因」这条教训的载体),全文件计数会把它们判为失败并诱导执行器删掉证据;而 `doc-pane` 又是 `doc-panel-body` 的子串,全文件的词形计数连**正确**的那一行都归不了零</fails_when>
     <automated>grep -c 'result: \[pass\]' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md; grep -c 'result: \[fail\]' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
     <fails_when>第一个计数不为 6,或第二个计数不为 0(三项 FAIL 未全部转为 pass)</fails_when>
     <automated>grep -c '8a6508' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md; grep -c '4f3422' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md; grep -c 'Carry-Forward' .planning/phases/idi-04-tokens-contract/idi-04-UAT.md</automated>
@@ -334,7 +338,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <fails_when>输出非空(ROADMAP 或任何 frontend/ 源文件被改动 —— 本任务只允许改 idi-04-UAT.md)</fails_when>
   </verify>
   <acceptance_criteria>
-    - `grep -c 'doc-pane'` == 0 且 `grep -c 'doc-panel-body'` ≥ 1(D-13 落纸)
+    - 第 4 项的 `expected:` 行已改指 `#doc-panel-body`(至少 1 行),且没有任何 `expected:` 行仍指 `#doc-pane`(0 行);`## Gaps` 与 `evidence:` 里为历史对照保留的 `#doc-pane` 原文**刻意不动**,不受本条约束(D-13 落纸)
     - `## Tests` 的六项 `result:` 全部为 `[pass]`,无 `[fail]`;每项 evidence 写入本阶段实跑的断言数与退出码
     - `## Gaps` 的三条 gap 逐条标为已消解,原始 `observed` / `failing` 保留为历史对照;末尾的 AA 倒退段改为已修复并给出新值 `#646464` / 5.62:1
     - `## Summary` 的 `passed` / `issues` 计数与时间戳更新为 6 / 0

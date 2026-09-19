@@ -389,7 +389,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     **运行时接线证据(硬规则 7 / 携带项 #9)。** 在 `scripts/check-05-ui-uat.py` 的 `item_smoke` 中**追加**三条令牌接线断言(不改动该函数已有的断言与 `info` 记录):
     - 新增一个小助手 `resolve_token(page, name)`:用 `page.evaluate` 读 `getComputedStyle(document.documentElement).getPropertyValue(name).strip()`,返回令牌的**运行时**值(与既有的 `resolve_color` 并列 —— 后者只能解析颜色,`--z-badge` 是数字)。
     - 断言 `#state-badge` 的 computed `z-index` 等于 `resolve_token(page, "--z-badge")`(R-1)。
-    - 断言 `.overlay-card` 的 computed `box-shadow` 不为 `"none"` 且含 `0.2`(R-2)。
+    - 断言 `.overlay-card` 的 computed `box-shadow` 不为 `"none"` 且含 `0.2`(R-2)。**needle 必须恰是 `"0.2"` 这一短串,不得复用 `item3` 里那条完整字面 `rgba(0, 0, 0, 0.2)`**:该完整字面在 `idi-04.1-03-PLAN.md` Task 1 里是「**全文件唯一颜色字面**」的计数不变量(计数 == 1),在 `item_smoke` 里再写一遍会让那个门变红,并把原因误诊为「漏改」。两条断言测的是同一个属性(`.overlay-card` 的 box-shadow),共享的是那个属性,不是那个字面。
     - 断言 `.tier-desc` 的 computed `opacity` 等于 `"1"`(R-3)。
     - 元素缺失或令牌解析失败时,沿用既有 `blocked()` 语义(绝不记为 pass)。`.overlay-card` 与 `.tier-desc` 在 `index.html` 中静态存在,但若其 computed 值为 `None` 必须走 `blocked`。
     - 断言标签沿用该文件的中文风格,并在标签里写明令牌名(照 `item_smoke` 现有写法)。
@@ -407,6 +407,8 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     <fails_when>任一条非零退出,或末行不是 `PASS: 0 failures`</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6</automated>
     <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item smoke` 结论不是 `PASS`</fails_when>
+    <automated>grep -c 'rgba(0, 0, 0, 0.2)' scripts/check-05-ui-uat.py</automated>
+    <fails_when>计数不为 1(`item_smoke` 的 R-2 断言必须用 needle `"0.2"`;复用了 `item3` 的完整字面 `rgba(0, 0, 0, 0.2)` 会让计数变成 2)。这个字面在 `idi-04.1-03-PLAN.md` Task 1 里是「全文件唯一颜色字面」的计数不变量,由本计划与本计划之后的计划**共同**拥有 —— 在本计划里先把它守住,wave 3 的那个门才不会变红并把原因误诊为「漏改」</fails_when>
     <automated>test -z "$(git diff --name-only HEAD -- frontend/app.js frontend/index.html)" && test -z "$(git ls-files --others --exclude-standard frontend/)" && test "$(ls frontend/vendor/)" = "marked.min.js"</automated>
     <fails_when>任一 test 非零退出(app.js/index.html 被改动、frontend/ 出现未跟踪文件、或 vendor/ 不再只有 marked.min.js)</fails_when>
     <automated>git diff --name-only HEAD -- . ':!.claude/settings.local.json'</automated>
@@ -418,6 +420,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     - `grep -c 'opacity: 0.9' frontend/style.css` == 0,而 `opacity: 0.55` 与 `opacity: 0.5;` 的计数与本任务前一致(8 处 `:disabled` 未被软化)
     - `.tier-desc` 规则仍含 `font-size: var(--text-xs)` 与 `font-weight: var(--fw-regular)`
     - `.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6` 退出码 0;`item smoke` 结论为 `PASS`(其中含新增的三条接线断言)
+    - `grep -c 'rgba(0, 0, 0, 0.2)' scripts/check-05-ui-uat.py` == 1(`item_smoke` 的 R-2 断言用的是 needle `"0.2"`,没有把 `item3` 那条完整字面复制一份)
     - 四条守卫命令全部 PASS,`check-02-contrast.py` 仍 `PASS: 0 failures`
     - `git diff --name-only HEAD -- . ':!.claude/settings.local.json'` 只列出 `frontend/style.css` 与 `scripts/check-05-ui-uat.py`(排除项是本计划动手前既有的工作树状态);`frontend/vendor/` 仍只有 `marked.min.js`
     - 本次改动全部为原位追加/删除,无任何规则重排(`git diff -- frontend/style.css` 中不出现被移动的既有规则块)

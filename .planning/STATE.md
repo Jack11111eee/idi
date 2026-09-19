@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: "04.1"
 current_phase_name: Radix 颜色族重写 (INSERTED)
 status: executing
-stopped_at: Completed idi-04.1-02-PLAN.md
-last_updated: "2026-09-19T13:18:19.449Z"
+stopped_at: Completed idi-04.1-03-PLAN.md
+last_updated: "2026-09-19T13:48:42.613Z"
 last_activity: 2026-09-19
 last_activity_desc: Phase idi-04.1 execution started
-state_head: ecae6cb044672a0d09fc694afe7490a460908f57
+state_head: a5e0b070b77a17c11ff5532c7b3e34a224bde159
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -79,6 +79,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-04 P03 | 11min | 2 tasks | 2 files |
 | Phase 04.1 P01 | 22min | 3 tasks | 2 files |
 | Phase 04.1 P02 | 2min | 2 tasks | 1 files |
+| Phase idi-04.1-radix P03 | 41min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -126,6 +127,9 @@ Recent decisions affecting current work:
 - [Phase 04.1]: 空转对照被实证:同一份注入 var(--radix-gray-11) 的样式表,新守卫 FAIL/exit=1,用 sed 's/|radix//' 重建的旧守卫 PASS/exit=0 —— 这是本次修复的全部理由,不是推论
 - [Phase 04.1]: check-02-contrast.py 在 43 对清单上四条硬失败路径逐一复证(未知名/标记数 44 vs 43/覆盖率 10 below floor 24/20/4/ORDER inverted 2.753),代码 delta 为零故无独立提交,沿 idi-04-03 先例
 - [Phase 04.1]: 全部八次变异运行在 mktemp -d 临时仓库根上完成;frontend/style.css 是本阶段已提交的交付物,变异前后逐字节一致(git diff --exit-code 为空)
+- [Phase 04.1]: D-14 断言改造落地:#btn-authorize 的 color 接 --color-action-irreversible-fg(green-12),不是 --color-action-irreversible(green-11) —— 计划原文的令牌对位有误,照抄会让 item 3 永远 FAIL
+- [Phase 04.1]: box-shadow 的 rgba(0, 0, 0, 0.2) 是全文件唯一保留的颜色字面(计数不变量 == 1),其形状由 R-2 的 --shadow-overlay 固定,不是令牌接线对象
+- [Phase 04.1]: C-1 复核:ROADMAP 五处 + 04-UI-SPEC.md 携带项 #7 的 #brainstorm-view h2 = 14px / #8a6508 全部失真(实测 16px / #4f3422);只留证不改写,裁决权交用户
 
 ### Pending Todos
 
@@ -174,8 +178,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-19T13:18:19.412Z
-Stopped at: Completed idi-04.1-02-PLAN.md
+Last session: 2026-09-19T13:48:42.568Z
+Stopped at: Completed idi-04.1-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

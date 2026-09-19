@@ -35,6 +35,7 @@ exactly two sections** — `## Color` and `## Contrast Verification` — and not
 | Literal exceptions L-1…L-5 | `04-UI-SPEC.md` |
 | Sign-Off Items S-1…S-4 | `04-UI-SPEC.md` — **all four signed off 2026-09-17; none may be re-opened, and no one-line alternative may be executed** |
 | Registry Safety | `04-UI-SPEC.md` (not applicable) |
+| Notes | **split by prefix.** `04-UI-SPEC.md`'s `N-1…N-5` remain its own (they are anchored in `canonical_refs`); **this file's notes are numbered `04.1-N-1…04.1-N-8`** so a reference is unambiguous. This file's `04.1-N-2` **supersedes** the predecessor's `N-2`: the `--green-800` scaffold it deliberately retained as a Phase-5 destination is dropped by the wholesale tier-1 rewrite (see V-13). |
 | Not in v1.14 | `04-UI-SPEC.md` |
 
 **A second full copy of `04-UI-SPEC.md` is forbidden.** Copying the 1179-line document would create
@@ -105,7 +106,10 @@ must still contain exactly one file after every plan in this phase (D-01, Roadma
 
 **Explicitly unchanged (the structural output of Phase 4):** the fence's position and its
 `/* ===== DESIGN TOKENS: START/END ===== */` markers; the two-tier split; the number of tier-1
-declarations *as a structure* (26 → 25, `--black` deleted — see V-10); the `--color-*` tier-2 names
+declarations *as a structure* (26 → 25: two deleted — `--black` and the `--green-800` Phase-5
+scaffold, V-10/V-13; five HEAD names merged into a Radix step — `--gray-600`, `--gray-50`,
+`--gray-25`, `--blue-50`, `--amber-25`; six Radix steps newly declared — `gray-1`, `gray-2`,
+`gray-6`, `green-12`, `amber-6`, `amber-11`); the `--color-*` tier-2 names
 frozen verbatim minus the two deleted in R-4; the four guard commands; `.hidden` uniqueness;
 `!important` declaration count = 1; spacing (S-1); typography (S-2); radius; z-index ordering.
 
@@ -220,11 +224,11 @@ verbatim **minus the two deleted in R-4**; no name is renamed and no name is add
 | `--color-text` | `--radix-gray-12` | text 11-12 | 15.88 on page · 15.48 on surface |
 | `--color-text-secondary` | `--radix-gray-11` | text 11-12 | 5.77 / 5.62 / 5.82 |
 | `--color-text-muted` | `--radix-gray-11` | text 11-12 | 5.77 / 5.62 / 5.19 / 5.82 |
-| `--color-text-info` | `--radix-blue-11` | text 11-12 | 4.53 on `--color-surface-info` ⚠ see N-3 |
+| `--color-text-info` | `--radix-blue-11` | text 11-12 | 4.53 on `--color-surface-info` ⚠ see 04.1-N-3 |
 | `--color-surface-page` | `--radix-gray-1` | surface 1-2 | — |
 | `--color-surface` | `--radix-gray-2` | surface 1-2 | — |
 | `--color-surface-sunken` | `--radix-gray-3` | component surface 3-5 | — |
-| `--color-surface-hover` | `--radix-gray-3` | component surface 3-5 | — (no manifest pair, see N-4) |
+| `--color-surface-hover` | `--radix-gray-3` | component surface 3-5 | — (no manifest pair, see 04.1-N-4) |
 | `--color-surface-user` | `--radix-gray-4` | component surface 3-5 | — |
 | `--color-surface-info` | `--radix-blue-2` | surface 1-2 | — |
 | `--color-surface-warning` | `--radix-amber-2` | surface 1-2 | — |
@@ -352,7 +356,7 @@ a truncated manifest passing trivially); this manifest clears all three.
   /* PAIR --color-text-secondary ON --color-surface TEXT */
   /* PAIR --color-text-secondary ON --color-surface-warning-subtle TEXT */
 
-  /* the hint grey on its four real grounds (note N-3) */
+  /* the hint grey on its four real grounds (note 04.1-N-3) */
   /* PAIR --color-text-muted ON --color-surface-page TEXT */
   /* PAIR --color-text-muted ON --color-surface TEXT */
   /* PAIR --color-text-muted ON --color-surface-sunken TEXT */
@@ -447,7 +451,7 @@ NON-TEXT (threshold 3:1):
 | `--color-action-routine` on `--color-action-routine-surface` | 4.21 |
 
 ORDER: **0.363** — `ratio(--color-text-muted) / ratio(--color-text)` on `--color-surface`. Strictly
-below 1.000, so the assertion passes. **See N-1 for why the figure widened from 0.311 and why that
+below 1.000, so the assertion passes. **See 04.1-N-1 for why the figure widened from 0.311 and why that
 is not fixable.**
 
 ### The four computed results a naive Radix port gets wrong
@@ -467,7 +471,7 @@ documentation, and each is a place where the D-09 working assumption had to yiel
 2. **No step in the border band clears SC 1.4.11.** gray-6 1.34, gray-7 1.49, gray-8 1.82 against
    `--color-surface`; amber-6 1.41 and amber-7 1.68 against the amber grounds. Radix's border steps
    are *designed* to be quiet, so a border that must be perceivable cannot live there.
-   `--color-border-strong` moves to **gray-9** (3.24 / 3.15) — which lands within 2/255 of the
+   `--color-border-strong` moves to **gray-9** (3.24 / 3.15) — which lands within 3/255 of the
    `#8a8a8a` the user signed off as **S-3** (3.45:1 on `#fff`), so the signed-off intent is restored
    in Radix terms rather than re-decided. The other three borders stay in 6-8 because they are
    decorative and out of 1.4.11 scope.
@@ -493,8 +497,8 @@ by re-tuning:
 | Symptom at HEAD | HEAD value | This contract | Verified |
 |---|---|---|---|
 | `--color-text-muted` = `#8f8f8f` fails AA on every ground | 3.23 on `#ffffff` ✗ | `--radix-gray-11` `#646464` | **5.62** on `--color-surface` ✓ |
-| `--color-border-strong` = `#d9d9d9` fails SC 1.4.11 (the S-3 regression) | 1.34 ✗ | `--radix-gray-9` `#8d8d8d` | **3.24 / 3.15** ✓ |
-| `--color-action-primary` = `#3a83f7` fails with its own white label | 3.16 ✗ | `--radix-blue-11` `#0d74ce` | **4.77** ✓ |
+| `--color-border-strong` = `#d9d9d9` fails SC 1.4.11 (the S-3 regression) | 1.41 ✗ | `--radix-gray-9` `#8d8d8d` | **3.24 / 3.15** ✓ |
+| `--color-action-primary` = `#3a83f7` fails with its own white label | 3.64 ✗ | `--radix-blue-11` `#0d74ce` | **4.77** ✓ |
 | `.overlay-card` `box-shadow` deleted (SC2 deviation) | `none` | `--shadow-overlay` restored (R-2) | present |
 | `#state-badge { z-index }` deleted → `--z-badge` has no consumer | `auto` | restored (R-1) | `10` |
 
@@ -510,7 +514,7 @@ whole-document dims are ruled individually. This phase changes the disposition o
 | Site | Status under this contract |
 |---|---|
 | `.annotation-answered { opacity: 0.65 }` | Already deleted by Phase 4. **Unchanged.** |
-| `#round-doc.round-frozen { opacity: 0.55 }` | Already deleted by Phase 4 (S-4: `filter: saturate(0.6)` + `box-shadow: inset 3px 0 0 var(--color-action-warning)`). **Unchanged** — and the marker's colour is re-verified: amber-12 on `--color-surface` = **10.80** ✓ (was 5.10 with the old amber). |
+| `#round-doc.round-frozen { opacity: 0.55 }` | Already deleted by Phase 4 (S-4: `filter: saturate(0.6)` + `box-shadow: inset 3px 0 0 var(--color-action-warning)`). **Unchanged** — and the marker's colour is re-verified: amber-12 on `--color-surface` = **10.80** ✓ (the old amber `#8a6508` measured 5.32 on HEAD's `#ffffff` and 5.06 on the new `--color-surface`). |
 | `#rounds-placeholder.archive-mode #round-doc { opacity: 0.75 }` | **Unchanged, still passing.** `--color-text`@0.75 on `--color-surface` = **6.97** ✓ |
 | `.tier-desc { opacity: 0.9 }` | **DELETED — see R-3.** With `--color-action-primary` at `#0d74ce`, white@0.9 composites to **4.17 ✗**. The fill cannot be darkened to compensate without over-darkening every primary button in the app for the sake of one 12px sub-label (Pitfall 4a), so the alpha goes. At full opacity: **4.77 ✓**. |
 | The 8 `:disabled` `opacity: 0.55 / 0.5` sites | **EXEMPT and must NOT be softened** (SC 1.4.3 excludes inactive components; `:disabled` is the G3 precondition's only visual signal — Pitfall M5). |
@@ -527,7 +531,7 @@ before Phase 7's gate can pass.
 
 | Token | Why it has no pair |
 |---|---|
-| `--color-surface-hover` | **D-16 verified and the pair dropped.** Its only consumer is `button:hover` (`style.css:353`). Scanning every `<button>` in `index.html` (23 sites) and every button built in `app.js` (`renderVerdictCard`'s 修 / 接受现状 at `app.js:709-713` use `textContent` only), **no element carrying a muted-text class sits inside a button.** The old `PAIR --color-text-muted ON --gray-100 TEXT` therefore did not describe a rendered combination. The consequence D-16 anticipated holds: 「hover 变浅」 costs nothing, because nothing reads on the hover ground. (`--color-text-muted` on `--color-surface-hover` would be 5.19 anyway.) |
+| `--color-surface-hover` | **D-16 verified and the pair dropped.** Its only consumer is `button:hover` (`style.css:353`). Scanning every `<button>` in `index.html` (21 sites) and every button built in `app.js` (`renderVerdictCard`'s 修 / 接受现状 at `app.js:709-713` use `textContent` only), **no element carrying a muted-text class sits inside a button.** The old `PAIR --color-text-muted ON --gray-100 TEXT` therefore did not describe a rendered combination. The consequence D-16 anticipated holds: 「hover 变浅」 costs nothing, because nothing reads on the hover ground. (`--color-text-muted` on `--color-surface-hover` would be 5.19 anyway.) |
 | `--color-border`, `--color-border-subtle`, `--color-border-warning-subtle`, `--color-border-danger-subtle` | **Decorative separators, out of SC 1.4.11.** Table grid lines, the blockquote rule, panel edges and the dashed amber container border identify no control and no state. `04-UI-SPEC.md` already rules "do not darken every decorative divider"; measuring them would create failing pairs for values that are correct as designed. |
 | `--color-text-inverse`, `--color-surface-info-strong` | **Deleted — see R-4.** Their only manifest entry named a combination that does not render. |
 
@@ -556,6 +560,7 @@ This is what makes "a deliberate value-layer rewrite" checkable rather than asse
 | **R-4** | `--color-text-inverse` and `--color-surface-info-strong` **deleted** (49 → 47 tier-2 colour names); their fictional manifest pair dropped | in fence | none at render | D-15 requires the manifest to enumerate pairs that occur; this pair does not. With the pair gone, the two declarations' only stated justification (the fence comment at `style.css:88-90`, `:99-100`) evaporates, leaving two unconsumed tokens — which Hard Rule 5 forbids. See `## Sign-Off Items` S-5. |
 | **V-11** | Manifest re-enumerated: 34 pairs → **43 pairs** (29→34 TEXT, 5→9 NON-TEXT) | in fence | none at render | D-15 |
 | **V-12** | Fence comments rewritten (step semantics, the mapping table, the override notes) | in fence | none at render | D-03 / D-04 — the name↔step mapping must be legible in the fence itself |
+| **V-13** | `--green-800: #1f5c3a` **deleted** (26 → 25 tier-1 primitives) | in fence | none at render | It was a **Phase-5 scaffold** with zero consumers at HEAD (`04-UI-SPEC.md` N-2 retained it deliberately as the destination for `--color-action-irreversible`). The wholesale tier-1 rewrite replaces that plan: Phase 5 now picks a Radix step for the differentiated irreversible value, so the scaffold's premise is gone and Hard Rule 5 forbids an unconsumed declaration. **Supersedes the predecessor's N-2** — recorded here rather than left as a silent drop. |
 | **C-1** | **Carried, not changed:** `--text-base` = **14px** at HEAD vs **13px** in `04-UI-SPEC.md`; `.panel-header` padding 6/10 vs 10/16; five font sizes 14/16/18/24 vs 13/14/15/16 | outside fence | — | **S-1/S-2 are signed off and this phase does not touch them.** D-12 accepts HEAD's values and updates the UAT expectations. **Obligation carried to the plan:** re-verify every concrete font size referenced by Phase 5 SC5 and Phase 6 SC5 (`#brainstorm-view h2` = 14px is confirmed alive; the others are not yet re-checked). |
 
 **Not in this ledger, deliberately:** spacing, typography, radius, z-index values, the `.hidden` rule,
@@ -565,7 +570,7 @@ This is what makes "a deliberate value-layer rewrite" checkable rather than asse
 
 ## Notes
 
-- **N-1 — the ORDER residual widens from 0.311 to 0.363, and it is not fixable.** `ratio(muted) /
+- **04.1-N-1 — the ORDER residual widens from 0.311 to 0.363, and it is not fixable.** `ratio(muted) /
   ratio(text)` on `--color-surface` = 5.62 / 15.48 = **0.363**, against the `≤ ~0.30` guide that
   `04-UI-SPEC.md` already accepted a 0.311 residual against. **This is a forced consequence of the
   scale, not a regression in judgement:** the AA floor pins `--color-text-muted` to step 11 (step 10
@@ -577,7 +582,7 @@ This is what makes "a deliberate value-layer rewrite" checkable rather than asse
   (`--text-base` 14px vs `--text-md` 16px at HEAD), by family separation, and by the fact that the
   hint grey is now a *named scale step* rather than a hand-picked value.
 
-- **N-2 — the 12-step semantics are a working assumption, and it failed four times.** D-09's bands
+- **04.1-N-2 — the 12-step semantics are a working assumption, and it failed four times.** D-09's bands
   were carried in as a hypothesis because this session could not reach Radix's documentation. The
   surface band (1-2) and the component-surface band (3-5) held exactly. The **solid-fill band (9-10),
   the border band (6-8) and the text band (11-12) each had to yield** at the points recorded in
@@ -585,7 +590,7 @@ This is what makes "a deliberate value-layer rewrite" checkable rather than asse
   payoff: an upstream guarantee that was never checked against *this project's* background
   combinations turned out to be wrong in three of five bands.
 
-- **N-3 — `--color-text-info` on `--color-surface-info` measures 4.53, a 0.03 margin. Do not
+- **04.1-N-3 — `--color-text-info` on `--color-surface-info` measures 4.53, a 0.03 margin. Do not
   "improve" it.** `--radix-blue-11` on `--radix-blue-2` is the **lightest passing combination** —
   the project's signed-off Pitfall-4a rule. The tempting "safer" moves are both wrong: `blue-12`
   (`#113264`) would turn the state badge's foreground into dark navy and abandon the rule; moving the
@@ -595,12 +600,12 @@ This is what makes "a deliberate value-layer rewrite" checkable rather than asse
   (`#fbfdff`) gives **4.67**, at the cost of a badge ground that is nearly white. **CHECK-02 is the
   arbiter either way** — 4.53 ≥ 4.5 passes under its closed-interval rule.
 
-- **N-4 — `--color-surface-hover` and `--color-surface-sunken` share `--radix-gray-3`, deliberately.**
+- **04.1-N-4 — `--color-surface-hover` and `--color-surface-sunken` share `--radix-gray-3`, deliberately.**
   They did before too (`#f2f2f2` / `#f3f3f3`). The hover step is the canonical next step above the
   default component surface (`gray-2`), which is what makes `button:hover` perceptible; making it
   `gray-4` would double the hover delta and collide with `--color-surface-user`.
 
-- **N-5 — one value serves both the panel ground and the control ground.** `--color-surface` is the
+- **04.1-N-5 — one value serves both the panel ground and the control ground.** `--color-surface` is the
   `#doc-panel` background, the `.overlay-card` background, **and** every `button` / `input` /
   `select` / `#selection-menu` background. Canonical Radix would split these across steps 2 and 3 —
   but D-02 freezes the tier-2 names and SC2 forbids selector changes, so one value must serve both.
@@ -609,19 +614,19 @@ This is what makes "a deliberate value-layer rewrite" checkable rather than asse
   name set, not an oversight.** If a future phase wants the canonical split it must add a tier-2
   name, which is a structural change outside this phase's scope.
 
-- **N-6 — `--white` is the one tier-1 name that is not `--radix-*`.** No Radix light scale contains
+- **04.1-N-6 — `--white` is the one tier-1 name that is not `--radix-*`.** No Radix light scale contains
   white; the step-1 values are all tinted. `--white` is consumed by three `-fg` tokens and its name
   does not lie, so the D-03 rename rule does not apply to it. Recorded so it does not read as an
   incomplete rename.
 
-- **N-7 — the panel is now slightly darker than the page, and that is the point.** At HEAD
+- **04.1-N-7 — the panel is now slightly darker than the page, and that is the point.** At HEAD
   `--color-surface` and `--color-surface-page` were **both `#ffffff`** — the panel was separated from
   the page by a hairline border and nothing else. Under the Radix banding they become two adjacent
   steps (`#fcfcfc` / `#f9f9f9`), so the doc panel reads as a distinct surface. The panel's
   `border-left` also darkens (`#f2f2f2` → `#d9d9d9`), so the edge is real rather than nominal. This
   is an intended visual delta, recorded as V-4 and V-7.
 
-- **N-8 — the fence comment at `style.css:88-90` and `:99-100` must be rewritten, not left.** Both
+- **04.1-N-8 — the fence comment at `style.css:88-90` and `:99-100` must be rewritten, not left.** Both
   comments explain that `--color-surface-info-strong` / `--color-text-inverse` are retained *because
   the manifest references them by name*. After D-15 the manifest does not, so the stated reason is
   false. R-4 deletes the declarations and both comments with them; leaving either would be a comment
@@ -643,6 +648,16 @@ with the reason it was taken and a one-line alternative, so neither is buried.
 
 **Neither item blocks execution.** S-5 and S-6 are decisions this contract has made and justified;
 they are surfaced because each narrows a locked input and the user, not the checker, owns that call.
+
+**User decision, 2026-09-19 — both adopted as written.**
+
+| # | Decision | Effect on the locked input |
+|---|---|---|
+| **S-5** | **Adopted: R-4 proceeds.** Both names are deleted (49 → 47). | D-02's "49 names frozen verbatim" is narrowed to 47. The deletion is render-neutral (zero selector consumers, grep-verified), so SC2 is untouched. |
+| **S-6** | **Adopted: R-3 proceeds.** `.tier-desc { opacity: 0.9 }` is deleted. | D-11's enumeration of out-of-fence changes widens from **two to three**. `--color-action-primary` stays `blue-11` `#0d74ce`; the rejected alternative (darken the whole primary CTA family to `blue-12`) is not taken. |
+
+Both decisions are now **inputs to `/gsd-plan-phase 04.1`**, not open questions. A plan that
+re-opens either one is departing from a signed-off decision.
 
 ---
 
@@ -754,7 +769,7 @@ routed to `human_needed`.
 | E4 | `overflow` | `#state-badge` with its longest streaming state string does not clip its pill. |
 | E4 | `long-text` | The badge's `--color-text-info` on `--color-surface-info` stays ≥4.5:1 (4.53) with the restored `z-index` keeping it above the banner. |
 | E5 | `overflow` | A document long enough to scroll scrolls the panel body, not the page. |
-| E5 | `long-text` | The panel ground (`#f9f9f9`) reads distinct from the page ground (`#fcfcfc`) — the N-7 delta is what to look at. |
+| E5 | `long-text` | The panel ground (`#f9f9f9`) reads distinct from the page ground (`#fcfcfc`) — the 04.1-N-7 delta is what to look at. |
 | E6 | `overflow` | A wrapped multi-line `.hint` and a long blockquote do not clip. |
 | E6 | `long-text` | After wrapping, the muted grey stays ≥4.5:1 on all four grounds (CHECK-02: 5.19–5.82). |
 | E7 | `overflow` | A historical round long enough to scroll keeps its amber inset rule pinned to the block edge. |
@@ -799,7 +814,7 @@ exactly one file after every plan in this phase.
 repository: `frontend/vendor/` is untouched, the dependency count stays at zero, and the colour
 values still have exactly one source of truth — the fence. The accepted cost is that upstream Radix
 changes must be synced by hand; the name↔step mapping is written into the fence precisely so that
-sync is mechanical (N-5, V-12).
+sync is mechanical (04.1-N-5, V-12).
 
 ---
 

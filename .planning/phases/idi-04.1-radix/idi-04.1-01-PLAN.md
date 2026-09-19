@@ -406,7 +406,7 @@ Output: 值层已换成 Radix 的 `frontend/style.css`;`check-02-contrast.py` �
     <automated>bash scripts/check-01-token-conformance.sh && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh && python3 scripts/check-02-contrast.py | tail -1</automated>
     <fails_when>任一条非零退出,或末行不是 `PASS: 0 failures`</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,6</automated>
-    <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item smoke` 结论不是 `PASS`</fails_when>
+    <fails_when>退出码不为 0,或 `item smoke` / `item 1` / `item 6` 三行的**结论列**不全是 `PASS`。判据取结论列(`item N: PASS` / `FAIL` / `BLOCKED`,由 `item_verdict` L151-159 与 L1036 的退出码语义决定)—— **不得写成「输出中出现 `FAIL`」**:汇总行对每个选中项无条件打印 `item {i}: {V}  ({n} 条断言,{fails} FAIL,{blocks} BLOCKED)`(`scripts/check-05-ui-uat.py:1032`),一次完全正确的运行里 `FAIL` 与 `BLOCKED` 这两个字符串照样出现,那种写法在通过与失败两种情形下都成立</fails_when>
     <automated>grep -c 'rgba(0, 0, 0, 0.2)' scripts/check-05-ui-uat.py</automated>
     <fails_when>计数不为 1(`item_smoke` 的 R-2 断言必须用 needle `"0.2"`;复用了 `item3` 的完整字面 `rgba(0, 0, 0, 0.2)` 会让计数变成 2)。这个字面在 `idi-04.1-03-PLAN.md` Task 1 里是「全文件唯一颜色字面」的计数不变量,由本计划与本计划之后的计划**共同**拥有 —— 在本计划里先把它守住,wave 3 的那个门才不会变红并把原因误诊为「漏改」</fails_when>
     <automated>test -z "$(git diff --name-only HEAD -- frontend/app.js frontend/index.html)" && test -z "$(git ls-files --others --exclude-standard frontend/)" && test "$(ls frontend/vendor/)" = "marked.min.js"</automated>

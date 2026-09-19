@@ -127,7 +127,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
   <name>Task 1: `item2` 与 `item3` 的断言改令牌接线,删除 `FROZEN_AMBER` 常量</name>
   <files>scripts/check-05-ui-uat.py</files>
   <read_first>
-    - `scripts/check-05-ui-uat.py` L442-L630 —— `FROZEN_AMBER`(L445)、`parse_box_shadow`(L448-L459)、`check_frozen_marker`(L468-L511,含 L484/L501/L507 三处 `FROZEN_AMBER` 使用)、`item2`(L514-L553)、`item3`(L559-L629,15 条断言)
+    - `scripts/check-05-ui-uat.py` L442-L630 —— `FROZEN_AMBER`(L445)、`parse_box_shadow`(L448-L459)、`check_frozen_marker`(L468-L511;常量 `FROZEN_AMBER` 只在 L495 被使用**一次**,另有 L484 / L501 / L507 三处**独立的字面串** `"inset 3px 0 0 rgb(138, 101, 8)"`,它们不引用该常量)、`item2`(L514-L553)、`item3`(L559-L629,15 条断言)
     - `scripts/check-05-ui-uat.py` L85-L149 —— `_emit` / `ok` / `norm` / `ok_true` / `ok_contains` / `blocked` / `info` 的语义(尤其 `ok()` 在 `actual is None` 时转 `BLOCKED`、`ok_contains` 用于子串)
     - `scripts/check-05-ui-uat.py` L232-L262 —— `_READ_JS` / `read_style` / `read_classlist` / `resolve_color` / `effective_bg`
     - `scripts/check-05-ui-uat.py` L860-L932 —— `item6`(L894-L905)与 `item_smoke`(L911-L932)是 D-14 的**在文件内的范本**,照它们的写法改
@@ -139,7 +139,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
   <action>
     **原则:** 每条断言的**期望侧**改成「运行时解析出的令牌值」,消费者侧继续用 `read_style` / `effective_bg` 读 computed 值。`ok()` 已对 `rgb()` 内部空白做归一(L111、L117-L121),所以改动只关乎**哪一侧是动态的**;`ok()` 在任一侧为 `None` 时转 `BLOCKED` 的语义必须保留(L109-L110)—— 元素缺失或令牌解析失败绝不得记为 pass。
 
-    **1. 删除 `FROZEN_AMBER` 常量(L445)及其三处使用(L484、L501、L507)。** 在 `check_frozen_marker` 内改为:
+    **1. 删除 `FROZEN_AMBER` 常量(L445)与它唯一的使用(L495),以及 L484 / L501 / L507 三处独立的字面串 `"inset 3px 0 0 rgb(138, 101, 8)"`(它们不引用该常量)。** 在 `check_frozen_marker` 内改为:
     - 用 `resolve_color(page, "--color-action-warning")` 取运行时值,存为局部变量(例如 `frozen_amber`)。
     - L489-L496 的 `semantic_ok` 里 `parsed["color"] == FROZEN_AMBER` 改成与该局部变量比较。
     - L484 与 L501 的 `expected` 参数改用该局部变量;L507 的 `info()` 文字里那句「`inset 3px 0 0 rgb(138, 101, 8)` present=...」改为用局部变量拼串,并保留原有解释(Chrome 把颜色序列化在最前、`inset` 在最后,故字面序不存在 —— 这是 harness 规格修正,不是产品缺陷)。
@@ -177,9 +177,9 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     <automated>grep -c 'rgba(0, 0, 0, 0.2)' scripts/check-05-ui-uat.py</automated>
     <fails_when>计数不等于 1(box-shadow 的 needle 是本文件唯一允许保留的颜色字面,多一处就是漏改)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 2,3</automated>
-    <fails_when>退出码不为 0,或输出中出现 `FAIL`,或 `item 2` / `item 3` 的结论不是 `PASS`</fails_when>
+    <fails_when>退出码不为 0,或 `item 2` / `item 3` 两行的**结论列**不全是 `PASS`。判据取结论列,不取「输出中出现 `FAIL`」—— 汇总行无条件打印 `…,0 FAIL,0 BLOCKED`(`scripts/check-05-ui-uat.py:1032`),那样写在正确运行上也成立</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 2,3 2>&1 | grep -E 'item (2|3):'</automated>
-    <fails_when>输出的两行里出现 `BLOCKED`(元素缺失或令牌解析失败必须显式暴露,不得静默)</fails_when>
+    <fails_when>这两行的结论列不是 `PASS`(即显示为 `BLOCKED` 或 `FAIL`)—— 元素缺失或令牌解析失败必须显式暴露,不得静默。**不得写成「两行里出现 `BLOCKED`」**:该行末尾恒有 `0 FAIL,0 BLOCKED` 字样(`scripts/check-05-ui-uat.py:1032`),那样写在正确运行上也成立;而本计划 Task 2 的 `--item 4,5` 门恰恰把 `0 FAIL,2 BLOCKED` 判为**正确**结果,两条会就同一输出格式互相矛盾</fails_when>
     <automated>git diff --name-only HEAD -- . ':!.claude/settings.local.json'</automated>
     <fails_when>输出的文件清单超出 `scripts/check-05-ui-uat.py` 与 `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md`。**范围刻意排除 `.claude/settings.local.json`**:它是长期跟踪的会话本地文件,在本任务动手之前就已是 modified,不是本任务的产出、也不得被本任务提交;裸 `git diff --name-only HEAD` 会把它算成本任务的改动,那不是关于本任务的信号</fails_when>
   </verify>
@@ -230,7 +230,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
     - 这三条同时是 TOKEN-07 在**渲染层**的证据:`--z-badge` 由 R-1 恢复消费者后不再空转,`badge < banner` 的承重序关系两端都在真实 DOM 上被读到。加一句注释点明这一点。
     - `--z-*` 的令牌值本身(`10` / `20` / `100` / `200`)仍由围栏注释与 `frontend/style.css` 固定;若三者解析失败,`ok()` 会转 `BLOCKED`,不得记为 pass。
 
-    **5. `item5` 的五条颜色断言改接线:**
+    **5. `item5` 的六条颜色断言改接线:**
     - `#ai-route-select border-top-color` → `resolve_color(page, "--color-border-strong")`
     - `#ai-route-select background-color` → `resolve_color(page, "--color-surface")`
     - `.hint color` → `resolve_color(page, "--color-text-muted")`
@@ -401,7 +401,7 @@ Output: 令牌接线形式的 `scripts/check-05-ui-uat.py`(item2 / item3 / item4
 
 **删除的符号:**
 
-- `scripts/check-05-ui-uat.py` 的模块常量 `FROZEN_AMBER` 及其三处使用
+- `scripts/check-05-ui-uat.py` 的模块常量 `FROZEN_AMBER`(L445,仅 L495 使用一次),以及 L484 / L501 / L507 三处独立的字面串 `"inset 3px 0 0 rgb(138, 101, 8)"`
 - `#doc-pane` 这一**期望选择器字符串**(不是 id;`frontend/index.html` 里从来没有这个 id)
 </artifacts_this_phase_produces>
 

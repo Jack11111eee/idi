@@ -1,19 +1,18 @@
 ---
-status: resolved
+status: complete
 phase: idi-04-tokens-contract
 source: [idi-04-01-SUMMARY.md, idi-04-02-SUMMARY.md, idi-04-03-SUMMARY.md]
 started: 2026-09-17T16:10:40Z
-updated: 2026-09-19T14:05:00Z
+updated: 2026-09-20T06:18:25Z
 ---
 
 ## Current Test
 
-number: 6
-name: CR-06 渲染结果
-expected: |
-  一条普通的「已回应」批注 —— 用户批注与 AI 回应正文**都**以 `--color-text-muted` 渲染。
-  6 项已全部通过(逐项结果见 `## Tests`,计数见 `## Summary`)。
-awaiting: 无 —— 6 项全部 `pass`,三条 gap 已按 D-10 / D-12 / D-13 消解(见 `## Gaps`)
+[testing complete]
+
+6 项全部 `pass`,三条 gap 已按 D-10 / D-12 / D-13 消解(见 `## Gaps`)。
+本 UAT 的 6 项与 `idi-04-VERIFICATION.md` 的 2 条 `behavior_unverified` + 4 条 `human_verification` 一一对应,
+并在 HEAD 上由复核者与验证代理各自复现(除第 5 项两次需真实 AI 调用的冒烟,沿用已记录的 `--ai-smoke` 证据)。
 
 ## 这 6 项现在如何被自动化
 

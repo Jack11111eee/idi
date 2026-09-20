@@ -44,7 +44,7 @@ must_haves:
     - "清单规模 43 → **45 对(34 TEXT + 11 NON-TEXT)+ 1 ORDER**,`PASS: 0 failures`,exit 0;`ORDER 0.363` 不变(两个操作数 `--color-text-muted` / `--color-text` 本阶段未改值)← CHECK-02"
     - "围栏 L42-45 的「Phase 5 declares the 9/10 fill steps together with their consumers」已改写为「Phase 5 复用已声明的 11/12 步,理由见本围栏的 role-band 记录」;前三行(D-04 / Hard Rule 5 的声明纪律)逐字保留 ← A-4"
     - "围栏清单注释 L311 的「three families, one value」已改写 —— 三族从此有三个不同的值对,一条解释清单的注释在前提消失后必须改,否则它会开始说谎 ← 04.1-N-8 同源"
-    - "五处 `:disabled` 的 `opacity: 0.55`(L656 / L884 / L935 / L947 / L1005-1008)逐字节未动 —— 对实心按钮而言 0.55 是**更强的**淡化,区分度反而上升 ← D-14 / Pitfall M5"
+    - "六处 `:disabled` 的 `opacity: 0.55`(L656 / L668 / L884 / L935 / L947 / L1006)逐字节未动 —— 对实心按钮而言 0.55 是**更强的**淡化,区分度反而上升 ← D-14 / Pitfall M5"
     - "`#btn-authorize` 新增一条 `font-size: var(--text-md)`(16px,现有档,零新增令牌),**不加 padding 步进**;padding 仍为 `var(--space-2) var(--space-4)` ← D-13"
     - "`#btn-authorize` 的 `font-weight` 保持 `var(--fw-semibold)`(600),是 D-09「按钮统一 500」的唯一已登记例外 ← D-12"
     - "`--color-action-irreversible*` 仍**只**被 `#btn-authorize` 消费,永不出现第二个消费者;三族名未改(`commit` 而非 `gate`)← D-15"
@@ -93,7 +93,7 @@ must_haves:
     - statement: "不得改 `#btn-divergence` 的字重 —— 它是 `--color-action-warning` 族的发散入口,不在六个动作按钮之列;拉进来会在三段坡道之外造出一个未登记的第四档(TYPE-03 / UI-SPEC §TYPE-03)"
       status: active
       verification: flagged
-    - statement: "不得软化五处 `:disabled` 的 `opacity: 0.55` —— 对实心按钮而言它是更强的淡化;「为了让实心按钮的禁用态更好看」而调这个值是 Pitfall M5 点名的行为(D-14)"
+    - statement: "不得软化六处 `:disabled` 的 `opacity: 0.55`(L656 / L668 / L884 / L935 / L947 / L1006)—— 对实心按钮而言它是更强的淡化;「为了让实心按钮的禁用态更好看」而调这个值是 Pitfall M5 点名的行为(D-14)"
       status: active
       verification: flagged
 
@@ -114,7 +114,7 @@ must_haves:
 ---
 
 <!-- planner-discipline-allow: opacity: 0.55 -->
-<!-- `opacity: 0.55` 是承重的:本计划的核心禁令之一是「不得软化五处 :disabled 的 opacity」,
+<!-- `opacity: 0.55` 是承重的:本计划的核心禁令之一是「不得软化六处 :disabled 的 opacity」,
      执行器必须知道守的是哪一个值,而验收对源文件做出现次数计数来证明它逐字节未动。 -->
 
 <objective>
@@ -369,7 +369,7 @@ Plan 03 会继续往这张表追加符号(`--color-marker-active`、两个 `--ic
 | T-idi-05-01 | Elevation of Privilege | `#btn-authorize`(G3 授权门)与五只例行/承诺按钮的可区分性 | high | mitigate | 三段坡道在**形态**上分离(淡底 vs 实心 vs 实心更深)+ 字号步进(D-13)+ 字重例外(D-12)+ `--color-action-irreversible*` 单消费者(D-15);D-04 的「档内相同 + 三档两两不同」断言是这条红线的可执行形态,一个断言同时覆盖 VISUAL-01 与 VISUAL-02 |
 | T-idi-05-02 | Tampering | `frontend/style.css` 围栏与清单的一致性 | medium | mitigate | 新清单行必须命名围栏内**已声明**的令牌 —— `check-02` 对未声明名 `sys.exit(1)`;raw `/* PAIR` 标记数必须等于解析数(45 == 45);覆盖率下限 24/20/4;CHECK-01 断言围栏外零裸 hex、tier-1 名不出围栏 |
 | T-idi-05-03 | Tampering | 为凑比值而篡改 Radix 步或采信上游 AA 论断 | medium | mitigate | 每个任务实跑 `check-02` 并把逐条实测比值写进 SUMMARY;`--radix-green-9` / `green-10` 的**不得声明**有机械断言(`grep -o -- '--radix-green-9' \| wc -l` == 0);tier-1 计数断言 == 25 |
-| T-idi-05-04 | Denial of Service | 渲染回归(填充形态 / 字号 / 禁用态) | medium | mitigate | 每个 `style.css` 任务带至少一项运行时验证(硬规则 7):`--item 3,4,smoke` 在 p1 / p3 两个真实样本上读 computed style;五处 `:disabled` 的 `opacity: 0.55` 逐字节未变(D-14 / Pitfall M5) |
+| T-idi-05-04 | Denial of Service | 渲染回归(填充形态 / 字号 / 禁用态) | medium | mitigate | 每个 `style.css` 任务带至少一项运行时验证(硬规则 7):`--item 3,4,smoke` 在 p1 / p3 两个真实样本上读 computed style;六处 `:disabled` 的 `opacity: 0.55` 逐字节未变(D-14 / Pitfall M5) |
 | T-idi-05-05 | Information Disclosure | 本阶段的改动内容 | low | accept | 改动只有 5 个令牌值、2 条清单行、1 条 `font-size` 声明与注释;无用户数据、无网络请求、无外部资源 |
 | T-idi-05-SC | Tampering | npm / pip / cargo 安装 | high | mitigate | 本阶段零安装(硬规则 6):不新增依赖、文件或构建步骤;`frontend/vendor/` 仍只含 `marked.min.js`。无 `[ASSUMED]` / `[SUS]` 包,故无需 package-legitimacy 人工签核门 |
 </threat_model>

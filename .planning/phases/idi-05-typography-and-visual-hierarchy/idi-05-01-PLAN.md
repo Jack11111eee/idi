@@ -272,7 +272,7 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     (a) **源断言**:`grep -n 'font-size: var(--text-base);' frontend/style.css` 必须命中 `.markdown-body th, .markdown-body td` 与 `.markdown-body code` 两处(HEAD 行号 `:639` 与 `:645`);`grep -n 'color: var(--color-text-muted);' frontend/style.css` 必须命中 `.markdown-body blockquote`(HEAD 行号 `:633`)。
     (b) **运行时断言**(硬规则 7 要求至少一项运行时验证):在 item4 里**扩展现有的 `renderMarkdown` 探针串**,让它一次渲染出「代码跨度 + 表格 + 引用块」三种元素,然后新增两条令牌接线断言:`.markdown-body` 宿主内的 `td` 的 computed `font-size` == `resolve_token(page, "--text-base")`;同一宿主内的 `blockquote` 的 computed `color` == `resolve_color(page, "--color-text-muted")`。探针沿用 item4 既有的 `#draft-content` 宿主与 `host.innerHTML = ''` + `host.appendChild(renderMarkdown(...))` 写法(真实渲染路径,零网络、零 AI 调用)。若元素未渲染出来,`ok()` 必须记 BLOCKED,绝不记 PASS。**既有两条字面守卫(`#draft-content` 16px、`.markdown-body code` 14px)保持字面 px 不动**(D-03 第二类)。
 
-    **第 3 步 —— 实跑验证。** 改完必须实跑 CHECK-01、CHECK-02 与 `--item 4`,并记录 `--text-base` 的消费者计数(本计划之后应仍为 7 处 —— 迁移核账是净不变:`--text-md` 失去 `.markdown-body h3`、获得 `#btn-authorize` 是 Plan 02 的事,本计划不触碰 `#btn-authorize`)。
+    **第 3 步 —— 实跑验证。** 改完必须实跑 CHECK-01、CHECK-02 与 `--item 4`,并记录 `--text-base` 的消费者计数(HEAD 实测为 19 处,本计划之后应仍为 19 处 —— 本任务零 CSS 声明改动,迁移核账是净不变:`--text-md` 失去 `.markdown-body h3`、获得 `#btn-authorize` 是 Plan 02 的事,本计划不触碰 `#btn-authorize`)。
   </action>
   <verify>
     <automated>bash scripts/check-01-token-conformance.sh</automated>
@@ -298,7 +298,7 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     - `.markdown-body th, .markdown-body td` 与 `.markdown-body code` 两处的 `font-size` 仍逐字为 `var(--text-base)`,`.markdown-body blockquote` 的 `color` 仍逐字为 `var(--color-text-muted)`(零 CSS 改动,D-08)
     - item4 内新增两条 TYPE-02 运行时断言(表格 `td` 字号、引用块 `color`),且 `--item 4` 全 PASS(0 FAIL / 0 BLOCKED)
     - 本任务**不产生任何新的声明行**:四条 `--lh-*` 声明与三条 TYPE-02 声明的逐字断言(上一条与「.markdown-body th/td 与 code 仍为 var(--text-base)」)已覆盖全部被触碰的声明;本任务的改动面**只有**围栏 L217 的注释文本与 item4 里新增的两条断言
-    - `--text-base` 的消费者计数仍为 7(`grep -o 'var(--text-base)' frontend/style.css | wc -l` == 7)
+    - `--text-base` 的消费者计数仍为 19(`grep -o 'var(--text-base)' frontend/style.css | wc -l` == 19;HEAD 实测 19,本任务零 CSS 声明改动)
   </acceptance_criteria>
   <done>行高注释改写为比率配对、`18/24` 修正到位、`four` 与三档的不自洽消解、`--lh-*` 四条声明零改动;TYPE-02 三处的源断言 + 两条运行时断言齐备且全 PASS。</done>
 </task>
@@ -333,7 +333,7 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     <automated>grep -o 'var(--fw-medium)' frontend/style.css | wc -l; grep -o 'var(--fw-semibold)' frontend/style.css | wc -l</automated>
     <fails_when>the first count is not 8, or the second count is not 8</fails_when>
     <automated>grep -o 'opacity: 0.55;' frontend/style.css | wc -l; grep -o 'opacity: 0.5;' frontend/style.css | wc -l</automated>
-    <fails_when>the first count is not 7, or the second count is not 1</fails_when>
+    <fails_when>the first count is not 6, or the second count is not 2 (HEAD 实测:0.55 六处 = L656 / L668 / L884 / L935 / L947 / L1006,0.5 两处 = L961 / L1034;本计划不改任何 opacity 值,故这两个数是本任务必须保持的不变量)</fails_when>
     <automated>grep -n -A 6 '^#btn-divergence {' frontend/style.css | grep -o 'font-weight: var(--fw-semibold);' | wc -l</automated>
     <fails_when>the count is not 1 (the amber divergence entry must keep 600 — it is not one of the six action buttons)</fails_when>
   </verify>
@@ -342,9 +342,9 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     - `grep -o 'var(--fw-semibold)' frontend/style.css | wc -l` == 8(HEAD 12 − 4)
     - `#btn-authorize` 规则的 `font-weight` 仍为 `var(--fw-semibold)`(D-12 的唯一例外)
     - `#btn-divergence` 规则的 `font-weight` 仍为 `var(--fw-semibold)`
-    - 八处 `:disabled` 的 `opacity` 值逐字节未变(`grep -o 'opacity: 0.55;' frontend/style.css | wc -l` == 7、`grep -o 'opacity: 0.5;' frontend/style.css | wc -l` == 1)
+    - 八处 `:disabled` 的 `opacity` 值逐字节未变(`grep -o 'opacity: 0.55;' frontend/style.css | wc -l` == 6、`grep -o 'opacity: 0.5;' frontend/style.css | wc -l` == 2;HEAD 实测 0.55 六处 = L656 / L668 / L884 / L935 / L947 / L1006,0.5 两处 = L961 / L1034,本计划不改任何 opacity 值)
     - item4 内六条 `font-weight` 断言存在(五只 500 + `#btn-authorize` 600),`--item 4` 与 `--item smoke` 全 PASS
-    - 本任务内 `frontend/style.css` 的变更**只有** `font-weight` 四行(不含任何选择器增删):由「`var(--fw-medium)` 出现次数 4 → 8、`var(--fw-semibold)` 出现次数 12 → 8」与「`#btn-authorize` / `#btn-divergence` 的 `font-weight` 仍为 `var(--fw-semibold)`」共同证明;选择器行数与名字未变由 `grep -oE '^#btn-(approve-draft|process-round|start-writing|authorize|continue-check)' frontend/style.css | wc -l` == 5 佐证
+    - 本任务内 `frontend/style.css` 的变更**只有** `font-weight` 四行(不含任何选择器增删):由「`var(--fw-medium)` 出现次数 4 → 8、`var(--fw-semibold)` 出现次数 12 → 8」与「`#btn-authorize` / `#btn-divergence` 的 `font-weight` 仍为 `var(--fw-semibold)`」共同证明;选择器行数与名字未变由 `grep -oE '^#btn-(approve-draft|process-round|start-writing|authorize|continue-check)' frontend/style.css | wc -l` == 10 佐证(HEAD 实测 10:五只按钮各命中**基础规则**与 `:disabled` 规则两行 —— L648/L656、L878/L884、L928/L935、L940/L947、L999/L1005;该计数守卫的是「选择器名与行数未增删」,故本任务之后仍为 10)
   </acceptance_criteria>
   <done>五只动作按钮的字重为 500,`#btn-authorize` 与 `#btn-divergence` 保持 600;`--fw-medium` 消费 8 / `--fw-semibold` 消费 8;六条运行时断言齐备且 `--item 4` / `--item smoke` 全 PASS。</done>
 </task>

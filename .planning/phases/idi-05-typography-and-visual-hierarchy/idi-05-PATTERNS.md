@@ -281,7 +281,7 @@ Plus **one added declaration** inside `#btn-authorize` (L928-934): `font-size: v
 (16px, an existing step — zero new tokens). **No padding step** (D-13); the padding stays
 `var(--space-2) var(--space-4)`.
 
-**`:disabled` is untouched (D-14):** all four `opacity: 0.55` lines (L656, L884, L935, L947, L1005-1008)
+**`:disabled` is untouched (D-14):** all six `opacity: 0.55` lines (L656, L668, L884, L935, L947, L1006)
 stay byte-identical. Pitfall M5 forbids softening them; on a solid fill 0.55 is a *stronger* fade.
 
 **Selector structure is untouched (D-11):** the three family rules already declare

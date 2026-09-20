@@ -18,7 +18,7 @@ covered_files:
   - scripts/check-02-contrast.py
   - scripts/check-03-hidden-uniqueness.sh
   - scripts/check-04-important-count.sh
-covered_digest: "v1:sha256:35f01f7fb46c8e2308f90be182e4eada3c9a789d31b2f6373d386a2b7add43c3"
+covered_digest: "v1:sha256:4fd8b793e5777c1fbade75b5b420e1507efb567fb09a5fc76717eae2e7e13cf0"
 behavior_unverified: 0
 overrides_applied: 1
 overrides:
@@ -236,7 +236,9 @@ Not applicable — the phase declares no `scripts/*/tests/probe-*.sh` and is not
 
 1. **UAT test 5's two AI-dependent interaction smokes were not re-run at HEAD.** The default harness run gives `item 5: BLOCKED (9 assertions, 0 FAIL, 2 BLOCKED)` and overall `exit=2`. This is by design: the harness's exit contract is `code = 1 if any_fail else (2 if any_blocked else 0)`, and the two `blocked()` calls exist precisely so that "runtime verification claimed rather than performed" stays visible (T-idi041-09). `idi-04-UAT.md` §Test 5 records them as **run and PASSED** under `--ai-smoke` (claude CLI available), with the two real interactions described; the user has explicitly declined a re-run. This report therefore accepts the recorded UAT evidence for those two smokes and records the non-re-run as a disclosed limitation. It does **not** treat the default run's `exit=2` / 2 BLOCKED as a defect.
 2. **Keyboard text selection cannot be automated** in this environment (`Shift+ArrowRight` leaves `window.getSelection()` empty in `<p>`, `tabindex` containers and `contenteditable`; `--enable-caret-browsing` does not help). None of this phase's six UAT items depends on it.
-3. **指纹在复核之后被重算过一次 —— 如实披露。** 验证代理算 `covered_digest` 之后,编排者又做了一次**记账性**编辑:`idi-04-UAT.md` 的 frontmatter `status: resolved → complete`(归一到 UAT 模板的合法取值)加一段说明。该文件在本报告的 `covered_files` 内,而指纹是原始字节 sha256,故记录值随之失效。**逐文件核对确认:本次唯一被改的 covered file 就是它**(`git status --porcelain` 显示 `frontend/style.css` 与 `scripts/` 全部未动,其余 covered 文件未动)。**没有任何被核验的事实随之移动** —— 14/15 的判定、全部数值、四条守卫、pytest 基线、`app.js`/`index.html` 零改动面均不受影响。指纹因此按**编辑后**的内容重算一次写回,而非保留一个已知过期的值。这**不是**把一次真实内容变更盖掉:`idi-04.1-radix` 改写 `style.css` 的那次内容变更走的是**重新验证**(本报告取代了旧报告),两次处置方向相反、各自留证。
+3. **指纹在复核之后被重算过一次 —— 如实披露。** 验证代理算 `covered_digest` 之后,编排者又做了两次**记账性**编辑:(a) `idi-04-UAT.md` 的 frontmatter `status: resolved → complete`(归一到 UAT 模板的合法取值)加一段说明;(b) `phase.complete` 依本报告的 `passed` 翻转了 `REQUIREMENTS.md` 里 **Phase 4 自己的**需求行(TOKEN-03/05/06 → `Complete`,TOKEN-08 → `Complete (PARTIAL — …)`,后者刻意不写成无保留的 `Complete`,以与本报告的 `overrides:` 一致)。这两个文件都在本报告的 `covered_files` 内,而指纹是原始字节 sha256,故记录值随之失效。**逐文件核对确认:本次唯二被改的 covered file 就是这两个**(`git status --porcelain` 显示 `frontend/style.css` 与 `scripts/` 全部未动,其余 covered 文件未动)。**没有任何被核验的事实随之移动** —— 14/15 的判定、全部数值、四条守卫、pytest 基线、`app.js`/`index.html` 零改动面均不受影响。指纹因此按**编辑后**的内容重算一次写回,而非保留一个已知过期的值。这**不是**把一次真实内容变更盖掉:`idi-04.1-radix` 改写 `style.css` 的那次内容变更走的是**重新验证**(本报告取代了旧报告),两次处置方向相反、各自留证。
+
+   **结构性观察(留给后续阶段裁决,不在本次单方面改动):** `.planning/REQUIREMENTS.md` 同时在本报告与 `idi-04.1-VERIFICATION.md` 的 `covered_files` 里,而 `phase.complete` **每次收口都会改它**。这意味着**任何一次阶段收口都会让此前所有覆盖了该文件的报告同时转为 stale** —— 本阶段收口时就同时打掉了 idi-04 与 idi-04.1 两份。`covered_files` 的语义应是「其变更足以使本报告的结论失效的输入」,而需求索引表是**下游记账**,不是这样的输入。建议后续阶段考虑把它移出 `covered_files`(或让 `phase.complete` 的翻转不参与指纹),否则每次收口都要重算一次历史报告的指纹。
 
 ### Carry-forward obligations (out of scope — NOT rewritten by this report)
 

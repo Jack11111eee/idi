@@ -47,7 +47,7 @@
 - 完整 ARIA / 焦点陷阱 / 其余 2-3 个非阻塞弹窗的 `role` —— 用户已裁定取窄切片。
 - 两处 `window.prompt` 替换、响应式/移动端断点系统、图标库、组件级令牌层、任何 lint 工具链 —— 见 REQUIREMENTS.md 的 Out of Scope 表。
 
-- [ ] **Phase 4: 设计契约、令牌层与契约校验** - 书面 UI-SPEC(含含义清单)+ 单一 `:root` 令牌块 + 全部字面量替换 + 四条契约校验命令
+- [x] **Phase 4: 设计契约、令牌层与契约校验** - 书面 UI-SPEC(含含义清单)+ 单一 `:root` 令牌块 + 全部字面量替换 + 四条契约校验命令 (completed 2026-09-20)
 - [ ] **Phase 5: 排版与视觉层级** - markdown 正文字号受控、不可逆动作权重、页面级层级、面板活动态、两处内联 SVG
 - [ ] **Phase 6: 布局稳健性** - 魔法数消除、窄窗口不破版、滚动容器收敛、24×24 命中区
 - [ ] **Phase 7: 交互状态与焦点样式** - hover/active/disabled/transition + 全站 `:focus-visible`
@@ -312,7 +312,7 @@ Plans:
 | 1. 行走骨架 | v1.13 | 4/4 | Complete | 2026-09-09 |
 | 2. 轮次收敛循环 | v1.13 | 4/4 | Complete | 2026-09-10 |
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
-| 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | In Progress|  |
+| 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | Complete    | 2026-09-20 |
 | 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
 | 5. 排版与视觉层级 | v1.14 | 0/0 | Not started | - |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
@@ -353,4 +353,5 @@ Phase 5/6/7 相互独立,理论上可重排——但有两条不可动:**Phase 4
 **Plans:** 0 plans
 
 Plans:
+
 - [ ] TBD (promote with /gsd-review-backlog when ready)

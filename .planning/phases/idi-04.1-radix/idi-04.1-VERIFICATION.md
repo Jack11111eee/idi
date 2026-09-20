@@ -19,7 +19,7 @@ covered_files:
   - scripts/check-05-ui-uat.py
   - scripts/probe-05-resolve-color.py
 
-covered_digest: "v1:sha256:a8b5147e616dd7c798906f69bb20dfa8c6319bbe372a05b455c482997719fe41"
+covered_digest: "v1:sha256:25d5f1fe52eaceb48939c1bc76bcd44734bb23f035a02b22f0017724475cb5f2"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
@@ -233,7 +233,18 @@ Step 7c 的常规发现流程(迁移/CLI 阶段的 `scripts/*/tests/probe-*.sh`)
 
 **需求侧结论:** 10 个需求 ID 全部有认领、无孤儿。TOKEN-01/04、CHECK-01/02/03/04、A11Y-04 完全满足;TOKEN-02 与 A11Y-04b 有机械缺口(见上);**TOKEN-07 的「令牌化 + 消费者恢复」满足,但「断言序关系」半场仍只有散文 —— `Complete` 标记不被支持。**
 
+### 指纹重算披露(记账性,非内容变更)
+
+本报告的 `covered_digest` 在复核之后被重算过一次。原因:Phase 4(`idi-04`)于 2026-09-20 收口时,`phase.complete` 依其 `passed` 翻转了 `.planning/REQUIREMENTS.md` 里 **Phase 4 自己的**需求行(TOKEN-03/05/06 → `Complete`,TOKEN-08 → `Complete (PARTIAL — …)`),而该文件在本报告的 `covered_files` 内,指纹又是原始字节 sha256。
+
+**逐文件核对:本次唯一被改的 covered file 就是 `REQUIREMENTS.md`** —— `frontend/style.css`、`scripts/check-01-token-conformance.sh`、`scripts/check-05-ui-uat.py`、`scripts/probe-05-resolve-color.py` 及四个 PLAN/SUMMARY 全部未动(本报告的 CR-01 修复面因此完好)。**没有任何被核验的事实随之移动。**
+
+被翻的四行**正是本报告已经讨论过的那些**:本报告 §Gaps Summary 明确记载「`REQUIREMENTS.md:127` 把 TOKEN-07 标为 `Complete`,机械层面不被支持」,并说明该表的 `Complete` 集合恰为 04.1 自己的需求清单。本次翻转延续同一模式 —— 是 `phase.complete` 按阶段归属翻它自己的行,不是对 04.1 结论的重新评估。故重算指纹写回,而非重跑复核。
+
+**结构性观察(建议后续裁决):** `REQUIREMENTS.md` 同时在 `idi-04` 与本报告的 `covered_files` 里,而每次 `phase.complete` 都会改它 —— 于是**任何一次阶段收口都会同时打掉此前所有覆盖该文件的报告**。本次收口就打掉了本报告与 `idi-04` 两份。`covered_files` 的语义应是「其变更足以使本报告结论失效的输入」,需求索引表属**下游记账**,不满足该语义。建议把它移出 `covered_files`,或让 `phase.complete` 的翻转不参与指纹计算。
+
 ---
 
 _Verified: 2026-09-20T03:24:39Z_
 _Verifier: Claude (gsd-verifier)_
+_指纹重算: 2026-09-20(见上节,记账性)_

@@ -13,12 +13,12 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 - [x] **TOKEN-01**: `style.css` 顶部含**单一** `:root` 令牌块,用原生 CSS 自定义属性;零构建步骤、零新增依赖
 - [x] **TOKEN-02**: 令牌分类学——三份研究**真实分歧**,SUMMARY 已调和,UI-SPEC 拥有最终裁定权。**调和结论:颜色两层(primitive → semantic),间距/字号/圆角单层,无组件层。** 硬不变量:**primitive(tier-1)名绝不出现在 `:root` 块之外**(机械可查,与 CHECK-01 同源)。理由(STACK 与 ARCHITECTURE 各自独立得出):①有了 primitive,两个近乎相同的蓝 `#2c7be5` / `#2c5fb8` 会因相隔 30 行而**可见**,进而有一个被删掉——没有 primitive 层时这个重复是隐形的;②"不可逆授权"没有 `--green-500` 这类语义别名可被冒充,选择器**物理上无法**拿"绿"当"正向"的替身。FEATURES 的反对理由(无主题/品牌可重映射)被这两条**同一上下文内**的收益回答。**注意**:PITFALLS 的"语义命名而非字面命名"规则适用于**被消费**的令牌——调和方案与它不冲突
-- [ ] **TOKEN-03**: 先产出**含义清单**(每个颜色名对应哪一语义),再据此把四套竞争强调色收敛为主色 / 危险 / 中性三族
+- [x] **TOKEN-03**: 先产出**含义清单**(每个颜色名对应哪一语义),再据此把四套竞争强调色收敛为主色 / 危险 / 中性三族
 - [x] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
-- [ ] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
-- [ ] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
+- [x] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
+- [x] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
 - [x] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200 —— **仅完成令牌化半场**。四个令牌的消费者接线已由 `check-05-ui-uat.py:771-776` 机械断言(断言"元素 `z-index` **等于**其令牌")。**序关系半场无机械断言**:该不变量只存在于 `frontend/style.css:229-231` 的散文注释(注释自称 `z-index ordering assertion`,但断言并不存在);把四个值重新排序后 `check-01`…`check-05` 全部仍会通过。用户已裁定本阶段不补断言,改列为人工验收项(见文末),不在本里程碑内机械覆盖 —— 详见 `.planning/phases/idi-04.1-radix/idi-04.1-VALIDATION.md`
-- [ ] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
+- [x] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
 
 ### VISUAL — 视觉层级
 
@@ -120,12 +120,12 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 |-------------|-------|--------|
 | TOKEN-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
-| TOKEN-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-03 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
-| TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — 序关系半场 manual-only,见文末人工验收项) |
-| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — `.collapse-indicator` 的 `20px` / `line-height: 1` 越轨字面量经用户裁定为 Phase 4 范围外,见 `idi-04-VERIFICATION.md` 的 `overrides:` 与 backlog `999.1`) |
 | VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-03 | Phase 5: 排版与视觉层级 | Pending |
@@ -177,4 +177,4 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ---
 *Requirements defined: 2026-09-17*
-*Last updated: 2026-09-20 — TOKEN-07 加注为 Complete (PARTIAL):序关系半场按用户裁定改为人工验收项,不再与 `idi-04.1-VALIDATION.md` 表面一致*
+*Last updated: 2026-09-20 — TOKEN-08 加注为 Complete (PARTIAL):`.collapse-indicator` 的越轨字面量经用户裁定为 Phase 4 范围外(backlog 999.1),不再与 `idi-04-VERIFICATION.md` 的 `overrides:` 表面不一致;TOKEN-03/05/06 随 Phase 4 收口由 `phase.complete` 翻为 Complete*

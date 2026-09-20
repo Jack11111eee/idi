@@ -17,7 +17,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - [x] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
 - [ ] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
 - [ ] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
-- [x] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200
+- [x] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200 —— **仅完成令牌化半场**。四个令牌的消费者接线已由 `check-05-ui-uat.py:771-776` 机械断言(断言"元素 `z-index` **等于**其令牌")。**序关系半场无机械断言**:该不变量只存在于 `frontend/style.css:229-231` 的散文注释(注释自称 `z-index ordering assertion`,但断言并不存在);把四个值重新排序后 `check-01`…`check-05` 全部仍会通过。用户已裁定本阶段不补断言,改列为人工验收项(见文末),不在本里程碑内机械覆盖 —— 详见 `.planning/phases/idi-04.1-radix/idi-04.1-VALIDATION.md`
 - [ ] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
 
 ### VISUAL — 视觉层级
@@ -124,7 +124,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — 序关系半场 manual-only,见文末人工验收项) |
 | TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
 | VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
@@ -173,7 +173,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - **A11Y-08** — tab 序到达每一个交互控件;键盘划词路径可用
 - **A11Y-03 的键盘划词部分** — Shift+方向键选区 → 菜单出现 → 焦点入菜单 → Escape 关闭并交还焦点
 - **REG-03 中依赖键盘选区的项** — b9664e0 五条修复的人工验收项重跑
+- **TOKEN-07 的序关系半场** — `--z-badge (10) < --z-banner (20) < --z-overlay (100) < --z-selection-menu (200)` 且承重关系 `badge < banner` 不被反转。无机械断言(见 TOKEN-07 条目),本里程碑内按人工验收:读 `grep -nE '^\s*--z-' frontend/style.css` 核对序关系,并 `grep -n 'z-index: var(--z-' frontend/style.css` 确认四个令牌各有消费者(`:537` overlay / `:590` badge / `:606` banner / `:889` selection-menu)。裁定记录:`idi-04.1-VALIDATION.md`
 
 ---
 *Requirements defined: 2026-09-17*
-*Last updated: 2026-09-17 after quick 260917-fqh 收口 REG-01/REG-02(路线图前置完成 2 条,余 36 条映射 Phase 4-8)*
+*Last updated: 2026-09-20 — TOKEN-07 加注为 Complete (PARTIAL):序关系半场按用户裁定改为人工验收项,不再与 `idi-04.1-VALIDATION.md` 表面一致*

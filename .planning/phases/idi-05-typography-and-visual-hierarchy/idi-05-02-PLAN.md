@@ -279,7 +279,7 @@ Plan 03 会继续往这张表追加符号(`--color-marker-active`、两个 `--ic
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 3,4,smoke</automated>
     <fails_when>exit code is not 0, or the `=== 逐项结论 ===` block reports anything other than PASS for items 3, 4 and smoke</fails_when>
     <automated>grep -o 'font-size: var(--text-md);' frontend/style.css | wc -l</automated>
-    <fails_when>the count is not 8 (7 pre-existing consumers plus the new #btn-authorize declaration)</fails_when>
+    <fails_when>the count is not 7 (net unchanged: Plan 01 Task 1 step 3 moved `.markdown-body h3` off `--text-md`, leaving 6 at this task's start; this task adds the new #btn-authorize declaration, 6 + 1 = 7)</fails_when>
     <automated>grep -n -A 8 '^#btn-authorize {' frontend/style.css | grep -o 'font-size: var(--text-md);' | wc -l; grep -n -A 8 '^#btn-authorize {' frontend/style.css | grep -o 'font-weight: var(--fw-semibold);' | wc -l</automated>
     <fails_when>either count is not 1</fails_when>
     <automated>grep -n -A 8 '^#btn-authorize {' frontend/style.css | grep -o 'padding: var(--space-2) var(--space-4);' | wc -l</automated>
@@ -291,7 +291,7 @@ Plan 03 会继续往这张表追加符号(`--color-marker-active`、两个 `--ic
   </verify>
   <acceptance_criteria>
     - `#btn-authorize` 规则体内有 `font-size: var(--text-md);`,且 `padding` / `font-weight` / `background` / `border-color` / `color` 五条声明中除新增的 `font-size` 外逐字未变
-    - `grep -o 'font-size: var(--text-md);' frontend/style.css | wc -l` == 8(HEAD 7 + 本任务 1)
+    - `grep -o 'font-size: var(--text-md);' frontend/style.css | wc -l` == 7(净不变:Plan 01 移走 `.markdown-body h3` 后本任务起点为 6,本任务新增 `#btn-authorize` 一条,6 + 1 = 7;与 `idi-05-UI-SPEC.md:200` 的「7 处 → 7 处,净不变」一致)
     - `:689-695` 的「逐字节相同」断言**已删除**(`grep -o '#btn-process-round 与 #btn-authorize 三属性逐字节相同' scripts/check-05-ui-uat.py | wc -l` == 0)
     - `trio()` 读取器与 `ROUTINE` / `COMMIT` / `IRREVERSIBLE` 三个常量存在;三条新断言(档内相同 ×2 + 三档两两不同 ×1)存在
     - item3 里既有的三条 `#btn-authorize` 令牌接线断言保留

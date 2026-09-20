@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 ## Current Position
 
 Phase: idi-04.1 (Radix 颜色族重写 (INSERTED)) — READY TO EXECUTE
-Plan: 3 of 3
+Plan: 4 of 4
 Status: Executing Phase idi-04.1
 Last activity: 2026-09-20 — Phase idi-04.1 execution resumed (wave continue)
 

@@ -118,7 +118,7 @@ Plans:
 **不含暗色模式**(与 v1.14 的已记录排除项一致);**不改** S-1 间距 12 档与 S-2 的 14px 一级字号档。
 **Requirements**: TOKEN-01, TOKEN-02, TOKEN-04, TOKEN-07, CHECK-01, CHECK-02, CHECK-03, CHECK-04, A11Y-04, A11Y-04b(全部是 Phase 4 已列需求 —— 04.1 是它们的**值层重写**,不新增需求。口径:本阶段**实质关闭** A11Y-04 / A11Y-04b / CHECK-02 / TOKEN-07 / CHECK-01(AA 倒退、`.tier-desc` 的 opacity 越轨、43 对清单重算、z-index 序断言重新有消费者、D-03 改名后空转的 tier-1 守卫);**沿用并复证** TOKEN-01 / TOKEN-02 / TOKEN-04 / CHECK-03 / CHECK-04。**不触碰** TOKEN-03 / TOKEN-05 / TOKEN-06 / TOKEN-08)
 **Depends on:** Phase 4
-**Plans:** 4/4 plans executed + 1 gap-closure plan (04) pending
+**Plans:** 4/4 plans executed (incl. gap-closure plan 04)
 
 Plans:
 **Wave 1**

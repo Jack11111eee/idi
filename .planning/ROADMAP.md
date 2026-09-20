@@ -173,8 +173,21 @@ Plans:
 - **Pitfall 9**——追加,不重排(`#brainstorm-view h2` 的 14px / `#8a6508` 是顺序决定的)。
 
 **Research flag**: 标准实践,无需研究阶段。项目特有的碰撞已在上方逐条枚举。
-**Gates**: markdown 标题不再解析为 UA 默认(浏览器计算样式实检);`#btn-authorize` 计算样式与 `#btn-continue-check` 不同;`#brainstorm-view h2` 仍计算为 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
-**Plans**: TBD
+**Gates**: markdown 标题不再解析为 UA 默认(浏览器计算样式实检);`#btn-authorize` 计算样式与 `#btn-continue-check` 不同;`#brainstorm-view h2` 仍解析为 `--text-md` 与 `--color-action-warning`(D-02:改写为令牌接线表述,与 04.1 的 D-14 同构);Phase 4 全部 gate 仍通过。
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] idi-05-01-PLAN.md — 排版刻度 7 档(`--text-2xl`/`--text-3xl` 与 `.markdown-body h1/h2/h3` 同提交)+ 行高比率配对注释 + 字重三档分工(按钮 600→500,`#btn-authorize` 保留 600)+ TYPE-02 复证
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-05-02-PLAN.md — 三段坡道值层重写(commit green-11/white、irreversible green-12/white)+ `#btn-authorize` 字号步进 14→16px + D-04 断言反转(档内相同 / 档间两两不同)+ VISUAL-03 复证
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] idi-05-03-PLAN.md — 活动面板标记(`--color-marker-active` + 两处 `box-shadow: inset` 追加规则)+ 两处 emoji 改 `mask-image` 字形 + D-05 连带复验 idi-04.1
 **UI hint**: yes
 
 ### Phase 6: 布局稳健性

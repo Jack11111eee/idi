@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: "04.1"
 current_phase_name: Radix 颜色族重写 (INSERTED)
 status: executing
-stopped_at: Completed idi-04.1-03-PLAN.md
-last_updated: "2026-09-20T01:51:17.073Z"
-last_activity: 2026-09-19
-last_activity_desc: Phase idi-04.1 execution started
-state_head: 5c1b4da3e7a1a87bebe4eed9185f0ab91be3e0bb
+stopped_at: Completed idi-04.1-04-PLAN.md
+last_updated: "2026-09-20T02:13:59.900Z"
+last_activity: 2026-09-20
+last_activity_desc: Phase idi-04.1 execution resumed (wave continue)
+state_head: ab812b81028b2dbb3ed2531b75a1fc2175c0bf3b
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-17)
 Phase: idi-04.1 (Radix 颜色族重写 (INSERTED)) — READY TO EXECUTE
 Plan: 3 of 3
 Status: Executing Phase idi-04.1
-Last activity: 2026-09-19 — Phase idi-04.1 execution started
+Last activity: 2026-09-20 — Phase idi-04.1 execution resumed (wave continue)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -80,6 +80,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04.1 P01 | 22min | 3 tasks | 2 files |
 | Phase 04.1 P02 | 2min | 2 tasks | 1 files |
 | Phase idi-04.1-radix P03 | 41min | 3 tasks | 2 files |
+| Phase idi-04.1 P04 | 20min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ Recent decisions affecting current work:
 - [Phase 04.1]: D-14 断言改造落地:#btn-authorize 的 color 接 --color-action-irreversible-fg(green-12),不是 --color-action-irreversible(green-11) —— 计划原文的令牌对位有误,照抄会让 item 3 永远 FAIL
 - [Phase 04.1]: box-shadow 的 rgba(0, 0, 0, 0.2) 是全文件唯一保留的颜色字面(计数不变量 == 1),其形状由 R-2 的 --shadow-overlay 固定,不是令牌接线对象
 - [Phase 04.1]: C-1 复核:ROADMAP 五处 + 04-UI-SPEC.md 携带项 #7 的 #brainstorm-view h2 = 14px / #8a6508 全部失真(实测 16px / #4f3422);只留证不改写,裁决权交用户
+- [Phase idi-04.1]: CR-01 关闭:resolve_color 令牌未声明时返回 None,ok() 把 None 期望值记 BLOCKED —— 只改两处 helper,24 处调用点与全部 expected 字面值一字未动 — D-14 把 22 条硬编码 rgb(...) 断言换成令牌接线,移除了假 FAIL 的根因,同时移除了改名/删除时的 FAIL 能力;plan 03 已把该损失登记为由 check-02 的 43 对实测比值与接线断言旁的 info() 补偿 —— CR-01 证明该补偿只覆盖值轴,接线轴仍空转
+- [Phase idi-04.1]: CR-01 的修复用变异证明钉死:反事实常量(68309d0 的探针体)+ 浏览器侧拦截 /style.css 删掉 --color-text-muted 声明 + 未变异对照支,三件套进 scripts/probe-05-resolve-color.py(不是门,不进守卫契约) — 变异测试是唯一能证明守卫真的会失败的手段(本项目已记录的教训);只跑一次真实树无法区分「守卫在工作」与「守卫静默空转」,故反事实与对照两支缺一不可
 
 ### Pending Todos
 
@@ -178,8 +181,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-19T13:48:42.568Z
-Stopped at: Completed idi-04.1-03-PLAN.md
+Last session: 2026-09-20T02:13:59.864Z
+Stopped at: Completed idi-04.1-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

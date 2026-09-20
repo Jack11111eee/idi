@@ -39,7 +39,7 @@
 退出码语义
     0 = 所选项全部 pass
     1 = 至少一项含 FAIL 断言
-    2 = 无 FAIL,但至少一项含 BLOCKED 断言(状态造不出 / 元素不可见 / 选择器不存在)
+    2 = 无 FAIL,但至少一项含 BLOCKED 断言(状态造不出 / 元素不可见 / 选择器不存在 / 期望值解析不出)
 
 设计要点
     - **fixture 隔离**:每次进入一个样本都复制到 `tempfile.mkdtemp()` 下的新副本,
@@ -102,11 +102,19 @@ def _emit(item, verdict, label, expected, actual, note=""):
 def ok(item, label, expected, actual, note=""):
     """等值断言;actual 为 None 表示元素/选择器不存在 → BLOCKED,绝不记 pass。
 
+    expected 为 None 表示**期望值解析不出**(如令牌未声明)→ 同样记 BLOCKED。
+    不加这一支它会落进下面的比较分支:norm(actual) == norm(None) 恒为假,于是
+    记 FAIL —— FAIL 也不是假 PASS,但「期望值本身不可得」与「值不相等」是两种
+    状态,混为一谈会让诊断指向错误的方向。两类 BLOCKED 的区别:actual 侧是读不到
+    (元素/选择器不存在),expected 侧是解析不出(令牌未声明或解析失败)。
+
     比较前对 rgb()/rgba() 内部空白做归一:UAT 里写 `rgb(106,106,106)`,
     Chrome 序列化成 `rgb(106, 106, 106)` —— 这是序列化差异,不是产品差异。
     打印的仍是原始 actual,失败可独立诊断。
     """
-    if actual is None:
+    if expected is None:
+        _emit(item, "BLOCKED", label, "<UNRESOLVED>", actual, "令牌未声明或期望值解析失败")
+    elif actual is None:
         _emit(item, "BLOCKED", label, expected, "<MISSING>", "元素/选择器不存在")
     elif norm(actual) == norm(expected):
         _emit(item, "PASS", label, expected, actual, note)
@@ -248,9 +256,17 @@ def read_classlist(page, selector):
 
 
 def resolve_color(page, token):
-    """把令牌解析成归一化的 computed rgb —— 挂一个探针元素读它的 color。"""
+    """把令牌解析成归一化的 computed rgb —— 挂一个探针元素读它的 color。
+
+    令牌**未声明**时返回 `None`(与 resolve_token 同形),不再返回探针继承到的
+    正文色。故先确认 `documentElement` 上该令牌确有声明:为空即直接返回,不进
+    探针。否则 `var(--t)` 在 computed-value 阶段失效,探针与真实消费者(用同一个
+    `var(--t)`)会一起退化成同一个继承值 —— 断言在令牌改名/删除下恒真。
+    """
     return page.evaluate(
         """(t) => {
+            const declared = getComputedStyle(document.documentElement).getPropertyValue(t);
+            if (!declared || !declared.trim()) return null;
             const p = document.createElement('div');
             p.style.color = `var(${t})`;
             document.body.appendChild(p);

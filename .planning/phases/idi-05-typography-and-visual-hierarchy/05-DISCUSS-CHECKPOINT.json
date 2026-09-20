@@ -1,0 +1,140 @@
+{
+  "phase": "5",
+  "phase_name": "排版与视觉层级",
+  "timestamp": "2026-09-20T07:55:00Z",
+  "areas_completed": [
+    "基线裁定与矛盾门",
+    "标题与正文字号阶梯",
+    "不可逆动作三档"
+  ],
+  "areas_remaining": [
+    "标记体系"
+  ],
+  "decisions": {
+    "基线裁定与矛盾门": [
+      {
+        "question": "Phase 5 的规划基线以谁为准?",
+        "answer": "以 HEAD 为唯一基线 —— style.css 磁盘值 + check-05-ui-uat.py 断言为现实基线,契约文本仅作意图参考;规划期逐条登记「契约已过期」条目;不动 04-UI-SPEC/ROADMAP 正文。",
+        "options_presented": [
+          "以 HEAD 为唯一基线(推荐)",
+          "先同步契约文本",
+          "只改会误导的条目"
+        ]
+      },
+      {
+        "question": "`#brainstorm-view h2` 那段 gate 怎么处置?",
+        "answer": "改成令牌接线表述 —— gate 改写为「`#brainstorm-view h2` 仍解析为 `--text-md` 与 `--color-action-warning`」。与 D-14 同构。已接受代价:牺牲硬编码值的检测力。",
+        "options_presented": [
+          "改成令牌接线表述(推荐)",
+          "改写为 HEAD 实际值",
+          "拉回 14px"
+        ]
+      },
+      {
+        "question": "check-05-ui-uat.py 的字面 px 断言怎么处理?",
+        "answer": "分类处理 —— Phase 5 主动改动的断言改令牌接线;守卫「不该变」的四处 chrome 覆盖(.panel-header h2 14px / #draft-view h2 18px / .overlay-card h3 24px / .markdown-body 16px)与 --text-base == 14px(S-2 依赖)保持字面 px。",
+        "options_presented": [
+          "分类处理(推荐)",
+          "全部令牌接线",
+          "只改字面值"
+        ]
+      },
+      {
+        "question": "那条「逐字节相同」断言反转成什么形式?",
+        "answer": "三档两两不同 + 档内相同 —— routine 三只互相相同;commit 两只互相相同;irreversible(#btn-authorize)独立;三档两两不同。一个断言同时覆盖 VISUAL-01 与 VISUAL-02。",
+        "options_presented": [
+          "三档两两不同 + 档内相同(推荐)",
+          "只反转那一条",
+          "删除该断言"
+        ]
+      }
+    ],
+    "标题与正文字号阶梯": [
+      {
+        "question": "正文本体字号与标题阶梯怎么定?",
+        "answer": "本体保持 16px(--text-md),新开两档 22px / 28px。h1 28 / h2 22 / h3 18 / 本体 16。刻度 5 → 7 档:12/14/16/18/22/24/28。两个新令牌与消费者同提交(不违反 Pitfall 1)。DESIGN.md 阅读尺寸不变。",
+        "options_presented": [
+          "本体 16px + 新开两档(推荐)",
+          "本体 16px + 新开一档",
+          "本体拉回 14px(零新增)",
+          "不开档,h3 靠字重区分"
+        ]
+      },
+      {
+        "question": "`table th/td` 与行内 `code` 的字号怎么定?",
+        "answer": "两者保持 14px(--text-base),零改动。比正文低一档的相对关系已与契约意图一致(契约时代是 13 vs 14);TYPE-02 作为「复证项」收口 —— 其字面要求(归入刻度与令牌)已由 qrq 实现。",
+        "options_presented": [
+          "两者保持 14px(零改动)(推荐)",
+          "只升 code 到 16px",
+          "两者都升到 16px"
+        ]
+      },
+      {
+        "question": "字重层级(TYPE-03)怎么定?",
+        "answer": "三档分工显式化 —— 内容标题三级全 600;chrome 标题与按钮统一 500。即六个动作按钮的 font-weight 从 600 改为 500(它们现在与内容标题同重)。",
+        "options_presented": [
+          "三档分工显式化(推荐)",
+          "保持现状,仅复证",
+          "h1/h2 600、h3 500"
+        ]
+      },
+      {
+        "question": "新增的 28px / 22px 两档怎么配行高?",
+        "answer": "复用 --lh-tight(1.3333),h1/h2/h3 统一,零新增行高令牌。围栏注释从「整数配对」改为「比率配对」表述(28→37.33 / 22→29.33)。",
+        "options_presented": [
+          "复用 --lh-tight(零新增)(推荐)",
+          "新开 --lh-display 给 h1/h2",
+          "h3 改用 --lh-compact"
+        ]
+      }
+    ],
+    "不可逆动作三档": [
+      {
+        "question": "三档的形态怎么定?",
+        "answer": "三段坡道(契约原设计)—— routine 保持淡底 + 绿字(不变);commit(#btn-approve-draft / #btn-start-writing)改实心填充 + 白字;irreversible(#btn-authorize)实心更深 + 白字 + 字号步进。Phase 5 需声明 Radix green-9/10 两个 primitive(与消费者同提交),CHECK-02 需加白字对实心的配对。",
+        "options_presented": [
+          "三段坡道(契约原设计)(推荐)",
+          "只动 #btn-authorize",
+          "commit 与 irreversible 同实心"
+        ]
+      },
+      {
+        "question": "不可逆按钮的字重怎么定?",
+        "answer": "不可逆例外 600 —— #btn-authorize 保持 600,其余五只按钮 500。四重强调(实心 + 更深 + 字号步进 + 更重)。这是灰区 2「按钮统一 500」的唯一已登记例外,需在 CONTEXT 写明理由。",
+        "options_presented": [
+          "不可逆例外 600(推荐)",
+          "全部 500,无例外",
+          "字重随档位递进"
+        ]
+      },
+      {
+        "question": "不可逆按钮的字号步进幅度怎么定?",
+        "answer": "14 → 16px(--text-md,现有档)。零新增令牌;16px 恰好是正文本体大小,不夸张。",
+        "options_presented": [
+          "14 → 16px(现有档)(推荐)",
+          "14 → 18px(更近契约比例)",
+          "不加字号,改加 padding"
+        ]
+      },
+      {
+        "question": "实心按钮的 :disabled 态怎么处置?",
+        "answer": "沿用 opacity: 0.55,零改动。0.55 对实心按钮是更强的淡化(实心→淡绿),区分度反而上升;与硬规则「不得软化」字面一致。",
+        "options_presented": [
+          "沿用 0.55,零改动(推荐)",
+          "实心按钮用更低值(如 0.4)",
+          "disabled 退回淡底形态"
+        ]
+      }
+    ]
+  },
+  "deferred_ideas": [],
+  "open_interaction": null,
+  "canonical_refs": [
+    ".planning/phases/idi-04-tokens-contract/04-UI-SPEC.md",
+    ".planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md",
+    ".planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md",
+    ".planning/phases/idi-04.1-radix/idi-04.1-UI-REVIEW.md",
+    "frontend/style.css",
+    "scripts/check-05-ui-uat.py"
+  ]
+}

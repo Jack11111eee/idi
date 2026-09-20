@@ -1,10 +1,13 @@
 ---
 phase: "5"
 slug: "idi-05-typography-and-visual-hierarchy"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-09-20"
+reviewed_at: "2026-09-20T12:05:36Z"
+review_verdict: APPROVED
+review_note: "Dimension 4 FLAG — 3 non-blocking evidence defects (the --text-md consumer count missing :626; the line-height fence comment leaving --lh-compact unpaired while the head still said four, plus the pre-existing 18/28 arithmetic error; a wrong specificity parenthetical in Hard Rule 9). All three corrected in place after independent re-verification against disk. No BLOCK."
 supersedes_sections: ["Typography"]
 ---
 
@@ -194,7 +197,7 @@ xl → 2xl → 3xl),不按数值序。理由:名字序让「下一档是 2xl」�
 | 档 | HEAD 消费者 | 本阶段后 | 迁移 |
 |---|---|---|---|
 | `--text-lg` 18px | `#draft-view h2, #rounds-placeholder h2`(`:613`)、`.markdown-body h2`(`:625`) | 2 处 | 失去 `.markdown-body h2`,**获得** `.markdown-body h3` → 净不变 |
-| `--text-md` 16px | 6 处(`:549` `:618` `:681` `:720` `:757` `:957`) | 6 处 | 失去 `.markdown-body h3`,**获得** `#btn-authorize` → 净不变 |
+| `--text-md` 16px | 7 处(`:549` `:618` `:626` `:681` `:720` `:757` `:957`) | 7 处 | 失去 `.markdown-body h3`,**获得** `#btn-authorize` → 净不变 |
 | `--text-xl` 24px | 3 处(`:548` `.overlay-card h3`、`:624` `.markdown-body h1`、`:712` `#chat-greeting`) | **2 处** | 失去 `.markdown-body h1` → **仍 ≥1,不孤儿** |
 
 ### 标题映射(D-06,定稿)
@@ -227,6 +230,14 @@ xl → 2xl → 3xl),不按数值序。理由:名字序让「下一档是 2xl」�
 
 **为什么必须改措辞:** 28k 与 22k 同时为整数要求 k 是 0.5 的倍数,而 k = 1.5 太松(28 × 1.5 = 42px,
 标题会散开)。**整数配对在数学上不可得**,不是没试。
+
+**改写该注释时另有两处必须一并修正(否则新注释仍自相矛盾):**
+
+- **既有算术错误:`18/28` 是错的。** `--text-lg` 18px 配 `--lh-tight` 1.3333 得 **24**,不是 28。
+  改写后的注释须写 `18/24`(上表已按正确值书写)。
+- **`four` 与上表的三档不自洽。** `--lh-compact`(1.5556)是**纯 chrome** 行高,唯一消费者是
+  `.overlay-card p`(`:549`),**不属字号刻度配对**。改写后的注释要么给它单列一行并注明
+  「chrome-only」,要么删掉 `four` 这个词 —— 不能像现状那样,头部说「four」而刻度配对只列三档。
 
 ### TYPE-02 —— 认定已由 qrq 实现,本阶段只做复证(D-08)
 
@@ -946,8 +957,11 @@ computed 值**(`color` / `background-color` / `border-color` 不依赖布局)。
 7. 每个 `style.css` 计划都必须带**至少一项运行时验证**,不能只有静态计数。
 8. **【本阶段新增】不得引入 `@media`。** 窄窗口与断点是 Phase 6 的交付物(`@media` 计数须保持 **0**)。
 9. **【本阶段新增】不得给 `.markdown-body` 容器之外的任何 `h1` / `h2` / `h3` 写字号规则。**
-   全局 `h1, h2, h3` 规则是本阶段最容易犯且最难发现的一处错误(它会同时带偏四处 chrome 覆盖,
-   而四处里有两处是 1-0-1,与它等特异性)。
+   全局 `h1, h2, h3` 规则是本阶段最容易犯且最难发现的一处错误。注意它的**特异性是 0-0-1**,
+   严格弱于四处 chrome 覆盖(`#draft-view h2` / `#brainstorm-view h2` 为 1-0-1,`.panel-header h2` /
+   `.overlay-card h3` 为 0-1-1)—— 所以在 `font-size` 上它对那四处**是惰性的**。真正的暴露面是
+   **四处 chrome 规则未声明的那些属性**(`line-height` / `margin-bottom` / `letter-spacing`),
+   以及**任何落在 `.markdown-body` 之外、又没有更具体规则兜底的标题**。
 
 ---
 
@@ -1031,50 +1045,114 @@ computed 值**(`color` / `background-color` / `border-color` 不依赖布局)。
 ## UI Considerations
 
 > 由 ui-phase 的 UI-consideration probe(Step 9.5)填充,并由 plan-phase 的
-> `## UI Considerations` lift 规则按与 SPEC `## Edge Coverage` 相同的规则提升。**本节的元素集与
-> 分类由本契约作者按 probe 的分类法逐条裁定;Step 9.5 的 probe 运行若执行,会按**同一条目集
-> 幂等替换**本表,而不是追加。**
+> `## UI Considerations` lift 规则按与 SPEC `## Edge Coverage` 相同的规则提升。
+> **本节由 probe 引擎在 checker 通过之后重算并整节替换**(幂等,不追加);元素集与 kind 由本契约
+> 作者在 auto 模式下按分类法裁定(引擎检测到的 ∪ 作者判定被漏掉的)。
 
-**适用状态考量已裁定:26 条(20 条 explicit、6 条 backstop、0 条 unresolved)。**
+**适用状态考量已裁定:40 条(22 条 explicit、18 条 backstop、0 条 unresolved)。**
+
+**probe 运行记录(可复核):**
+
+```bash
+node .claude/gsd-core/bin/lib/ui-consideration-probe.cjs <elements.json> <resolutions.json>
+# → coverage: {"applicable":40,"resolved":40,"unresolved":0,"byVerification":{"explicit":22,"backstop":18}}
+```
+
+**首跑的分类失真(必须记录,否则会被误读成「引擎认同本表」):** 直接喂元素散文时,引擎把
+**5/9 判为 `unclassified`**(E1–E5、E8)、把 E6/E7 判成 `media`(数据态,对一个静态字形无意义)、
+把 E9 判成 `list-collection`;并且 `overflow` / `long-text` **一条都没提出** —— 而那恰恰是本阶段
+(排版与层级)真正相关的两类。故按工作流的 propose-then-confirm,在 auto 模式下由作者逐条裁定
+kind 后重跑。**上表 40 条是重跑结果,不是首跑结果。**
 
 **本阶段的元素集与 kind(9 个):**
 
-| # | 元素 | kind | 依据 |
+| # | 元素 | kind(engine) | 依据 |
 |---|---|---|---|
 | E1 | `.markdown-body` 的四个宿主(`#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check`) | `static-content` | 渲染的 markdown 内容 |
 | E2 | 文档 h1/h2/h3(`.markdown-body h1/h2/h3`) | `static-content` | 本阶段主动改字号 |
 | E3 | 六个动作按钮(`#btn-approve-draft` / `#btn-process-round` / `#btn-authorize` / `#btn-start-writing` / `#btn-continue-check` / `#btn-continue-repair`) | `interactive-control`, `static-content` | 本阶段主动改形态 / 字重 / 字号 |
-| E4 | 侧栏三面板标题行(`#session-panel` / `#annotations-panel` / `#checks-panel` 的 `.panel-header`) | `static-content` | 本阶段新增活动态标记 |
-| E5 | `#ai-panel` 的标题行与折叠指示器 | `interactive-control`, `static-content` | 本阶段**零改动**,但它是 E4 的对照组 |
-| E6 | `.annotation-quote` 的引用行(含 `::before` 图标) | `static-content` | 本阶段替换图标机制 |
-| E7 | `.verdict-location` 的位置行(含 `::before` 图标) | `static-content` | 同上 |
-| E8 | `#doc-panel-header h1`(容器标签) | `static-content` | VISUAL-03 的复证对象 |
-| E9 | 四处 chrome 标题(`.panel-header h2` / `#draft-view h2` / `#brainstorm-view h2` / `.overlay-card h3`) | `static-content` | SC1 的守卫对象 |
+| E4 | 侧栏三面板标题行(`#session-panel` / `#annotations-panel` / `#checks-panel` 的 `.panel-header`) | `static-content`, `nav` | 本阶段新增活动态标记 |
+| E5 | `#ai-panel` 的标题行与折叠指示器 | `interactive-control`, `static-content`, `nav` | 本阶段**零改动**,但它是 E4 的对照组 |
+| E6 | `.annotation-quote` 的引用行(含 `::before` 图标) | `static-content`, `media` | 本阶段替换图标机制 |
+| E7 | `.verdict-location` 的位置行(含 `::before` 图标) | `static-content`, `media` | 同上 |
+| E8 | `#doc-panel-header h1`(容器标签) | `static-content`, `nav` | VISUAL-03 的复证对象 |
+| E9 | 四处 chrome 标题(`.panel-header h2` / `#draft-view h2` / `#brainstorm-view h2` / `.overlay-card h3`) | `static-content`, `list-collection` | SC1 的守卫对象 |
 
-**为什么绝大多数考量落在 explicit 而非 dismissed:** 本阶段改的是**排版与层级**,不新增元素、
-不新增状态、不改文案。一个字号或一个 `box-shadow` 的值不可能改变某个状态的**内容或结构**;
-但它**可以**改变某个状态下的**文字适配**(换行、裁切、行盒高度)。这正是 explicit 与 backstop
-的分界线,与 04.1 的切法同源。
+**explicit 与 backstop 的分界线:** 本阶段改的是**排版与层级**,不新增元素、不新增状态、不改文案
+(§Copywriting Contract 已冻结)。一个字号或一个 `box-shadow` 的值**不可能**改变某个状态的**内容、
+结构或显隐** —— 那些一律 `explicit`,由接线证据钉住;但它**可以**改变某个状态下的**文字适配**
+(换行、裁切、行盒高度),那些只能 `backstop`。空态 / 错误态的**文案**归 `## Copywriting Contract`,
+本节只覆盖**形状根因的状态适配**并**引用**该节,不复述其文案。
 
-| Category | Element(s) | Status | Resolution / Reason |
-|----------|------------|--------|---------------------|
-| `empty` / `loading` / `error` / `populated` / `partial` / `zero-one-many` | E1 E3 E4 E5 E9(共 20 条) | ✅ covered | **状态本身未被本阶段改动。** 接线证据:`frontend/app.js` + `frontend/index.html` 在本阶段**零 diff**(硬规则 5 的约 70 个 id 句柄一字未动),加上 CHECK-03(`^\.hidden {` = 1)与 CHECK-04(`!important;` = 1)—— 没有任何状态结构或文案可以移动。状态的**颜色**另由 `scripts/check-02-contrast.py` 的 47 对钉住 |
-| `overflow` | E2 E3 E4 E6 E7 | 🧪 backstop | 见下方 backstop 表 |
-| `long-text` | E2 E3 E6 E7 E8 | 🧪 backstop | 见下方 backstop 表 |
+**考量表(40 条):**
 
-### Backstop 陈述(6 条 —— 每条都是 held-out 视觉检查)
+| Element | Category | Status | Resolution |
+|---|---|---|---|
+| E1 | `overflow` | ✅ `resolved` / backstop | 长文档在 `#draft-content` 内滚动而非撑破容器;本阶段只改标题字号,不新增滚动容器(布局归 Phase 6),此处只断言不回归。 |
+| E1 | `long-text` | ✅ `resolved` / backstop | 超长 DESIGN.md 渲染后 `#doc-pane` 无横向滚动条,28px h1 不撑破内容宽。 |
+| E2 | `overflow` | ✅ `resolved` / backstop | 28px h1 / 22px h2 在 `--doc-panel-w` 最窄值(340px)下不溢出容器。 |
+| E2 | `long-text` | ✅ `resolved` / backstop | 含 h1/h2/h3 的长文档渲染后三级标题层级可辨且不互相淹没;h1 是全屏最大文字(28 > `.overlay-card h3` 的 24 > 22)。字号半边由 `check-05` 的令牌接线断言覆盖,剩余的是视觉层级判断。 |
+| E3 | `loading` | ✅ `resolved` / explicit | 六只按钮的 loading 关联态由 `app.js` 既有句柄驱动;本阶段 `app.js` / `index.html` 零 diff,故态的结构、文案与显隐不可能改变 —— 本阶段只改 `font-weight` / `font-size` / 填充形态。 |
+| E3 | `error` | ✅ `resolved` / explicit | 同上:`:disabled` 是 G3 前提条件唯一的视觉信号(Pitfall M5),D-14 裁定沿用 `opacity: 0.55` 零改动,错误态不可被本阶段改动。 |
+| E3 | `overflow` | ✅ `resolved` / backstop | `#btn-continue-check` 与 `#btn-continue-repair` 在 `#check-controls`(`flex-direction: column`)里各占一行,不溢出。 |
+| E3 | `long-text` | ✅ `resolved` / backstop | `#btn-authorize` 文本「授权撰写总设计文档」在 `--doc-panel-w` 最窄值 340px(内容宽 260px)下不换行、不裁切,且 16px 白字在 green-12 上可读(12.32)。换行半边无自动化证据,需实测。 |
+| E4 | `loading` | ✅ `resolved` / explicit | 三面板的显隐由 `.hidden` 驱动(`app.js` 既有句柄);本阶段 `app.js` / `index.html` 零 diff,活动态由纯 CSS `:not(.hidden)` 推导,不引入新状态。 |
+| E4 | `error` | ✅ `resolved` / explicit | 同上。CHECK-03(`^\.hidden {` = 1)与 CHECK-04(`!important;` = 1)钉住 `.hidden` 的唯一性,任何面板态的显隐结构不可能移动。 |
+| E4 | `overflow` | ✅ `resolved` / backstop | 3px 竖条在**每个**活动面板上真实可见 —— 既不被该面板标题行内的元素盖住,也不因 `border-radius: var(--radius-md)` 在角落断开。这是 05-N-4 的实测验收。 |
+| E4 | `long-text` | ✅ `resolved` / backstop | 面板标题文本变长时竖条仍贴左缘,标题变色(标记色)不溢出标题行。 |
+| E5 | `loading` | ✅ `resolved` / explicit | `#ai-panel` 的折叠态由 `#ai-panel-body` 上的 `.collapsed` 驱动(`app.js:1563-1569`),本阶段零改动;它从不被 `.hidden`,故不参与三选一活动态推导(D-16)。 |
+| E5 | `error` | ✅ `resolved` / explicit | 同上 —— `#ai-panel` 的折叠行为按 SC4 要求保持不变。 |
+| E5 | `overflow` | ✅ `resolved` / backstop | `#ai-panel` 折叠/展开两态下,3px 竖条(若适用)与既有 `▾`/`▸` 指示器并存且不重叠。 |
+| E5 | `long-text` | ✅ `resolved` / backstop | 折叠指示器不因标题变长而漂移;`.collapse-indicator` 本阶段零触碰(D-23)。 |
+| E6 | `empty` | ✅ `resolved` / explicit | 该行的存在与否由 `app.js` 的 `renderAnnotations` 驱动(已验收路径,硬规则 5 不得触碰);本阶段零 diff,故空态结构不变。 |
+| E6 | `loading` | ✅ `resolved` / explicit | 同上。本阶段只把 `::before` 的 emoji 机制换成 mask 字形,不触碰渲染函数。 |
+| E6 | `error` | ✅ `resolved` / explicit | 同上。 |
+| E6 | `populated` | ✅ `resolved` / explicit | 同上 —— 批注列表的正常填充态结构与文案均不变。 |
+| E6 | `overflow` | ✅ `resolved` / backstop | 两个 12px mask 字形与相邻文字基线视觉对齐,且不撑高行盒(行高仍由 `--lh-snug` / `--lh-reading` 决定)。计算样式看不见这一项,只能看渲染结果。 |
+| E6 | `long-text` | ✅ `resolved` / backstop | 图标在折行的引用文本里仍与首行文字对齐,不在换行处漂移;`--color-text-secondary` 在 `.annotation-item`(`--color-surface` 5.62)地面上可辨。 |
+| E7 | `empty` | ✅ `resolved` / explicit | 该行的存在与否由 `app.js` 的 `renderVerdictCard` 驱动(已验收路径,不得触碰);本阶段零 diff,故空态结构不变。 |
+| E7 | `loading` | ✅ `resolved` / explicit | 同上。 |
+| E7 | `error` | ✅ `resolved` / explicit | 同上。 |
+| E7 | `populated` | ✅ `resolved` / explicit | 同上 —— 裁决卡片的正常填充态结构与文案均不变。 |
+| E7 | `overflow` | ✅ `resolved` / backstop | 两个 12px mask 字形与相邻文字基线视觉对齐,且不撑高行盒。 |
+| E7 | `long-text` | ✅ `resolved` / backstop | 图标在折行的位置文本里仍与首行文字对齐;`--color-text-secondary` 在 `.verdict-card`(`--color-surface-warning-subtle` 5.82)地面上可辨。 |
+| E8 | `loading` | ✅ `resolved` / explicit | 容器标签的显隐由 `#doc-panel` 的既有折叠行为驱动,本阶段零改动;VISUAL-03 只做复证(D-19,零 CSS 改动)。 |
+| E8 | `error` | ✅ `resolved` / explicit | 同上。 |
+| E8 | `overflow` | ✅ `resolved` / backstop | 「文档区」在面板收起态(48px 竖条)下不裁切、不换行。 |
+| E8 | `long-text` | ✅ `resolved` / backstop | 其 14px / 500 的「安静标签」定位在实测中成立,不因本阶段标题改动而变成全屏最大最重的文字(SC3)。 |
+| E9 | `empty` | ✅ `resolved` / explicit | 四处 chrome 标题的显隐由 `app.js` / `index.html` 既有结构决定,本阶段两者零 diff,故空态结构不变。 |
+| E9 | `loading` | ✅ `resolved` / explicit | 同上。 |
+| E9 | `error` | ✅ `resolved` / explicit | 同上。 |
+| E9 | `populated` | ✅ `resolved` / explicit | 同上 —— 四处 chrome 标题的正常态由 `check-05` 的字面 px 断言守卫(D-03:守卫项保持字面值,不得改成令牌接线表述)。 |
+| E9 | `partial` | ✅ `resolved` / explicit | 同上。 |
+| E9 | `zero-one-many` | ✅ `resolved` / explicit | 同上 —— 四处 chrome 标题的个数与位置由 DOM 决定,本阶段零 diff。 |
+| E9 | `overflow` | ✅ `resolved` / backstop | 四处 chrome 标题在两栏布局下均不溢出各自容器(SC1 的守卫对象,本阶段不得被带偏)。 |
+| E9 | `long-text` | ✅ `resolved` / backstop | 四处 chrome 标题文本变长时各自保持既有字号与色值(`.panel-header h2` 14px / `#draft-view h2` 18px / `.overlay-card h3` 24px),不因本阶段标题改动而漂移。 |
+
+### Backstop 陈述(18 条 —— 每条都是 held-out 视觉检查)
 
 `verification: backstop` —— 只由显式证据确认,否则路由到 `human_needed`,**绝不静默判过**。
 
 | Element | Category | Statement |
 |---|---|---|
-| E2 | `long-text` | 一份含 h1/h2/h3 的长 DESIGN.md 渲染后,28 / 22 / 18px 三级标题**层级可辨且不互相淹没**;h1 是全屏最大文字(`28 > .overlay-card h3 的 24 > 22`)。比值半边已由既有配对覆盖(`--color-text ON --color-surface` 15.48);**字号半边由 `check-05` 的令牌接线断言覆盖**,剩余的是**视觉层级**判断 |
-| E3 | `long-text` | `#btn-authorize` 的文本「授权撰写总设计文档」在 `--doc-panel-w` 最窄值(340px,内容宽 260px)下**不换行、不裁切**,且 16px 白字在 green-12 上可读(12.32)。**换行半边无自动化证据** —— 需实测 |
-| E3 | `overflow` | `#btn-continue-check` 与 `#btn-continue-repair` 在 `#check-controls`(`flex-direction: column`)里各占一行,不溢出 |
-| E4 | `overflow` | 3px 竖条在**每个**活动面板上真实可见 —— 即不被该面板标题行内的元素盖住,也不因 `border-radius: var(--radius-md)` 而在角落断开。**这一条是 05-N-4 的实测验收** |
-| E6 / E7 | `overflow` | 两个 12px mask 字形**与相邻文字基线视觉对齐**,且**不撑高行盒**(行高仍由 `--lh-snug` / `--lh-reading` 决定)。**计算样式看不见这一项,只能看渲染结果** |
-| E6 / E7 | `long-text` | 图标在**折行**的引用文本里仍与首行文字对齐,不在换行处漂移;图标的 `--color-text-secondary` 在 `.annotation-item`(`--color-surface` 5.62)与 `.verdict-card`(`--color-surface-warning-subtle` 5.82)两个地面上都可辨 |
-| E8 | `long-text` | `#doc-panel-header h1`「文档区」在面板收起态(48px 竖条)下**不裁切、不换行**;其 14px / 500 的「安静标签」定位在实测中成立(VISUAL-03) |
+| E1 | `overflow` | 长文档在 `#draft-content` 内滚动而非撑破容器;本阶段不新增滚动容器(布局归 Phase 6),只断言不回归。 |
+| E1 | `long-text` | 超长 DESIGN.md 渲染后 `#doc-pane` 无横向滚动条,28px h1 不撑破内容宽。 |
+| E2 | `overflow` | 28px h1 / 22px h2 在 `--doc-panel-w` 最窄值(340px)下不溢出容器。 |
+| E2 | `long-text` | 三级标题层级可辨且不互相淹没;h1 是全屏最大文字(28 > 24 > 22)。**字号半边已由 `check-05` 的令牌接线断言覆盖**,剩余的是视觉层级判断。 |
+| E3 | `overflow` | `#btn-continue-check` 与 `#btn-continue-repair` 在 `#check-controls`(column)里各占一行,不溢出。 |
+| E3 | `long-text` | 「授权撰写总设计文档」在 340px 面板(内容宽 260px)下不换行不裁切;16px 白字在 green-12 上可读(12.32)。**换行半边无自动化证据** —— 需实测。 |
+| E4 | `overflow` | 3px 竖条在每个活动面板上真实可见,不被标题行内元素盖住,也不因 `border-radius` 在角落断开(**05-N-4 的实测验收**)。 |
+| E4 | `long-text` | 面板标题文本变长时竖条仍贴左缘,标题变色不溢出标题行。 |
+| E5 | `overflow` | `#ai-panel` 折叠/展开两态下,竖条与既有 `▾`/`▸` 指示器并存且不重叠。 |
+| E5 | `long-text` | 折叠指示器不因标题变长而漂移;`.collapse-indicator` 本阶段零触碰(D-23)。 |
+| E6 | `overflow` | 两个 12px mask 字形与相邻文字基线视觉对齐,且不撑高行盒(行高仍由 `--lh-snug` / `--lh-reading` 决定)。**计算样式看不见这一项,只能看渲染结果** |
+| E6 | `long-text` | 图标在折行的引用文本里仍与首行文字对齐,不在换行处漂移;`--color-text-secondary` 在 `.annotation-item`(`--color-surface` 5.62)地面上可辨。 |
+| E7 | `overflow` | 两个 12px mask 字形与相邻文字基线视觉对齐,且不撑高行盒。 |
+| E7 | `long-text` | 图标在折行的位置文本里仍与首行文字对齐;`--color-text-secondary` 在 `.verdict-card`(`--color-surface-warning-subtle` 5.82)地面上可辨。 |
+| E8 | `overflow` | `#doc-panel-header h1`「文档区」在面板收起态(48px 竖条)下不裁切、不换行。 |
+| E8 | `long-text` | 其 14px / 500 的「安静标签」定位在实测中成立(VISUAL-03 / SC3)。 |
+| E9 | `overflow` | 四处 chrome 标题在两栏布局下均不溢出各自容器。 |
+| E9 | `long-text` | 四处 chrome 标题文本变长时各自保持既有字号与色值(14 / 18 / 24px),不因本阶段标题改动而漂移。 |
 
 **已知且不试图绕过的环境限制(不得重新推导、不得对抗):**
 
@@ -1082,7 +1160,7 @@ computed 值**(`color` / `background-color` / `border-color` 不依赖布局)。
   **计划用计算样式检查 + 具名人工步骤,不要计划视觉 diff。**
 - Playwright 若使用,**必须** `chromium.launch({ channel: 'chrome' })`;`.venv` / check-05 路线
   必须用捆绑 chromium(`channel` + `headless` 会挂死)。
-- **键盘文本选区无法自动化。** 本阶段的 6 条 backstop 里没有一条依赖键盘选区 ✓
+- **键盘文本选区无法自动化。** 本阶段的 18 条 backstop 里没有一条依赖键盘选区 ✓
 
 **probe 未覆盖、且刻意不覆盖的东西(写明以免被读成缺口):** 分类法的轴是**元素 × 状态**。
 本阶段三条承重不变量**不是**状态考量,故刻意不在上表:**(1)** 新增令牌必须有同提交消费者 —— 由
@@ -1111,15 +1189,26 @@ Hard Rule 5 + §Typography / §Color 的两张消费者核账表覆盖;**(2)** �
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS(N/A —— `Tool: none`,无设计系统可枚举)
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: FLAG(非阻塞 —— 3 处证据性缺陷,已在下方登记并就地修正)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS(N/A —— `Tool: none`,无设计系统可枚举)
 
-**Approval:** pending
+**Approval:** approved(2026-09-20;checker 独立复算了全部对比度比值、层叠栅栏与 Hard Rule 5 消费者核账,均成立)
+
+**Dimension 4 的三处非阻塞缺陷(已就地修正,记录以备追溯):**
+
+1. **`--text-md` 消费者行少数一处** —— 原写 6 处且未列 `:626`(`.markdown-body h3`),却声称「失去
+   `.markdown-body h3` → 净不变」,自相矛盾。磁盘实为 **7 处**。已改为 7 → 7 并补入 `:626`。
+2. **行高配对注释会留下不自洽** —— 重写的比率配对表有 7 行但只用到 4 个 `--lh-*` 中的 3 个,
+   `--lh-compact`(唯一消费者 `.overlay-card p`)无行,而注释头部仍写 `four`;且既有注释的
+   `18/28` 本身是**算术错误**(18 × 1.3333 = 24)。已在 §行高 追加两条修正要求。
+3. **Hard Rule 9 的特异性括注写反** —— 全局 `h1, h2, h3` 是 **0-0-1**,并非「与 1-0-1 等特异性」;
+   它在 `font-size` 上对四处 chrome 覆盖是惰性的。规则本身(不得给 `.markdown-body` 之外的标题写
+   字号规则)正确且与已锁定的 TYPE-01 一致,只有该括注的解释错了。已改写为真实暴露面。
 
 ---
 

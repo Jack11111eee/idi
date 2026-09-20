@@ -1,10 +1,12 @@
 ---
 phase: idi-04.1-radix
 verified: 2026-09-20T03:24:39Z
-status: human_needed
+status: passed
 score: 37/38 must-haves verified
 covered_files:
+
   - .planning/REQUIREMENTS.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-01-PLAN.md
   - .planning/phases/idi-04.1-radix/idi-04.1-01-SUMMARY.md
   - .planning/phases/idi-04.1-radix/idi-04.1-02-PLAN.md
   - .planning/phases/idi-04.1-radix/idi-04.1-02-SUMMARY.md
@@ -16,7 +18,8 @@ covered_files:
   - scripts/check-01-token-conformance.sh
   - scripts/check-05-ui-uat.py
   - scripts/probe-05-resolve-color.py
-covered_digest: "v1:sha256:1932bf73530aa7af667c5e422594cd3ce35920e48f65ec7d112bff68599efd4e"
+
+covered_digest: "v1:sha256:a8b5147e616dd7c798906f69bb20dfa8c6319bbe372a05b455c482997719fe41"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
@@ -27,6 +30,7 @@ re_verification:
   gaps_remaining: []
   regressions: []
 human_verification:
+
   - test: "UI-SPEC `## UI Considerations` 的 28 条 backstop 陈述(plan 01 must_haves 中 `verification: backstop` 的 28 条)——E1 七芯片不换行/200% 缩放、E2 六按钮行换行与最长闸门标签不裁切、E3 窄面板实心标签不裁切、E4 最长 streaming 串不裁切、E5 文档面板滚动与 #f9f9f9/#fcfcfc 可区分、E6 折行 .hint 与长引用不裁切、E7 冻结轮滚动与琥珀竖线钉边、E8 长致命错误折行、E9 不可断消息撑高与 --shadow-composer 边缘、E10 模态适配视口、E11 大量长批注滚动列表、E12 大量检查项滚动面板、E13 长归档文档不裁切、E14 选区菜单重定位与长菜单项不截断、E15 最长路由标签不截断、E16 跨行 mark 连续段与长 mark 文字可读"
     expected: "每条陈述在其描述的极端输入下成立;其中 7 条只含 CHECK-02 比值的一半已由 check-02 实测证据覆盖(E1 芯片 4.61–16.29 / E2 闸门标签 11.00 / E4 徽标 4.53 / E6 弱化灰 5.19–5.82 / E7 冻结标记 10.80 / E13 归档 0.75 压暗 6.97 / E10 .tier-desc 满不透明度 4.77),其余裁切/滚动/换行/缩放行为无自动化证据"
     why_human: "这些是渲染几何与极端输入下的视觉行为(裁切、换行、滚动归属、200% 缩放、菜单重定位),grep 与 computed-style 读数都看不见。plan 01 的 coverage D6 与 plan 02/03 的 Next-Phase-Readiness 均自行标为 `human_judgment: true`,本报告不把它们静默转绿。"
@@ -39,6 +43,7 @@ human_verification:
 behavior_unverified_items: []
 coincidental_reliance_items: []
 advisory:
+
   - finding: "WR-01 —— `scripts/probe-05-resolve-color.py:95` 的 `route.fulfill(response=resp, body=mutated)` 继承原响应的 `content-length`,而变异后的 body 更短;探针自身无法区分「令牌被删」与「样式表根本没加载」(两种世界产出逐字相同的四行 `PROBE`)"
     category: other
     reason: "本报告已在真实 chromium-1243 上独立证伪这一疑虑:变异页上 `.hint` 的 `font-size` 仍为 `14px`(来自 `var(--text-base)`),证明样式表确实加载并生效、只少了那一行声明;`rgb(32, 32, 32)` 也确为 `--color-text` 经 `html, body` 规则应用后的值(UA 默认是 `rgb(0, 0, 0)`)。故这是未来静默的健壮性缺口,不是当下的假证明。"

@@ -85,6 +85,9 @@ v1.13 范围内工作已全部交付(旧的 v1.13 需求清单已归档至 `.pla
 | Phase 3:裁决行锚点取末一处 `> 核查结论:` + 同号配对 | 宽松档裁决轮报告可含双结论行,锚点取末一处才能让尾部追加段进配对空间;配对与呈现必须共用同一编号空间 | ⚠️ Revisit(G-idi03-2 暴露:anchor 受限扫描与锚点无关扫描曾口径不一,已修) |
 | Phase 3:自检自动推进以 hop-local 标志(而非"tmp 在盘")守卫 | 原 `finally` 守卫写反导致严格档无界自动链(实测 84 跳/1.5s);仅当 `tmp_path.replace` 实际执行处置 `tmp_consumed=True` | ✓ Good(修复后恰 1 跳,复验 passed) |
 | Phase 3:prompt 契约必须由测试锁死参数注入 | `build_check_prompt` 接受 `tier` 却未注入,AI 写出非法档位行导致 `parse_tier_line` 返回 None——靠真 CLI E2E 才暴露 | ✓ Good(已补 `test_build_check_prompt_injects_tier_line`) |
+| Phase 04.1:颜色族换成 Radix Colors 12 步语义刻度(25 primitive / 47 `--color-*` / 43 对清单) | 吸收 idi-04 UAT 的 3 项 FAIL 与 `--color-text-muted` 3.23:1 的 AA 倒退;结构产出(围栏 `:root`、四条守卫)不动,只重写值层 | ✓ Good(`check-01`…`05` 全 PASS;`--color-text-muted` 实测 5.62:1) |
+| Phase 04.1:TOKEN-07 的「断言序关系」半场裁定 **manual-only**,不补机械断言 | 实测把四个 `--z-*` 值重排后 `check-01`…`check-05` **全部仍会通过** —— 该不变量只存在于 `style.css:229-231` 的散文注释。用户裁定本阶段不加断言,但 `REQUIREMENTS.md` 的 `Complete` 在机械层面不成立,故降级为 `Complete (PARTIAL)` 并把序关系核对移入人工验收项,不静默调和 | ⚠️ Revisit(Phase 5+ 可补一条 `ORDER` 式断言收口) |
+| Phase 04.1:验证报告的 `covered_files` 必须覆盖相位目录内**全部** `*-PLAN.md` / `*-SUMMARY.md` | `verification.cjs:716` 的 `allCurrentArtifactsCovered` 要求逐一声明;idi-04.1-VERIFICATION.md 漏了 `01-PLAN.md`,仅此一项即令 `status=stale`,而指纹本身与记录值逐字节一致 | ✓ Good(补声明 + 重算指纹后 stale→human_needed→passed) |
 
 ---
-*Last updated: 2026-09-17 after starting v1.14 milestone — 前端视觉与可访问性(范围来源:UI 审计 13/24 的延后项;5 条功能性 BLOCKER 已于 2026-09-16 修复合入 main b9664e0)*
+*Last updated: 2026-09-20 after Phase idi-04.1 (Radix 颜色族重写) — 值层重写交付,TOKEN-07 序关系半场裁定 manual-only 并加注;Phase 4 的验证因 04.1 重写 `frontend/style.css` 而真实过期,待复验*

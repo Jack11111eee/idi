@@ -2,45 +2,45 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: "04.1"
-current_phase_name: Radix 颜色族重写 (INSERTED)
-status: executing
-stopped_at: Completed idi-04.1-04-PLAN.md
-last_updated: "2026-09-20T02:13:59.900Z"
+current_phase: 4
+current_phase_name: 设计契约、令牌层与契约校验
+status: planning
+stopped_at: Phase idi-04.1 complete, ready to plan Phase 4
+last_updated: "2026-09-20T04:18:22.381Z"
 last_activity: 2026-09-20
-last_activity_desc: Phase idi-04.1 execution resumed (wave continue)
-state_head: ab812b81028b2dbb3ed2531b75a1fc2175c0bf3b
+last_activity_desc: Phase idi-04.1 complete, transitioned to Phase 4
+state_head: 41440e30b5626e1e26624f98e4f80576b4baf085
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 7
   completed_plans: 7
-  percent: 0
+  percent: 17
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-17)
+See: .planning/PROJECT.md (updated 2026-09-20)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-04.1 — Radix 颜色族重写 (INSERTED)
+**Current focus:** Phase 4 — 设计契约、令牌层与契约校验(计划已执行完毕,待复验收口)
 
 ## Current Position
 
-Phase: idi-04.1 (Radix 颜色族重写 (INSERTED)) — READY TO EXECUTE
-Plan: 4 of 4
-Status: Executing Phase idi-04.1
-Last activity: 2026-09-20 — Phase idi-04.1 execution resumed (wave continue)
+Phase: 4 — 设计契约、令牌层与契约校验
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-20 — Phase idi-04.1 complete, transitioned to Phase 4
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
+- Total plans completed: 17
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 | 1. 行走骨架 | 4 | - | - |
 | 2. 轮次收敛循环 | 4 | - | - |
 | 3. 授权、自检与终点 | 5 | - | - |
+| idi-04.1 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -148,7 +149,7 @@ None yet.
   - **FAIL**:③④⑤ 共 20 条断言失败。**根因单一**:UAT 期望值定稿于 `0c658aa`(2026-09-17),其后 `448686b`「令牌值层换血」(属 quick 260918-qrq)改动了令牌值——`--gray-600 #6a6a6a→#8f8f8f`、`--gray-500 #8a8a8a→#d9d9d9`、`--blue-700 #1f63bd→#3a83f7`、`--gray-900 #1a1a1a→#0d0d0d`、`--gray-25 #fafafa→#ffffff`、字号 13/14/15/16→14/16/18/24,并删除 `.overlay-card` box-shadow 与 `#state-badge` z-index。**不是新缺陷,是「UAT 期望值 vs HEAD 现状」差异待裁**;已按 YAML 写入 UAT `## Gaps` 供 `/gsd-plan-phase --gaps` 消费。待裁:更新 UAT 期望值,或回退令牌值(注:令牌颜色族已定于 v1.14 重写为 Radix Colors,该裁决将随之消解)
   - **S-2 依赖 PASS**:`--text-base` = 14px 存活(Phase 5 SC5 / Phase 6 SC5 的下游门仍可满足)
   - **UAT 里「本环境无法自动化」的三条理由,两条被证伪**:screenshots 可用(`channel` 与 headless 策略见 `scripts/check-05-ui-uat.py` 头部注释),DevTools computed-style 有等价物(`getComputedStyle`)。**「键盘文本选区无法自动化」仍成立**,保留
-- [v1.14 P4] **对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**(换肤前 `#6a6a6a` 在 `#fafafa` 上 5.18:1),低于 AA 正文门槛 4.5:1。`style.css:12` 注释自陈「AA 倒退为用户知情决策」。受影响的消费者含 `.hint` / `.badge-answered` / `.annotation-note` / `.annotation-answer-body`。**与 260918-qrq 的 check-02 14 条失败同源**;Radix Colors 重写应结构性解决
+- [v1.14 P4] ~~**对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**~~ **已结构性解决(2026-09-20,Phase 04.1)** — Radix 重写后 `--color-text-muted: var(--radix-gray-11)`,实测 `check-02-contrast.py`:`5.62 --color-text-muted on --color-surface` / `5.77 … on --color-surface-page` / `5.19 … on --color-surface-sunken` / `5.82 … on --color-surface-warning-subtle`,脚本 exit 0。与 260918-qrq 的 check-02 14 条失败同源,一并消解
 - [v1.14 P4] ~~**阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**~~ **已修复(2026-09-19,`1d849b1`)** — 根因与 D1/D2 同源:`app.js` **从未引用过** `#session-panel`(grep 零匹配;`git log -S` 证明是长期 bug,非 260918-qrq 引入),而 `style.css:566` 的 `flex: 1 1 auto` 让它吃掉主区全部剩余高度。修复 = 在 `applySessionGates`(`app.js:343`,唯一必经派发点)加一行 `classList.toggle('hidden', !isSessionPhase)`。**实测五个样本:`p1=flex` / `p12=flex` / `p3=none` / `checking=none` / `archive=none`**。`.hidden` 靠 `style.css:238` 的 `!important` 压过 `display:flex`,**无需改 CSS**;`style.css`/`index.html` 零改动。守卫经 RED→GREEN 实证非空转(修前 3 条 `FAIL expected=none actual=flex`)
 
 ### Quick Tasks Completed
@@ -181,21 +182,16 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-20T02:13:59.864Z
-Stopped at: Completed idi-04.1-04-PLAN.md
+Last session: 2026-09-20T04:18:22Z
+Stopped at: Phase idi-04.1 complete (UAT 3/3 pass, TOKEN-07 裁定 manual-only);Phase 4 待复验收口
 Resume file: None
 
 ## Operator Next Steps
 
-- **04.1 的上游路线已定为三步(2026-09-19,用户选定)**:`/gsd-discuss-phase 04.1` → `/gsd-ui-phase 04.1` → `/gsd-plan-phase 04.1`。**不要跳过 discuss 直接 plan** —— Phase 4 能走 `ui-phase → plan` 短路径,是因为它上游已有 ARCHITECTURE.md / PITFALLS.md 把实现路线定死;04.1 没有那个条件,且持有一处 ui-phase 答不了的硬冲突(见下)。
-- **04.1 待 discuss 裁定的实现决策(至少这三条)**:
-  1. **Radix 交付方式**:ROADMAP 全局硬规则 6 要求零新增运行时依赖 / 零构建步骤,而 Phase 4 的 gate 明写 `frontend/vendor/` 仍只有 `marked.min.js`;Radix Colors 是约 126 个纯 CSS 文件。**vendor 进来撞不撞 gate,还是手工转抄 hex** —— 必须落定,规划器不得自行猜测。
-  2. **令牌名存废**:75 个令牌名是否原样保留(它们被 CHECK-01 围栏与 CHECK-02 的按名配对清单引用)。
-  3. **primitive 层形状**:25 个 tier-1 是否换成 Radix 自有的色阶。
-  另需裁定:UI-SPEC 是**就地改 `04-UI-SPEC.md`** 还是另起 `04.1-UI-SPEC.md`(另起会把契约分叉成两份事实源)。
-- Plan the next v1.14 phase: `/gsd-plan-phase 04.1`(Radix 颜色族重写,2026-09-19 插入;须先走完上面两步)。
-  Phase 4 的 3/3 计划已执行完毕,尚待阶段验证;其值层由 04.1 重写,idi-04 UAT 的 3 项 FAIL 与
-  `--color-text-muted` 3.23:1 的 AA 倒退一并归入 04.1 消解,不再单独裁定 UAT 期望值。
+- ~~04.1 的上游三步路线~~ **已走完(2026-09-20)** —— discuss → ui-phase → plan → execute → verify 全程完成,4/4 计划交付,`idi-04.1-UAT.md` 3/3 pass。
+- **当前待办:Phase 4 的复验收口** —— Phase 4 的 3/3 计划已执行完毕,但 `idi-04-VERIFICATION.md` 的指纹**真实过期**:04.1 重写了它覆盖的 `frontend/style.css` 值层(实测指纹 `f4dd04b6…` → `cd9aa761…`,是内容确变,不是清单漏项)。下一步 `/gsd-verify-work idi-04` 对当前树复验,通过后即可 `phase.complete`。
+  Phase 4 的 UAT 本身已 `status: resolved`(6/6 pass,三条 gap 已消解),阻塞只在验证侧。
+- Plan the next v1.14 phase:Phase 4 收口后为 `/gsd-plan-phase 5`(排版与视觉层级)。
   以下 S-1…S-4 签核项仍然有效(04.1 明令不改 S-1/S-2),规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
   - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
   - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)

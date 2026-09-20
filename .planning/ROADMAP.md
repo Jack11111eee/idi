@@ -118,7 +118,7 @@ Plans:
 **不含暗色模式**(与 v1.14 的已记录排除项一致);**不改** S-1 间距 12 档与 S-2 的 14px 一级字号档。
 **Requirements**: TOKEN-01, TOKEN-02, TOKEN-04, TOKEN-07, CHECK-01, CHECK-02, CHECK-03, CHECK-04, A11Y-04, A11Y-04b(全部是 Phase 4 已列需求 —— 04.1 是它们的**值层重写**,不新增需求。口径:本阶段**实质关闭** A11Y-04 / A11Y-04b / CHECK-02 / TOKEN-07 / CHECK-01(AA 倒退、`.tier-desc` 的 opacity 越轨、43 对清单重算、z-index 序断言重新有消费者、D-03 改名后空转的 tier-1 守卫);**沿用并复证** TOKEN-01 / TOKEN-02 / TOKEN-04 / CHECK-03 / CHECK-04。**不触碰** TOKEN-03 / TOKEN-05 / TOKEN-06 / TOKEN-08)
 **Depends on:** Phase 4
-**Plans:** 4/4 plans executed (incl. gap-closure plan 04)
+**Plans:** 4/4 plans complete
 
 Plans:
 **Wave 1**
@@ -313,7 +313,7 @@ Plans:
 | 2. 轮次收敛循环 | v1.13 | 4/4 | Complete | 2026-09-10 |
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
 | 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | In Progress|  |
-| 4.1. Radix 颜色族重写 | v1.14 | 4/4 | In Progress|  |
+| 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
 | 5. 排版与视觉层级 | v1.14 | 0/0 | Not started | - |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |

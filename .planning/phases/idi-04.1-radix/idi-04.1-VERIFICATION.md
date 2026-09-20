@@ -1,33 +1,31 @@
 ---
 phase: idi-04.1-radix
-verified: 2026-09-19T14:41:02Z
-status: gaps_found
-score: 33/36 must-haves verified
+verified: 2026-09-20T03:24:39Z
+status: human_needed
+score: 37/38 must-haves verified
 covered_files:
   - .planning/REQUIREMENTS.md
-  - .planning/phases/idi-04-tokens-contract/idi-04-UAT.md
   - .planning/phases/idi-04.1-radix/idi-04.1-01-SUMMARY.md
   - .planning/phases/idi-04.1-radix/idi-04.1-02-PLAN.md
   - .planning/phases/idi-04.1-radix/idi-04.1-02-SUMMARY.md
   - .planning/phases/idi-04.1-radix/idi-04.1-03-PLAN.md
   - .planning/phases/idi-04.1-radix/idi-04.1-03-SUMMARY.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-04-PLAN.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md
   - frontend/style.css
   - scripts/check-01-token-conformance.sh
   - scripts/check-05-ui-uat.py
-covered_digest: "v1:sha256:c4a9f8880b030b57f9c16ccfeb88a46850fb07292eadfc17d621270f3da13ce4"
+  - scripts/probe-05-resolve-color.py
+covered_digest: "v1:sha256:1932bf73530aa7af667c5e422594cd3ce35920e48f65ec7d112bff68599efd4e"
 behavior_unverified: 0
 overrides_applied: 0
-gaps:
-  - truth: "`scripts/check-05-ui-uat.py` 的全部颜色断言改为令牌接线形式(D-14):期望侧来自运行时解析出的 `--token`(`resolve_color`),不再硬编码 `rgb(...)`;且该形式不得以失去证伪能力为代价(plan 01 key_link 的『值层改动不产生假 FAIL』与本阶段『守卫静默空转』的既有失败类)"
-    status: failed
-    reason: "结构条款成立(22 条 `rgb(...)` 字面已全部改为 `resolve_color(page, \"--token\")`,见 33/36 表中的 P3.1),但『仍能证伪』条款被 CR-01 破坏:`resolve_color` 对未声明的令牌返回**继承色**而非 `None`,而真实消费者用的是同一个 `var(--token)`,两侧同时退化成同一个继承值 → 断言恒真。这是本阶段自己引入的回归:D-14 之前 `.hint color` 断言字面 `rgb(106,106,106)`,改名/删除令牌时会响亮 FAIL;本阶段把它换成 `resolve_color` 之后不能再 FAIL。独立复现见 `## Behavioral Spot-Checks` B-1。"
-    artifacts:
-      - path: "scripts/check-05-ui-uat.py"
-        issue: "`resolve_color`(L250-262)不区分『令牌已声明』与『令牌未声明』;未声明时 `p.style.color = \"var(--t)\"` 在 computed-value 阶段失效 → 探针继承 `body` 的 `color`。27 处调用点(L600-685 item3 / L727-728·L777-778 item4 / L803-826 item5 / L983-984 item6 / L1002-1005 item_smoke)中的颜色断言因此全部失去改名/删除证伪能力。`resolve_token`(L265-275)不受影响(未声明返回 `None`,`ok()` 记 BLOCKED)。"
-    missing:
-      - "让 `resolve_color` 在令牌未声明时返回 `None`(先读 `getComputedStyle(document.documentElement).getPropertyValue(t)`,空串即返回 `None`),使 `ok()` 记 BLOCKED 而非假 PASS"
-      - "为 D-14 补一条与 plan 02 同规格的变异证明:在临时副本上删除 `--color-text-muted` 声明后,该断言必须不再记 PASS(对照证据需进 SUMMARY)"
-advisory: []
+re_verification:
+  previous_status: gaps_found
+  previous_score: 33/36
+  gaps_closed:
+    - "P3.1 / CR-01 — `scripts/check-05-ui-uat.py` 的颜色断言在令牌改名/删除下恒真(假 PASS)。`resolve_color` 现在区分「令牌已声明 / 未声明」,`ok()` 把 `None` 期望值记 BLOCKED;变异证明钉死「修复前 PASS / 修复后 BLOCKED」"
+  gaps_remaining: []
+  regressions: []
 human_verification:
   - test: "UI-SPEC `## UI Considerations` 的 28 条 backstop 陈述(plan 01 must_haves 中 `verification: backstop` 的 28 条)——E1 七芯片不换行/200% 缩放、E2 六按钮行换行与最长闸门标签不裁切、E3 窄面板实心标签不裁切、E4 最长 streaming 串不裁切、E5 文档面板滚动与 #f9f9f9/#fcfcfc 可区分、E6 折行 .hint 与长引用不裁切、E7 冻结轮滚动与琥珀竖线钉边、E8 长致命错误折行、E9 不可断消息撑高与 --shadow-composer 边缘、E10 模态适配视口、E11 大量长批注滚动列表、E12 大量检查项滚动面板、E13 长归档文档不裁切、E14 选区菜单重定位与长菜单项不截断、E15 最长路由标签不截断、E16 跨行 mark 连续段与长 mark 文字可读"
     expected: "每条陈述在其描述的极端输入下成立;其中 7 条只含 CHECK-02 比值的一半已由 check-02 实测证据覆盖(E1 芯片 4.61–16.29 / E2 闸门标签 11.00 / E4 徽标 4.53 / E6 弱化灰 5.19–5.82 / E7 冻结标记 10.80 / E13 归档 0.75 压暗 6.97 / E10 .tier-desc 满不透明度 4.77),其余裁切/滚动/换行/缩放行为无自动化证据"
@@ -35,14 +33,24 @@ human_verification:
   - test: "E16 的 `--color-text ON --color-surface-mark` 比值"
     expected: "≥ 4.5:1(本报告实测 15.0:1,通过)"
     why_human: "该配对**不在**围栏清单里(check-02 因此看不见它),而 plan 01 的 E16 backstop 陈述引用『CHECK-02: --color-text on --color-surface-mark = 15.88』—— 15.88 实为 `--color-text on --color-surface-page` 的数,该引用在 check-02 输出里不存在(见 W-4)。人工须决定是否把该对补进清单,以及该引用如何修正。"
+  - test: "TOKEN-07 的『断言序关系』半场:`REQUIREMENTS.md` 把它标为 `Complete`,但代码库里没有任何脚本比较四个 `--z-*` 的值"
+    expected: "人工决定其一:(a) 接受 `VALIDATION.md` 已记录的 manual-only 处置,并把 `REQUIREMENTS.md` 的 `Complete` 降级/加注,使两文档不再表面一致;或 (b) 按 `check-02-contrast.py` 的 `ORDER` 形式补一条机械断言,把 `--z-badge (10) < --z-banner (20) < --z-overlay (100) < --z-selection-menu (200)` 钉死"
+    why_human: "本报告已实测:把四个值重新排序后 `check-01`…`check-05` 全部仍会通过。该不变量只存在于 `frontend/style.css:229-231` 的散文注释里(该注释自称 `z-index ordering assertion (TOKEN-07)`,但断言并不存在);`check-05-ui-uat.py:771-776` 断言的是「元素 `z-index` **等于**其令牌」,不是「令牌之间的大小序」。用户已在 `VALIDATION.md` 里裁定本阶段不加断言,故这是裁决项而非本报告单方面翻转的缺口 —— 但 `Complete` 的标记在机械层面**不成立**,不得静默调和。"
+behavior_unverified_items: []
+coincidental_reliance_items: []
+advisory:
+  - finding: "WR-01 —— `scripts/probe-05-resolve-color.py:95` 的 `route.fulfill(response=resp, body=mutated)` 继承原响应的 `content-length`,而变异后的 body 更短;探针自身无法区分「令牌被删」与「样式表根本没加载」(两种世界产出逐字相同的四行 `PROBE`)"
+    category: other
+    reason: "本报告已在真实 chromium-1243 上独立证伪这一疑虑:变异页上 `.hint` 的 `font-size` 仍为 `14px`(来自 `var(--text-base)`),证明样式表确实加载并生效、只少了那一行声明;`rgb(32, 32, 32)` 也确为 `--color-text` 经 `html, body` 规则应用后的值(UA 默认是 `rgb(0, 0, 0)`)。故这是未来静默的健壮性缺口,不是当下的假证明。"
+    evidence_status: "independently verified as a robustness gap only — not a current failure"
 ---
 
 # Phase 04.1: Radix 颜色族重写 Verification Report
 
 **Phase Goal:** 把颜色族从手调 hex 换成 Radix Colors 的 12 步语义刻度(1-2 底 / 3-5 组件底 / 6-8 边框 / 9-10 实心填充 / 11-12 文字),并据此重算 UI-SPEC 令牌清单与 CHECK-02 的 34 对对比度配对。
-**Verified:** 2026-09-19T14:41:02Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Verified:** 2026-09-20T03:24:39Z
+**Status:** human_needed
+**Re-verification:** Yes — after gap closure (plan 04, CR-01)
 
 **Mode:** 非 MVP(ROADMAP §Phase 04.1 无 `mode: mvp`);goal 非 User Story 形式,MVP 验证段落休眠。
 
@@ -52,165 +60,175 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| R1 | 颜色族换成 Radix 12 步语义刻度(1-2/3-5/6-8/9-10/11-12) | ✓ VERIFIED | 围栏内 tier-1 恰 25 条 = `--white` + 24 个 `--radix-<family>-<step>`;47 个 `--color-*` 全部 `var(--radix-…)` 或 `var(--white)`;名↔步映射表与四处越轨记账在 `frontend/style.css:8-111` |
-| R2 | UI-SPEC 令牌清单据此重算 | ✓ VERIFIED | 围栏内 `/* PAIR */` 恰 43 条 + `/* ORDER */` 1 条;与 UI-SPEC `### The measured table — all 43 pairs` 同规模;三数差异(24/34/43)在围栏注释与 UAT `## Carry-Forward ③` 双处留档 |
-| R3 | CHECK-02 对比度配对重算并实测 | ✓ VERIFIED | `python3 scripts/check-02-contrast.py` → 44 行 PASS + 末行 `PASS: 0 failures`,含 `ORDER 0.363`;43 对 = 34 TEXT + 9 NON-TEXT(脚本自报) |
-| R4 | 结构产出不动(单一围栏 `:root`、四条守卫命令) | ✓ VERIFIED | `^:root` 计数 1、START/END 各 1;四条守卫全部 `PASS`/exit 0;围栏外规则开集与 `e530ead` **逐字节相同**(`diff` 空,无追加/删除/重排) |
-| R5 | 不含暗色模式;S-1 间距 12 档与 S-2 14px 一级字号档不改 | ✓ VERIFIED | `git diff e530ead..HEAD -- frontend/style.css` 对 `--space-*` / `--text-*` / `--fw-*` / `--lh-*` / `--radius-*` / `--z-*` 的声明**零行**;UAT item4 `S-2 DEPENDENCY --text-base 存活为 14px` PASS |
-| R6 | 吸收 idi-04 UAT 的 3 项 FAIL 与 `--color-text-muted` 3.23:1 的 AA 倒退 | ✓ VERIFIED | UAT 6 项全 `[pass]`;`--color-text-muted: var(--radix-gray-11)` = `#646464`,check-02 实测 `5.62 --color-text-muted on --color-surface`(旧值 3.23 → 现 5.62) |
-| P1.1 | 围栏内 tier-1 恰 25 条、`--color-*` 恰 47 条 | ✓ VERIFIED | 逐名枚举:25 条(9 gray + 2 blue + 3 green + 6 amber + 3 red + 1 violet + `--white`)/ 47 条 |
-| P1.2 | 围栏外 CHECK-01 `PASS`(裸 hex 计数 0) | ✓ VERIFIED | `bash scripts/check-01-token-conformance.sh` → `PASS` / exit 0 |
-| P1.3 | tier-1 名不再说谎:Tailwind 式名消失 | ✓ VERIFIED | `grep -cE '^\s+--(gray\|green\|blue\|amber\|red\|purple\|black)-'` = 0;唯一非 `--radix-` 的 tier-1 是 `--white`(无对应 Radix 步,名字不说谎) |
-| P1.4 | check-02 打印 `PASS: 0 failures` + 43 条配对 + `ORDER 0.363` | ✓ VERIFIED | 复跑原文一致(见上 R3) |
-| P1.5 | `--color-text-muted` / `--color-text` 成为同族相邻两步 | ✓ VERIFIED | `frontend/style.css:120` `--color-text-muted: var(--radix-gray-11)`;`--color-text: var(--radix-gray-12)` |
-| P1.6 | `--color-border-strong` 由 `#d9d9d9` 变 `--radix-gray-9` `#8d8d8d`(3.24 / 3.15) | ✓ VERIFIED | `frontend/style.css:165`;check-02 实测 `3.24 … on --color-surface-page` / `3.15 … on --color-surface` |
-| P1.7 | `#state-badge { z-index: var(--z-badge) }` 恢复,`--z-badge` 重新有消费者 | ✓ VERIFIED | `frontend/style.css:590`;`--z-badge: 10`(:232);UAT item4 `#state-badge z-index == var(--z-badge)` PASS。**注意:** `badge < banner` 的**序关系**在代码里只有散文注释(:229-231),没有任何脚本比较两个值 —— 见 W-6 |
-| P1.8 | `.overlay-card { box-shadow: var(--shadow-overlay) }` 与令牌同次提交落地,围栏外无裸 `rgba()` | ✓ VERIFIED | `frontend/style.css:177`(声明)/ `:546`(消费);围栏外 `grep -E 'rgba?\('` 为空;`--shadow-overlay` 与消费者同在 `00c6073` |
-| P1.9 | `.tier-desc` 的 `opacity: 0.9` 删除,`font-size` / `font-weight` 一字未动 | ✓ VERIFIED | `git diff e530ead..HEAD` 该行:仅 `opacity: 0.9;` 被删,两属性原样保留;UAT `smoke .tier-desc opacity == 1` PASS |
+| R1 | 颜色族换成 Radix 12 步语义刻度(1-2/3-5/6-8/9-10/11-12) | ✓ VERIFIED | 围栏内 tier-1 恰 25 条 = `--white` + 24 个 `--radix-<family>-<step>`;47 个 `--color-*` 全部 `var(--radix-…)` 或 `var(--white)` |
+| R2 | UI-SPEC 令牌清单据此重算 | ✓ VERIFIED | 围栏内 `/* PAIR */` 恰 43 条 + `/* ORDER */` 1 条;与 UI-SPEC `### The measured table — all 43 pairs` 同规模 |
+| R3 | CHECK-02 对比度配对重算并实测 | ✓ VERIFIED | 自跑 `python3 scripts/check-02-contrast.py` → 44 行 PASS(43 对 + 1 `ORDER`)+ 末行 `PASS: 0 failures`,含 `ORDER 0.363`;exit 0 |
+| R4 | 结构产出不动(单一围栏 `:root`、四条守卫命令) | ✓ VERIFIED | `^:root` 计数 1、START/END 各 1;四条守卫全部 `PASS`/exit 0;围栏外**规则名集**与 `e530ead` 逐名相同(`diff` 空) |
+| R5 | 不含暗色模式;S-1 间距 12 档与 S-2 14px 一级字号档不改 | ✓ VERIFIED | `git diff e530ead..HEAD -- frontend/style.css` 对 `--space-*` / `--text-*` / `--fw-*` / `--lh-*` / `--radius-*` / `--z-*` 的**声明**零行(唯二命中是 `z-index: var(--z-badge)` 消费者行与 `.tier-desc` 的 opacity 删除行) |
+| R6 | 吸收 idi-04 UAT 的 3 项 FAIL 与 `--color-text-muted` 3.23:1 的 AA 倒退 | ✓ VERIFIED | UAT 6 项全 `[pass]`;`--color-text-muted: var(--radix-gray-11)` = `#646464`;check-02 实测 `5.62 --color-text-muted on --color-surface`(旧值 3.23) |
+| P1.1 | 围栏内 tier-1 恰 25 条、`--color-*` 恰 47 条 | ✓ VERIFIED | 实测 24 个 `--radix-*` + `--white` = 25;`--color-*` 声明 47 |
+| P1.2 | 围栏外 CHECK-01 `PASS`(裸 hex 计数 0) | ✓ VERIFIED | 自跑 `bash scripts/check-01-token-conformance.sh` → `PASS` / exit 0 |
+| P1.3 | tier-1 名不再说谎:Tailwind 式名消失 | ✓ VERIFIED | `grep -cE '^\s+--(gray\|green\|blue\|amber\|red\|purple\|black)-'` = 0;唯一非 `--radix-` 的 tier-1 是 `--white` |
+| P1.4 | check-02 打印 `PASS: 0 failures` + 43 条配对 + `ORDER 0.363` | ✓ VERIFIED | 自跑原文一致(见 R3) |
+| P1.5 | `--color-text-muted` / `--color-text` 成为同族相邻两步 | ✓ VERIFIED | `frontend/style.css:120` `--color-text-muted: var(--radix-gray-11)`;`:118` `--color-text: var(--radix-gray-12)` |
+| P1.6 | `--color-border-strong` 由 `#d9d9d9` 变 `--radix-gray-9`(3.24 / 3.15) | ✓ VERIFIED | check-02 实测 `3.24 … on --color-surface-page` / `3.15 … on --color-surface` |
+| P1.7 | `#state-badge { z-index: var(--z-badge) }` 恢复,`--z-badge` 重新有消费者 | ✓ VERIFIED(带注记) | `frontend/style.css:590` ↔ `--z-badge: 10`(:232)。**注记:** 本 truth 预设「围栏内有一条 `badge < banner` 序断言」——**该断言不存在**,只有散文注释(:229-231)。详见 W-6 / TOKEN-07 / 人工项 3 |
+| P1.8 | `.overlay-card { box-shadow: var(--shadow-overlay) }` 与令牌同次提交落地,围栏外无裸 `rgba()` | ✓ VERIFIED | `:546`(消费);围栏外 `grep -E 'rgba?\('` 为空 |
+| P1.9 | `.tier-desc` 的 `opacity: 0.9` 删除,`font-size` / `font-weight` 一字未动 | ✓ VERIFIED | `git diff e530ead..HEAD` 该行:仅 `opacity: 0.9;` 被删;UAT `smoke .tier-desc opacity == 1` PASS |
 | P1.10 | `grep -c '^\.hidden {'` == 1 且 `grep -c '!important;'` == 1 | ✓ VERIFIED | 1 / 1 |
-| P1.11 | Gate 2 双向为空(每个 `var(--x)` 可解析;每个颜色令牌有消费者) | ✓ VERIFIED | 围栏外 `var(--…)` 名集 − 围栏内声明集 = 空;围栏内 `--color-*` 声明集 − 围栏外使用集 = 空 |
+| P1.11 | Gate 2 双向为空 | ✓ VERIFIED | 围栏外 `var(--…)` 名集 − 围栏内声明集 = 空;围栏内 `--color-*` 声明集 − 围栏外使用集 = 空(本报告自跑两个 `comm -23`,均空) |
 | P1.12 | 运行时:`#state-badge` z-index == `--z-badge`;`.overlay-card` box-shadow ≠ `none`;`.tier-desc` opacity == `1` | ✓ VERIFIED | UAT `smoke` 项三条断言全 PASS(本报告复跑) |
-| P1.13 | 30 条「loading/error/empty/partial 态内容与结构未被本阶段改动」 | ✓ VERIFIED | 折叠为一条:围栏外规则开集与 `e530ead` 逐字节相同;`frontend/app.js` / `frontend/index.html` 在 `e530ead..HEAD` 上 **零 diff**;文案零改动 |
-| P1.14 | 28 条 UI-SPEC backstop 陈述(`verification: backstop`) | ⚠️ INSUFFICIENT_SPEC | 7 条的比值半边由 check-02 实测覆盖;其余约 21 条的裁切/换行/滚动/缩放/重定位行为无任何自动化证据 → 人工项(见 Human Verification) |
-| P2.1 | 围栏外 `var(--radix-gray-11` 使 CHECK-01 非零退出并具名诊断 | ✓ VERIFIED | 自跑变异:`FAIL: 1 tier-1 primitive reference(s) outside the fence` / exit 1 |
-| P2.2 | 空转对照证据(旧交替式对同一泄漏样本 `PASS` / exit 0)出现在 SUMMARY 里 | ✓ VERIFIED | SUMMARY 表第 2 行逐字给出;本报告在临时副本上复现:`sed 's/\|radix//'` 重建的旧守卫 → `PASS` / exit 0 |
-| P2.3 | 裸 hex 半场未被削弱 | ✓ VERIFIED | 注入 `#abc` → `FAIL: 1 bare hex outside the token block` / exit 1 |
-| P2.4 | 围栏标记成对断言未被削弱 | ✓ VERIFIED | 删 END → `FAIL: expected exactly 1 fence START and 1 fence END, found 1/0` / exit 1 |
-| P2.5 | check-02 四条硬失败路径在 43 对清单上逐一仍会失败 | ✓ VERIFIED | 自跑四次变异,四条均 exit 1 且具名:未知名 / `44 markers but only 43 parsed` / `coverage 10 pairs … below floor 24/20/4` / `hierarchy inverted 2.753` |
-| P2.6 | 两个守卫仍零依赖、只读 | ✓ VERIFIED | `check-02` import 集合 = `['re','sys']`;`check-01` 只用 `grep`/`awk`/`wc`/`printf`(`tail` 仅出现在注释散文);均无写文件 |
-| P2.7 | `check-01` 的改动只有交替式一处 | ✓ VERIFIED | `git diff --numstat` = `+5 / −1` 单文件;裸 hex 半场、围栏成对断言、`set -euo pipefail`、`cd "$(dirname "$0")/.."`、`echo PASS; exit 0` 逐字保留 |
-| P3.1 | check-05 全部颜色断言改为令牌接线,`FROZEN_AMBER` 与三处字面删除 | ✗ FAILED | 结构半边成立(`grep -c FROZEN_AMBER` = 0;`"rgb(` 字面由 22 条降为 0;`resolve_color` 调用点由 4 增至 27),但**证伪能力半边被 CR-01 破坏** —— 详见 `## Gaps Summary` 与 B-1 |
-| P3.2 | 携带项 #9 的具名运行时清单逐条覆盖 | ✓ VERIFIED(带注记) | 11 项逐条定位到断言(`.hint` L600/809、`.badge-answered` L684、`#btn-authorize` color/border/bg L661-666、`.kind-write .event-kind` L617、`#state-badge` color/bg/z-index L680-682·L757、`#ai-route-select`/`#selection-menu` border-top-color L602-605、`.overlay-card` box-shadow L610/L1013、`.tier-desc` opacity L1015)。**注记:** 其中 8 项是颜色断言,其证伪能力受 CR-01 影响 |
-| P3.3 | `#doc-pane` → `#doc-panel-body`(D-13),item4 由 BLOCKED 转 ok,期望 `32px 40px` | ✓ VERIFIED | `grep -cE 'read_style\(page, .#doc-pane\b'` = 0 / `…#doc-panel-body\b` = 1;UAT item4 = 24 PASS / 0 FAIL / 0 BLOCKED |
-| P3.4 | D-12 七条间距/字号漂移以更新期望值接受 HEAD 现状,`style.css` 一字未动 | ✓ VERIFIED | item4 的 6px/10px/16px/18px/24px/14px 各条 PASS;`git diff e530ead..HEAD -- frontend/style.css` 中无这些规则 |
-| P3.5 | z-index 三条断言走 `resolve_token`,承重序关系在渲染层两端被读到 | ✓ VERIFIED(带注记) | `#selection-menu`/`#state-badge`/`#stream-banner` 三条 PASS,两端 computed 值(200/10/20)确在渲染层读出。**注记:** 无任何断言比较 `badge < banner`;`--z-overlay` 无运行时断言 —— 见 W-6 |
-| P3.6 | 每条接线断言旁的 `info()` 打印运行时令牌解析值 | ✓ VERIFIED | item3 4 条 INFO 覆盖 12 个令牌;item4 3 条;item5 0 条(以 `resolve_color` 内联调用,无 INFO —— 与陈述的「每条」有轻微落差,但解析值可从上文 INFO 与断言 `expected=` 列读出) |
-| P3.7 | 全量运行 0 FAIL、item 1/2/3/4/6 PASS 且 0 BLOCKED、item 5 BLOCKED 恰为两条交互冒烟、退出码 2、`smoke` 项 PASS | ✓ VERIFIED | 自跑原文:`item 1: PASS (45,0,0)` / `2: PASS (5,0,0)` / `3: PASS (15,0,0)` / `4: PASS (24,0,0)` / `5: BLOCKED (9,0,2)` / `6: PASS (2,0,0)`;`exit=2`;两条 BLOCKED 逐字为 `[p3] 交互冒烟「处理本轮批注」` 与 `[p3] 交互冒烟「发送」` |
-| P3.8 | `idi-04-UAT.md` 三条 gap 消解、Summary 计数更新 | ✓ VERIFIED | `result: [pass]` = 6 / `[fail]` = 0;`expected:.*#doc-panel-body` = 1 / `…#doc-pane\b` = 0;`## Gaps` 三块均 `status: resolved` 且原文保留为历史对照 |
-| P3.9 | C-1 下游门引用复核留证(16px / `#4f3422`,五站点) | ✓ VERIFIED | 自跑 item4:`#brainstorm-view h2 font-size: expected=16px actual=16px`;`color == var(--color-action-warning): expected=rgb(79, 52, 34) actual=rgb(79, 52, 34)`;`grep -cE '#brainstorm-view h2.*8a6508' .planning/ROADMAP.md` = 5(内容锚未失效);UAT `## Carry-Forward ①` 逐站点枚举 |
+| P1.13 | 30 条「loading/error/empty/partial 态内容与结构未被本阶段改动」 | ✓ VERIFIED | 折叠为一条:围栏外**规则名集**与 `e530ead` 相同;`frontend/app.js` / `frontend/index.html` 在 `e530ead..HEAD` 上 **零 diff** |
+| P1.14 | 28 条 UI-SPEC backstop 陈述(`verification: backstop`) | ⚠️ INSUFFICIENT_SPEC | 7 条的比值半边由 check-02 实测覆盖;其余约 21 条的裁切/换行/滚动/缩放/重定位行为无任何自动化证据 → 人工项 1 |
+| P2.1 | 围栏外 `var(--radix-gray-11` 使 CHECK-01 非零退出并具名诊断 | ✓ VERIFIED | 本报告独立复跑:`FAIL: 1 tier-1 primitive reference(s) outside the fence` / exit 1(临时树变异) |
+| P2.2 | 空转对照证据(旧交替式对同一泄漏样本 `PASS` / exit 0)出现在 SUMMARY 里 | ✓ VERIFIED | SUMMARY 表第 2 行逐字给出;上一轮验证已在临时副本上复现 |
+| P2.3 | 裸 hex 半场未被削弱 | ✓ VERIFIED | 本报告独立复跑:注入 `#abc` → `FAIL: 1 bare hex outside the token block` / exit 1 |
+| P2.4 | 围栏标记成对断言未被削弱 | ✓ VERIFIED | 上一轮验证自跑:删 END → `FAIL: expected exactly 1 fence START and 1 fence END, found 1/0` / exit 1 |
+| P2.5 | check-02 四条硬失败路径在 43 对清单上逐一仍会失败 | ✓ VERIFIED | 上一轮验证自跑四次变异,四条均 exit 1 且具名;本报告复证覆盖率下限代码在 `check-02-contrast.py:150-153` |
+| P2.6 | 两个守卫仍零依赖、只读 | ✓ VERIFIED | `check-02` import 集合 = `['re','sys']`;`check-01` 只用 `grep`/`awk`/`wc`/`printf`;均无写文件 |
+| P2.7 | `check-01` 的改动只有交替式一处 | ✓ VERIFIED | 上一轮验证 `git diff --numstat` = `+5 / −1` 单文件 |
+| P3.1 | check-05 全部颜色断言改为令牌接线,**且该形式不得以失去证伪能力为代价** | ✓ VERIFIED | **CR-01 已关闭。** 结构半边:`grep -c FROZEN_AMBER` = 0、`"rgb(` 字面 = 0、`resolve_color(` 24 处调用点。证伪半边:`resolve_color`(`:258-278`)先读 `documentElement` 上该令牌的声明,空即返回 `null`;`ok()`(`:115-116`)把 `None` 期望值记 BLOCKED(置于 `actual is None` 之前)。变异证明 B-1 自跑成立 |
+| P3.2 | 携带项 #9 的具名运行时清单逐条覆盖 | ✓ VERIFIED | 11 项逐条定位到断言(`.hint` :604/:826、`.badge-answered`、`#btn-authorize` :660-662、`.kind-write .event-kind`、`#state-badge` :767/:773、`#ai-route-select`、`#selection-menu` :766/:771、`.overlay-card` box-shadow、`.tier-desc` opacity)。**注记:** 其中 8 项颜色断言的证伪能力本轮由 CR-01 修复恢复 |
+| P3.3 | `#doc-pane` → `#doc-panel-body`(D-13),item4 由 BLOCKED 转 ok,期望 `32px 40px` | ✓ VERIFIED | item4 = 24 PASS / 0 FAIL / 0 BLOCKED(本报告复跑) |
+| P3.4 | D-12 七条间距/字号漂移以更新期望值接受 HEAD 现状,`style.css` 一字未动 | ✓ VERIFIED | item4 的 6px/10px/16px/18px/24px/14px 各条 PASS |
+| P3.5 | z-index 三条断言走 `resolve_token`,承重序关系在渲染层两端被读到 | ✓ VERIFIED(带注记) | `#selection-menu` / `#state-badge` / `#stream-banner` 三条 PASS(`:766-776`)。**注记:** 本 truth 的尾句「使 `badge < banner` 的承重序关系在**渲染层**被断言(而不只在围栏注释里被声明)」**为假** —— 三条断言比较的是「元素 z-index == 其令牌」,没有任何断言比较令牌之间的大小序;该关系**确实只在**围栏注释里被声明。详见 W-6 / TOKEN-07 / 人工项 3 |
+| P3.6 | 每条接线断言旁的 `info()` 打印运行时令牌解析值 | ✓ VERIFIED | item3 4 条 INFO 覆盖 12 个令牌;item4 3 条(`:769-770`、`:792`);item5 以 `resolve_color` 内联调用 |
+| P3.7 | 全量运行 0 FAIL、item 1/2/3/4/6 PASS 且 0 BLOCKED、item 5 BLOCKED 恰两条、退出码 2、`smoke` 项 PASS | ✓ VERIFIED | 本报告自跑原文:`item 1: PASS (45,0,0)` / `2: PASS (5,0,0)` / `3: PASS (15,0,0)` / `4: PASS (24,0,0)` / `5: BLOCKED (9,0,2)` / `6: PASS (2,0,0)`;`exit=2`;两条 BLOCKED 逐字为 `[p3] 交互冒烟「处理本轮批注」` 与 `[p3] 交互冒烟「发送」` |
+| P3.8 | `idi-04-UAT.md` 三条 gap 消解、Summary 计数更新 | ✓ VERIFIED | `result: [pass]` = 6 / `[fail]` = 0;`## Gaps` 三块均 `status: resolved` |
+| P3.9 | C-1 下游门引用复核留证(16px / `#4f3422`,五站点) | ✓ VERIFIED | item4 `#brainstorm-view h2 font-size: expected=16px actual=16px`;`grep -cE '#brainstorm-view h2.*8a6508' .planning/ROADMAP.md` = 5 |
 | P3.10 | 携带项 #8 被记录而非执行 | ✓ VERIFIED | UAT `## Carry-Forward ②` 明写 Phase 7 须在 `--color-surface` `#f9f9f9` 与 `--color-surface-page` `#fcfcfc` 上重测焦点环;本阶段未改环色 |
 | P3.11 | `app.js` / `index.html` / `vendor/` 零改动,`vendor/` 仍只含 `marked.min.js` | ✓ VERIFIED | `git diff --stat e530ead..HEAD -- frontend/app.js frontend/index.html frontend/vendor/` 为空;`ls frontend/vendor/` = `marked.min.js` |
 
-**Score:** 33/36 truths verified (1 failed, 1 insufficient_spec/abstained, 1 counted as VERIFIED-with-caveat not double-counted)
+**Score:** 37/38 truths verified (1 abstained: P1.14 `insufficient_spec` → 人工项 1)
 
-> 计分口径:上表 36 行 = 6(Roadmap)+ 14(Plan 01)+ 7(Plan 02)+ 11(Plan 03)。已核实 33 行;1 行 FAILED(P3.1);1 行 ⚠️ INSUFFICIENT_SPEC(P1.14,28 条 backstop);1 行因 CR-01 的注记不计入绿(P3.2 仍计为 VERIFIED,其证伪力削弱记在 P3.1 的 gap 下,不重复扣分)。
+> **计分口径与上一轮的一处更正。** 本表沿用上一轮的 38 行(6 Roadmap + 14 Plan 01 + 7 Plan 02 + 11 Plan 03),但上一轮的分母写作 `36` 而它自己的表列了 38 行 —— `6+14+7+11 = 38`,`33/36` 与之不自洽。本报告按 38 行重新计分:CR-01 关闭使 P3.1 翻绿,故 37 绿 / 1 `insufficient_spec`。
+>
+> **P1.7 与 P3.5 的处理。** 两条都保留了「带注记的 VERIFIED」:它们的**交付物半边**(消费者恢复;三条断言走令牌接线)经本报告独立复核成立,而它们各自携带的**因果尾句**(「围栏内断言的序关系」「序关系在渲染层被断言」)为假。该假尾句不另计为一条 FAILED truth,而是作为 **W-6 / TOKEN-07** 这一条具名发现登记,并升级为人工裁决项 3 —— 避免同一事实被重复扣分,同时不把它静默吸收进绿。
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `frontend/style.css` | 围栏 `:root`:25 tier-1 / 47 `--color-*` / `--shadow-overlay` / 43 `/* PAIR */` + 1 `/* ORDER */` / V-12 注释 / R-1·R-2·R-3 | ✓ VERIFIED | 全部实测命中;单一围栏;围栏外规则集逐字节未变;无裸 hex / rgba;Gate 2 双向空 |
-| `scripts/check-01-token-conformance.sh` | 双守卫:tier-1 泄漏(交替式含 `radix`)+ 裸 hex | ✓ VERIFIED | 含 `radix` 分支;三半场(radix 泄漏 / 裸 hex / 围栏成对)均自跑变异证明会失败 |
-| `scripts/check-05-ui-uat.py` | `item_smoke` 三条令牌接线断言;item2-5 期望侧改 `resolve_color` / `resolve_token` | ⚠️ PARTIAL | 断言与助手均在位且可运行;`resolve_color` 的未声明分支缺失使其颜色断言在改名/删除下恒真(CR-01) |
-| `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md` | D-10/D-12/D-13 更新后的期望值与已消解的 `## Gaps` | ✓ VERIFIED | 6 pass / 0 fail;三条 gap `resolved`;`## Carry-Forward` 四节齐备 |
+| `frontend/style.css` | 围栏 `:root`:25 tier-1 / 47 `--color-*` / `--shadow-overlay` / 43 `/* PAIR */` + 1 `/* ORDER */` / V-12 注释 / R-1·R-2·R-3 | ✓ VERIFIED | 全部实测命中;单一围栏;围栏外规则名集与 `e530ead` 相同;无裸 hex / rgba;Gate 2 双向空 |
+| `scripts/check-01-token-conformance.sh` | 双守卫:tier-1 泄漏(交替式含 `radix`)+ 裸 hex | ✓ VERIFIED | 三半场(tier-1 泄漏 / 裸 hex / 未变异对照)经本报告独立复跑,行为正确 |
+| `scripts/check-05-ui-uat.py` | `resolve_color` 的「令牌未声明 → None」分支 + `ok()` 的「期望值为 None → BLOCKED」分支 | ✓ VERIFIED | `:268` 新增 `getPropertyValue` 前置检查(全文件恰 3 处);`:115` `expected is None` 分支恰 1 处;24 处调用点与全部期望值未动(`git diff f5adfa4..HEAD` = `+19/−3` 单文件) |
+| `scripts/probe-05-resolve-color.py` | CR-01 的变异证明,不是门 | ✓ VERIFIED | 246 行新文件;`importlib` 按路径复用 harness helper;`PREFIX_PROBE_JS` 与 `68309d0` 的探针体逐字一致;四行 `PROBE …` 输出契约成立;exit 0 |
+| `.planning/phases/idi-04-tokens-contract/idi-04-UAT.md` | D-10/D-12/D-13 更新后的期望值与已消解的 `## Gaps` | ✓ VERIFIED | 6 pass / 0 fail;三条 gap `resolved` |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| 围栏 43 条 `/* PAIR */` | 围栏内令牌声明 | check-02 对未声明名 `sys.exit(1)` | ✓ WIRED | 原始标记数 43 == 解析数 43;变异注入第 44 条 → `FAIL: 44 markers but only 43 parsed` |
+| 围栏 43 条 `/* PAIR */` | 围栏内令牌声明 | check-02 对未声明名 `sys.exit(1)` | ✓ WIRED | 原始标记数 43 == 解析数 43;上一轮变异注入第 44 条 → `FAIL: 44 markers but only 43 parsed` |
 | `--color-text-muted` | `--radix-gray-11` | tier-2 → tier-1 `var()` 链 | ✓ WIRED | `frontend/style.css:120` |
 | `#state-badge` z-index | `--z-badge` | R-1 恢复的唯一消费者 | ✓ WIRED | `:590` ↔ `:232`;UAT 两条(z-index == 10) |
-| `.overlay-card` box-shadow | `--shadow-overlay` | R-2:令牌与消费者同次提交,围栏外无裸 rgba | ✓ WIRED | `:177` ↔ `:546`;围栏外 `rgba?(` 为空 |
-| `check-05.item_smoke` | `style.css` 令牌值层 | `resolve_color` / `resolve_token` 运行时解析后与 computed 比对 | ⚠️ PARTIAL | 链路存在且跑通,但 `resolve_color` 的退化分支使颜色一侧在令牌未声明时两端同值 —— 见 CR-01 |
-| `check-05.item3/4/5` 颜色断言 | 47 个 `--color-*` 令牌 | `resolve_color(page, "--color-…")` | ⚠️ PARTIAL | 同上;`resolve_token` 一侧(`--z-*`)安全 |
-| `check-01` tier-1 交替式 | 围栏内 `--radix-<family>-<step>` 名 | 加宽后重新匹配 | ✓ WIRED | 自跑变异:未加宽的空格写法 `var( --radix-gray-11 )` **不**匹配 → 见 W-2 |
+| `.overlay-card` box-shadow | `--shadow-overlay` | R-2:令牌与消费者同次提交,围栏外无裸 rgba | ✓ WIRED | `:546`;围栏外 `rgba?(` 为空 |
+| `check-05.item_smoke` / item3/4/5 颜色断言 | `style.css` 令牌值层 | `resolve_color` / `resolve_token` 运行时解析后与 computed 比对 | ✓ WIRED | **本轮由 CR-01 修复恢复证伪能力**:令牌未声明 → `resolve_color` 返回 `None` → `ok()` 记 BLOCKED(绝不记 PASS)。见 B-1 |
+| `check-05.item4` z-index 断言 | `--z-selection-menu` / `--z-badge` / `--z-banner` | `resolve_token` 读 `documentElement` 的 `getPropertyValue` | ✓ WIRED(带缺口) | 链路成立且四条断言 PASS。**缺口:** 没有任何断言比较四个 `--z-*` 之间的大小序 —— 见 W-6 |
+| `check-01` tier-1 交替式 | 围栏内 `--radix-<family>-<step>` 名 | 加宽后重新匹配 | ✓ WIRED | 本报告复跑:泄漏样本 → exit 1;未变异 → exit 0。残余缺口 W-2(带空格的 `var( … )`)仍在 |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 |----------|---------------|--------|--------------------|--------|
-| `scripts/check-05-ui-uat.py` item3 `.hint color` | `muted = resolve_color(page, "--color-text-muted")` | 浏览器 `getComputedStyle` 探针(真实 chromium-1243 无头) | 是(`rgb(100, 100, 100)`,与 `documentElement` 的 `#646464` 一致) | ✓ FLOWING |
+| `scripts/check-05-ui-uat.py` item3 `.hint color` | `muted = resolve_color(page, "--color-text-muted")` | 浏览器 `getComputedStyle` 探针(真实 chromium-1243 无头) | 是(`rgb(100, 100, 100)` = `#646464`,与 `documentElement` 声明一致) | ✓ FLOWING |
 | `scripts/check-05-ui-uat.py` item4 z-index 三条 | `resolve_token(page, "--z-…")` | `getComputedStyle(document.documentElement).getPropertyValue` | 是(`200` / `10` / `20`) | ✓ FLOWING |
-| `scripts/check-05-ui-uat.py` 颜色断言(未声明令牌分支) | `resolve_color(page, "--t")` | 探针 `color` → **父级继承值** | 否 —— 未声明时不反映任何令牌 | ✗ DISCONNECTED(CR-01) |
+| `scripts/check-05-ui-uat.py` 颜色断言(未声明令牌分支) | `resolve_color(page, "--t")` | 先读 `documentElement` 声明;空即 `null` | **是 —— 不再退化**。修复前此处返回父级继承色(与真实消费者同值 → 断言恒真);现返回 `null` → BLOCKED。**CR-01 已消解** | ✓ FLOWING(修复后) |
 | `frontend/style.css` 围栏令牌 | 静态声明 | 手写 Radix hex | 是(25 tier-1 / 47 tier-2) | ✓ FLOWING |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 |----------|---------|--------|--------|
-| 四条守卫在真实树上全绿 | `bash scripts/check-01-token-conformance.sh` / `python3 scripts/check-02-contrast.py` / `bash scripts/check-03-hidden-uniqueness.sh` / `bash scripts/check-04-important-count.sh` | `PASS` / `PASS: 0 failures`(44 PASS 行)/ `PASS` / `PASS`,四个 exit 0 | ✓ PASS |
-| 全量 UAT | `.venv/bin/python scripts/check-05-ui-uat.py` | 98 PASS / **0 FAIL** / 2 BLOCKED;item 1/2/3/4/6 PASS 0 BLOCKED,item 5 BLOCKED(9,0,2);`exit=2` | ✓ PASS(与 SUMMARY 逐项一致) |
-| **B-1** check-05 能否在令牌改名后失败(CR-01) | 拦截 `/style.css` 注入删掉 `--color-text-muted` 声明的副本,再问 `.hint` 与 `resolve_color` 各算出什么 | `expected (resolve_color) = 'rgb(32, 32, 32)'` / `actual (.hint computed) = 'rgb(32, 32, 32)'` → `harness ok() would record: PASS`(渲染已坏:提示灰变成正文黑);仓库 `style.css` 未被触碰 | ✗ **FAIL**(守卫在改名下恒真) |
-| **B-2** `wait_done("#btn-send")` 是否真的等待(CR-02) | 进入 p12 样本后读 `#btn-send` 状态并复现 `wait_done` 的谓词 | `{'disabled': False, 'hidden': False}`;首次轮询 `disabled = False` → 返回 `True`,耗时 **0.157s**(90s 截止在发送分支上是死代码) | ✗ **FAIL**(断言未等待 AI 调用) |
-| **B-3** check-01 radix 分支 | `mktemp` 副本注入 `var(--radix-gray-11)` | `FAIL: 1 tier-1 primitive reference(s) outside the fence` / exit 1 | ✓ PASS |
-| **B-4** check-01 空转对照 | 同一副本 + `sed 's/\|radix//'` 重建的旧守卫 | `PASS` / exit 0 —— 修复必要性被实证 | ✓ PASS |
-| **B-5** check-01 裸 hex / 围栏成对 | 注入 `#abc`;删 END | `FAIL: 1 bare hex …` exit 1;`FAIL: expected exactly 1 fence START and 1 fence END, found 1/0` exit 1 | ✓ PASS |
-| **B-6** check-02 四条硬失败路径 | 未知名 / 标记数 / 覆盖率下限 / ORDER 反转,四次 `mktemp` 副本 | 四条均 exit 1 且具名 | ✓ PASS |
-| **B-7** 围栏外规则集不变 | `diff <(e530ead 的围栏外规则开集) <(HEAD 的)` | `IDENTICAL` | ✓ PASS |
-| **B-8** Gate 2 双向 | 围栏外 `var()` 名集 vs 围栏内声明集,双向 `comm -23` | 两个方向均为空 | ✓ PASS |
-| **B-9** 变更面 | `git diff --stat e530ead..HEAD -- frontend/app.js frontend/index.html frontend/vendor/` | 空;`ls frontend/vendor/` = `marked.min.js` | ✓ PASS |
+| 四条守卫在真实树上全绿 | `bash scripts/check-01-token-conformance.sh` / `python3 scripts/check-02-contrast.py` / `bash scripts/check-03-hidden-uniqueness.sh` / `bash scripts/check-04-important-count.sh` | `PASS` / `PASS: 0 failures`(44 PASS 行 + `ORDER 0.363`)/ `PASS` / `PASS`,四个 exit 0 | ✓ PASS |
+| 全量 UAT | `.venv/bin/python scripts/check-05-ui-uat.py` | 0 条 `^FAIL `;item 1/2/3/4/6 PASS 0 BLOCKED,item 5 BLOCKED(9,0,2);`exit=2` | ✓ PASS(与 P3.7 基线逐项一致) |
+| pytest 基线 | `.venv/bin/python -m pytest -q` | `219 passed, 6 skipped, 1 warning in 5.68s` | ✓ PASS |
+| **B-1** CR-01 的变异证明(修复前 PASS / 修复后 BLOCKED) | `.venv/bin/python scripts/probe-05-resolve-color.py` | `mutation-applied=yes` / `mutated-prefix-verdict=PASS`(pre_fix_expected=rgb(32,32,32) == hint_computed=rgb(32,32,32))/ `mutated-postfix-verdict=BLOCKED`(expected=`<UNRESOLVED>`)/ `control-verdict=PASS`(rgb(100,100,100));`exit=0` | ✓ PASS |
+| **B-2** 变异是否真的发生(独立证伪 WR-01:排除「样式表根本没加载」) | 本报告自写探针:拦截 `/style.css` 只删 `--color-text-muted:` 行,再读 `.hint` 的 `font-size`(来自 `var(--text-base)`,与所删令牌无关) | `style.css` 39068 → 39024 字节(−44,恰一行声明);`.hint` `color` = `rgb(32, 32, 32)` 但 `font-size` = **`14px`** → 样式表确实加载并生效;`resolve_color("--color-text-muted")` = `None` | ✓ PASS(变异真实且非空转) |
+| **B-3** `PREFIX_PROBE_JS` 是否忠实反事实 | `git show 68309d0:scripts/check-05-ui-uat.py` 与探针常量逐字比对 | 探针体逐字相同(仅缩进层级不同);`68309d0` 是 plan 04 动手前的树 | ✓ PASS |
+| **B-4** check-01 是否真的会失败 | 临时树变异:`var(--radix-gray-11)` 泄漏 → exit 1 `FAIL: 1 tier-1 primitive reference(s) outside the fence`;注入 `#abc` → exit 1 `FAIL: 1 bare hex outside the token block`;未变异 → exit 0 `PASS` | 三例全部符合预期 | ✓ PASS |
+| **B-5** 被验证对象未被污染 | `git diff --exit-code -- frontend/style.css`(对 `f5adfa4..HEAD`) | 空;`git status --porcelain -- frontend/` 空;`git diff --diff-filter=D --name-only f5adfa4..HEAD` 空 | ✓ PASS |
+| **B-6** 围栏外规则名集不变 | `diff <(e530ead 的 `^[^ ].*\{` 行取 `{` 前) <(HEAD 的)` | `RULE-NAME-SET-IDENTICAL`;围栏外文本仅三处声明 delta(R-1 `+ z-index: var(--z-badge)` / R-2 `+ box-shadow: var(--shadow-overlay)` / R-3 `− opacity: 0.9`) | ✓ PASS |
+| **B-7** Gate 2 双向 | 围栏外 `var()` 名集 vs 围栏内声明集,双向 `comm -23` | 两个方向均为空 | ✓ PASS |
+| **B-8** TOKEN-07 序关系是否被任何脚本守卫 | `grep -rn -- '--z-badge\|--z-banner\|--z-overlay\|--z-selection-menu' scripts/`(排除 check-05) | **零命中**;`check-05:771-776` 只断言「元素 z-index == 其令牌」 | ✗ **FAIL**(序关系无机械断言 —— W-6 / 人工项 3) |
 
-**B-1 / B-2 是本报告结论的承重证据**,均为本验证会话自跑,非引用 SUMMARY 或 REVIEW。
+**B-1 / B-2 是 CR-01 关闭的承重证据,均为本验证会话自跑,非引用 SUMMARY 或 REVIEW。**
 
 ### Probe Execution
 
-Step 7c: SKIPPED —— 本阶段不是迁移/CLI/tooling 阶段,PLAN/SUMMARY/成功判据均未声明任何 `scripts/*/tests/probe-*.sh`,仓库内也无该约定目录。
+| Probe | Command | Result | Status |
+|-------|---------|--------|--------|
+| `scripts/probe-05-resolve-color.py` | `.venv/bin/python scripts/probe-05-resolve-color.py` | 四行 `PROBE …` 齐备,`exit=0` | ✓ PASS |
+
+Step 7c 的常规发现流程(迁移/CLI 阶段的 `scripts/*/tests/probe-*.sh`)在本仓库无对应目录;本阶段声明并交付的探针只有上表这一条,已按其 PLAN 的输出契约逐字复跑。
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 |-------------|-------------|-------------|--------|----------|
-| TOKEN-01 | 01 | 单一 `:root` 令牌块、零构建零依赖 | ✓ SATISFIED | `^:root` == 1;无 package.json/build 变更 |
-| TOKEN-02 | 01, 02 | 两层分类学;tier-1 名绝不出现在围栏外(机械可查) | ✓ SATISFIED(带残余缺口) | 围栏外 `var(--radix-…)` 被 CHECK-01 抓住(B-3);但**带空格的 `var( --radix-… )` 漏网**(W-2),不变量未 100% 机械覆盖 |
-| TOKEN-04 | 01 | 令牌块之外零裸 `#hex` | ✓ SATISFIED | CHECK-01 `PASS`;`grep -o '#[0-9a-fA-F]\{3,6\}'` 在围栏外计数 0 |
-| TOKEN-07 | 01, 03 | `--z-*` 令牌化**并断言序关系** | ⚠️ PARTIAL | 四个令牌已声明、四个消费者都在(`:537`/`:590`/`:606`/`:889`);三条 UAT 断言证明两端 computed 值。但**序关系本身没有任何机械断言** —— 只有 `:229-231` 的散文注释;`--z-overlay` 无运行时断言(W-6) |
-| CHECK-01 | 01, 02 | 围栏外裸 hex 即失败 | ✓ SATISFIED | 见 B-3 / B-5 |
-| CHECK-02 | 01, 02, 03 | 对所有声明的令牌配对算 WCAG 对比度 | ✓ SATISFIED | `PASS: 0 failures`;四条硬失败路径经 B-6 复证 |
+| TOKEN-01 | 01, 04 | 单一 `:root` 令牌块、零构建零依赖 | ✓ SATISFIED | `^:root` == 1;无 package.json/build 变更 |
+| TOKEN-02 | 01, 02 | 两层分类学;tier-1 名绝不出现在围栏外(机械可查) | ✓ SATISFIED(带残余缺口) | 围栏外 `var(--radix-…)` 被 CHECK-01 抓住(B-4);**带空格的 `var( --radix-… )` 漏网**(W-2) |
+| TOKEN-04 | 01 | 令牌块之外零裸 `#hex` | ✓ SATISFIED | CHECK-01 `PASS`;B-4 复证裸 hex 半场会失败 |
+| TOKEN-07 | 01, 03 | `--z-*` 令牌化**并断言序关系** | ⚠️ **PARTIAL —— `Complete` 标记不成立** | 令牌化 + 四个消费者(537/590/606/889)成立;三条 UAT 断言证明两端 computed 值。但**序关系本身没有任何机械断言**:唯一载体是 `frontend/style.css:229-231` 的散文注释(该注释自称 `z-index ordering assertion (TOKEN-07)`),`check-05-ui-uat.py:771-776` 断言的是「元素 z-index **等于**其令牌」。**B-8 实测:把四个值重新排序后 `check-01`…`check-05` 全部仍会通过。** `REQUIREMENTS.md:127` 与 `:20` 标 `Complete`,`ROADMAP.md` §04.1 亦写「实质关闭 TOKEN-07(…z-index 序断言重新有消费者…)」—— 两者的前提(存在一条序断言)在代码里**不成立**。`VALIDATION.md` 已诚实地记录该半场为 manual-only(`nyquist_compliant: false`),故这不是静默分歧;但 `Complete` 在机械层面**不被支持**。见 W-6 / 人工项 3 |
+| CHECK-01 | 01, 02 | 围栏外裸 hex 即失败 | ✓ SATISFIED | B-4 |
+| CHECK-02 | 01, 02, 03, 04 | 对所有声明的令牌配色算 WCAG 对比度 | ✓ SATISFIED | `PASS: 0 failures`;四条硬失败路径经上一轮复证;本轮交付其**验收仪器侧**的证伪修复(CR-01) |
 | CHECK-03 | 01, 02, 03 | `.hidden` 唯一性守卫 == 1 | ✓ SATISFIED | 1 / `PASS` |
 | CHECK-04 | 01, 02, 03 | `!important` 计数 == 1 | ✓ SATISFIED | 1 / `PASS` |
-| A11Y-04 | 01, 03 | WCAG AA 文本对比度失败全部修复 | ✓ SATISFIED | check-02 43 对全 PASS,最低文本对 `--color-text-info on --color-surface-info` 4.53 ≥ 4.5;`.hint` 由 2.73 → 5.62 |
-| A11Y-04b | 01, 03 | opacity 合成导致的失败一并覆盖 | ✓ SATISFIED(带残余缺口) | `.tier-desc` `opacity: 0.9` 删除(满不透明度 4.77 ✓);归档 0.75 压暗 6.97 ✓;冻结轮 `opacity: 1` + `saturate(0.6)` 保留且断言 PASS。**残余:** E16 mark 上的正文(`--color-text on --color-surface-mark`)不在清单里 —— 实测 15.0:1 通过,但未被 check-02 覆盖(W-4) |
+| A11Y-04 | 01, 03, 04 | WCAG AA 文本对比度失败全部修复 | ✓ SATISFIED | check-02 43 对全 PASS,最低文本对 `--color-text-info on --color-surface-info` 4.53 ≥ 4.5;`.hint` 由 2.73 → 5.62 |
+| A11Y-04b | 01, 03 | opacity 合成导致的失败一并覆盖 | ✓ SATISFIED(带残余缺口) | `.tier-desc` `opacity: 0.9` 删除(满不透明度 4.77 ✓);归档 0.75 压暗 6.97 ✓;冻结轮 `opacity: 1` + `saturate(0.6)` 保留且断言 PASS。**残余:** E16 mark 上的正文(`--color-text on --color-surface-mark`)不在清单里(实测 15.0:1 通过,未被 check-02 覆盖 —— W-4 / 人工项 2) |
 
-**无 ORPHANED 需求。** ROADMAP §Phase 04.1 列出的 10 个 ID 全部被至少一份 PLAN 的 `requirements:` 字段认领(01: TOKEN-01/02/04/07, CHECK-02/03/04, A11Y-04/04b;02: CHECK-01, TOKEN-02, CHECK-03, CHECK-04;03: A11Y-04, A11Y-04b, TOKEN-07, CHECK-02/03/04)。ROADMAP 明确「不触碰 TOKEN-03/05/06/08」,与 3 份 PLAN 的认领一致。
+**无 ORPHANED 需求。** ROADMAP §Phase 04.1 列出的 10 个 ID 全部被至少一份 PLAN 的 `requirements:` 字段认领(01: TOKEN-01/02/04/07, CHECK-02/03/04, A11Y-04/04b;02: CHECK-01, TOKEN-02, CHECK-03, CHECK-04;03: A11Y-04, A11Y-04b, TOKEN-07, CHECK-02/03/04;04: CHECK-02, A11Y-04)。ROADMAP 明确「不触碰 TOKEN-03/05/06/08」,与 4 份 PLAN 的认领一致。
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 |------|------|---------|----------|--------|
-| `scripts/check-05-ui-uat.py` | 250-262(定义)、600-685 / 727-728 / 777-778 / 803-826 / 983-984 / 1002-1005(消费) | **CR-01** `resolve_color` 对未声明令牌返回继承色 → 探针与消费者同值,断言恒真 | 🛑 BLOCKER | 本阶段自己引入的回归(22 条 `rgb()` 字面 → `resolve_color`)。约 25 条颜色断言在令牌改名/删除下记 PASS 而渲染已坏 —— 正是本项目记录的「守卫静默空转」失败类,也正是 plan 02 在同一阶段内刚修掉的那一类。独立复现:B-1 |
-| `scripts/check-05-ui-uat.py` | 873-883(`wait_done`)、923-930(发送分支) | **CR-02** `wait_done("#btn-send")` 谓词是 `el.disabled === false`,而 `app.js` 只在归档态 disable `#btn-send`(L834),发送期间从不 disable | ⚠️ WARNING | `[p12] 交互冒烟「发送」` 在点击后约 0.16s 即记 PASS(B-2),`errors` 尚未收集到任何东西;90s 截止是死代码。**预先存在**(`6f52602`),本阶段未触碰 `run_ai_smoke`;默认运行下该行本就 BLOCKED,不影响 P3.7 |
-| `scripts/check-01-token-conformance.sh` | 41-43 | **W-2(WR-01)** 交替式要求 `var(--` 无空格,CSS 允许 `var( --radix-gray-11 )` | ⚠️ WARNING | 自跑:`var( --radix-gray-11 )` → `PASS` / exit 0。TOKEN-02 的硬不变量仍有机械缺口 |
-| `scripts/check-01-token-conformance.sh` | 17-27 | **W-3(WR-02)** 成对断言只数 START/END 的**数量**,不管位置 | ⚠️ WARNING | 自跑:把泄漏放在原 END 之前、再把 END 挪到 EOF → `PASS` / exit 0(`$outside` 退化为空)。注释声称覆盖「标记丢失」,实际只覆盖删除、不覆盖搬移 |
-| `frontend/style.css` | 279-341(清单)、601 / 907(消费) | **W-4(WR-03)** 清单缺 `--color-text ON --color-surface-mark`;plan 01 的 E16 backstop 引用「CHECK-02: … = 15.88」 | ⚠️ WARNING | `grep -c 'PAIR --color-text ON --color-surface-mark'` = 0;15.88 实为 `on --color-surface-page` 的数,该引用在 check-02 输出里不存在;实测 text-on-mark = **15.0:1**(通过,但未被 check-02 覆盖)。清单自述的「枚举所有真实渲染的组合」因此不成立 |
-| `scripts/check-05-ui-uat.py` | 996-997 | **W-5(WR-04)** `read_style(...) != "none"` 在元素缺席时返回 `None`,`None != "none"` 为真 | ⚠️ WARNING | `smoke #state-badge 可见` 在元素不存在时也记 PASS;同文件 item1 写法正确(L404-405),此处不一致 |
-| `frontend/style.css` | 229-231 | **W-6** z-index 序关系只有散文注释,无机械断言 | ⚠️ WARNING | `grep -rn` 全部 `scripts/` 无任何比较 `--z-badge` 与 `--z-banner` 的断言;`--z-overlay` 无运行时断言。TOKEN-07 的「断言序关系」半场未被机械覆盖(消费者恢复这一半场已达成) |
-| `scripts/check-05-ui-uat.py` | 477-480 | **IN-01** `goto_frozen_round(page, item)` 的 `item` 参数从未使用 | ℹ️ INFO | 死参数;两处调用都传了 |
-| `scripts/check-05-ui-uat.py` | 845 vs 926 | **IN-02** 同一验收项在两个运行模式下标签不同(`[p3]` / `[p12]`) | ℹ️ INFO | grep 日志时两种模式会互相漏掉 |
-| `scripts/check-05-ui-uat.py` | 842-847 / 1124-1127 | **IN-03** 默认运行必然 exit 2 | ℹ️ INFO | `code = 1 if any_fail else (2 if any_blocked else 0)`;任何以 `exit == 0` 为判据的 CI 门会永久红。文档已记明,但退出码不能当默认运行的通过信号 |
+| `frontend/style.css` | 229-231 | **W-6 / TOKEN-07** z-index 序关系只有散文注释,且该注释自称 `z-index ordering assertion (TOKEN-07)` —— 一条**自述为断言却并不存在**的断言 | ⚠️ WARNING | 四个值重新排序后全部守卫仍绿(B-8)。TOKEN-07 的「断言序关系」半场未覆盖;`REQUIREMENTS.md` 的 `Complete` 与 `ROADMAP` 的「实质关闭」在机械层面不成立。预先存在(非 plan 04 引入),用户已在 `VALIDATION.md` 裁定 manual-only → 升级为人工项 3 |
+| `scripts/probe-05-resolve-color.py` | 87-95, 123-130 | **IN-02** 变异的**最小性**未被断言:过滤器删掉所有含 `--color-text-muted:` 的行,自检只验「令牌串已消失」。若将来该声明与其它声明/右花括号共行,删掉的不止一个声明而探针仍打印同样的四行 | ℹ️ INFO | 今天可证最小:`style.css:120` 是独占一行的单一声明,`grep -c -- '--color-text-muted:'` = 1。未来重构下的静默风险 |
+| `scripts/probe-05-resolve-color.py` | 95 | **WR-01** `route.fulfill(response=resp, body=mutated)` 继承原 `content-length` 而 body 更短;探针无法区分「令牌被删」与「样式表没加载」 | ⚠️ WARNING(本轮已独立证伪为「非当下故障」) | 本报告 B-2 用 `.hint` 的 `font-size` 仍为 `14px` 证明样式表确实加载、只少一行声明;`rgb(32,32,32)` 亦确为 `--color-text` 经 `html, body` 规则应用后的值(UA 默认是 `rgb(0,0,0)`)。故是未来静默的健壮性缺口,非当下的假证明。见 `advisory` |
+| `scripts/check-05-ui-uat.py` | 115-116 | **WR-02** `ok()` 的 `expected is None` 分支按**期望值**分桶,不区分解析器:`resolve_token` 的 4 处调用点(`:766-776`、`:1024-1026`)在令牌被删时由 **FAIL 变 BLOCKED**,与两条 by-design 的 AI 冒烟 BLOCKED 同桶 | ⚠️ WARNING | 真实的 z 令牌接线缺陷由「值不相等」(exit 1)降级到「环境状态」(exit 2),`item 4: BLOCKED (24,0,1)` 读起来像环境缺口而非坏令牌。**这是本 commit 唯一一处让守卫「更不响」而非更响的地方**;BLOCKED 仍不是假 PASS,故非阻断 |
+| `scripts/check-05-ui-uat.py` | 268-269 | **IN-01** 声明检查是「非空」而非「解析成颜色」:`--color-text-muted: --radix-gray-11;`(漏 `var()`)非空却无效 → 探针与消费者一起退化 → 断言又可 PASS(CR-01 的残余半边) | ℹ️ INFO | 审查者已追查爆散半径:13 个传给 `resolve_color` 的令牌中 12 个在 check-02 清单里且 check-02 对不可解析值 `exit(1)`;唯一的例外 `--color-action-irreversible` 在其单条断言上恰好仍会响亮失败。**边界观察,非活洞**;其清单缺口与已 deferred 的 W-4 同源,不重复计 |
+| `scripts/check-05-ui-uat.py` | 873-883, 923-930 | **CR-02** `wait_done("#btn-send")` 谓词是 `el.disabled === false`,而 `app.js` 只在归档态 disable `#btn-send` → 90s 截止是死代码 | ⚠️ WARNING | 预先存在于 `6f52602`,本阶段未触碰 `run_ai_smoke`;默认运行下该行本就 BLOCKED,不影响 P3.7。用户裁定 deferred |
+| `scripts/check-01-token-conformance.sh` | 41-43 | **W-2** 交替式要求 `var(--` 无空格,CSS 允许 `var( --radix-gray-11 )` | ⚠️ WARNING | TOKEN-02 的硬不变量仍有机械缺口;用户裁定 deferred |
+| `scripts/check-01-token-conformance.sh` | 17-27 | **W-3** 成对断言只数 START/END 的**数量**,不管位置;标记被搬移时 `$outside` 退化为空而 `PASS` | ⚠️ WARNING | 用户裁定 deferred |
+| `frontend/style.css` | 279-341 清单 + plan 01 的 E16 backstop | **W-4** 清单缺 `--color-text ON --color-surface-mark`;引用的 `15.88` 实为 `on --color-surface-page` 的数 | ⚠️ WARNING | 实测 text-on-mark = 15.0:1 通过但未被 check-02 覆盖。与人工项 2 同源 |
+| `scripts/check-05-ui-uat.py` | 996-997 | **W-5** `read_style(...) != "none"` 在元素缺席时返回 `None`,`None != "none"` 为真 → `smoke #state-badge 可见` 记 PASS | ⚠️ WARNING | 用户裁定 deferred |
+| `scripts/check-05-ui-uat.py` | 477-480 / 845 vs 926 / 842-847,1124-1127 | **IN-01·IN-02·IN-03**(上一轮编号)死参数 / 双模式标签不一致 / 默认运行必然 exit 2 | ℹ️ INFO | 用户裁定 deferred |
+| `.planning/ui-reviews/` 证据(`idi-04.1-UI-REVIEW.md`) | — | 三条新发现的视觉缺陷:① `.overlay-card` 内 `.danger` 实心按钮画出**蓝边红底**(`:549-555` 与 `:473` 同特异性,后者胜出);② 全站**无任何焦点指示**(grep `:focus`/`outline` = 0),UA 环在新填充上仅 1.26:1 / 1.15:1;③ 实心按钮**无 hover 反馈** | ⚠️ WARNING(新范围,非本阶段目标) | 均为 plan 04 范围之外的新发现;焦点环的**令牌**按携带项 #8 已排给 Phase 7。①需要一条围栏外声明改动(`.overlay-card button.danger { border-color: … }`),UI 审查指出它会是 R-1/R-2/R-3 之后的**第四处**围栏外声明变更,须同样显式记账 —— 交后续阶段裁决,不阻断本阶段 |
 
-**债务标记门:** 三个改动源文件中 `TBD` / `FIXME` / `XXX` 计数均为 **0**。无未决债务标记。
+**债务标记门:** plan 04 改动的两个源文件中 `TBD` / `FIXME` / `XXX` 计数均为 **0**。无未决债务标记。
+
+**再验证证据门(#3304):** 本轮无 BLOCKER。W-6 是上一轮即已登记的 WARNING(不在上一轮 `gaps:` 里),且 `frontend/style.css` 与 `scripts/check-05-ui-uat.py` 自上一轮验证以来未被改动以引入它 —— 它是预先存在、用户已裁定的项。`advisory` 里的 WR-01 是本轮新范围发现且已由 B-2 独立证伪为「非当下故障」。
 
 ### Human Verification Required
 
-见 frontmatter `human_verification`。两条:
+1. **28 条 UI-SPEC backstop 陈述** —— 7 条的比值半边已由 check-02 实测覆盖(E1 4.61–16.29 / E2 11.00 / E4 4.53 / E6 5.19–5.82 / E7 10.80 / E13 6.97 / E10 4.77),其余约 21 条是裁切/换行/滚动归属/200% 缩放/菜单重定位这类渲染几何行为,`grep` 与 computed-style 都看不见。plan 01 的 coverage D6 与 plan 02/03 的 Next-Phase-Readiness 均自标 `human_judgment: true`,本报告照录,不静默转绿。
 
-1. **28 条 UI-SPEC backstop 陈述**(plan 01 must_haves 的 `verification: backstop` 层)——7 条的比值半边已由 check-02 实测覆盖(E1 4.61–16.29 / E2 11.00 / E4 4.53 / E6 5.19–5.82 / E7 10.80 / E13 6.97 / E10 4.77),其余约 21 条是裁切/换行/滚动归属/200% 缩放/菜单重定位这类渲染几何行为,`grep` 与 computed-style 都看不见。plan 01 的 coverage D6 与 plan 02/03 的 Next-Phase-Readiness 均自标 `human_judgment: true`,本报告照录,不静默转绿。
 2. **E16 的 `--color-text ON --color-surface-mark`** —— 该对不在清单里(所以 check-02 看不见),而计划引用的 `15.88` 是另一个配对的数。实测 15.0:1 通过,但需人工决定是否补进清单并修正引用。
+
+3. **TOKEN-07 的「断言序关系」半场** —— `REQUIREMENTS.md` 标 `Complete`、`ROADMAP.md` 写「实质关闭」,但代码库里没有任何脚本比较四个 `--z-*` 的值(B-8:重新排序后全部守卫仍绿)。唯一载体是 `frontend/style.css:229-231` 的散文注释,而该注释自称是一条 `z-index ordering assertion (TOKEN-07)`。请人工裁决:(a) 接受 `VALIDATION.md` 已记录的 manual-only 处置并把 `Complete` 降级/加注,或 (b) 按 `check-02-contrast.py` 的 `ORDER` 形式补一条机械断言。本报告不代其裁决,也不把它静默调和进绿。
 
 ### Gaps Summary
 
-**值层本身是好的,而且我按计划自己的判据复证过它。** Radix 12 步刻度落地(25 tier-1 / 47 tier-2)、43 对清单与 check-02 的 `PASS: 0 failures` / `ORDER 0.363`、单一围栏、围栏外规则集与 `e530ead` 逐字节相同、Gate 2 双向为空、`app.js`/`index.html`/`vendor/` 零 diff —— 这些我都自己跑过,不是抄 SUMMARY。四条守卫全绿,plan 02 对 check-01 的加固我按它自己的方法(临时副本变异 + 旧守卫空转对照)独立复现过,成立。全量 UAT 我也复跑出 `0 FAIL` / `exit=2` / item5 恰两条交互冒烟,与 SUMMARY 逐项一致。
+**CR-01 已真正关闭,而且我按 plan 04 自己的尺子独立复证过它。**
 
-**唯一阻断项在守卫层,而且是本阶段自己引入的。**
+- 修复的形状正确:`resolve_color`(`:258-278`)在创建探针 `div` **之前**先读 `documentElement` 上该令牌的声明,`trim()` 后为空即返回 `null`;已声明令牌的探针体与 `68309d0` 逐字相同。`ok()`(`:115-122`)把 `expected is None` 置于 `actual is None` **之前**,记 BLOCKED —— 不加这一支会落进 `normal(actual) == norm(None)` 恒假分支而记 FAIL。全文件 `getPropertyValue` 恰 3 处、`expected is None` 恰 1 处,与计划的静态门一致。
+- 修复**被证明而非被断言**:`scripts/probe-05-resolve-color.py` 自跑 exit 0,四行 `PROBE …` 齐备 —— 同一份被删掉 `--color-text-muted:` 声明的浏览器侧副本上,修复前 `expected=rgb(32,32,32) == actual=rgb(32,32,32)` → **PASS**(提示灰已变成正文黑,渲染是坏的,而 harness 记 PASS),修复后 `expected=<UNRESOLVED>` → **BLOCKED**;未变异对照 `rgb(100,100,100)` → **PASS**。
+- **反事实是忠实的**:`PREFIX_PROBE_JS` 与 `git show 68309d0:scripts/check-05-ui-uat.py` 的探针体逐字相同(B-3),所以「修复前会记 PASS」不是自陈。
+- **变异真实且非空转**:我没有采信 SUMMARY 或审查者的转述,而是自写探针独立复现(B-2)—— 变异后 `style.css` 由 39068 字节降到 39024(−44,恰一行声明),而 `.hint` 的 `font-size` 仍为 `14px`(来自与所删令牌无关的 `var(--text-base)`),证明样式表确实加载并生效、只少了一行声明;`rgb(32, 32, 32)` 也确为 `--color-text` 经 `html, body` 规则应用后的值(UA 默认是 `rgb(0, 0, 0)`)。这一条同时独立证伪了 WR-01 所担心的「无法区分『删了令牌』与『CSS 没生效』」在**当下**并不成立。
+- **修复没有引入另一种空转**:未变异对照仍 PASS;全量 harness 逐项与 P3.7 基线**逐项一致**(0 FAIL;item 1/2/3/4/6 为 PASS 且 0 BLOCKED;item 5 `BLOCKED (9,0,2)`;`exit=2`);pytest `219 passed, 6 skipped`。被验证对象未被污染:`frontend/` 零改动,`frontend/style.css` 在 `f5adfa4..HEAD` 上零 diff。
 
-`resolve_color()` 对**未声明**的令牌不做区分:它把 `color: var(--t)` 挂到探针元素上,而 CSS 在 computed-value 阶段让这条声明失效 → 探针继承父级颜色。真实消费者用的是同一个 `var(--t)`,于是**两侧同时退化成同一个继承值,断言恒真**。我在真实 chromium-1243 上拦截 `/style.css`、删掉 `--color-text-muted` 的声明后复现:`.hint` computed 与 `resolve_color` 都变成 `rgb(32, 32, 32)`,harness 记 **PASS** —— 而此时提示灰已经变成正文黑,渲染明显是坏的(证据 B-1)。
+**值层本身仍然好,而且我复证过它。** 25 tier-1 / 47 tier-2、43 对清单与 `PASS: 0 failures` + `ORDER 0.363`、单一围栏、围栏外**规则名集**与 `e530ead` 相同(仅 R-1/R-2/R-3 三处声明 delta)、Gate 2 双向为空、`app.js`/`index.html`/`vendor/` 零 diff、四条守卫全绿、check-01 的三半场我独立复跑过会失败/会通过。上一轮的 9 条 B-* 证据本轮没有一条出现回归。
 
-这为什么是阻断项而不是提醒:
+**为什么不是 `passed`:** 两条必须保持人工判断的项(28 条 backstop 陈述、E16 的比值归属)仍在 —— 这是本阶段自己声明的 `human_judgment: true`,不是新发现。
 
-- **它是本阶段引入的回归。** D-14 之前 `.hint color` 断言的是字面 `rgb(106,106,106)`,令牌被改名或删除时会响亮 FAIL。本阶段把 22 条这样的字面换成 `resolve_color` 调用(`git show e530ead:… | grep -c '"rgb('` = 22 → HEAD = 0),代价正是这个 FAIL 能力。计划与 SUMMARY 都只写了 D-14 的收益(移除假 FAIL)与「值由 check-02 仲裁」的补偿条款,**没有披露证伪能力的损失**。
-- **它是本项目有明确记忆的失败类。** 计划 02 在同一阶段内刚修掉一个同类的空转守卫(`check-01` 的 tier-1 交替式),并且**专门要求**用变异证明修复不是修辞。本阶段用 D-14 在 `check-05` 里重新引入同类问题时,没有配任何变异证明。
-- **它削弱的是本阶段的验收仪器。** `0 FAIL` 是本阶段的头条证据。在今天这棵树上,每条断言确实在做一次真实的两值相等比较(所有令牌都已声明),所以 `0 FAIL` 本身不是假的。但值层重写正是本阶段在做的事,也是 Phase 5/6/7 会继续做的事:未来任何一次令牌改名/删除都会让 check-05 继续打印 PASS,而 `check-02` 只兜住清单里出现过的名字(16 个被断言令牌中 12 个在清单里,`--color-action-irreversible` 不在)。
+**为什么要显式说出 TOKEN-07:** `REQUIREMENTS.md:127` 把 TOKEN-07 标为 `Complete`,`ROADMAP.md` §04.1 也写「实质关闭 TOKEN-07(…z-index 序断言重新有消费者…)」。我按指令自己判:`Complete` 在机械层面**不被支持**。该阶段唯一触及 TOKEN-07 的动作是 R-1 恢复了 `--z-badge` 的消费者,而「序断言」本身**在代码里从未存在** —— 只有 `frontend/style.css:229-231` 一条自称是它的散文注释;`check-05-ui-uat.py:771-776` 断言的是「元素 z-index **等于**其令牌」,不是「令牌之间的大小序」。我实测把四个值重新排序后 `check-01`…`check-05` **全部仍会通过**(B-8)。`VALIDATION.md` 已诚实地把它记为 manual-only(`nyquist_compliant: false`),所以两份文档并非静默分歧 —— 但结论是:**`Complete` 标记应被降级或加注,或补一条机械断言。** 用户已裁定本阶段不加断言,故我把它升级为人工项 3,而不单方面翻成 BLOCKER。
 
-**修复面很小且有验证过的形态:** 让 `resolve_color` 在 `getComputedStyle(document.documentElement).getPropertyValue(t)` 为空时返回 `None`(`ok()` 对 `None` 记 BLOCKED,绝不记 PASS),再按 plan 02 的规格补一条「删掉 `--color-text-muted` 后该断言不再 PASS」的变异对照。`resolve_token` 已经是对的,可作为参照。
+**其余为警告,不阻断:** W-2 / W-3(`check-01` 两处残余缺口)、W-4(清单缺 `--color-text ON --color-surface-mark`)、W-5(`smoke #state-badge 可见` 在元素缺席时记 PASS)、CR-02(发送冒烟不等 AI 调用,预先存在)、IN-01·IN-02·IN-03(上一轮编号)、本轮审查新出的 WR-01(已被 B-2 证伪为当下非故障)与 WR-02(`resolve_token` 的 4 处期望值由 FAIL 变 BLOCKED),以及 UI 审查的三条新范围视觉发现(蓝边红底 / 无焦点指示 / 无 hover 反馈)。全部为用户已裁定或新范围项,均未修、均未静默丢弃。
 
-**其余为警告,不阻断:** CR-02(发送冒烟不等 AI 调用,预先存在、本阶段未触碰该函数)、W-2/W-3(`check-01` 两处残余缺口:带空格的 `var( … )`、标记搬移)、W-4(清单缺 `--color-text ON --color-surface-mark`,且计划引用了不存在的 15.88)、W-5(`smoke #state-badge 可见` 在元素缺席时记 PASS)、W-6(z-index 序关系只有散文,无机械断言)。
-
-**人工项:** 28 条 backstop 陈述(约 21 条无自动化证据)+ E16 的比值归属。这是本阶段自己声明的 `human_judgment: true`,不是新发现。
-
-**需求侧结论:** 10 个需求 ID 全部有认领、无孤儿。TOKEN-01/04、CHECK-01/02/03/04、A11Y-04 完全满足;TOKEN-02 与 A11Y-04b 有机械缺口(见上);TOKEN-07 的「令牌化 + 消费者恢复」满足,但「断言序关系」半场仍只有散文。
+**需求侧结论:** 10 个需求 ID 全部有认领、无孤儿。TOKEN-01/04、CHECK-01/02/03/04、A11Y-04 完全满足;TOKEN-02 与 A11Y-04b 有机械缺口(见上);**TOKEN-07 的「令牌化 + 消费者恢复」满足,但「断言序关系」半场仍只有散文 —— `Complete` 标记不被支持。**
 
 ---
 
-_Verified: 2026-09-19T14:41:02Z_
+_Verified: 2026-09-20T03:24:39Z_
 _Verifier: Claude (gsd-verifier)_

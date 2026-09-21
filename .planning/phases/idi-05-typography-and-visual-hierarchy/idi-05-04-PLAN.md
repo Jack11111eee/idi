@@ -28,7 +28,7 @@ estimate:
 must_haves:
   truths:
     - "`renderMarkdown()` 的**全部九个**注入目标上,h1/h2/h3 都解析为契约内的字号档与 `--fw-semibold`(600):四个 `.markdown-body` 宿主仍是 28 / 22 / 18,五个非 `.markdown-body` 目标改为 24 / 18 / 16。**任何目标都不再出现 UA 默认值**(`.chat-bubble` 上下文里的 32px、`.event-content` 上下文里的 28px),也不再有第四个字号档以外的**第四个字重档 700** ← G-idi-05-1 的 `missing` 第 1 项 / TYPE-01 / TYPE-03"
-    - "文档 h1(28px)在**任何**状态下都**严格大于**五个嵌入目标里的 h1(24px):「全屏最大最重的文字是文档自己的 h1」在 AI 吐出发散标题时仍然成立 ← SC3 / VISUAL-03 / E2。这不是措辞选择:check-06 的 g2 用的是**严格不等式**(`doc_h1 > worst`),把嵌入 h1 定成 28px 会让 g2 在会话流里有标题时直接失败"
+    - "文档 h1(28px)在**任何**状态下都**严格大于**五个嵌入目标里的 h1(24px):「全屏最大最重的文字是文档自己的 h1」在 AI 吐出发散标题时仍然成立 ← SC3 / VISUAL-03 / E2。这条约束的机械形态在**本计划自己的门里**:item7 **先造出五个容器再断言**,5 条「文档 h1 严格大于该目标 h1」在会话流里真有标题时也成立。check-06 的 g2 只是**回归守卫**(必须仍 PASS),它对这五个容器**状态盲** —— g2 只把探针注入四个 `MARKDOWN_HOSTS`,从不造 `.chat-bubble`,且 `p1` 的 fixture 是空的,故 28px 的嵌入 h1 不会让 g2 失败(详见 05-N-7)。同档(28 / 22 / 18)仍被否决:SC3 的措辞是「**最大**」,同档即不再是最大,且 D-19 的层级链 28 > 24 > 22 > 14 会在顶端失去区分"
     - "嵌入刻度的取值由一条**可复算的规则**给出,不是逐容器手调:每个嵌入档 = 它在文档刻度里的对应档**沿契约自己的数值阶梯下移一档**。契约阶梯的数值序为 12 / 14 / 16 / 18 / 22 / 24 / 28,故 `--text-3xl`(28)→ `--text-xl`(24)、`--text-2xl`(22)→ `--text-lg`(18)、`--text-lg`(18)→ `--text-md`(16) ← 本计划定稿(见 `<objective>` 的取值推导与两个被否决的候选)"
     - "check-05 的渲染目标枚举**按 `renderMarkdown()` 的调用点**而非按类名,并且有静态普查守卫:`frontend/app.js` 的 `renderMarkdown(` 出现次数一变,门立刻 FAIL 并指明要更新枚举。**只枚举 `.markdown-body` 的四个宿主正是本缺陷存活到验证后的直接原因**(与本阶段 plan 01 已登记的教训同型)← G-idi-05-1 的 `missing` 第 2 项"
     - "五个嵌入目标在门里是**造出来再断言**的:用应用自身的渲染函数(`renderEvent` / `appendChatMessage` / `appendSayToChat` / `renderAnnotations`)把带 h1/h2/h3 的 markdown 注入进去再读 computed style;容器造不出时记 **BLOCKED**,绝不记 PASS(与 check-06 的 g4 / g5 同约定)。**不得**靠「fixture 里本来就没有 `.chat-bubble`」而空过 ← G-idi-05-1 的 `missing` 第 2 项 / check-05 的 `ok()` 语义"
@@ -50,16 +50,16 @@ must_haves:
   key_links:
     - from: "`renderMarkdown()` 的每个调用点(`frontend/app.js`)"
       to: "`MARKDOWN_TARGETS` 的一条枚举项"
-      via: "调用点普查守卫(`renderMarkdown(` 计数 == 10)—— 新增调用点即 FAIL,强制枚举跟上"
+      via: "调用点普查守卫(`renderMarkdown(` 计数 == 11 —— 1 处定义 + 10 个调用点;九个目标里 `#round-doc` 有两个调用点)—— 新增调用点即 FAIL,强制枚举跟上"
       pattern: "MARKDOWN_TARGETS = \\("
     - from: "五个嵌入容器的 `h1` / `h2` / `h3`"
       to: "`frontend/style.css` 末尾三条规则的 `font-size` / `font-weight`"
       via: "运行时逐目标断言:computed 值 == 运行时解析的令牌值(值层再改也不产生假 FAIL)"
       pattern: "\\.annotation-answer-body h1"
-    - from: "check-06 的 g2 严格不等式(`doc_h1 > 全屏最大字号`)"
+    - from: "item7 里 5 条「文档 h1 严格大于该目标 h1」断言(`scripts/check-05-ui-uat.py`,先造容器再断言)"
       to: "嵌入 h1 取 `--text-xl`(24px)而非 `--text-3xl`(28px)"
-      via: "28 > 28 为假 ⇒ 嵌入 h1 必须严格小于文档 h1,这是取值规则的硬约束"
-      pattern: "doc_h1 > worst"
+      via: "28 > 28 为假 ⇒ 嵌入 h1 必须严格小于文档 h1,这是取值规则的硬约束。这条判据的机械形态是 item7 自己的严格不等式(check-05);check-06 的 g2 只做回归守卫,对五个嵌入容器状态盲(05-N-7),不构成对本取值的约束"
+      pattern: "严格大于"
 
   prohibitions:
     - statement: "**不得**改用一个全局 `h1, h2, h3` 规则来解决本缺陷。它在本例里确实「看起来能work」—— 它的特异性 0-0-1 对四处 chrome 覆盖(`.panel-header h2` / `.overlay-card h3` 为 0-1-1,`#draft-view > h2` / `#round-title` / `#brainstorm-view > h2` 为 1-0-1)与 `.markdown-body h1/h2/h3`(0-1-1)都是惰性的,于是它**只**命中恰好这五个失控容器。但:①它被 ROADMAP 的 Pitfall M4 与本契约的硬规则 9 双重禁止;②它无法表达「h1/h2/h3 三档各不相同」而不写成三条全局规则,而那会把**任何将来的标题**一并捕获 —— 正是本缺陷的成因(影响面不透明);③枚举才是可核的:门能把枚举逐条对照 `app.js` 的调用点,全局规则不能。故本计划的形态是**逐容器列举**"
@@ -92,7 +92,7 @@ Purpose: 这不是「补一条漏掉的规则」,而是**影响面枚举错误**
 三档都落在契约**既有**的七档里(零新增令牌、零刻度外字面量);三档严格降序;最高档 24px **严格小于**文档 h1 的 28px。字重取 `--fw-semibold`(600)—— D-09 的分工里这五个容器渲染的是**内容**(AI 输出 / 用户批注),不是 chrome 标题,故归内容标题档;这也正是消除第四档 700 的方式。
 
 **两个被否决的候选(记录理由,防止日后被"优化"回来):**
-- **28 / 22 / 18(与文档刻度同档)** —— 被否决,不是审美理由:嵌入 h1 与文档 h1 同档会让 check-06 的 g2 失败。g2 断言的是**严格**不等式(`doc_h1 > 全屏最大字号`),且它扫描**可见元素**;`.chat-bubble` 与 `#draft-content` 在 `p1` 下同时可见,故 28 > 28 为假。SC3 的措辞是「文档自己的 h1 是全屏最大最重的文字」,同档即不再是「最大」。
+- **28 / 22 / 18(与文档刻度同档)** —— 被否决,不是审美理由:SC3 的措辞是「文档自己的 h1 是**全屏最大**最重的文字」,嵌入 h1 与文档 h1 同档即不再是「最大」;D-19 的层级链 28 > 24 > 22 > 14 也会在顶端失去区分。本计划的 item7 把这条层级写成可失败的断言(先造容器,再逐目标断言文档 h1 **严格大于**该目标 h1),同档会直接让它 FAIL。**注意:不能拿 check-06 的 g2 来论证这一点** —— g2 只把探针注入四个 `.markdown-body` 宿主,从不造 `.chat-bubble`,`p1` 的 fixture 又是空的,故它对本缺陷的五个容器**状态盲**,28px 的嵌入 h1 不会让 g2 失败(见 05-N-7)。
 - **22 / 18 / 16(下移两档)** —— 被否决:嵌入 h1 会与文档 h2 同档,嵌入内容的最高档与文档的**次级**标题平齐,「内容标题层级」与「文档标题层级」在视觉上无法区分;且它不再是「下移一档」这条可复算规则的产物,而是一次逐档手调。
 - **共享类 `.md-scope`(UI-REVIEW 给的另一条路)** —— 被否决,理由见 `prohibitions` 第 3 条:它要改 `app.js`,而 ROADMAP 把 `app.js` 划给 Phase 8,且 UI-REVIEW 的 Pillar 1 / Pillar 6 两条 4/4 结论都建立在「`frontend/` porcelain 为空」这个结构性证明上。
 
@@ -135,7 +135,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 | 新 CSS 规则(追加在文件末尾) | 同上,`h3` | `frontend/style.css` 末尾 | 0-1-1;`--text-md` + `--fw-semibold` |
 | 新常量(单一事实源) | `MARKDOWN_TARGETS` | `scripts/check-05-ui-uat.py` | 9 条:`(选择器, 注入它的 app.js 函数, 刻度族)` |
 | 派生常量 | `MARKDOWN_HOSTS`(4 个文档宿主)/ `RENDER_TARGETS`(5 个嵌入目标) | 同上 | 由 `MARKDOWN_TARGETS` 派生,不再是手写清单 |
-| 新函数 | `check_render_markdown_call_sites(...)` | 同上 | 静态普查:`renderMarkdown(` 计数 == 10 |
+| 新函数 | `check_render_markdown_call_sites(...)` | 同上 | 静态普查:`renderMarkdown(` 计数 == 11(1 定义 + 10 调用点)且 `len(MARKDOWN_TARGETS) == 9` |
 | 新函数 | `item7(page, tmp_root)` | 同上 | 五个嵌入目标的逐目标断言 |
 | 新断言标签 | `item7`:逐目标 × 逐档的 `font-size` / `font-weight` | item7 | 30 条(5 目标 × 3 档 × 2 属性) |
 | 新断言标签 | `item7`:文档 h1 严格大于每个目标 h1 | item7 | 5 条(SC3) |
@@ -156,7 +156,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 | **D-07** | `--text-2xl`(22)与 `--text-xl`(24)的名字序与数值序不单调,故取值规则必须写明**按数值序不按名字序**;否则「下移一档」会被误读成「名字降一档」(那会给出 22 → 18 → 16,与文档 h2 撞档) |
 | **D-09** | 字重三档分工:内容标题 = `--fw-semibold` 600。五个容器渲染的是**内容**(AI 输出 / 用户批注),故归内容标题档取 600 —— 这正是消除第四字重档 700 的方式 |
 | **D-10** | 新开档位复用 `--lh-tight`、**零新增行高令牌**。本计划连 `line-height` 声明都不加:本缺陷的判据只有字号与字重,给标题加 `line-height` 而同一容器里的 `p` 仍走 UA 边距会造成半套节奏 —— 那是没有契约锚点的视觉扩张 |
-| **D-19** | 页面级层级链已由 qrq 实现且本阶段只做复证:文档 h1(28)> `.overlay-card h3`(24)> 文档 h2(22)> 容器标签(14)。**本计划的取值规则保证这条链不因嵌入目标而失效**:嵌入 h1 取 24 而非 28,故 `28 > 24` 在 `.chat-bubble` 与 `#draft-content` 同时可见时仍成立(check-06 的 g2 断言的是严格不等式) |
+| **D-19** | 页面级层级链已由 qrq 实现且本阶段只做复证:文档 h1(28)> `.overlay-card h3`(24)> 文档 h2(22)> 容器标签(14)。**本计划的取值规则保证这条链不因嵌入目标而失效**:嵌入 h1 取 24 而非 28,故 `28 > 24` 在 `.chat-bubble` 与 `#draft-content` 同时可见时仍成立 —— 这条由 **item7 自己的 5 条严格不等式断言**机械担保,不是由 check-06 的 g2(它对五个嵌入容器状态盲,见 05-N-7) |
 
 **不触碰(plan 01 / 02 / 03 已交付,本计划对它们零 diff):** D-02、D-04、D-08、D-11、D-12、D-13、D-14、D-15、D-16、D-17、D-18、D-20、D-21、D-22、D-23。它们对应的交付物(七档刻度、三段坡道、`#btn-authorize` 的字重 / 字号例外、活动面板标记、两处掩码字形、`.collapse-indicator` 的零改动)在本计划的 `prohibitions` 与 verify 里以「零 diff」的形式被守住,不重复实现。
 
@@ -165,7 +165,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 <task type="tracer" tdd="true">
   <name>Task 1 (tracer): 端到端「九个渲染目标的标题刻度受控」—— 门先红后绿 + 五个嵌入目标的刻度规则 + 按调用点的枚举普查</name>
   <files>frontend/style.css, scripts/check-05-ui-uat.py</files>
-  <reversibility rating="reversible">取值规则(下移一档)与枚举形态(按调用点)都是纯追加:回退只需删掉末尾 3 条规则并还原枚举,既有规则的位置 / 名字 / 声明一律未动。**唯一 costly 的成分是「嵌入 h1 不得等于 28px」这条约束** —— 它由 check-06 的 g2 严格不等式锁定,想改嵌入 h1 到 28 就必须同时改 g2,那是改门而不是改值。</reversibility>
+  <reversibility rating="reversible">取值规则(下移一档)与枚举形态(按调用点)都是纯追加:回退只需删掉末尾 3 条规则并还原枚举,既有规则的位置 / 名字 / 声明一律未动。**唯一 costly 的成分是「嵌入 h1 不得等于 28px」这条约束** —— 它由本计划 item7 自己的严格不等式断言(文档 h1 严格大于每个目标 h1,先造容器再断言)与 SC3 的契约层级共同锁定;想改嵌入 h1 到 28 就必须同时改 item7 的断言,那是改门而不是改值。</reversibility>
   <read_first>
     - `frontend/style.css` L714-L741 —— `.markdown-body` 的标题块与它的注释原文(「标题字号显式化,作用域限定在 `.markdown-body` 内——不写全局 h1/h2/h3」)。**这五行是本缺陷的现场**:`719-721` 是全文件唯一给 h1/h2/h3 定 `font-size` 的规则
     - `frontend/style.css` L1218-L1227 —— 文件末尾(活动面板标记的两条追加规则)。本计划的 3 条规则追加在 L1227 之后;该块的注释是「追加在文件末尾 —— 硬规则 3:追加,不重排」的既有先例
@@ -186,7 +186,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
     - `scripts/check-05-ui-uat.py` L860-L1010 —— `MARKDOWN_HOSTS` 的定义与它的注释(「四个都要探……只探一个宿主正是它存活到执行期的原因」),以及 item4 的探针全文(用应用自身的 `renderMarkdown` 渲染一条含三级标题 / 代码 / 表格 / 引用块的探针串,再逐宿主断言)
     - `scripts/check-05-ui-uat.py` L1319-L1355 —— `item_smoke` 全文(快速切片;`check_active_marker` 已在此被调用,是本任务加一条切片的先例)
     - `scripts/check-05-ui-uat.py` L1359-L1445 —— `parse_args` / `normalize_items` / `known` / `main`(新增一项要同时改这四处 + 模块 docstring 的运行方式段与退出码语义段)
-    - `scripts/check-06-idi05-validation.py` L140-L180 —— **g2 的严格不等式**(`doc_h1 > worst["size"]`,扫描面是「可见且非零 client rect」的全页元素)。这是「嵌入 h1 不得取 28px」的机械依据;g1 则断言四个 `.markdown-body` 宿主的三档严格降序 —— 两者在本任务后必须仍 PASS
+    - `scripts/check-06-idi05-validation.py` L140-L180 —— g2 的严格不等式(`doc_h1 > worst["size"]`,扫描面是「可见且非零 client rect」的全页元素)。**注意:g2 只把探针注入四个 `MARKDOWN_HOSTS`(L145-L153),从不造 `.chat-bubble` / `.say-chunk` / 两个批注容器,且 `p1` 的 fixture 是空的** —— 故 g2 对本缺陷的五个容器是**状态盲**的,28px 的嵌入 h1 不会让它失败。因此「嵌入 h1 不得取 28px」这条约束的机械形态在本计划自己的 `item7` 里(先造容器再断言),g2 只作为**回归守卫**必须仍 PASS。g1 则断言四个 `.markdown-body` 宿主的三档严格降序 —— 两者在本任务后必须仍 PASS
     - `.planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-UI-SPEC.md` §`### 字号刻度的范围栅栏(Pitfall M4 / TYPE-01)` —— 影响面枚举的方法论(「栅栏成立与否,不能只看 chrome 标题元素落在哪里,必须看 chrome 选择器能匹配到哪些元素」)与 `#brainstorm-content` 那条「记录,不处理」
     - `.planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-01-SUMMARY.md` 的 `patterns-established` 第 3 条 —— 「探针宿主集合必须覆盖影响面的全部实例 —— 只探一个宿主正是本阶段层叠缺陷存活到执行期的原因」。本任务是同一教训的第二次应用
   </read_first>
@@ -201,7 +201,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 
     (a) **把渲染目标的枚举提为单一事实源。** 在 `MARKDOWN_HOSTS` 的位置定义 `MARKDOWN_TARGETS` —— 一个 9 元组,每项形如 `(选择器, 注入它的 app.js 函数名, 刻度族)`,刻度族取 `"doc"` 或 `"embedded"`。九条按影响面(调用点)列全,不按类名:`#draft-content` / `renderDraft` / doc;`#brainstorm-content` / `renderBrainstorm` / doc;`#round-doc` / `loadArchiveView` / doc;`#latest-check` / `applyPhase5View` / doc;`.event-content` / `renderEvent` / embedded;`.chat-bubble` / `appendChatMessage` / embedded;`.say-chunk` / `appendSayToChat` / embedded;`.annotation-note` / `renderAnnotations` / embedded;`.annotation-answer-body` / `renderAnnotations` / embedded。然后**由它派生**两个既有 / 新用的视图:`MARKDOWN_HOSTS = tuple(sel for sel, _fn, fam in MARKDOWN_TARGETS if fam == "doc")`(item4 的既有循环继续消费它,顺序不变),`RENDER_TARGETS = tuple(sel for sel, _fn, fam in MARKDOWN_TARGETS if fam == "embedded")`。把原 `MARKDOWN_HOSTS` 上方的注释改写为枚举纪律的登记:**枚举按 `renderMarkdown()` 的调用点,不按类名;只枚举 `.markdown-body` 的四个宿主正是 `G-idi-05-1` 存活到验证后的直接原因**;并写明「函数名」一栏是给人核对的锚点(它比行号稳,Phase 8 改 `app.js` 时行号会漂),不参与断言。
 
-    (b) **调用点普查守卫(静态)。** 新增 `check_render_markdown_call_sites(item)`:`frontend/app.js` 的文本里 `renderMarkdown(` 的出现次数必须等于 **10**(定义行 1 次 + 9 个调用点;`#round-doc` 有两个调用点:`loadArchiveView` 与冻结轮路径),且 `len(MARKDOWN_TARGETS)` 必须等于 **9**。两条都不满足时 FAIL,`actual` 打印实测计数,`reason` 写明**可执行的动作**:「`renderMarkdown(` 的调用点数变了 —— 按调用点更新 `MARKDOWN_TARGETS`,再跑本项」。**这条守卫的用途是让枚举无法悄悄过期**:新增一个渲染目标而不更新枚举,门立刻失败。用 Python 读文件计数(`Path.read_text`),不要用 shell 管道 —— 门的判据必须由脚本自己算出。
+    (b) **调用点普查守卫(静态)。** 新增 `check_render_markdown_call_sites(item)`:`frontend/app.js` 的文本里 `renderMarkdown(` 的出现次数必须等于 **11**(定义行 1 次 + **10 个调用点** —— 九个目标里 `#round-doc` 有两个调用点:`loadArchiveView`(L848)与冻结轮路径(L1047),故调用点数比目标数多 1),且 `len(MARKDOWN_TARGETS)` 必须等于 **9**。两条都不满足时 FAIL,`actual` 打印实测计数,`reason` 写明**可执行的动作**:「`renderMarkdown(` 的调用点数变了 —— 按调用点更新 `MARKDOWN_TARGETS`,再跑本项」。**这条守卫的用途是让枚举无法悄悄过期**:新增一个渲染目标而不更新枚举,门立刻失败。用 Python 读文件计数(`Path.read_text`),不要用 shell 管道 —— 门的判据必须由脚本自己算出。
 
     (c) **新增 `item7(page, tmp_root)`。** 用 `make_fixture("p1", tmp_root)` + `enter_project(page, proj)`,然后在**一次** `page.evaluate` 里用应用自身的四个渲染函数把带三级标题的探针 markdown 注入五个容器(真实渲染路径,零网络、零 AI 调用 —— 与 item4 用 `renderVerdictCard` 的 idiom 相同;`.chat-bubble` / `.say-chunk` **不需要**真实 AI 轮次,`appendChatMessage` / `appendSayToChat` 就是应用自己的注入路径),并返回五个选择器各自是否存在。探针 markdown 用 `# 探针一级` / `## 探针二级` / `### 探针三级` 三行;`renderAnnotations` 的入参必须是**对象** `{items: [...]}`,不是数组,且条目用 `type: 'plain'`(`details.open = true`,两个容器都真实渲染)、`note` 与 `answer` 都非空。返回后逐个目标断言:
       - 目标存在 ⇒ 对 h1 / h2 / h3 各断言 computed `font-size` == `resolve_token(page, "--text-xl" / "--text-lg" / "--text-md")`、computed `font-weight` == `resolve_token(page, "--fw-semibold")`(期望侧运行时解析,值层再改不产生假 FAIL);目标**不存在** ⇒ `blocked(item, ..., "<MISSING>", "容器未渲染出来")`,绝不记 PASS;
@@ -224,7 +224,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 
     **不得**给这组规则加 `margin` 或 `line-height`。理由要写进注释:本缺陷的判据是「字号 / 字重刻度受控」(`G-idi-05-1` 的 truth 与 missing 都只点名这两项);`margin` 与 `line-height` 不在该判据内,给标题加上它们而同一容器里的 `p` 仍走 UA 边距,只会造成半套节奏 —— 那是一次没有契约锚点的视觉扩张,不是本缺陷的修法。**注释里列举标题档位时,任何一行都不得以 `h1` / `h2` / `h3` 起头** —— 第 3 步的负向门按「行首或逗号后的裸类型选择器」匹配,注释自证失败会让门读起来像缺陷仍在。
 
-    **第 3 步 —— 复核不变量并转绿。** 实跑并记录原始输出:`.venv/bin/python scripts/check-05-ui-uat.py --item 7,4,smoke`(必须 0 FAIL / 0 BLOCKED;item4 的四宿主循环必须仍绿 —— 本任务不动 `.markdown-body` 一行)、`python3 scripts/check-06-idi05-validation.py --item g1,g2`(**g2 的严格不等式是 SC3 的机械依据,必须仍 PASS**;g1 断言四宿主三档严格降序)、`bash scripts/check-01-token-conformance.sh` / `check-03` / `check-04`、`python3 scripts/check-02-contrast.py | tail -1`。核对 `^\.hidden {` 仍为 1、`!important;` 声明数仍为 1、`@media` 计数仍为 0(硬规则 8)、`frontend/app.js` 与 `index.html` 零 diff。
+    **第 3 步 —— 复核不变量并转绿。** 实跑并记录原始输出:`.venv/bin/python scripts/check-05-ui-uat.py --item 7,4,smoke`(必须 0 FAIL / 0 BLOCKED;item4 的四宿主循环必须仍绿 —— 本任务不动 `.markdown-body` 一行)、`python3 scripts/check-06-idi05-validation.py --item g1,g2`(**g1 断言四宿主三档严格降序;g2 是回归守卫,对五个嵌入容器状态盲(05-N-7),故它**不是** SC3 的机械依据 —— 那条依据在本计划 item7 的 5 条严格不等式里**)、`bash scripts/check-01-token-conformance.sh` / `check-03` / `check-04`、`python3 scripts/check-02-contrast.py | tail -1`。核对 `^\.hidden {` 仍为 1、`!important;` 声明数仍为 1、`@media` 计数仍为 0(硬规则 8)、`frontend/app.js` 与 `index.html` 零 diff。
 
     **第 4 步 —— 快速切片。** 在 `item_smoke` 里加一条:用 `appendChatMessage('ai', '# 探针')` 造一个 `.chat-bubble`,断言其 `h1` 的 computed `font-size` == `resolve_token(page, "--text-xl")`。这是本缺陷在最小切片上的可失败证据,也让后续阶段的常规 `--item smoke` 能挡住同类回归。
   </action>
@@ -236,13 +236,13 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
     <automated>grep -o 'font-size: var(--text-xl); font-weight: var(--fw-semibold);' frontend/style.css | wc -l; grep -o 'font-size: var(--text-lg); font-weight: var(--fw-semibold);' frontend/style.css | wc -l; grep -o 'font-size: var(--text-md); font-weight: var(--fw-semibold);' frontend/style.css | wc -l</automated>
     <fails_when>any of the three counts is not 1 (the embedded scale must be exactly 24 / 18 / 16 with the semibold weight, and must not be duplicated)</fails_when>
     <automated>grep -o 'renderMarkdown(' frontend/app.js | wc -l</automated>
-    <fails_when>the count is not 10 (1 definition + 9 call sites; a new call site must force the enumeration to be updated)</fails_when>
+    <fails_when>the count is not 11 (1 definition + 10 call sites — nine targets, `#round-doc` has two call sites; a new call site must force the enumeration to be updated)</fails_when>
     <automated>grep -c 'MARKDOWN_TARGETS' scripts/check-05-ui-uat.py</automated>
     <fails_when>the count is less than 3 (definition + the two derived views must all reference the single source)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 7,4,smoke</automated>
     <fails_when>exit code is not 0, or the `=== 逐项结论 ===` block reports anything other than PASS for items 7, 4 and smoke (exit 2 means at least one assertion went BLOCKED — a container could not be created, which is a failure to reach the target, not a pass)</fails_when>
     <automated>.venv/bin/python scripts/check-06-idi05-validation.py --item g1,g2</automated>
-    <fails_when>exit code is not 0, or g2's strict inequality `doc_h1 > worst` fails (that assertion is the mechanical form of SC3 and is what forbids the embedded h1 from being 28px)</fails_when>
+    <fails_when>exit code is not 0, or g1/g2 reports anything other than PASS (g2 is a regression guard over the four `.markdown-body` hosts — it is state-blind to the five embedded containers, so it is NOT what forbids the embedded h1 from being 28px; that constraint lives in item7's own 5 strict-inequality assertions)</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
     <fails_when>any script exits non-zero or prints anything other than `PASS`</fails_when>
     <automated>python3 scripts/check-02-contrast.py | tail -1; python3 scripts/check-02-contrast.py | grep '^PASS  ' | wc -l</automated>
@@ -251,8 +251,8 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
     <fails_when>the first count is not 0 (Hard Rule 8) or the second is not 1 (Hard Rule 2 — declaration lines only; this plan adds zero `!important`)</fails_when>
     <automated>git diff --stat -- frontend/app.js frontend/index.html frontend/vendor/</automated>
     <fails_when>the command prints a non-empty stat line (all three must be byte-identical to HEAD — the structural proof UI-REVIEW's Pillar 1 / Pillar 6 rest on)</fails_when>
-    <automated>git status --porcelain -- frontend/</automated>
-    <fails_when>the output is non-empty (the whole `frontend/` tree must be byte-identical to HEAD — this is the structural proof UI-REVIEW's Pillar 1 and Pillar 6 rest on, and it is what rules out the shared-class route through `app.js`)</fails_when>
+    <automated>git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/</automated>
+    <fails_when>the output is non-empty (these three untouched surfaces must be byte-identical to HEAD — this is the structural proof UI-REVIEW's Pillar 1 and Pillar 6 rest on, and it is what rules out the shared-class route through `app.js`). `frontend/style.css` is deliberately modified by this task and is therefore excluded from this gate; it is covered by the CSS gates above</fails_when>
   </verify>
   <acceptance_criteria>
     - 文件末尾追加**恰 3 条**新规则,五组选择器(`.event-content` / `.chat-bubble` / `.say-chunk` / `.annotation-note` / `.annotation-answer-body`)各出现**恰 3 次**(h1 / h2 / h3),全部为 0-1-1
@@ -260,7 +260,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
     - 全文件**无**行首 / 逗号后的裸 `h1` / `h2` / `h3` 类型选择器(负向门计数 == 0)
     - 新规则**不含** `margin` / `line-height`(本缺陷的判据只有字号与字重;半套节奏是无锚点的视觉扩张)
     - `MARKDOWN_TARGETS` 是单一事实源(9 条),`MARKDOWN_HOSTS` 与 `RENDER_TARGETS` 由它派生,`len(MARKDOWN_TARGETS) == 9`
-    - `check_render_markdown_call_sites` 存在且断言 `frontend/app.js` 的 `renderMarkdown(` 计数 == 10;删掉 `MARKDOWN_TARGETS` 的一条会让它 FAIL(它比的是调用点数与枚举条数,不是自比)
+    - `check_render_markdown_call_sites` 存在且断言 `frontend/app.js` 的 `renderMarkdown(` 计数 == 11(1 定义 + 10 调用点),且 `len(MARKDOWN_TARGETS) == 9`;删掉 `MARKDOWN_TARGETS` 的一条会让它 FAIL(它比的是调用点数与枚举条数,不是自比)
     - `item7` 已注册进 `normalize_items` 默认集 / `known` / `main()` 分派 / 模块 docstring;`--item 7` 可单跑
     - `item7` 用四个渲染函数**造出**五个容器再断言;容器不存在时记 BLOCKED。断言含:5 目标 × 3 档的 `font-size` 与 `font-weight`(30 条)、5 条「文档 h1 严格大于目标 h1」(SC3)、1 条「无任何目标标题字重为 700」
     - **先红后绿证据齐备**:CSS 改动前的 `--item 7` 原始输出(含 32px / 28px / 700 三项实测)与改动后的全 PASS 输出,都逐字进 SUMMARY
@@ -268,7 +268,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
     - `--item 7,4,smoke` 全 PASS(0 FAIL / 0 BLOCKED);`check-06 --item g1,g2` 全 PASS;`check-01` / `03` / `04` PASS;`check-02` 47 对 `PASS: 0 failures`
     - `^\.hidden {` == 1、`!important;` == 1、`@media` == 0;`frontend/app.js` / `index.html` / `vendor/` 零 diff
   </acceptance_criteria>
-  <done>五个非 `.markdown-body` 渲染目标里的 h1/h2/h3 解析为 24 / 18 / 16px 与 `--fw-semibold`,UA 默认值(32px / 28px)与第四字重档 700 双双消失;文档 h1 仍是全屏最大(28 > 24,check-06 的 g2 仍 PASS);check-05 的枚举改为按 `renderMarkdown()` 调用点,并有会失败的普查守卫;门有先红后绿的原始输出作证。</done>
+  <done>五个非 `.markdown-body` 渲染目标里的 h1/h2/h3 解析为 24 / 18 / 16px 与 `--fw-semibold`,UA 默认值(32px / 28px)与第四字重档 700 双双消失;文档 h1 仍是全屏最大(28 > 24,由 item7 的 5 条严格不等式断言担保;check-06 的 g2 作为回归守卫仍 PASS);check-05 的枚举改为按 `renderMarkdown()` 调用点,并有会失败的普查守卫;门有先红后绿的原始输出作证。</done>
 </task>
 
 <task type="auto">
@@ -301,7 +301,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 
     **第 4 处 —— 改写硬规则 9 的正文。** 新措辞的实质(逐句写进契约,保留原有的三段理由):**(a)** 不得写裸类型选择器的全局标题规则(`h1` / `h2` / `h3` 单独成条,或 `h1, h2, h3` 合并成条;特异性 0-0-1)—— 它对四处 chrome 覆盖与 `.markdown-body` 的标题规则都是**惰性的**,于是只会命中「`.markdown-body` 之外、又没有更具体规则兜底的标题」,而**那正是 `G-idi-05-1` 的五个容器**:一条全局规则会让它们暂时变对,却把「哪些容器受影响」这件事重新变成不可枚举;**(b)** 因此本阶段的形态是**逐容器列举**:凡给 `.markdown-body` 之外的标题写字号规则,必须在同一次提交里把 `renderMarkdown()` 的**全部**注入目标列进选择器表,并让 check-05 的枚举(按调用点)与之一一对应;**(c)** 可机械核的形态:`grep -oE '(^|,)[[:space:]]*h[123][[:space:]]*[,{]' frontend/style.css` 必须为 **0**;五个嵌入容器的 `h[123]` 各恰出现 3 次。把原来的第三段理由(「真正的暴露面是四处 chrome 规则未声明的那些属性,以及任何落在 `.markdown-body` 之外又没有更具体规则兜底的标题」)保留并**追加一句**:那半句已经点出了暴露面,但没有把暴露面枚举出来 —— `G-idi-05-1` 就是只读这半句、没做枚举的结果。
 
-    **第 5 处 —— §字号刻度的范围栅栏 增「渲染目标影响面」表。** 表里的刻度族一栏要引用同一条取值规则(出自 **D-06** 的文档刻度按 **D-07** 的数值序下移一档,字重按 **D-09** 取内容标题档 600;本组规则不加 `line-height`,与 **D-10** 的「零新增行高令牌」一致);影响面一栏要引用 **D-19** 的层级链(28 > 24 > 22 > 14),说明嵌入 h1 取 24 而非 28 正是为了让这条链在会话流有标题时仍成立。在既有「`.markdown-body` 的四个宿主」那一句之后追加这个表,列出 `renderMarkdown()` 的**全部九个**注入目标:选择器 / 注入它的 `app.js` 函数 / 刻度族(`doc` = 文档刻度 28 / 22 / 18;`embedded` = 嵌入刻度 24 / 18 / 16)。九条为:`#draft-content` / `renderDraft` / doc;`#brainstorm-content` / `renderBrainstorm` / doc;`#round-doc` / `loadArchiveView` / doc;`#latest-check` / `applyPhase5View` / doc;`.event-content` / `renderEvent` / embedded;`.chat-bubble` / `appendChatMessage` / embedded;`.say-chunk` / `appendSayToChat` / embedded;`.annotation-note` / `renderAnnotations` / embedded;`.annotation-answer-body` / `renderAnnotations` / embedded。表下写明三条:(a) 枚举**按调用点,不按类名**(`#round-doc` 有两个调用点:`loadArchiveView` 与冻结轮路径);(b) check-05 的 `MARKDOWN_TARGETS` 是本表的机器可核形态,调用点普查守卫(`renderMarkdown(` 计数 == 10)使两者无法漂移;(c) 表里的「函数名」是给人核对的锚点,比行号稳。同时把「改动的影响面,计划必须点名」那一句改为「改动的影响面 = 下表九行,计划必须逐行点名」。
+    **第 5 处 —— §字号刻度的范围栅栏 增「渲染目标影响面」表。** 表里的刻度族一栏要引用同一条取值规则(出自 **D-06** 的文档刻度按 **D-07** 的数值序下移一档,字重按 **D-09** 取内容标题档 600;本组规则不加 `line-height`,与 **D-10** 的「零新增行高令牌」一致);影响面一栏要引用 **D-19** 的层级链(28 > 24 > 22 > 14),说明嵌入 h1 取 24 而非 28 正是为了让这条链在会话流有标题时仍成立。在既有「`.markdown-body` 的四个宿主」那一句之后追加这个表,列出 `renderMarkdown()` 的**全部九个**注入目标:选择器 / 注入它的 `app.js` 函数 / 刻度族(`doc` = 文档刻度 28 / 22 / 18;`embedded` = 嵌入刻度 24 / 18 / 16)。九条为:`#draft-content` / `renderDraft` / doc;`#brainstorm-content` / `renderBrainstorm` / doc;`#round-doc` / `loadArchiveView` / doc;`#latest-check` / `applyPhase5View` / doc;`.event-content` / `renderEvent` / embedded;`.chat-bubble` / `appendChatMessage` / embedded;`.say-chunk` / `appendSayToChat` / embedded;`.annotation-note` / `renderAnnotations` / embedded;`.annotation-answer-body` / `renderAnnotations` / embedded。表下写明三条:(a) 枚举**按调用点,不按类名**(`#round-doc` 有两个调用点:`loadArchiveView` 与冻结轮路径);(b) check-05 的 `MARKDOWN_TARGETS` 是本表的机器可核形态,调用点普查守卫(`renderMarkdown(` 计数 == 11)使两者无法漂移;(c) 表里的「函数名」是给人核对的锚点,比行号稳。同时把「改动的影响面,计划必须点名」那一句改为「改动的影响面 = 下表九行,计划必须逐行点名」。
 
     **第 6 处 —— §未在 HEAD 上受控的字号 与 Notes。** 在 §未在 HEAD 上受控的字号 里追加一段:本节此前的普查**漏了五个渲染目标**(`.event-content` / `.chat-bubble` / `.say-chunk` / `.annotation-note` / `.annotation-answer-body`),它们在本阶段之前一直回落 UA 默认值(`.chat-bubble` 上下文 32 / 24 / 18.7px、`.event-content` 上下文 28 / 21 / 16.4px,字重一律 700)—— 这条漏项使该节「刻度外的第 6 个渲染字号」这个计数本身不成立;现已由 P-20 闭合,该段要写明**闭合状态**(不是「仍存在」)。然后在 Notes 末尾加 **05-N-7**:check-06 的 g2(全页最大字号扫描)的扫描面是**当前状态里已存在的可见元素**,故它对本缺陷的五个容器是**状态盲**的 —— `p1` 下 fixture 里没有 `.chat-bubble` 时 g2 看不到任何 UA 回落的标题。本阶段把 g2 的严格不等式(`doc_h1 > 全屏最大字号`)搬进 check-05 的 item7(那里**先造容器再断言**),使这条判据不再依赖「fixture 恰好有内容」;g2 自身的扫描面加固**不在本阶段**,记录在此以防日后被误读为已覆盖。
 
@@ -402,16 +402,16 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 | `renderMarkdown()` 的输出 → 五个非 `.markdown-body` 容器 | AI 与用户内容经 `stripUnsafeNodes` 消毒后注入(`T-idi03-02` 的既有缓解,**本计划零改动**)。本计划只给这些容器里的标题加字号 / 字重,不触碰注入路径、不改 `app.js` 一个字节 |
 | 围栏 `:root` → 浏览器 | 令牌值的唯一事实源。本计划**不改任何令牌值、不新增任何令牌** —— 3 条新规则只消费既有档(`--text-xl` / `--text-lg` / `--text-md` / `--fw-semibold`) |
 | `frontend/app.js` 的调用点 → check-05 的枚举 | 本计划新增的主边界:枚举必须由**调用点**推出,并由静态普查守卫钉住。这条边界此前不存在,正是缺陷存活的原因 |
-| `scripts/check-06-idi05-validation.py` 的 g2 → 本计划 | g2 的严格不等式(`doc_h1 > 全屏最大字号`)是对本计划取值规则的**外部约束**,不是本计划的一部分;本计划必须让它继续 PASS,不得改它来迁就取值 |
+| `scripts/check-06-idi05-validation.py` 的 g2 → 本计划 | g2 是**回归守卫**:本计划必须让它继续 PASS,不得改它来迁就取值。但 g2 只把探针注入四个 `MARKDOWN_HOSTS`(check-06:145-153),对五个嵌入容器**状态盲**(05-N-7),故它**不**构成对本计划取值规则的外部约束 —— 「嵌入 h1 不得取 28px」的机械形态是 item7 自己的严格不等式断言 |
 | 本计划无新增网络 / 输入 / 依赖面 | `frontend/app.js` / `index.html` / `vendor/` 零 diff;零新增文件、零新增依赖、零构建步骤 |
 
 ## STRIDE Threat Register
 
 | Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
 |-----------|-----------|-----------|----------|-------------|-----------------|
-| T-idi-05-04-01 | Elevation of Privilege | SC3 的页面级层级声明(「文档 h1 是全屏最大最重的文字」) | high | mitigate | 本缺陷的实质是**一句关于全屏的声明被一个局部探针担保**。缓解:item7 逐目标断言 + 5 条「文档 h1 严格大于目标 h1」,且 check-06 的 g2(全页扫描,严格不等式)必须仍 PASS。两条判据一内一外,任一条失败即 FAIL |
+| T-idi-05-04-01 | Elevation of Privilege | SC3 的页面级层级声明(「文档 h1 是全屏最大最重的文字」) | high | mitigate | 本缺陷的实质是**一句关于全屏的声明被一个局部探针担保**。缓解:item7 逐目标断言 + 5 条「文档 h1 严格大于目标 h1」(**先造容器再断言**,不依赖 fixture 恰好有内容)—— 这是本条判据的机械形态;check-06 的 g2(全页扫描,严格不等式)作为**回归守卫**必须仍 PASS。前者失败即 FAIL;后者失败同样 FAIL(但 g2 对五个嵌入容器状态盲,见 05-N-7,故它只防回归、不担保本条) |
 | T-idi-05-04-02 | Tampering | 新规则与四处 chrome 覆盖 / `.markdown-body` 标题规则的层叠 | medium | mitigate | 负向门禁止裸类型选择器(`grep -oE '(^|,)[[:space:]]*h[123][[:space:]]*[,{]'` == 0);新规则全为 0-1-1 且追加在文件末尾;`.annotation-plain` / `.annotation-answered` 的 0-2-0 规则只声明 `font-style` / `color`(已逐条核过,不含 `font-size` / `font-weight`),故无竞争。`check-01` / `03` / `04` 每任务复跑;本计划新增 0 条 `!important`、0 条 `@media` |
-| T-idi-05-04-03 | Tampering | 枚举与 `app.js` 调用点的漂移 | high | mitigate | 静态普查守卫断言 `renderMarkdown(` 计数 == 10 且 `len(MARKDOWN_TARGETS) == 9`;计数一变即 FAIL 并给出可执行动作。**这条是本计划针对缺陷根因的直接缓解** —— 前两次同类缺陷都是「枚举不全而无人发现」 |
+| T-idi-05-04-03 | Tampering | 枚举与 `app.js` 调用点的漂移 | high | mitigate | 静态普查守卫断言 `renderMarkdown(` 计数 == 11(1 定义 + 10 调用点)且 `len(MARKDOWN_TARGETS) == 9`;计数一变即 FAIL 并给出可执行动作。**这条是本计划针对缺陷根因的直接缓解** —— 前两次同类缺陷都是「枚举不全而无人发现」 |
 | T-idi-05-04-04 | Denial of Service | 渲染回归(会话流 / 事件流 / 批注正文的标题字号) | medium | mitigate | 每个 `style.css` 任务带至少一项运行时验证(硬规则 7):item7 用应用自身的四个渲染函数**造出**五个容器再读 computed style;容器造不出记 BLOCKED 而非 PASS;`item_smoke` 加一条 `.chat-bubble h1` 快速切片 |
 | T-idi-05-04-05 | Information Disclosure | 本计划的改动内容 | low | accept | 改动只有 3 条 CSS 规则(5 个选择器 × 3 档)、一组 check-05 的枚举与断言、一份契约的记账段落;无用户数据、无网络请求、无外部资源 |
 | T-idi-05-04-SC | Tampering | npm / pip / cargo 安装 | high | mitigate | 本阶段零安装(硬规则 6):不新增依赖、文件或构建步骤;`ls frontend/vendor/` 断言仍只含 `marked.min.js`。无 `[ASSUMED]` / `[SUS]` 包,故无需 package-legitimacy 人工签核门 |
@@ -422,9 +422,9 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 - `grep -oE '(^|,)[[:space:]]*h[123][[:space:]]*[,{]' frontend/style.css | wc -l` → `0`(无全局标题规则;ROADMAP Pitfall M4 / 硬规则 9)
 - 五个嵌入容器的 `h[123]` 各恰 3 次(`.event-content` / `.chat-bubble` / `.say-chunk` / `.annotation-note` / `.annotation-answer-body`)
 - 三档声明各恰 1 次:`font-size: var(--text-xl); font-weight: var(--fw-semibold);` / `var(--text-lg)` / `var(--text-md)`
-- `grep -o 'renderMarkdown(' frontend/app.js | wc -l` → `10`(1 定义 + 9 调用点);`MARKDOWN_TARGETS` 为单一事实源
+- `grep -o 'renderMarkdown(' frontend/app.js | wc -l` → `11`(1 定义 + 10 调用点;九个目标里 `#round-doc` 有两个调用点);`MARKDOWN_TARGETS` 为单一事实源(9 条)
 - `.venv/bin/python scripts/check-05-ui-uat.py --item 7,4,smoke` → 全 PASS(0 FAIL / 0 BLOCKED);**改动前的同一条命令有 FAIL 原始输出存证**(先红后绿)
-- `.venv/bin/python scripts/check-06-idi05-validation.py --item g1,g2` → 全 PASS(**g2 的严格不等式是 SC3 的机械依据,不得改它来迁就取值**)
+- `.venv/bin/python scripts/check-06-idi05-validation.py --item g1,g2` → 全 PASS(g1 断言四宿主三档严格降序;g2 是**回归守卫**,对五个嵌入容器状态盲 —— SC3 的机械依据在 item7 的 5 条严格不等式里,不在 g2)
 - `.venv/bin/python scripts/check-05-ui-uat.py --item 1,2,3,4,6,7` → 全 PASS(D-05 复验批次)
 - `bash scripts/check-01-token-conformance.sh` → `PASS`;`check-03` → `PASS`(`^\.hidden {` == 1);`check-04` → `PASS`(`!important;` 声明数 == 1)
 - `python3 scripts/check-02-contrast.py` → `PASS: 0 failures`,**47 对(35 TEXT + 12 NON-TEXT)+ `ORDER 0.363`**,`4.53` 与 `3.24` / `3.15` 三行逐字不变
@@ -437,7 +437,7 @@ Output: `frontend/style.css` 末尾 3 条嵌入刻度规则(5 个选择器 × 3 
 
 <success_criteria>
 - `G-idi-05-1` 关闭:`renderMarkdown()` 的全部九个注入目标上,h1/h2/h3 解析为契约内的字号档与 `--fw-semibold`;UA 默认值(32px / 28px)与第四字重档 700 双双消失(TYPE-01 / TYPE-03)
-- 文档 h1 仍是全屏最大最重的文字(28 > 24),在任何 AI 吐出发散标题的状态下都成立;check-06 的 g2 仍 PASS(VISUAL-03 / SC3)
+- 文档 h1 仍是全屏最大最重的文字(28 > 24),在任何 AI 吐出发散标题的状态下都成立 —— 由 **item7 的 5 条严格不等式断言**担保(先造容器再断言);check-06 的 g2 作为回归守卫仍 PASS(VISUAL-03 / SC3)
 - 门能看见它该看见的东西:五个嵌入目标是**造出来再断言**的,容器造不出记 BLOCKED;枚举按调用点且有会失败的普查守卫;先红后绿证据齐备
 - 契约不再自相矛盾:P-19 / P-20 入账,零列表同步除外,A-9 收窄硬规则 9 与 TYPE-01 的措辞,影响面表把九个目标点名
 - 四条不变量与既有交付物零回归:`^\.hidden {` == 1、`!important;` == 1、`@media` == 0、围栏外零裸 hex;`check-02` 47 对全 PASS;plan 01 / 02 / 03 的交付物(app.js / index.html / vendor 零 diff)未被触碰

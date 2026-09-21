@@ -1225,3 +1225,41 @@ button, input, select { color: var(--color-text); }
 #checks-panel:not(.hidden) .panel-header h2 {
   color: var(--color-marker-active);
 }
+
+/* 嵌入渲染目标的标题刻度(G-idi-05-1 / P-20,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+
+   为什么需要这组规则:`renderMarkdown()`(app.js:112)的返回值被注入五个**不是**
+   `.markdown-body` 的容器 —— `.event-content` / `.chat-bubble` / `.say-chunk` /
+   `.annotation-note` / `.annotation-answer-body`。上面 `.markdown-body` 的标题字号规则够不到它们,
+   故在此之前这些容器里的一至三级标题全部回落 UA 默认值:`.chat-bubble` 上下文里一级标题是
+   32px / 700,`.event-content` 上下文里是 28px / 700 —— 既超过 `.markdown-body` 的二级标题(22px),
+   也与文档一级标题(28px)持平或反超,使「文档自己的标题是全屏最大最重的文字」这条声明为假;
+   字重 700 更是一个契约只声明三档(400 / 500 / 600)之外的**第四档**。
+
+   取值规则(可复算,不是逐容器手调):嵌入档 = 文档档沿契约的**数值**阶梯下移一档。
+   契约阶梯的数值序是 12 / 14 / 16 / 18 / 22 / 24 / 28,故 28 → 24(`--text-xl`)、
+   22 → 18(`--text-lg`)、18 → 16(`--text-md`)。**按数值序不按名字序** —— `--text-2xl`(22)
+   与 `--text-xl`(24)的名字序不单调(D-07 已登记),照名字降一档会撞上文档二级标题的档位。
+   文档刻度本身(D-06:28 / 22 / 18 / 本体 16)一字未改,这组规则是它的推论。
+   字重取 `--fw-semibold`(600):D-09 的分工里这五个容器渲染的是**内容**(AI 输出 / 用户批注),
+   不是 chrome 标题,故归内容标题档 —— 这也正是消除第四字重档 700 的方式。
+   嵌入最高档取 24 而非 28,是为了让 D-19 的层级链 28 > 24 > 22 > 14 在会话流里真有标题时
+   仍成立:文档一级标题**严格大于**每一个嵌入目标的一级标题(该不等式由 check-05 的 item7
+   先造容器再断言,不依赖 fixture 恰好有内容)。
+
+   为什么不写一条全局的裸类型选择器标题规则(三个类型选择器单独成条,或合并成一条):
+   它的特异性 0-0-1,对四处 chrome 覆盖与 `.markdown-body` 的标题规则都是**惰性的**,
+   于是恰好只命中这五个失控容器 —— 看起来更省事。但它无法表达三档各不相同(那要写成三条
+   全局规则),而三条全局规则会把**任何将来的标题**一并捕获,即把「哪些容器受影响」这件事
+   重新变成不可枚举 —— 那正是本缺陷的成因;而且全局规则无法把影响面逐条对照 `app.js`
+   的调用点,枚举可以(见 check-05 的 `MARKDOWN_TARGETS` 与它的调用点普查守卫)。
+
+   为什么不加 margin / line-height:本缺陷的判据只有字号与字重。给标题加边距或行高而同一容器里的
+   段落仍走 UA 边距,只会造成半套节奏 —— 那是一次没有契约锚点的视觉扩张(D-10:零新增行高令牌)。
+
+   特异性说明:五组选择器全部是 0-1-1,与既有规则无竞争 —— `.annotation-plain .annotation-note`
+   与 `.annotation-answered .annotation-note` 等 0-2-0 规则只声明 `font-style` / `color`,
+   不含 `font-size` / `font-weight`(已逐条核过)。 */
+.event-content h1, .chat-bubble h1, .say-chunk h1, .annotation-note h1, .annotation-answer-body h1 { font-size: var(--text-xl); font-weight: var(--fw-semibold); }
+.event-content h2, .chat-bubble h2, .say-chunk h2, .annotation-note h2, .annotation-answer-body h2 { font-size: var(--text-lg); font-weight: var(--fw-semibold); }
+.event-content h3, .chat-bubble h3, .say-chunk h3, .annotation-note h3, .annotation-answer-body h3 { font-size: var(--text-md); font-weight: var(--fw-semibold); }

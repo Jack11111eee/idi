@@ -92,5 +92,9 @@ v1.13 范围内工作已全部交付(旧的 v1.13 需求清单已归档至 `.pla
 | Phase 4:stale 的两种成因走**方向相反**的补救,不得混用 | 「内容真变」→ 重新验证(idi-04 的旧报告被取代,全部数值从 HEAD 重算);「记账性编辑」(UAT 状态归一、`phase.complete` 翻需求行)→ 重算指纹并**在报告内披露改了什么、为何不移动任何被核验的事实**。判据是拿 HEAD 内容重算指纹比对,不是看 mtime | ✓ Good(两条路径各自留证,未出现「重新盖章」掩盖内容变更) |
 | Phase 4:`REQUIREMENTS.md` 不该进 `covered_files`(待后续裁决) | 它同时存在于 `idi-04` 与 `idi-04.1` 的报告里,而 `phase.complete` **每次收口都会改它** → 任何一次阶段收口都会同时打掉此前所有覆盖该文件的报告(本次收口即打掉两份)。`covered_files` 的语义应是「其变更足以使本报告结论失效的输入」,需求索引表属**下游记账**,不满足该语义 | ⚠️ Revisit(建议移出 `covered_files`,或让 `phase.complete` 的翻转不参与指纹)|
 
+| Phase 5:嵌入标题刻度 = 文档档沿**数值**阶梯下移一档(28→24 / 22→18 / 18→16),逐容器列举而非写全局 `h1,h2,h3` 规则 | 全局裸类型选择器特异性 0-0-1,对四处 chrome 覆盖与 `.markdown-body` 规则都是惰性的,于是「恰好只命中这五个失控容器」——看起来更省事,但无法表达三档各不相同,且会把**任何将来的标题**一并捕获,正是本缺陷(影响面不透明)的成因;枚举还能逐条对照 `app.js` 的调用点 | ✓ Good(G-idi-05-1 关闭;文档 h1 28 > 嵌入 h1 24 由 5 条严格不等式保证,不依赖 fixture 恰好有内容) |
+| Phase 5:渲染目标枚举**按 `renderMarkdown()` 调用点**而非按类名,并配一条会失败的静态普查守卫 | 同一类错误在本阶段发作了两次:plan 01 只探一个 `.markdown-body` 宿主,让 chrome 后代选择器的层叠缺陷活到执行期;修法把探针扩到 4 个宿主,但没问等价的反向问题「`renderMarkdown()` 到底注入到哪些容器」——`app.js` 有 10 个调用点 / 9 个目标,只枚举了 4 个 | ✓ Good(守卫比的是两个独立量:app.js 的 token 计数 vs `MARKDOWN_TARGETS` 条数,非自比) |
+| Phase 5:`phase.complete` 又一次把 `progress.completed_phases` / `percent` 往回改(2→1 / 33→17),收口后由编排器按 ROADMAP `## Progress` 校正 | 与 `advance-plan` 同一族缺陷(既往已有复现记录)。本次未越权翻需求(`requirements_updated: false`),但进度计数器仍不可信;`state.json` 的 phases 也不是判据来源 | ⚠️ Revisit(编排器每次收口后必须自己核盘并校正) |
+
 ---
-*Last updated: 2026-09-20 after Phase 4 (设计契约、令牌层与契约校验) — Phase 4 复验通过并收口(`14/15`,1 条由用户裁定为范围外并指派到 backlog `999.1`);UAT 6/6 复现;下一阶段为 Phase 5(排版与视觉层级)*
+*Last updated: 2026-09-21 after Phase 5 (排版与视觉层级) — BLOCKER `G-idi-05-1` 关闭(九个渲染目标的嵌入标题刻度 + 按调用点枚举的门);verifier 独立复核 `9/9 must-haves` passed;收口后两条门复跑仍绿;下一阶段为 Phase 6(布局稳健性)*

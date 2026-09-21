@@ -12,20 +12,20 @@ last_activity_desc: Phase idi-05 complete, transitioned to Phase 6
 state_head: 87ef1c5e0cbf456a9747884dc5ed661183fcc9e1
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 3
   total_plans: 11
   completed_plans: 11
-  percent: 17
+  percent: 50
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-20)
+See: .planning/PROJECT.md (updated 2026-09-21)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-05 — 排版与视觉层级
+**Current focus:** Phase 6 — 布局稳健性
 
 ## Current Position
 
@@ -34,7 +34,7 @@ Plan: Not started
 Status: Ready to plan
 Last activity: 2026-09-21 — Phase idi-05 complete, transitioned to Phase 6
 
-Progress: [██░░░░░░░░] 17%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -200,15 +200,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-21T12:24:20.885Z
+Last session: 2026-09-21T13:41:59.000Z
 Stopped at: Phase idi-05 complete, ready to plan Phase 6
 Resume file: None
 
 ## Operator Next Steps
 
 - ~~**当前待办:规划 Phase 5**~~ **已完成** —— `idi-05` 的 3 个计划(`idi-05-01` / `idi-05-02` / `idi-05-03`)全部执行完毕,各有 SUMMARY。
-- **当前待办(两条,按序):**
-  1. **`/gsd-verify-work idi-05`** —— 阶段尚未收口;`phase.complete` 未执行,ROADMAP 的 Phase 5 复选框与 REQUIREMENTS 的阶段行仍待收口时翻转(注意 `phase.complete` 有越权翻需求并自毁指纹的既往记录,收口后必须复跑门)。
+- **当前待办(一条):**
+  1. ~~**`/gsd-verify-work idi-05`**~~ **已收口(2026-09-21,`/gsd-execute-phase idi-05 --gaps-only`)** —— 计划 04 关闭 BLOCKER `G-idi-05-1`,verifier 独立复核报 9/9 must-haves `passed`;`phase.complete` 已执行(ROADMAP Phase 5 → `Complete 2026-09-21`,REQUIREMENTS 的 8 条阶段行已翻)。收口后两条门(`check-05 --item 7` / `check-06`)已在 post-complete 树上复跑,仍绿。**注:本次 `phase.complete` 未越权翻需求(`requirements_updated: false`),但把 `progress.completed_phases` 从 2 改回 1、`percent` 33 → 17 —— 已按 ROADMAP 的 `## Progress` 校正为 3 / 50%。**
   2. **`/gsd-verify-work idi-04.1-radix`** —— **D-05 的连带义务,本计划已把输入备齐但未写指纹**。`idi-04.1-radix` 的 `covered_digest`(`v1:sha256:25d5f1fe…`)因 `frontend/style.css` 与 `scripts/check-05-ui-uat.py` 被 wave 1/2/3 改写而 **stale**;成因是**内容真变**,故走**重新验证**而非补指纹。重算后的全部数值与逐条核对结果见 `idi-05-03-SUMMARY.md` 的「D-05 复验记录」节(`ORDER 0.363` 不变 / `--color-text-info ON --color-surface-info` 4.53 逐字不变 / `--color-border-strong` 3.24+3.15 逐字不变 / 冻结轮 `opacity 1` + `filter saturate(0.6)` + `inset 3px 0 0` 琥珀 逐字不变 / tier-1 25 不变、tier-2 47 → **48**、清单 43 → **47**)。**`idi-04.1-VERIFICATION.md` 一字未改**(`git status --porcelain` 为空)。
 - ~~04.1 的上游三步路线~~ **已走完(2026-09-20)** —— discuss → ui-phase → plan → execute → verify 全程完成,4/4 计划交付,`idi-04.1-UAT.md` 3/3 pass。
 - ~~**当前待办:Phase 4 的复验收口**~~ **已收口(2026-09-20)** —— `/gsd-verify-work idi-04` 完成:

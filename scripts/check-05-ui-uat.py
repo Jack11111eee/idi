@@ -759,10 +759,13 @@ def item4(page, tmp_root):
     # font-size 覆盖),那不是 `.markdown-body` 规则本身的探针。
     ok(item, "[p1] .markdown-body font-size(探针 #draft-content)", "16px",
        read_style(page, "#draft-content", "font-size"))
-    # `.markdown-body` 内的标题与行内 code 需要真实元素:用应用自身的 renderMarkdown 渲染
-    # 一段含三级标题与代码跨度的 markdown(真实渲染路径,零网络、零 AI 调用)。
+    # `.markdown-body` 内的标题、行内 code、表格单元格与引用块都需要真实元素:用应用自身的
+    # renderMarkdown 渲染一段含三级标题、代码跨度、表格与引用块的 markdown
+    # (真实渲染路径,零网络、零 AI 调用)。
     page.evaluate("""(hosts) => {
-        const md = '# 一级标题\\n\\n## 二级标题\\n\\n### 三级标题\\n\\nharness `probe` 探针';
+        const md = '# 一级标题\\n\\n## 二级标题\\n\\n### 三级标题\\n\\n'
+                 + '| 表头 A | 表头 B |\\n| --- | --- |\\n| 单元格 | 单元格 |\\n\\n'
+                 + '> 引用块探针\\n\\nharness `probe` 探针';
         for (const sel of hosts) {
             const host = document.querySelector(sel);
             host.innerHTML = '';
@@ -787,6 +790,20 @@ def item4(page, tmp_root):
            read_style(page, f"{host} h3", "font-size"))
     ok(item, "[p1] .markdown-body code font-size", "14px",
        read_style(page, "#draft-content code", "font-size"))
+
+    # TYPE-02 复证(D-08,零 CSS 改动):三处「已由 quick 260918-qrq 归入刻度与令牌」的对象
+    # 里,表格单元格与引用块在此补出**运行时**证据(第三处 code 由上面那条字面守卫覆盖)。
+    # 本任务只出证据、不改这三处的任何值 —— 为「有交付物」而重写会把一个已经正确的状态改坏。
+    # 探针宿主沿用 #draft-content(与上面 code 的探针一致),元素未渲染出来时 read_style
+    # 返回 None,ok() 记 BLOCKED,绝不记 PASS。
+    base_size = resolve_token(page, "--text-base")
+    muted_color = resolve_color(page, "--color-text-muted")
+    info("item4 令牌解析(TYPE-02 复证)",
+         f"--text-base={base_size} --color-text-muted={muted_color}")
+    ok(item, "[p1] .markdown-body td font-size == var(--text-base)", base_size,
+       read_style(page, "#draft-content td", "font-size"))
+    ok(item, "[p1] .markdown-body blockquote color == var(--color-text-muted)", muted_color,
+       read_style(page, "#draft-content blockquote", "color"))
 
     # TOKEN-07 / R-1 的渲染层证据:三条 z-index 走令牌接线,值层再改也不产生假 FAIL。
     # #state-badge 的 z-index 由 R-1 恢复后 --z-badge 才重新有消费者,

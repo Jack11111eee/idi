@@ -222,7 +222,12 @@
   --fw-medium: 500;
   --fw-semibold: 600;
 
-  /* Line height — four, paired with the size scale (24/32, 12/16, 14/20, 18/28, 16/26). */
+  /* Line height — 四条声明,与 7 档字号刻度按**比率配对**(不是整数配对):
+       12/16.00(--lh-tight) 14/20.00(--lh-snug 1.4286) 16/26.00(--lh-reading 1.625)
+       18/24.00(--lh-tight) 24/32.00(--lh-tight) 22/29.33(--lh-tight,非整数) 28/37.33(--lh-tight,非整数)
+     整数配对在数学上不可得:28k 与 22k 同时为整数要求 k 是 0.5 的倍数,而 k = 1.5 太松
+     (28 × 1.5 = 42px,标题会散开),故 2xl / 3xl 两档的乘积必然带小数。
+     --lh-compact(1.5556)是 **chrome-only** 行高,不属字号刻度配对 —— 唯一消费者是 .overlay-card p。 */
   --lh-tight: 1.3333;
   --lh-snug: 1.4286;
   --lh-compact: 1.5556;

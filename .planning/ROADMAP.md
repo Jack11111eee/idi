@@ -174,7 +174,7 @@ Plans:
 
 **Research flag**: 标准实践,无需研究阶段。项目特有的碰撞已在上方逐条枚举。
 **Gates**: markdown 标题不再解析为 UA 默认(浏览器计算样式实检);`#btn-authorize` 计算样式与 `#btn-continue-check` 不同;`#brainstorm-view h2` 仍解析为 `--text-md` 与 `--color-action-warning`(D-02:改写为令牌接线表述,与 04.1 的 D-14 同构);Phase 4 全部 gate 仍通过。
-**Plans**: 3/3 plans executed
+**Plans**: 3/4 plans executed
 
 Plans:
 **Wave 1**
@@ -188,6 +188,10 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] idi-05-03-PLAN.md — 活动面板标记(`--color-marker-active` + 两处 `box-shadow: inset` 追加规则)+ 两处 emoji 改 `mask-image` 字形 + D-05 连带复验 idi-04.1
+
+**Wave 4** *(缺口闭合 —— 依赖 Wave 3 全部完成)*
+
+- [ ] idi-05-04-PLAN.md — 关闭 `G-idi-05-1`(BLOCKER):把标题刻度作用域扩到 `renderMarkdown()` 的全部九个注入目标(五个非 `.markdown-body` 容器取 24 / 18 / 16px + `--fw-semibold`,消除 UA 默认值与第四字重档 700)+ check-05 的枚举改为按调用点并加普查守卫 + 契约补 P-19 / P-20 / A-9
 
 **UI hint**: yes
 

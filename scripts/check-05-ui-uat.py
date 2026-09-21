@@ -248,6 +248,28 @@ def read_style(page, selector, prop):
     return page.evaluate(_READ_JS, [selector, prop])
 
 
+# --- 三段坡道(D-04 的反转形态,Plan 02)------------------------------------
+# 六只动作按钮按「不可逆程度」分三档。档内三属性必须逐字节相同(它能抓到「改错了一只」),
+# 三档之间必须两两不同(它守卫的是核心价值红线:授权绝不与例行混同)。
+# 六只按钮全部常驻 DOM;getComputedStyle 对 display:none 的元素仍返回解析后的
+# color / border-color / background-color(它们不依赖布局),故一个 p3 样本就够。
+ROUTINE = ("#btn-process-round", "#btn-continue-check", "#btn-continue-repair")
+COMMIT = ("#btn-approve-draft", "#btn-start-writing")
+IRREVERSIBLE = ("#btn-authorize",)
+
+
+def trio(page, selector):
+    """一只按钮的三属性读数:(color, border-top-color, background-color)。
+
+    与 parse_box_shadow / check_frozen_marker 同构 —— 比较的是解析后的语义值,
+    不是选择器文本或子串全等。"""
+    return (
+        read_style(page, selector, "color"),
+        read_style(page, selector, "border-top-color"),
+        read_style(page, selector, "background-color"),
+    )
+
+
 def read_classlist(page, selector):
     return page.evaluate(
         "(sel) => { const el = document.querySelector(sel); return el ? [...el.classList] : null; }",
@@ -680,18 +702,38 @@ def item3(page, tmp_root):
        read_style(page, "#btn-authorize", "border-top-color"))
     ok(item, "[p3] #btn-authorize background-color == var(--color-action-irreversible-surface)",
        irreversible_surface, read_style(page, "#btn-authorize", "background-color"))
-    proc_color = read_style(page, "#btn-process-round", "color")
-    proc_border = read_style(page, "#btn-process-round", "border-top-color")
-    proc_bg = read_style(page, "#btn-process-round", "background-color")
-    auth_color = read_style(page, "#btn-authorize", "color")
-    auth_border = read_style(page, "#btn-authorize", "border-top-color")
-    auth_bg = read_style(page, "#btn-authorize", "background-color")
+    # D-04 反转(Plan 02):原来那条「#btn-process-round 与 #btn-authorize 三属性逐字节
+    # 相同」在本阶段之后必然 FAIL —— 那正是本阶段要做的事(三段坡道)。反转成「档内相同 +
+    # 三档两两不同」,一个断言同时覆盖 VISUAL-01 与 VISUAL-02。注意反转的是断言而不是现实。
+    # 档内相同那一半同样承重:它能抓到「改错了一只」。
+    routine_trios = {trio(page, s) for s in ROUTINE}
+    commit_trios = {trio(page, s) for s in COMMIT}
+    tier_trios = {trio(page, ROUTINE[0]), trio(page, COMMIT[0]), trio(page, IRREVERSIBLE[0])}
+    info("item3 三档读数",
+         f"routine={trio(page, ROUTINE[0])} commit={trio(page, COMMIT[0])} "
+         f"irreversible={trio(page, IRREVERSIBLE[0])}")
     ok_true(
         item,
-        "[p3] #btn-process-round 与 #btn-authorize 三属性逐字节相同",
-        (proc_color, proc_border, proc_bg) == (auth_color, auth_border, auth_bg),
-        f"({auth_color}, {auth_border}, {auth_bg})",
-        f"({proc_color}, {proc_border}, {proc_bg})",
+        "[p3] routine 三只三属性逐字节相同",
+        len({trio(page, s) for s in ROUTINE}) == 1,
+        "1",
+        len(routine_trios),
+        "档内相同是承重的:它能抓到「改错了一只」",
+    )
+    ok_true(
+        item,
+        "[p3] commit 两只三属性逐字节相同",
+        len({trio(page, s) for s in COMMIT}) == 1,
+        "1",
+        len(commit_trios),
+    )
+    ok_true(
+        item,
+        "[p3] routine / commit / irreversible 三档两两不同",
+        len({trio(page, ROUTINE[0]), trio(page, COMMIT[0]), trio(page, IRREVERSIBLE[0])}) == 3,
+        "3",
+        len(tier_trios),
+        "核心价值红线:授权绝不与例行/承诺按钮在计算样式上混同",
     )
     ok(item, "[p3] #state-badge color == var(--color-text-info)", text_info,
        read_style(page, "#state-badge", "color"))
@@ -821,6 +863,14 @@ def item4(page, tmp_root):
            read_style(page, sel, "font-weight"))
     ok(item, "[p1] #btn-authorize font-weight == 600(--fw-semibold,D-12 唯一例外)", "600",
        read_style(page, "#btn-authorize", "font-weight"))
+    # D-13(Plan 02):#btn-authorize 的第四个强调通道 —— 字号步进到 16px(--text-md,
+    # 现有档,零新增令牌)。**不加 padding 步进**:16px 下「授权撰写总设计文档」约 144px +
+    # padding-x 32px ≈ 176px,而 --doc-panel-w 最窄 340px 减 #doc-panel-body 的
+    # padding(32/40)= 内容宽 260px > 176px,故不换行 —— 这条算术正是 D-13 的验收条件。
+    text_md_size = resolve_token(page, "--text-md")
+    info("item4 令牌解析(D-13 字号步进)", f"--text-md={text_md_size}")
+    ok(item, "[p1] #btn-authorize font-size == var(--text-md)(D-13)", text_md_size,
+       read_style(page, "#btn-authorize", "font-size"))
 
     # TOKEN-07 / R-1 的渲染层证据:三条 z-index 走令牌接线,值层再改也不产生假 FAIL。
     # #state-badge 的 z-index 由 R-1 恢复后 --z-badge 才重新有消费者,

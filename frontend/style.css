@@ -962,6 +962,9 @@ button.primary {
   background: var(--color-action-irreversible-surface);
   border-color: var(--color-action-irreversible);
   color: var(--color-action-irreversible-fg);
+  /* D-13:字号步进(16px,现有档,零新增令牌)—— 不加 padding 步进。
+     D-12:字重保持 600,是 D-09「按钮统一 500」的唯一已登记例外;不要把它改成 500。 */
+  font-size: var(--text-md);
   font-weight: var(--fw-semibold);
 }
 #btn-authorize:disabled { opacity: 0.55; cursor: not-allowed; }

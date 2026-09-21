@@ -18,9 +18,9 @@ provides:
 affects: ["idi-05 的收口验证(指纹 stale)", "idi-04.1-radix 的指纹重写", "Phase 8(唯一触碰 app.js 的阶段 —— 调用点普查守卫会挡住枚举漂移)"]
 
 actuals:
-  tokens: 9177
+  tokens: 9177      # chars/4 over the realized diff of the three changed files (36707 chars)
   tasks: 3
-  commits: 3
+  commits: 3        # MEASURED: git rev-list --count 4be21b1..HEAD (3 task commits: Task 1 RED + Task 1 GREEN + Task 2; Task 3 is evidence-only, zero diff)
   plan_head_before: 4be21b16bf712c814d72e50af01f802b8b2b536e
 
 tech-stack:

@@ -201,12 +201,20 @@
   --doc-panel-w: clamp(340px, 30vw, 480px);
   --doc-panel-w-collapsed: 48px;
 
-  /* Type scale — 5 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed. */
+  /* Type scale — 7 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed.
+     D-07 命名冲突警示:`04-UI-SPEC.md` 的字号表把 `--text-2xl` 写作 18px、`--text-3xl` 写作 22px,
+     而本围栏的 `--text-2xl` 是 22px、`--text-3xl` 是 28px —— **名同值不同,不是笔误**。
+     理由是 18px 已被 `--text-lg` 占用,而本阶段继续跟随 xs / base / md / lg / xl 的尺寸递进命名法,
+     2xl 只能是 xl(24)之上的下一档;故数值序与名字序在 xl(24) → 2xl(22) 这一处不单调。
+     七档依次为 xs 12px / base 14px / md 16px / lg 18px / xl 24px / 2xl 22px / 3xl 28px。
+     这段注释的作用是防止日后有人把 22px「修正」回 18px —— 那会让 18px 有两个令牌名(2xl 与 lg),即第二事实源。 */
   --text-xs: 12px;
   --text-base: 14px;
   --text-md: 16px;
   --text-lg: 18px;
   --text-xl: 24px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
 
   /* Weight — three ranks, all consumed. The 500 rank is declared because the target
      chrome scale requires w400/500/600; the former "no consumer" reason no longer holds. */
@@ -607,8 +615,13 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 }
 #stream-banner.fatal { background: var(--color-surface-danger); color: var(--color-action-danger); border-color: var(--color-border-danger-subtle); }
 
-/* 文档区子视图切换 */
-#draft-view h2, #rounds-placeholder h2 {
+/* 文档区子视图切换。两个选择器都必须保持「只够得到 chrome 标题」的形态:
+   `#draft-view > h2` 用子组合器 —— 后代形态 `#draft-view h2`(1-0-1)会伸进 `#draft-content` /
+   `#brainstorm-content` 内部,把 `.markdown-body h2`(0-1-1)无条件压回 chrome 字号(ID 列胜过类列,
+   与源码顺序无关),使文档 h2 拿不到 D-06 的 22px;
+   `#round-title` 用该元素自带的 id —— chrome 标题嵌在 `.round-view-header` 里,
+   `#rounds-placeholder > h2` 会匹配不到任何元素。 */
+#draft-view > h2, #round-title {
   margin-top: 0;
   font-size: var(--text-lg);
   color: var(--color-text-secondary);
@@ -618,12 +631,14 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   font-size: var(--text-md);
 }
 /* 标题字号显式化,作用域限定在 .markdown-body 内——不写全局 h1/h2/h3,
-   那会与四处 chrome 覆盖(.panel-header h2 / #draft-view h2 / #brainstorm-view h2 / .overlay-card h3)碰撞。
+   那会与四处 chrome 覆盖(.panel-header h2 / #draft-view > h2 / #brainstorm-view > h2 / .overlay-card h3)碰撞。
+   但只守住这一侧还不够:chrome 侧若用后代选择器(如 `#draft-view h2`,1-0-1),它会反过来伸进
+   .markdown-body 压掉下面三条规则。两侧的选择器形态都要守住。
    阅读列宽度由 #main-pane > section 的 max-width 承担,此处不再重复声明(面板内它本就不生效)。 */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: var(--space-4) 0 var(--space-2); line-height: var(--lh-tight); font-weight: var(--fw-semibold); }
-.markdown-body h1 { font-size: var(--text-xl); }
-.markdown-body h2 { font-size: var(--text-lg); }
-.markdown-body h3 { font-size: var(--text-md); }
+.markdown-body h1 { font-size: var(--text-3xl); }
+.markdown-body h2 { font-size: var(--text-2xl); }
+.markdown-body h3 { font-size: var(--text-lg); }
 .markdown-body p { margin: var(--space-2) 0; }
 .markdown-body ul, .markdown-body ol { padding-left: var(--space-6); }
 .markdown-body blockquote {
@@ -676,7 +691,8 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   border-radius: var(--radius-md);
   background: var(--color-surface-warning-subtle);
 }
-#brainstorm-view h2 {
+/* `>` 与上面 #draft-view 同理:后代形态会伸进 #brainstorm-content 压掉 `.markdown-body h2`。 */
+#brainstorm-view > h2 {
   margin: 0 0 var(--space-2);
   font-size: var(--text-md);
   color: var(--color-action-warning);

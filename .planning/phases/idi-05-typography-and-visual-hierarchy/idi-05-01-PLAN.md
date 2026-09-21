@@ -76,7 +76,7 @@ must_haves:
       pattern: "read_style\\(page, \"\\.panel-header h2\", \"font-size\"\\)"
 
   prohibitions:
-    - statement: "不得给 `.markdown-body` 容器之外的任何 `h1` / `h2` / `h3` 写字号规则。全局 `h1, h2, h3` 的特异性是 0-0-1,在 `font-size` 上对四处 chrome 覆盖(`#draft-view h2` / `#brainstorm-view h2` 为 1-0-1,`.panel-header h2` / `.overlay-card h3` 为 0-1-1)是惰性的 —— 真正的暴露面是它们未声明的 `line-height` / `margin` / `letter-spacing`,以及任何落在 `.markdown-body` 之外、又无更具体规则兜底的标题(硬规则 9 / Pitfall M4 / TYPE-01)"
+    - statement: "不得给 `.markdown-body` 容器之外的任何 `h1` / `h2` / `h3` 写字号规则。全局 `h1, h2, h3` 的特异性是 0-0-1,在 `font-size` 上对四处 chrome 覆盖(`#draft-view > h2` / `#brainstorm-view > h2` 为 1-0-1,`.panel-header h2` / `.overlay-card h3` 为 0-1-1)是惰性的 —— 真正的暴露面是它们未声明的 `line-height` / `margin` / `letter-spacing`,以及任何落在 `.markdown-body` 之外、又无更具体规则兜底的标题(硬规则 9 / Pitfall M4 / TYPE-01)。**唯一豁免(2026-09-21 执行期新增,见 Task 1 第 3b 步):** 把三条 chrome 规则的**选择器**由后代形态收窄为 `#draft-view > h2` / `#round-title` / `#brainstorm-view > h2` —— 这是**收窄既有规则的可达范围**,不是新增字号规则,且是 SC1 成立的前提(不收窄则 `.markdown-body h2` 被 1-0-1 后代选择器无条件压制,四个宿主里三个拿不到 D-06 的 22px)。**除此之外不得扩大该豁免。**"
       status: active
       verification: flagged
     - statement: "不得把 `--text-2xl` 从 22px「修正」回契约写的 18px —— 18px 在 HEAD 上已被 `--text-lg` 占用,改回会让 18px 有两个令牌名(`2xl` 与 `lg`),即第二事实源;围栏注释必须写明「名同值不同,不是笔误」(D-07 / 05-N-1 / A-6)"
@@ -88,7 +88,7 @@ must_haves:
     - statement: "不得改动任何用户可见文案 —— G3 授权按钮的标签是核心价值红线唯一的文字,本阶段 copy 零改动(Copywriting Contract 冻结)"
       status: active
       verification: flagged
-    - statement: "不得重排 `style.css` 的任何规则或声明(硬规则 3「追加,不重排」)。`#draft-view h2`(L611)与 `#brainstorm-view h2`(L679)同为 1-0-1,后者靠源码顺序取胜 —— 重排即渲染变更,而源码 diff 看起来完全无辜"
+    - statement: "不得重排 `style.css` 的任何规则或声明(硬规则 3「追加,不重排」)。注意 Task 1 第 3b 步收窄选择器之后,`#draft-view > h2`(L624)与 `#brainstorm-view > h2`(L695)虽同为 1-0-1,但已不再匹配同一元素(`#brainstorm-view` 是 `#draft-view` 的后代,而子组合器只认直接子节点),原先「靠源码顺序取胜」的脆弱依赖随之解除。该收窄是本阶段**唯一**被允许的选择器形态变更,不得据此顺手改动任何规则的**先后位置**"
       status: active
       verification: flagged
     - statement: "不得把 `check-05-ui-uat.py` 的第二类守卫(`.panel-header h2` 14px / `#draft-view h2` 18px / `.overlay-card h3` 24px / `.markdown-body` 16px / `.markdown-body code` 14px / `--text-base` 14px)改成令牌接线表述 —— 字面值是**特性而非缺陷**,它是唯一能抓到「标题改动溢出到 chrome」的形态(D-03)"
@@ -205,10 +205,16 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
 
     **第 2 步 —— 改写围栏 L204 的头注释(D-07 / 05-N-1 / A-6)。** 头注释现状是「Type scale — 5 sizes …」;改写为 7 档,并**必须**写明:契约 `04-UI-SPEC.md` 的字号表把 `--text-2xl` 写作 18px、`--text-3xl` 写作 22px,而本围栏的 `--text-2xl` 是 22px、`--text-3xl` 是 28px —— **名同值不同,不是笔误**;理由是 18px 已被 `--text-lg` 占用,而 D-07 要求继续跟随 `xs / base / md / lg / xl` 的尺寸递进命名法,于是 2xl 只能是 xl(24)之上的下一档。同时写明「数值序与名字序在 `xl`(24) → `2xl`(22)这一处不单调」。这段注释的作用是防止日后有人把 22px「修正」回 18px —— 那会让 18px 有两个令牌名,即第二事实源。注释里不得使用 `…` 省略号替代档位清单(决策覆盖门按 `D-NN` 字面 token 扫描,逐条写全)。
 
-    **第 3 步 —— 围栏外三条 `font-size` 改值(TYPE-01)。** `.markdown-body h1` 的 `font-size` 由 `var(--text-xl)` 改为 `var(--text-3xl)`;`.markdown-body h2` 由 `var(--text-lg)` 改为 `var(--text-2xl)`;`.markdown-body h3` 由 `var(--text-md)` 改为 `var(--text-lg)`。**只改这三个值**。同文件 L623 的共享规则(`margin` / `line-height: var(--lh-tight)` / `font-weight: var(--fw-semibold)`)一字不动 —— D-09 与 D-10 对这两项要求零改动。L620-622 的注释(已写着硬规则 9 的作用域栅栏)原样保留。**绝不新增全局 `h1, h2, h3` 规则** —— 那是硬规则 9 与本阶段最容易犯且最难发现的一处错误。
+    **第 3 步 —— 围栏外三条 `font-size` 改值(TYPE-01)。** `.markdown-body h1` 的 `font-size` 由 `var(--text-xl)` 改为 `var(--text-3xl)`;`.markdown-body h2` 由 `var(--text-lg)` 改为 `var(--text-2xl)`;`.markdown-body h3` 由 `var(--text-md)` 改为 `var(--text-lg)`。**只改这三个值**。其下共享规则(`margin` / `line-height: var(--lh-tight)` / `font-weight: var(--fw-semibold)`,收窄后 L638)一字不动 —— D-09 与 D-10 对这两项要求零改动。其上注释(已写着硬规则 9 的作用域栅栏)按第 3b 步补一句「两侧都要守住选择器形态」,其余原样保留。**绝不新增全局 `h1, h2, h3` 规则** —— 那是硬规则 9 与本阶段最容易犯且最难发现的一处错误。
+
+    **第 3b 步 —— 收窄三条 chrome 规则的选择器(2026-09-21 执行期新增;这是本计划首次执行时 `--item 4` 报 FAIL 的根因修复)。** 现状三条 chrome 规则用的是**后代**选择器,特异性 1-0-1,会伸进 `.markdown-body` 容器内部把 `.markdown-body h2`(0-1-1)**无条件**压回 chrome 字号 —— ID 列胜过类列,与源码顺序无关。实测后果:`#draft-content h2` 与 `#round-doc h2` 渲染 18px、`#brainstorm-content h2` 渲染 16px,三者都拿不到 D-06 要求的 22px;`#latest-check` 不受影响(它嵌在 `#checks-panel > .panel-body` 里,没有任何 chrome 选择器够得到)。**改法(只改选择器,三条规则的声明体一字不动):**
+    - `#draft-view h2, #rounds-placeholder h2` → `#draft-view > h2, #round-title`。`#rounds-placeholder > h2` **不可用** —— chrome 标题 `#round-title` 嵌在 `.round-view-header`(`index.html:134`)里,子组合器匹配不到任何元素,故改用该元素自带的 id(1-0-0,仍胜过与之竞争的 `.round-view-header h2` 的 0-1-1,渲染不变)。
+    - `#brainstorm-view h2` → `#brainstorm-view > h2`。两个 chrome 标题都是其容器的直接子节点(`index.html:105` / `:120`),子组合器可达。
+    - 两条规则各补一行中文注释,写明 `>` 是承重的(后代形态会压掉 `.markdown-body` 的字号),防止日后被「简化」回去。
+    **不得触碰** `.round-view-header h2`(L809,只设 `margin: 0`,不是字号威胁)、`.panel-header h2`(L440)、`.overlay-card h3`(L556)—— 它们不压制任何 `.markdown-body` 宿主。**不得新增任何 chrome 侧字号规则**(prohibition 1 的豁免仅覆盖本条)。
 
     **第 4 步 —— `scripts/check-05-ui-uat.py` 的断言更新(D-02 / D-03)。**
-    (a) **新增三条令牌接线断言**(D-03 第一类):`.markdown-body h1` / `h2` / `h3` 的 computed `font-size` 分别等于 `resolve_token(page, "--text-3xl")` / `resolve_token(page, "--text-2xl")` / `resolve_token(page, "--text-lg")`。探针选择器必须落在真实宿主上 —— item4 在 p1 样本下已用 `#draft-content`(带 `.markdown-body`)作探针,故写 `#draft-content h1` / `#draft-content h2` / `#draft-content h3`,并在每条断言旁用 `info()` 打印解析值(这是「接线对但值错」留下的人工核对痕迹)。若探针元素不存在,`ok()` 记 BLOCKED,绝不记 PASS。
+    (a) **新增令牌接线断言,四个 `.markdown-body` 宿主各三条**(D-03 第一类):每个宿主的 `h1` / `h2` / `h3` 的 computed `font-size` 分别等于 `resolve_token(page, "--text-3xl")` / `resolve_token(page, "--text-2xl")` / `resolve_token(page, "--text-lg")`。宿主集合为 `#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check`(UI-SPEC §字号刻度的范围栅栏点名的四个)。**四个都要探,不得只探 `#draft-content`** —— 本阶段执行期首次跑 `--item 4` 时正是只探了一个宿主,才让 `#brainstorm-content`(16px)与 `#round-doc`(18px)的同类压制整片溜过。实现:在 item4 里用应用自身的 `renderMarkdown` 把同一段 markdown(含三级标题与一个代码跨度)渲染到四个宿主(真实渲染路径,零网络、零 AI 调用),再用循环逐宿主断言。宿主列表必须作为 `page.evaluate` 的**参数**传入 —— 不可在 JS 字符串里引用 Python 常量,那段代码跑在浏览器里,引用会直接抛 `ReferenceError`。每条断言旁用 `info()` 打印解析值(这是「接线对但值错」留下的人工核对痕迹)。若探针元素不存在,`ok()` 记 BLOCKED,绝不记 PASS。
     (b) **改写 `:742` 的 `#brainstorm-view h2` 字号断言(D-02)**:字面 `"16px"` 改为 `resolve_token(page, "--text-md")`。该断言守卫的 14px 值已由 quick `260918-qrq` 推翻,继续硬编码只会继续假 FAIL。
     (c) **六条字面 px 守卫逐条保持不动(D-03 第二类)**:`.panel-header h2` 14px、`#draft-view h2` 18px、`.overlay-card h3` 24px、`#draft-content` 16px(`.markdown-body`)、`.markdown-body code` 14px、`--text-base == "14px"`(S-2 依赖)。**这是本任务最容易做错的一处**:把这六条改成令牌接线表述会让它们退化为同义反复,而它们存在的全部理由恰恰是保证本任务的标题改动没有溢出到 chrome。
 
@@ -230,7 +236,9 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     <automated>grep -o -- '--text-2xl: 22px;' frontend/style.css | wc -l; grep -o -- '--text-3xl: 28px;' frontend/style.css | wc -l</automated>
     <fails_when>either count is not exactly 1</fails_when>
     <automated>grep -o 'font-size: var(--text-3xl);' frontend/style.css | wc -l; grep -o 'font-size: var(--text-2xl);' frontend/style.css | wc -l; grep -o 'font-size: var(--text-lg);' frontend/style.css | wc -l</automated>
-    <fails_when>the first two counts are not 1, or the third count is less than 2 (`.markdown-body h3` 与 `#draft-view h2, #rounds-placeholder h2` 都消费 `--text-lg`)</fails_when>
+    <fails_when>the first two counts are not 1, or the third count is less than 2 (`.markdown-body h3` 与 `#draft-view > h2, #round-title` 都消费 `--text-lg`)</fails_when>
+    <automated>grep -cE '^#draft-view h2|^#rounds-placeholder h2|^#brainstorm-view h2' frontend/style.css; grep -c '^#draft-view > h2, #round-title' frontend/style.css; grep -c '^#brainstorm-view > h2' frontend/style.css</automated>
+    <fails_when>the first count is not 0 (后代形态未收窄干净 —— 它会让 `.markdown-body h2` 被 1-0-1 无条件压制,四个宿主里三个拿不到 22px), or the second/third counts are not exactly 1. 三条都必须用 `^` 锚定行首:收窄后的注释正文里会出现 `#draft-view > h2` / `#brainstorm-view > h2` 的**散文引用**,不锚定会把注释行也数进去(实测未锚定时第三项得 2 而非 1 —— 那是探针的错,不是 CSS 的错)</fails_when>
     <automated>grep -E '^[[:space:]]*(h1|h2|h3)[[:space:],{]' frontend/style.css | wc -l; grep -oE '(^|[,{ ])[[:space:]]*h1[[:space:]]*,[[:space:]]*h2' frontend/style.css | wc -l</automated>
     <fails_when>the second count is not 0 (a global `h1, h2` rule would be the phase's worst and least visible error — 硬规则 9)</fails_when>
   </verify>
@@ -239,7 +247,9 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     - `grep -n -- '--text-2xl: 22px;' frontend/style.css` 的行号**大于** `grep -n -- '--text-xl: 24px;' frontend/style.css` 的行号(名字序:2xl 插在 xl 之后)
     - `grep -o 'font-size: var(--text-3xl);' frontend/style.css | wc -l` == 1 且该行选择器是 `.markdown-body h1`
     - `grep -o 'font-size: var(--text-2xl);' frontend/style.css | wc -l` == 1 且该行选择器是 `.markdown-body h2`
-    - `grep -o 'font-size: var(--text-lg);' frontend/style.css | wc -l` == 2(`.markdown-body h3` 与 `#draft-view h2, #rounds-placeholder h2`)
+    - `grep -o 'font-size: var(--text-lg);' frontend/style.css | wc -l` == 2(`.markdown-body h3` 与 `#draft-view > h2, #round-title`)
+    - 三条 chrome 规则的后代形态已收窄干净:`grep -cE '^#draft-view h2|^#rounds-placeholder h2|^#brainstorm-view h2' frontend/style.css` == 0,且 `grep -c '^#draft-view > h2, #round-title' frontend/style.css` == 1、`grep -c '^#brainstorm-view > h2' frontend/style.css` == 1(三项均须 `^` 锚定行首 —— 注释正文里有散文引用,不锚定会多数)
+    - `git diff -- frontend/style.css` 里 `.panel-header h2`(L440)/ `.overlay-card h3`(L556)/ `.round-view-header h2`(L809)三条规则**未被触碰**,且三条被收窄的规则**只有选择器行变化**,声明体(`margin-top` / `font-size` / `color` / `margin`)逐字不变
     - 围栏内 `--text-*` 声明数为 7(`grep -oE '^[[:space:]]*--text-[a-z0-9]+:' frontend/style.css | wc -l` == 7)
     - 围栏标记仍恰为 1/1:`grep -o '===== DESIGN TOKENS: START' frontend/style.css | wc -l` == 1 且 `grep -o '===== DESIGN TOKENS: END' frontend/style.css | wc -l` == 1
     - 围栏 L204 注释含 `7` 与 `22px` 与 `18px` 三个 token,并含「名同值不同」语义的中文表述(人工逐字核)
@@ -250,7 +260,7 @@ Plan 02 与 Plan 03 会继续往这张表追加符号(`--color-action-*` 五处�
     - `--item 4` 与 `--item smoke` 两项均 PASS(0 FAIL / 0 BLOCKED)
     - `--text-xl` 仍 ≥1 消费者:`grep -o 'var(--text-xl)' frontend/style.css | wc -l` ≥ 1
   </acceptance_criteria>
-  <done>围栏内 7 档字号刻度落地,`.markdown-body h1/h2/h3` 解析为 28 / 22 / 18px;L204 注释写明 7 档与「名同值不同」;`check-05` 的三条新断言与 D-02 改写落地、六条字面守卫未动;CHECK-01 PASS、CHECK-02 仍 43 对 + `ORDER 0.363`、`--item 4` 与 `--item smoke` 全 PASS。</done>
+  <done>围栏内 7 档字号刻度落地;三条 chrome 规则的选择器已由后代形态收窄为 `#draft-view > h2` / `#round-title` / `#brainstorm-view > h2`,`.markdown-body` 的**四个宿主**各自的 h1/h2/h3 均解析为 28 / 22 / 18px;L204 注释写明 7 档与「名同值不同」;`check-05` 的十二条新断言(四宿主 × 三条)与 D-02 改写落地、六条字面守卫未动;CHECK-01 PASS、CHECK-02 仍 43 对 + `ORDER 0.363`、`--item 4` 与 `--item smoke` 全 PASS。</done>
 </task>
 
 <task type="auto">

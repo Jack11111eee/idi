@@ -10,7 +10,10 @@
       "Skill(gsd-config)",
       "Read(//private/tmp/**)",
       "Skill(gsd-complete-milestone)",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Skill(gsd-quick)",
+      "Skill(gsd-execute-phase)",
+      "Skill(gsd-code-review)"
     ]
   },
   "hooks": {

@@ -285,27 +285,52 @@ xl → 2xl → 3xl),不按数值序。理由:名字序让「下一档是 2xl」�
 
 **绝不写全局 `h1, h2, h3` 规则。** 它会与四处 chrome 覆盖碰撞。
 
-**栅栏成立的机械理由(计划必须核这条,不是核措辞):** 四处 chrome 标题**没有任何一个落在
-`.markdown-body` 容器之内** ——
+**栅栏成立的机械理由(计划必须核这条,不是核措辞):** 栅栏成立与否,**不能只看 chrome 标题元素落在
+哪里,必须看 chrome 选择器能匹配到哪些元素**。这两件事在本项目里不等价 —— 本阶段执行期抓到的正是
+二者之差(见下方「订正记录」)。
 
-| chrome 标题 | `index.html` 位置 | 与 `.markdown-body` 的关系 |
-|---|---|---|
-| `.panel-header h2` | `:16` `:31` `:42` `:58` | `.panel-header` 从不含 `.markdown-body` |
-| `#draft-view h2` | `:105` | `#draft-content`(`:113`,带 `.markdown-body`)的**兄弟**,不是子节点 |
-| `#brainstorm-view h2` | `:120` | `#brainstorm-content`(`:121`)的**兄弟**,不是子节点 |
-| `.overlay-card h3` | `:160` `:172` `:186` `:198` `:215` | 弹窗内,无 `.markdown-body` 祖先 |
+| chrome 标题 | `index.html` 位置 | 选择器形态(收窄后) | 能匹配到的元素 |
+|---|---|---|---|
+| `.panel-header h2` | `:16` `:31` `:42` `:58` | 后代,0-1-1 | 仅四个面板头;其容器不含 `.markdown-body` |
+| `#draft-view > h2` | `:105` | **子组合器**,1-0-1 | 仅 `:105` |
+| `#brainstorm-view > h2` | `:120` | **子组合器**,1-0-1 | 仅 `:120` |
+| `#round-title` | `:135` | id,1-0-0 | 仅 `:135` |
+| `.overlay-card h3` | `:160` `:172` `:186` `:198` `:215` | 后代,0-1-1 | 仅五个弹窗卡 |
+
+**后三条是 Phase 5 在执行期从后代形态收窄而来的。** 原形态 `#draft-view h2` / `#rounds-placeholder h2` /
+`#brainstorm-view h2`(均 1-0-1)是**后代**选择器,会伸进 `.markdown-body` 容器内部,把
+`.markdown-body h2`(0-1-1)**无条件**压回 chrome 字号 —— ID 列胜过类列,与源码顺序无关。实测:
+`#draft-content h2` 与 `#round-doc h2` 渲染 18px、`#brainstorm-content h2` 渲染 16px,三者都拿不到
+D-06 要求的 22px(只有 `#latest-check` 是对的 —— 它嵌在 `#checks-panel > .panel-body`(`:45`)里,
+没有任何 chrome 选择器够得到它,`.markdown-body h2` 是唯一匹配的规则)。**`#rounds-placeholder > h2`
+不可用**:chrome 标题嵌在 `.round-view-header`(`:134`)里,子组合器会匹配不到任何元素,
+故改用该元素自带的 id `#round-title`。
 
 因此 `.markdown-body h1/h2/h3`(0-1-1)与四处 chrome 覆盖**在层叠上永不相遇**,改值不可能带偏它们。
-**SC1 的实检因此是「四条 chrome 断言仍绿」,不是「看起来没变」。**
+**SC1 的实检因此是两件事,不是「看起来没变」:**(a) 四条 chrome 断言仍绿;(b) `.markdown-body` 的
+**四个宿主各自的 h1/h2/h3 都到达 D-06 的目标档**。只探一个宿主会让缺陷从另外两个溜过去 ——
+那正是它此前存活到执行期的原因。
 
 **`.markdown-body` 的四个宿主(改动的影响面,计划必须点名):** `#draft-content`(`:113`)、
 `#brainstorm-content`(`:121`)、`#round-doc`(`:139`)、`#latest-check`(`:47`)。
 
 **一处已知且刻意不处理的不一致(记录,不是交付物):** `#brainstorm-content` 是 `.markdown-body`,
-所以它内部的 markdown h2 会是 22px,而同一容器自己的标签 `#brainstorm-view h2` 是 16px ——
+它内部的 markdown h2 是 22px,而同一容器自己的标签 `#brainstorm-view > h2` 是 16px ——
 内容标题大于容器标签。**不改。** 理由与 CONTEXT 对 `.overlay-card h3` 24px vs `.markdown-body h2`
 22px 的处置同源(模态高于正文标题是合理的):chrome 标题与内容标题是**两个令牌族**,它们的相对
 大小不由本阶段调和。若要调和,那是排版刻度的再平衡,属独立阶段。
+
+> **订正记录(2026-09-21,执行期)。** 本节此前有两处事实错误,均由执行期 `check-05` 的 item 4 失败暴露:
+>
+> 1. 「四处 chrome 覆盖**在层叠上永不相遇**」的论证核的是 **chrome 标题元素**是否落在
+>    `.markdown-body` 之内(结论:都不在),却没有核 **chrome 选择器**是否够得到 `.markdown-body`
+>    之内的元素(结论:三个够得到)。元素位置与选择器可达性不等价,前者成立推不出后者。已按上表重写。
+> 2. 「`#brainstorm-content` 内部的 markdown h2 **会是** 22px」在当时是**错的** —— 实际渲染 16px
+>    (不是 18px,更不是 22px)。22px 只有在收窄 chrome 选择器之后才成立。该条「**不改**」的结论不变
+>    (收窄是修层叠缺陷,不是调和这两个令牌族),事实描述已按实测改写。
+>
+> 收窄本身登记为 `.planning/WINDOWS.md` 第 15 条的处置结果。`04-UI-SPEC.md` / `ROADMAP.md` 正文未动
+> (D-01:改 ROADMAP 会作废已通过的验证指纹)。
 
 ### 未在 HEAD 上受控的字号(不属本阶段,见 §不在本阶段)
 

@@ -21,7 +21,8 @@
     "cross_ai_timeout": 300,
     "test_gate_timeout": 600,
     "use_worktrees": false,
-    "windows_enforce": true
+    "windows_enforce": true,
+    "_auto_chain_active": false
   },
   "ship": {
     "pr_body_sections": []

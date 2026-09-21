@@ -704,6 +704,12 @@ def item3(page, tmp_root):
 # ---------------------------------------------------------------------------
 # UAT 第 4 项 — Plan 02 的 16 项
 # ---------------------------------------------------------------------------
+# `.markdown-body` 的四个宿主(UI-SPEC §字号刻度的范围栅栏点名的影响面)。四个都要探:
+# 本阶段修掉的层叠缺陷(`#draft-view h2` 等 1-0-1 后代选择器压掉 `.markdown-body h2`)
+# 只在其中三个上出现,`#latest-check` 一直是对的 —— 只探一个宿主正是它存活到执行期的原因。
+MARKDOWN_HOSTS = ("#draft-content", "#brainstorm-content", "#round-doc", "#latest-check")
+
+
 def item4(page, tmp_root):
     item = "4"
     print("\n=== UAT 4: DevTools computed-style 抽查 — Plan 02(16 项)===", flush=True)
@@ -737,9 +743,12 @@ def item4(page, tmp_root):
     info("item4 #brainstorm-view",
          f"padding={read_style(page, '#brainstorm-view', 'padding')}(D-16 映射值,非 24px)")
 
-    # D-12:以下五条字号同样是「更新期望值接受 HEAD 现状」(16px = --text-md、
-    # 18px = --text-lg、24px = --text-xl 都是 S-2 刻度内的合法档),frontend/style.css 一字未动。
-    ok(item, "[p1] #brainstorm-view h2 font-size", "16px", read_style(page, "#brainstorm-view h2", "font-size"))
+    # D-12:以下四条字号是「更新期望值接受 HEAD 现状」(18px = --text-lg、
+    # 24px = --text-xl 都是 S-2 刻度内的合法档),frontend/style.css 一字未动。
+    # D-02:该断言守卫的 14px 已由 quick 260918-qrq 推翻(HEAD 实况 16px = --text-md),
+    # 继续硬编码只会继续假 FAIL。按 D-03 第一类改为令牌接线表述。
+    ok(item, "[p1] #brainstorm-view h2 font-size == var(--text-md)",
+       resolve_token(page, "--text-md"), read_style(page, "#brainstorm-view h2", "font-size"))
     ok(item, "[p1] #brainstorm-view h2 color == var(--color-action-warning)",
        brainstorm_warning, read_style(page, "#brainstorm-view h2", "color"))
     ok(item, "[p1] #draft-view h2 font-size", "18px", read_style(page, "#draft-view h2", "font-size"))
@@ -750,13 +759,32 @@ def item4(page, tmp_root):
     # font-size 覆盖),那不是 `.markdown-body` 规则本身的探针。
     ok(item, "[p1] .markdown-body font-size(探针 #draft-content)", "16px",
        read_style(page, "#draft-content", "font-size"))
-    # `.markdown-body code` 需要真实 <code> 元素:用应用自身的 renderMarkdown 渲染一个代码跨度
-    # (真实渲染路径,零网络、零 AI 调用)。
-    page.evaluate("""() => {
-        const host = document.querySelector('#draft-content');
-        host.innerHTML = '';
-        host.appendChild(renderMarkdown('harness `probe` 探针'));
-    }""")
+    # `.markdown-body` 内的标题与行内 code 需要真实元素:用应用自身的 renderMarkdown 渲染
+    # 一段含三级标题与代码跨度的 markdown(真实渲染路径,零网络、零 AI 调用)。
+    page.evaluate("""(hosts) => {
+        const md = '# 一级标题\\n\\n## 二级标题\\n\\n### 三级标题\\n\\nharness `probe` 探针';
+        for (const sel of hosts) {
+            const host = document.querySelector(sel);
+            host.innerHTML = '';
+            host.appendChild(renderMarkdown(md));
+        }
+    }""", list(MARKDOWN_HOSTS))
+    # D-03 第一类:本阶段改动的字号走令牌接线,期望侧由 resolve_token 在运行时解析,
+    # 值层再改也不产生假 FAIL。info() 打印解析值,给「接线对但值错」留下人工核对痕迹。
+    h1_size = resolve_token(page, "--text-3xl")
+    h2_size = resolve_token(page, "--text-2xl")
+    h3_size = resolve_token(page, "--text-lg")
+    info("item4 令牌解析(文档标题字号)",
+         f"--text-3xl={h1_size} --text-2xl={h2_size} --text-lg={h3_size}")
+    # 四个宿主逐个断言。只探 #draft-content 时,`#brainstorm-content`(16px)与 `#round-doc`(18px)
+    # 的同类压制会整片溜过去 —— 那是本阶段执行期真实发生的漏检,不是假设。
+    for host in MARKDOWN_HOSTS:
+        ok(item, f"[p1] {host} h1 font-size == var(--text-3xl)", h1_size,
+           read_style(page, f"{host} h1", "font-size"))
+        ok(item, f"[p1] {host} h2 font-size == var(--text-2xl)", h2_size,
+           read_style(page, f"{host} h2", "font-size"))
+        ok(item, f"[p1] {host} h3 font-size == var(--text-lg)", h3_size,
+           read_style(page, f"{host} h3", "font-size"))
     ok(item, "[p1] .markdown-body code font-size", "14px",
        read_style(page, "#draft-content code", "font-size"))
 

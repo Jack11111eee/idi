@@ -2,9 +2,9 @@
 schema_version: 1
 open_count: 5
 waived_count: 3
-fixed_count: 6
-total_count: 14
-last_updated: 2026-09-19T13:10:43.199Z
+fixed_count: 7
+total_count: 15
+last_updated: 2026-09-21T01:59:49.454Z
 ---
 
 # Broken Windows Ledger
@@ -29,6 +29,7 @@ last_updated: 2026-09-19T13:10:43.199Z
 | 12 | 260919-0h3 | unrun-verify | .planning/phases/idi-04-tokens-contract/idi-04-UAT.md |  | UAT 第 4 项 #doc-pane 选择器不存在(index.html 实际为 #doc-panel-body),该格如实记 blocked | open |  | 2026-09-18T17:09:50.074Z |  |
 | 13 | 260919-0h3 | deviation | scripts/check-05-ui-uat.py |  | 浏览器由 channel=chrome 改为 Playwright 自带 chromium:计划的两条理由均失效(1243 已缓存;x86_64 venv 下 chrome 无头走 Rosetta 会 CDP 挂死) | open |  | 2026-09-18T17:09:50.180Z |  |
 | 14 | 04.1 | deviation | frontend/style.css |  | Rule 2 自动修正:--shadow-overlay 紧邻的分节注释原文写 'the single shadow token',Task 3 新增第二个 shadow 令牌后成为假陈述;已在 Task 3 内改为 'the shadow tokens' 并与声明同提交落地 (00c6073) | fixed |  | 2026-09-19T13:08:41.612Z | 2026-09-19T13:10:43.199Z |
+| 15 | 05 | deviation | frontend/style.css | 619 | plan idi-05-01 Task1 halt: .markdown-body h2 fails to reach --text-2xl in 3 of 4 hosts | fixed | 根因:三条 chrome 规则用后代选择器(#draft-view h2 / #rounds-placeholder h2 / #brainstorm-view h2,均 1-0-1)伸进 .markdown-body,把 .markdown-body h2(0-1-1)无条件压回 chrome 字号,四个宿主里三个拿不到 D-06 的 22px。已收窄为 #draft-view > h2 / #round-title / #brainstorm-view > h2,三条规则的声明体逐字不动。check-05 item4 由 27 条(1 FAIL)扩为 36 条(四宿主 × 三档,0 FAIL),smoke PASS,CHECK-01..04 PASS。UI-SPEC 范围栅栏与 plan idi-05-01 Task1 第 3b 步已同步订正 | 2026-09-20T15:57:55.903Z | 2026-09-21T01:59:49.454Z |
 
 ````json
 [
@@ -199,6 +200,18 @@ last_updated: 2026-09-19T13:10:43.199Z
     "reason": "",
     "recorded_at": "2026-09-19T13:08:41.612Z",
     "resolved_at": "2026-09-19T13:10:43.199Z"
+  },
+  {
+    "id": 15,
+    "kind": "deviation",
+    "phase": "05",
+    "file": "frontend/style.css",
+    "line": 619,
+    "description": "plan idi-05-01 Task1 halt: .markdown-body h2 fails to reach --text-2xl in 3 of 4 hosts",
+    "status": "fixed",
+    "reason": "根因:三条 chrome 规则用后代选择器(#draft-view h2 / #rounds-placeholder h2 / #brainstorm-view h2,均 1-0-1)伸进 .markdown-body,把 .markdown-body h2(0-1-1)无条件压回 chrome 字号,四个宿主里三个拿不到 D-06 的 22px。已收窄为 #draft-view > h2 / #round-title / #brainstorm-view > h2,三条规则的声明体逐字不动。check-05 item4 由 27 条(1 FAIL)扩为 36 条(四宿主 × 三档,0 FAIL),smoke PASS,CHECK-01..04 PASS。UI-SPEC 范围栅栏与 plan idi-05-01 Task1 第 3b 步已同步订正",
+    "recorded_at": "2026-09-20T15:57:55.903Z",
+    "resolved_at": "2026-09-21T01:59:49.454Z"
   }
 ]
 ````

@@ -4,17 +4,17 @@ milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: 05
 current_phase_name: 排版与视觉层级
-status: executing
-stopped_at: Completed idi-05-02-PLAN.md (3/3 tasks; Tasks 2 & 3 committed by orchestrator)
-last_updated: "2026-09-21T03:33:31.049Z"
-last_activity: 2026-09-20
-last_activity_desc: Phase idi-05 execution started
-state_head: 0071a2212e3849136f29d6b7a0dc60938afbc108
+status: ready_for_verification
+stopped_at: Completed idi-05-03-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff) — phase idi-05 all 3 plans have SUMMARYs
+last_updated: "2026-09-21T06:37:08.970Z"
+last_activity: 2026-09-21
+last_activity_desc: Completed idi-05-03-PLAN.md (final plan of phase idi-05)
+state_head: b90594c478514f0e70d5a133a26d6641d14a8750
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 33
 ---
 
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 
 ## Current Position
 
-Phase: idi-05 (排版与视觉层级) — EXECUTING
+Phase: idi-05 (排版与视觉层级) — READY FOR VERIFICATION
 Plan: 3 of 3
-Status: Executing Phase idi-05
-Last activity: 2026-09-20 — Phase idi-05 execution started
+Status: All 3 plans complete (`idi-05-01` / `idi-05-02` / `idi-05-03` 各有 SUMMARY);阶段尚未收口 —— `/gsd-verify-work idi-05` 待跑,`phase.complete` 未执行
+Last activity: 2026-09-21 — Completed idi-05-03-PLAN.md (final plan of phase idi-05)
 
 Progress: [███░░░░░░░] 33%
 
@@ -84,6 +84,7 @@ Progress: [███░░░░░░░] 33%
 | Phase idi-04.1-radix P03 | 41min | 3 tasks | 2 files |
 | Phase idi-04.1 P04 | 20min | 3 tasks | 2 files |
 | Phase idi-05 P01 | 20min | 3 tasks | 2 files |
+| Phase idi-05 P03 | ~45min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -140,6 +141,11 @@ Recent decisions affecting current work:
 - [Phase 05]: D-10: 行高复用 --lh-tight 零新增令牌;整数配对数学上不可得,改写为比率配对,18/28 算术错误修正为 18/24,--lh-compact 单列注明 chrome-only
 - [Phase 05]: D-08: TYPE-02 只复证、零 CSS 改动(三处已由 qrq 归入刻度与令牌,重写会改坏正确状态并使 --text-base 消费者计数漂移)
 - [Phase 05]: 执行期用户裁决:收窄三条 chrome 标题规则的选择器为 #draft-view > h2 / #round-title / #brainstorm-view > h2(后代形态 1-0-1 会伸进 .markdown-body 压掉 0-1-1 的 h2);声明体逐字不动,未改动任何规则先后位置
+- [Phase 05]: [Phase 05]: D-18 新开 --color-marker-active(= --radix-blue-11)承载活动面板标记,不复用 --color-action-primary —— 那个名字说的是「主要动作」,拿它做面板指示器会让名说谎(04.1 的 D-03 为同一条方法论付过代价)。颜色值不变,只换承载令牌名;60/30/10 的 Accent 域偏离登记为 A-7
+- [Phase 05]: [Phase 05]: D-17 竖条用 box-shadow: inset 3px 0 0 而非 border-left(零布局位移),落在 .panel-header 而非 <section>(三个 section 的子元素都带背景色,会盖住左边缘的 inset 竖条);标题只改 color 不改 font-weight。3px 是 box-shadow 的偏移分量,不是 --space-* 刻度值(L-1…L-5 从未覆盖 box-shadow,冻结轮已有先例)
+- [Phase 05]: [Phase 05]: D-20/D-21/D-22 两处 emoji 改用 mask-image + background-color 而非契约的 content: url(data-URI) —— 后者经 content 渲染为图片、不继承页面 CSS、currentColor 不可用,只能把 fill 钉死为转义 hex,那让「跟文字色」成为人工同步的约定。mask 只看 alpha,故 <path> 不带 fill、data-URI 内零颜色信息,契约字面量例外 L-3 整个撤掉(Gate 5 机械钉死)
+- [Phase 05]: [Phase 05]: D-23 .collapse-indicator 零触碰(app.js 用 textContent 赋值,内联 <svg> 会被静默擦掉);mask 方案顺带消解 Pitfall 7 的第二半 —— 本阶段 DOM 里没有任何内联 <svg>
+- [Phase 05]: [Phase 05]: D-05 连带义务履行完毕 —— idi-04.1-radix 因 covered_files 内容真变而 stale,走重新验证而非补指纹:四条守卫重跑全绿,04.1 三处结论逐条从 HEAD 重算(ORDER 0.363 / 4.53 / 3.24+3.15 / 冻结轮 1+saturate(0.6)+inset 琥珀 逐字不变),数量差值已登记(tier-1 25 不变、tier-2 47→48、清单 43→47)。04.1 报告文件零改动,指纹写回留给 /gsd-verify-work idi-04.1-radix
 
 ### Pending Todos
 
@@ -188,19 +194,23 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-21T02:32:04.061Z
-Stopped at: Completed idi-05-01-PLAN.md (3/3 tasks; Task 1 committed by orchestrator as 7f4f589)
+Last session: 2026-09-21T06:37:02.133Z
+Stopped at: Completed idi-05-03-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff)
 Resume file: None
 
 ## Operator Next Steps
 
+- ~~**当前待办:规划 Phase 5**~~ **已完成** —— `idi-05` 的 3 个计划(`idi-05-01` / `idi-05-02` / `idi-05-03`)全部执行完毕,各有 SUMMARY。
+- **当前待办(两条,按序):**
+  1. **`/gsd-verify-work idi-05`** —— 阶段尚未收口;`phase.complete` 未执行,ROADMAP 的 Phase 5 复选框与 REQUIREMENTS 的阶段行仍待收口时翻转(注意 `phase.complete` 有越权翻需求并自毁指纹的既往记录,收口后必须复跑门)。
+  2. **`/gsd-verify-work idi-04.1-radix`** —— **D-05 的连带义务,本计划已把输入备齐但未写指纹**。`idi-04.1-radix` 的 `covered_digest`(`v1:sha256:25d5f1fe…`)因 `frontend/style.css` 与 `scripts/check-05-ui-uat.py` 被 wave 1/2/3 改写而 **stale**;成因是**内容真变**,故走**重新验证**而非补指纹。重算后的全部数值与逐条核对结果见 `idi-05-03-SUMMARY.md` 的「D-05 复验记录」节(`ORDER 0.363` 不变 / `--color-text-info ON --color-surface-info` 4.53 逐字不变 / `--color-border-strong` 3.24+3.15 逐字不变 / 冻结轮 `opacity 1` + `filter saturate(0.6)` + `inset 3px 0 0` 琥珀 逐字不变 / tier-1 25 不变、tier-2 47 → **48**、清单 43 → **47**)。**`idi-04.1-VERIFICATION.md` 一字未改**(`git status --porcelain` 为空)。
 - ~~04.1 的上游三步路线~~ **已走完(2026-09-20)** —— discuss → ui-phase → plan → execute → verify 全程完成,4/4 计划交付,`idi-04.1-UAT.md` 3/3 pass。
 - ~~**当前待办:Phase 4 的复验收口**~~ **已收口(2026-09-20)** —— `/gsd-verify-work idi-04` 完成:
   - 旧报告指纹 stale 成因为**内容真变**(04.1 重写了它覆盖的 `frontend/style.css` 值层,实测 `f4dd04b6…` → `cd9aa761…`),故走**重新验证**而非补指纹:新 `idi-04-VERIFICATION.md` 对 HEAD 逐条重核,`14/15`、`behavior_unverified: 0`,全部数值从 HEAD 重算(`ORDER 0.363`、43 对、`--color-text-muted` `rgb(100,100,100)` 5.62)。
   - UAT 6 项全部与报告的人工项一一对应并复现(除第 5 项两次需真实 AI 调用的冒烟,沿用已记录的 `--ai-smoke` 证据)。
   - 复核中发现一条**阶段后引入**的新缺口:`frontend/style.css:434` `.collapse-indicator { font-size: 20px; line-height: 1; }`(由 quick `260918-qrq` / `3684353` 在 Phase 4 收口后引入)。**用户裁定为 Phase 4 范围外**,以 `overrides:` 落证并指派到 backlog **`999.1`**(连同 `check-05-ui-uat.py:588` 的陈旧诊断文案)。TOKEN-08 因此标为 `Complete (PARTIAL — …)`。
   - `phase.complete` 已跑:ROADMAP Progress 表 Phase 4 → `Complete 2026-09-20`;REQUIREMENTS.md 的 Phase 4 需求行随之翻转。两份报告(idi-04 / idi-04.1)的指纹因 `REQUIREMENTS.md` 被改而重算一次,各自在报告内披露。
-- **当前待办:规划 Phase 5** —— `/gsd-plan-phase 5`(排版与视觉层级)。注意其 Pitfall 7 把触碰 `.collapse-indicator` 的范围锁死为两处 `content:` emoji,而 backlog `999.1` 的第 1 项正是该元素的 `font-size`;规划时二者不得互相覆盖。
+- **~~当前待办:规划 Phase 5~~ 已执行** —— `idi-05`(排版与视觉层级)3/3 计划完成,待 `/gsd-verify-work idi-05` 收口。Pitfall 7 把触碰 `.collapse-indicator` 的范围锁死为两处 `content:` emoji(本阶段已把这两处换成 mask 字形),而 backlog `999.1` 的第 1 项是该元素的 `font-size` —— 两者未互相覆盖,`.collapse-indicator` 逐字节与 HEAD 相同。
   以下 S-1…S-4 签核项仍然有效(04.1 明令不改 S-1/S-2),规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
   - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
   - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)

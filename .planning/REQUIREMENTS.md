@@ -25,8 +25,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - [ ] **VISUAL-01**: `#btn-authorize` 采用**不可逆动作**的独立视觉处理(实心填充,而非六个按钮共享的淡色底 `#e9f7ef`/`#2e8b57`),配一个保留令牌(如 `--color-irreversible-*`)
 - [ ] **VISUAL-02**: `#btn-approve-draft`(G1,同样不可逆)与 `#btn-start-writing` 为第二档;例行按钮(`#btn-process-round` / `#btn-continue-check` / `#btn-continue-repair`)保持中性
 - [ ] **VISUAL-03**: 页面级层级——`<h1>文档区</h1>` 降级为视觉标签,不再以 UA 默认约 32px 粗体成为全屏最大最重的文字
-- [ ] **VISUAL-04**: 侧栏四个面板(`会话流`/`本轮批注流`/`自检报告`/`AI 工作面板`)的活动/非活动态可区分
-- [ ] **VISUAL-05**: CSS `content` 里写死的两个 emoji(`📌` 批注引用、`📍` 裁决位置)替换为**内联 SVG**(定义一次、引用),不引入图标库 / 图标字体 / 任何第三方包
+- [x] **VISUAL-04**: 侧栏四个面板(`会话流`/`本轮批注流`/`自检报告`/`AI 工作面板`)的活动/非活动态可区分
+- [x] **VISUAL-05**: CSS `content` 里写死的两个 emoji(`📌` 批注引用、`📍` 裁决位置)替换为**内联 SVG**(定义一次、引用),不引入图标库 / 图标字体 / 任何第三方包
 
 ### TYPE — 排版系统
 
@@ -129,8 +129,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-03 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-04 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-05 | Phase 5: 排版与视觉层级 | Pending |
+| VISUAL-04 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-05 | Phase 5: 排版与视觉层级 | Complete |
 | TYPE-01 | Phase 5: 排版与视觉层级 | Complete |
 | TYPE-02 | Phase 5: 排版与视觉层级 | Complete |
 | TYPE-03 | Phase 5: 排版与视觉层级 | Complete |

@@ -872,6 +872,50 @@ def item4(page, tmp_root):
     ok(item, "[p1] #btn-authorize font-size == var(--text-md)(D-13)", text_md_size,
        read_style(page, "#btn-authorize", "font-size"))
 
+    # ---- VISUAL-03 复证 + 页面级层级链(SC3)------------------------------------
+    # D-19:VISUAL-03 已由 quick 260918-qrq 实现,本任务**零 CSS 改动**,产物是门与记录。
+    # 契约文本(ROADMAP / 04-UI-SPEC)引用的是 `#doc-pane > h1`,该选择器在 HEAD 上
+    # **从来不存在**;实际承担「安静的容器标签,不是全屏最大最重的文字」职责的是
+    # `#doc-panel-header h1`。下面两条把这次漂移登记成机械可核的事实。
+    # 字面值而非令牌接线 —— D-03 第二类:它们守卫的是一个**不该变**的值,改成令牌
+    # 接线会退化为同义反复。**不得**为让契约文本成立而新建 `#doc-pane` 元素或规则。
+    ok(item, "[p1] #doc-panel-header h1 font-size", "14px",
+       read_style(page, "#doc-panel-header h1", "font-size"))
+    ok(item, "[p1] #doc-panel-header h1 font-weight", "500",
+       read_style(page, "#doc-panel-header h1", "font-weight"))
+    has_doc_pane = page.evaluate("() => document.querySelector('#doc-pane') !== null")
+    ok_true(item, "[p1] #doc-pane 选择器不存在(契约漂移登记,D-01)",
+            has_doc_pane is False, "false", has_doc_pane,
+            "契约文本引用的 #doc-pane > h1 从来不是 HEAD 上的选择器")
+
+    # SC3 的页面级层级链:全屏最大最重的文字不再是容器标签「文档区」。
+    # 用应用自身的 renderMarkdown 重新渲染一个含 h1/h2 的探针串(真实渲染路径,零网络、
+    # 零 AI 调用),再把四档字号**解析成整数**逐对比较 —— 字符串比较会踩 "14px" < "9px"
+    # 的序陷阱。此处的重新渲染是安全的:依赖 #draft-content 内容的断言(code / td /
+    # blockquote)都已在上方跑完,此后不再读它的旧内容。
+    page.evaluate("""() => {
+        const host = document.querySelector('#draft-content');
+        host.innerHTML = '';
+        host.appendChild(renderMarkdown('# 一级标题\\n\\n## 二级标题'));
+    }""")
+    chain_raw = [
+        ("文档 h1", read_style(page, "#draft-content h1", "font-size")),
+        (".overlay-card h3(模态)", read_style(page, ".overlay-card h3", "font-size")),
+        ("文档 h2", read_style(page, "#draft-content h2", "font-size")),
+        ("#doc-panel-header h1(容器标签)", read_style(page, "#doc-panel-header h1", "font-size")),
+    ]
+    info("item4 页面级层级链(SC3)", " > ".join(f"{k}={v}" for k, v in chain_raw))
+    chain_px = [int(v[:-2]) if isinstance(v, str) and v.endswith("px") else None
+                for _, v in chain_raw]
+    if None in chain_px:
+        blocked(item, "[p1] 页面级层级链 文档h1 > 模态h3 > 文档h2 > 容器标签h1(严格降序)",
+                "28 > 24 > 22 > 14", chain_px, "四档字号中有读不到的值(元素/选择器不存在)")
+    else:
+        ok_true(item, "[p1] 页面级层级链 文档h1 > 模态h3 > 文档h2 > 容器标签h1(严格降序)",
+                all(a > b for a, b in zip(chain_px, chain_px[1:])),
+                "28 > 24 > 22 > 14", " > ".join(str(v) for v in chain_px),
+                "SC3:全屏最大最重的文字是文档自己的 h1,不是容器标签")
+
     # TOKEN-07 / R-1 的渲染层证据:三条 z-index 走令牌接线,值层再改也不产生假 FAIL。
     # #state-badge 的 z-index 由 R-1 恢复后 --z-badge 才重新有消费者,
     # 围栏断言的 `badge < banner` 承重序关系两端都在真实 DOM 上被读到。

@@ -331,13 +331,16 @@
      Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
      combination that actually renders. Decorative separators are deliberately
      absent — SC 1.4.11 does not apply to a border that identifies nothing.
-     Manifest size across three value layers (D-15): 24 / 34 / 43 — ROADMAP
+     Manifest size across four value layers (D-15): 24 / 34 / 43 / 47 — ROADMAP
      Phase 4 wrote 24 pairs (20 text + 4 non-text); the disk state Phase 4
-     actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; this
-     rewrite re-enumerates 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry.
-     The three numbers are not drift: the contract is "enumerate the combinations
-     that actually render", and each successive value layer changes which
-     combinations occur. */
+     actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; the
+     04.1 rewrite re-enumerated 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry;
+     Phase 5 lands 47 pairs (35 TEXT + 12 NON-TEXT) + 1 ordering entry — the
+     three-step action ramp needs a white-on-fill TEXT pair and a non-text
+     boundary pair for each solid tier, and the active-panel marker needs one of
+     each on its ground. The four numbers are not drift: the contract is
+     "enumerate the combinations that actually render", and each successive value
+     layer changes which combinations occur. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */

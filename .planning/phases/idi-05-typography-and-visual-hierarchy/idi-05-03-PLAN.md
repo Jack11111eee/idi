@@ -242,7 +242,7 @@ Output: 侧栏活动面板的左侧 3px 蓝竖条 + 标题变色(纯 CSS `:not(.
     <fails_when>the last line is not exactly `PASS: 0 failures`, or the command exits non-zero</fails_when>
     <automated>python3 scripts/check-02-contrast.py | grep '^PASS  ' | wc -l</automated>
     <fails_when>the count is not 47</fails_when>
-    <automated>python3 scripts/check-02-contrast.py | grep '^PASS  4.65  --color-marker-active ON --color-surface-page' | wc -l</automated>
+    <automated>python3 scripts/check-02-contrast.py | grep '^PASS  4.65  --color-marker-active on --color-surface-page' | wc -l</automated>
     <fails_when>the count is not 2 (one TEXT, one NON-TEXT)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,4</automated>
     <fails_when>exit code is not 0, or the `=== 逐项结论 ===` block reports anything other than PASS for items 4 and smoke</fails_when>
@@ -307,7 +307,7 @@ Output: 侧栏活动面板的左侧 3px 蓝竖条 + 标题变色(纯 CSS `:not(.
     <fails_when>the count is not 0 (Gate 5 — zero color information inside the mask data URIs is the sole basis for retiring literal exception L-3)</fails_when>
     <automated>grep -oE "fill='" frontend/style.css | wc -l</automated>
     <fails_when>the count is not 0 (a `fill` attribute would reintroduce color information and make L-3 un-retirable)</fails_when>
-    <automated>grep -o 'mask-image: var(--icon-pin);' frontend/style.css | wc -l; grep -o 'mask-image: var(--icon-location);' frontend/style.css | wc -l</automated>
+    <automated>grep -cE '^[[:space:]]*mask-image: var\(--icon-pin\);' frontend/style.css; grep -cE '^[[:space:]]*mask-image: var\(--icon-location\);' frontend/style.css</automated>
     <fails_when>either count is not 1</fails_when>
     <automated>grep -o "content: '';" frontend/style.css | wc -l</automated>
     <fails_when>the count is not 2 (both pseudo-element rule bodies must be rewritten in place)</fails_when>
@@ -374,9 +374,9 @@ Output: 侧栏活动面板的左侧 3px 蓝竖条 + 标题变色(纯 CSS `:not(.
     <fails_when>the last line is not exactly `PASS: 0 failures`, or the command exits non-zero</fails_when>
     <automated>python3 scripts/check-02-contrast.py | grep '^ORDER 0.363' | wc -l</automated>
     <fails_when>the count is not 1 (04.1's ordering assertion must survive unchanged)</fails_when>
-    <automated>python3 scripts/check-02-contrast.py | grep '^PASS  4.53  --color-text-info ON --color-surface-info' | wc -l</automated>
+    <automated>python3 scripts/check-02-contrast.py | grep '^PASS  4.53  --color-text-info on --color-surface-info' | wc -l</automated>
     <fails_when>the count is not 1 (04.1's 0.03-margin pair must be byte-unchanged)</fails_when>
-    <automated>python3 scripts/check-02-contrast.py | grep -E '^PASS  3\.(24|15)  --color-border-strong ON --color-surface' | wc -l</automated>
+    <automated>python3 scripts/check-02-contrast.py | grep -E '^PASS  3\.(24|15)  --color-border-strong on --color-surface' | wc -l</automated>
     <fails_when>the count is not 2 (04.1's border-strong lines must be byte-unchanged)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 1,2,3,4,6</automated>
     <fails_when>exit code is not 0, or the `=== 逐项结论 ===` block reports anything other than PASS for items 1, 2, 3, 4 and 6</fails_when>

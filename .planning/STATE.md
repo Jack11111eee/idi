@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: 05
 current_phase_name: 排版与视觉层级
 status: ready_for_verification
-stopped_at: Completed idi-05-03-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff) — phase idi-05 all 3 plans have SUMMARYs
-last_updated: "2026-09-21T06:37:08.970Z"
+stopped_at: Completed idi-05-04-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff) — phase idi-05 all 4 plans have SUMMARYs
+last_updated: "2026-09-21T12:24:20.922Z"
 last_activity: 2026-09-21
-last_activity_desc: Completed idi-05-03-PLAN.md (final plan of phase idi-05)
-state_head: b90594c478514f0e70d5a133a26d6641d14a8750
+last_activity_desc: Completed idi-05-04-PLAN.md (G-idi-05-1 closed) — all 4 plans of phase idi-05 have SUMMARYs
+state_head: 58974a2af40746c86bc977d19398e493b55fc31f
 progress:
   total_phases: 6
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 11
+  completed_plans: 11
   percent: 33
 ---
 
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: idi-05 (排版与视觉层级) — READY FOR VERIFICATION
-Plan: 3 of 3
-Status: All 3 plans complete (`idi-05-01` / `idi-05-02` / `idi-05-03` 各有 SUMMARY);阶段尚未收口 —— `/gsd-verify-work idi-05` 待跑,`phase.complete` 未执行
-Last activity: 2026-09-21 — Completed idi-05-03-PLAN.md (final plan of phase idi-05)
+Plan: 4 of 4
+Status: All 4 plans complete (`idi-05-01` / `idi-05-02` / `idi-05-03` / `idi-05-04` 各有 SUMMARY);`G-idi-05-1` 已闭合,阶段尚未收口 —— `/gsd-verify-work idi-05` 待跑,`phase.complete` 未执行
+Last activity: 2026-09-21 — Completed idi-05-04-PLAN.md (final plan of phase idi-05)
 
 Progress: [███░░░░░░░] 33%
 
@@ -85,6 +85,7 @@ Progress: [███░░░░░░░] 33%
 | Phase idi-04.1 P04 | 20min | 3 tasks | 2 files |
 | Phase idi-05 P01 | 20min | 3 tasks | 2 files |
 | Phase idi-05 P03 | ~45min | 3 tasks | 2 files |
+| Phase idi-05 P04 | 17 min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -146,6 +147,10 @@ Recent decisions affecting current work:
 - [Phase 05]: [Phase 05]: D-20/D-21/D-22 两处 emoji 改用 mask-image + background-color 而非契约的 content: url(data-URI) —— 后者经 content 渲染为图片、不继承页面 CSS、currentColor 不可用,只能把 fill 钉死为转义 hex,那让「跟文字色」成为人工同步的约定。mask 只看 alpha,故 <path> 不带 fill、data-URI 内零颜色信息,契约字面量例外 L-3 整个撤掉(Gate 5 机械钉死)
 - [Phase 05]: [Phase 05]: D-23 .collapse-indicator 零触碰(app.js 用 textContent 赋值,内联 <svg> 会被静默擦掉);mask 方案顺带消解 Pitfall 7 的第二半 —— 本阶段 DOM 里没有任何内联 <svg>
 - [Phase 05]: [Phase 05]: D-05 连带义务履行完毕 —— idi-04.1-radix 因 covered_files 内容真变而 stale,走重新验证而非补指纹:四条守卫重跑全绿,04.1 三处结论逐条从 HEAD 重算(ORDER 0.363 / 4.53 / 3.24+3.15 / 冻结轮 1+saturate(0.6)+inset 琥珀 逐字不变),数量差值已登记(tier-1 25 不变、tier-2 47→48、清单 43→47)。04.1 报告文件零改动,指纹写回留给 /gsd-verify-work idi-04.1-radix
+- [Phase idi-05]: 嵌入刻度取 24 / 18 / 16(文档档沿契约的数值阶梯下移一档),不是 28 / 22 / 18(同档会让 SC3 的「文档 h1 是全屏最大」为假)也不是 22 / 18 / 16(嵌入 h1 会与文档 h2 撞档)
+- [Phase idi-05]: 修法是逐容器列举而非一条全局标题规则 —— 全局规则对四处 chrome 覆盖与 .markdown-body 都是惰性的,于是只命中这五个容器,却把影响面重新变成不可枚举(那正是 G-idi-05-1 的成因)
+- [Phase idi-05]: 影响面枚举按 renderMarkdown() 的调用点而非按类名:九个目标里 #round-doc 有两个调用点,故 renderMarkdown( 计数是 11 而非 9;只枚举四个 .markdown-body 宿主正是缺陷存活到验证后的直接原因
+- [Phase idi-05]: 变异探针抓到 item7 的静默 PASS 洞:all(w != "700") 对 None 恒真,故「无第四字重档」断言在标题读不到时会记 PASS;已改为 any(w is None) 与缺失同处置记 BLOCKED
 
 ### Pending Todos
 
@@ -194,8 +199,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-21T06:37:02.133Z
-Stopped at: Completed idi-05-03-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff)
+Last session: 2026-09-21T12:24:20.885Z
+Stopped at: Completed idi-05-04-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff) — phase idi-05 all 4 plans have SUMMARYs
 Resume file: None
 
 ## Operator Next Steps

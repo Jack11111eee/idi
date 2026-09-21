@@ -22,9 +22,9 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### VISUAL — 视觉层级
 
-- [ ] **VISUAL-01**: `#btn-authorize` 采用**不可逆动作**的独立视觉处理(实心填充,而非六个按钮共享的淡色底 `#e9f7ef`/`#2e8b57`),配一个保留令牌(如 `--color-irreversible-*`)
-- [ ] **VISUAL-02**: `#btn-approve-draft`(G1,同样不可逆)与 `#btn-start-writing` 为第二档;例行按钮(`#btn-process-round` / `#btn-continue-check` / `#btn-continue-repair`)保持中性
-- [ ] **VISUAL-03**: 页面级层级——`<h1>文档区</h1>` 降级为视觉标签,不再以 UA 默认约 32px 粗体成为全屏最大最重的文字
+- [x] **VISUAL-01**: `#btn-authorize` 采用**不可逆动作**的独立视觉处理(实心填充,而非六个按钮共享的淡色底 `#e9f7ef`/`#2e8b57`),配一个保留令牌(如 `--color-irreversible-*`)
+- [x] **VISUAL-02**: `#btn-approve-draft`(G1,同样不可逆)与 `#btn-start-writing` 为第二档;例行按钮(`#btn-process-round` / `#btn-continue-check` / `#btn-continue-repair`)保持中性
+- [x] **VISUAL-03**: 页面级层级——`<h1>文档区</h1>` 降级为视觉标签,不再以 UA 默认约 32px 粗体成为全屏最大最重的文字
 - [x] **VISUAL-04**: 侧栏四个面板(`会话流`/`本轮批注流`/`自检报告`/`AI 工作面板`)的活动/非活动态可区分
 - [x] **VISUAL-05**: CSS `content` 里写死的两个 emoji(`📌` 批注引用、`📍` 裁决位置)替换为**内联 SVG**(定义一次、引用),不引入图标库 / 图标字体 / 任何第三方包
 
@@ -126,9 +126,9 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — 序关系半场 manual-only,见文末人工验收项) |
 | TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — `.collapse-indicator` 的 `20px` / `line-height: 1` 越轨字面量经用户裁定为 Phase 4 范围外,见 `idi-04-VERIFICATION.md` 的 `overrides:` 与 backlog `999.1`) |
-| VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-03 | Phase 5: 排版与视觉层级 | Pending |
+| VISUAL-01 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-02 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-03 | Phase 5: 排版与视觉层级 | Complete |
 | VISUAL-04 | Phase 5: 排版与视觉层级 | Complete |
 | VISUAL-05 | Phase 5: 排版与视觉层级 | Complete |
 | TYPE-01 | Phase 5: 排版与视觉层级 | Complete |

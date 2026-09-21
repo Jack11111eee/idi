@@ -31,7 +31,7 @@
     {
       "number": "5",
       "name": "排版与视觉层级",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "6",
@@ -51,8 +51,8 @@
   ],
   "next": {
     "command": "/gsd:progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 05 of 6 · 0% · executing"
+    "label": "Advance to the next step (plan phase 6)",
+    "reason": "Phase 6 of 6 — needs a plan"
   },
-  "updated_at": "2026-09-21T12:22:47.133Z"
+  "updated_at": "2026-09-21T13:30:38.207Z"
 }

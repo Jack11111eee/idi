@@ -48,7 +48,7 @@
 - 两处 `window.prompt` 替换、响应式/移动端断点系统、图标库、组件级令牌层、任何 lint 工具链 —— 见 REQUIREMENTS.md 的 Out of Scope 表。
 
 - [x] **Phase 4: 设计契约、令牌层与契约校验** - 书面 UI-SPEC(含含义清单)+ 单一 `:root` 令牌块 + 全部字面量替换 + 四条契约校验命令 (completed 2026-09-20)
-- [ ] **Phase 5: 排版与视觉层级** - markdown 正文字号受控、不可逆动作权重、页面级层级、面板活动态、两处内联 SVG
+- [x] **Phase 5: 排版与视觉层级** - markdown 正文字号受控、不可逆动作权重、页面级层级、面板活动态、两处内联 SVG (completed 2026-09-21)
 - [ ] **Phase 6: 布局稳健性** - 魔法数消除、窄窗口不破版、滚动容器收敛、24×24 命中区
 - [ ] **Phase 7: 交互状态与焦点样式** - hover/active/disabled/transition + 全站 `:focus-visible`
 - [ ] **Phase 8: 可访问性语义与键盘** - 唯一触碰 `app.js`/`index.html` 的阶段:tabindex、划词焦点交接、Escape、dialog 语义、内联错误结构修复、五条修复回归复验
@@ -332,7 +332,7 @@ Plans:
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
 | 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | Complete    | 2026-09-20 |
 | 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
-| 5. 排版与视觉层级 | v1.14 | 4/4 | In Progress|  |
+| 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |

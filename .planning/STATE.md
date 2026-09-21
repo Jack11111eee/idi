@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 05
-current_phase_name: 排版与视觉层级
-status: ready_for_verification
-stopped_at: Completed idi-05-04-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff) — phase idi-05 all 4 plans have SUMMARYs
-last_updated: "2026-09-21T12:24:20.922Z"
+current_phase: 6
+current_phase_name: 布局稳健性
+status: planning
+stopped_at: Phase idi-05 complete, ready to plan Phase 6
+last_updated: "2026-09-21T13:30:38.163Z"
 last_activity: 2026-09-21
-last_activity_desc: Completed idi-05-04-PLAN.md (G-idi-05-1 closed) — all 4 plans of phase idi-05 have SUMMARYs
-state_head: 58974a2af40746c86bc977d19398e493b55fc31f
+last_activity_desc: Phase idi-05 complete, transitioned to Phase 6
+state_head: 87ef1c5e0cbf456a9747884dc5ed661183fcc9e1
 progress:
   total_phases: 6
-  completed_phases: 2
+  completed_phases: 1
   total_plans: 11
   completed_plans: 11
-  percent: 33
+  percent: 17
 ---
 
 # Project State
@@ -29,18 +29,18 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 
 ## Current Position
 
-Phase: idi-05 (排版与视觉层级) — READY FOR VERIFICATION
-Plan: 4 of 4
-Status: All 4 plans complete (`idi-05-01` / `idi-05-02` / `idi-05-03` / `idi-05-04` 各有 SUMMARY);`G-idi-05-1` 已闭合,阶段尚未收口 —— `/gsd-verify-work idi-05` 待跑,`phase.complete` 未执行
-Last activity: 2026-09-21 — Completed idi-05-04-PLAN.md (final plan of phase idi-05)
+Phase: 6 — 布局稳健性
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-21 — Phase idi-05 complete, transitioned to Phase 6
 
-Progress: [███░░░░░░░] 33%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 20
+- Total plans completed: 24
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -53,6 +53,7 @@ Progress: [███░░░░░░░] 33%
 | 3. 授权、自检与终点 | 5 | - | - |
 | idi-04.1 | 4 | - | - |
 | idi-04 | 3 | - | - |
+| idi-05 | 4 | - | - |
 
 **Recent Trend:**
 
@@ -200,7 +201,7 @@ Items acknowledged and deferred at milestone close, most recent first:
 ## Session Continuity
 
 Last session: 2026-09-21T12:24:20.885Z
-Stopped at: Completed idi-05-04-PLAN.md (3/3 tasks; Task 3 evidence-only, zero diff) — phase idi-05 all 4 plans have SUMMARYs
+Stopped at: Phase idi-05 complete, ready to plan Phase 6
 Resume file: None
 
 ## Operator Next Steps

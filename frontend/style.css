@@ -41,8 +41,9 @@
 
      Only the steps a tier-2 token consumes in this same commit are declared
      (D-04 / Hard Rule 5 — never declare a token you are not consuming), so the
-     1-12 scale is deliberately incomplete; Phase 5 declares the 9/10 fill steps
-     together with their consumers. */
+     1-12 scale is deliberately incomplete; Phase 5 reuses the already-declared
+     11/12 fill steps rather than declaring new ones (the role-band record below
+     is the reason). */
   --white: #ffffff;
   --radix-gray-1: #fcfcfc;
   --radix-gray-2: #f9f9f9;
@@ -124,8 +125,10 @@
   --color-kind-result: var(--radix-gray-11);
   --color-action-danger: var(--radix-red-11);
 
-  /* Tier 2 — action families (Q1). Phase 4: the three green families share one value pair;
-     visual differentiation is Phase 5's one-line value edit. */
+  /* Tier 2 — action families (Q1). Phase 4 declared the three green families on a single
+     shared value pair; Phase 5 splits them into the three-step ramp — routine = green-3
+     ground + green-12 text, commit = green-11 fill + white text, irreversible = green-12
+     fill + white text. */
   --color-action-primary: var(--radix-blue-11);
   --color-action-primary-fg: var(--white);
   --color-action-danger-fg: var(--white);
@@ -135,11 +138,11 @@
   --color-action-routine-surface: var(--radix-green-3);
   --color-action-routine-fg: var(--radix-green-12);
   --color-action-commit: var(--radix-green-11);
-  --color-action-commit-surface: var(--radix-green-3);
-  --color-action-commit-fg: var(--radix-green-12);
-  --color-action-irreversible: var(--radix-green-11);
-  --color-action-irreversible-surface: var(--radix-green-3);
-  --color-action-irreversible-fg: var(--radix-green-12);
+  --color-action-commit-surface: var(--radix-green-11);
+  --color-action-commit-fg: var(--white);
+  --color-action-irreversible: var(--radix-green-12);
+  --color-action-irreversible-surface: var(--radix-green-12);
+  --color-action-irreversible-fg: var(--white);
 
   /* Tier 2 — event-kind vocabulary (its own closed group) */
   --color-kind-say: var(--radix-blue-11);
@@ -321,7 +324,9 @@
   /* PAIR --color-kind-fg ON --color-kind-read TEXT */
   /* PAIR --color-kind-fg ON --color-kind-done TEXT */
 
-  /* amber text on its three real grounds, and the six green buttons (three families, one value) */
+  /* amber text on its three real grounds, and the six green buttons across three
+     families with three distinct value pairs: routine = green-3 ground / green-12
+     text, commit = green-11 fill / white text, irreversible = green-12 fill / white text */
   /* PAIR --color-action-warning ON --color-surface-warning TEXT */
   /* PAIR --color-action-warning ON --color-surface-warning-subtle TEXT */
   /* PAIR --color-action-warning ON --color-surface-mark TEXT */
@@ -348,6 +353,12 @@
   /* PAIR --color-action-warning ON --color-surface-mark NON-TEXT */
   /* PAIR --color-action-warning ON --color-surface-warning-subtle NON-TEXT */
   /* PAIR --color-action-routine ON --color-action-routine-surface NON-TEXT */
+
+  /* the two solid-fill steps are boundaries in their own right (SC 1.4.11). Each fill
+     sits on --color-surface: #approve-row / #writing-view / #authorize-row all live in
+     #doc-panel-body → #doc-panel, and #doc-panel declares background: var(--color-surface). */
+  /* PAIR --color-action-commit ON --color-surface NON-TEXT */
+  /* PAIR --color-action-irreversible ON --color-surface NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than
      body text on the same ground. Both operands above are TEXT pairs. */

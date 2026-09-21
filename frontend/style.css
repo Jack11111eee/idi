@@ -144,6 +144,30 @@
   --color-action-irreversible-surface: var(--radix-green-12);
   --color-action-irreversible-fg: var(--white);
 
+  /* Tier 2 — the active sidebar panel marker (VISUAL-04 / D-18).
+
+     Deliberately NOT --color-action-primary. That name says "the primary
+     action"; reusing it for a panel indicator would make the name lie — the
+     same methodology this project already paid for once, when 04.1's D-03
+     renamed all 26 primitives for exactly this reason.
+
+     Blue, not the amber the contract pencilled in: amber already carries two
+     meanings here (warning — --color-action-warning / #pending-count /
+     #state-badge — and the frozen round's amber inset bar), and "active panel"
+     would make a third collision. Blue is this system's information / streaming
+     colour (--color-surface-info / --color-text-info / --color-border-streaming)
+     and is cleanly separated from amber.
+
+     blue-11 rather than a lighter step: blue-2/3 are too light for both a 3px
+     bar and a 14px heading. blue-11 is already declared and already consumed
+     (it backs --color-action-primary / --color-text-info / --color-kind-say /
+     --color-border-streaming); this phase makes it the fifth. Measured 4.65 on
+     --color-surface-page — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
+     and is this phase's thinnest margin (0.15). Do NOT "play it safe" and step
+     it darker (05-N-2 / Pitfall 4a). Because the step is already declared,
+     this phase adds ZERO tier-1 primitives. */
+  --color-marker-active: var(--radix-blue-11);
+
   /* Tier 2 — event-kind vocabulary (its own closed group) */
   --color-kind-say: var(--radix-blue-11);
   --color-kind-read: var(--radix-violet-11);
@@ -343,6 +367,14 @@
   /* the surviving whole-document dim — the archive view (A11Y-04b) */
   /* PAIR --color-text ON --color-surface TEXT@0.75 */
 
+  /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
+     heading switches to the marker colour (SC 1.4.5). All three panels live
+     inside #main-pane, and #main-pane and its ancestors declare no background
+     (html, body is what sets --color-surface-page), so the ground is
+     --color-surface-page. The non-text half — the 3px inset bar, a state
+     indicator under SC 1.4.11 — sits with the other NON-TEXT pairs below. */
+  /* PAIR --color-marker-active ON --color-surface-page TEXT */
+
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
   /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
   /* PAIR --color-border-strong ON --color-surface NON-TEXT */
@@ -359,6 +391,11 @@
      #doc-panel-body → #doc-panel, and #doc-panel declares background: var(--color-surface). */
   /* PAIR --color-action-commit ON --color-surface NON-TEXT */
   /* PAIR --color-action-irreversible ON --color-surface NON-TEXT */
+
+  /* the active sidebar panel marker, non-text half: the 3px inset bar is a state
+     indicator (SC 1.4.11), on the same --color-surface-page ground as its TEXT
+     half above. */
+  /* PAIR --color-marker-active ON --color-surface-page NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than
      body text on the same ground. Both operands above are TEXT pairs. */
@@ -1087,3 +1124,34 @@ button.primary {
    元素选择器特异性 0-0-1,所以 button.danger(0-1-1)、#btn-*(1-0-0)、
    .overlay-card button(0-1-1)全部仍然取胜。视觉 delta 不可感知。 */
 button, input, select { color: var(--color-text); }
+
+/* 活动面板标记(VISUAL-04 / D-17,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   三个互斥面板里恰有一个可见,那一个就是「活动态」;下面两条规则靠 :not(.hidden)
+   **读取**既有的显隐机制,不修改它(.hidden 规则本身零改动,CHECK-03 / CHECK-04 守卫)。
+
+   四条承重决定:
+   (1) 用 box-shadow 的 inset 竖条而非 border-left —— box-shadow 不参与布局、零位移,
+       而 border-left 会给标题行加 3px 宽度,把行内的 #pending-count / #check-state
+       往右推。冻结轮(#round-doc.round-frozen)已是这个写法,有现成先例。
+   (2) 竖条落在 .panel-header 而非 <section> —— 三个 section 的子元素都带背景色
+       (.chat-bubble / .annotation-item / .event-list / .panel-body),inset shadow 画在
+       元素自身的背景层上,带背景的子元素会盖住左边缘的竖条;标题行没有带背景的左边缘
+       子元素,竖条因此可见。这是层叠事实,不是审美偏好。
+   (3) 标题只改 color,不改 font-weight —— D-09 已把 chrome 标题统一为 500;且 .panel-header
+       是 height: 36px + justify-content: space-between 的 flex 行,改字重会移动行内徽标。
+   (4) 3px 是 box-shadow 的偏移分量,**不是** --space-* 刻度值:04-UI-SPEC 的 L-1…L-5 从未
+       覆盖 box-shadow 的偏移/模糊/扩展,冻结轮的既有声明已是先例 —— 这不是新增刻度外字面量。
+
+   #doc-panel-header 虽是 .panel-header,但不被下面三条 ID 选择器匹配,故无意外覆盖。
+   特异性 1-2-0 / 1-2-1,靠 ID 分量取胜,与源码顺序无关;仍追加在末尾,以防日后有人给
+   .panel-header 补 box-shadow。 */
+#session-panel:not(.hidden) .panel-header,
+#annotations-panel:not(.hidden) .panel-header,
+#checks-panel:not(.hidden) .panel-header {
+  box-shadow: inset 3px 0 0 var(--color-marker-active);
+}
+#session-panel:not(.hidden) .panel-header h2,
+#annotations-panel:not(.hidden) .panel-header h2,
+#checks-panel:not(.hidden) .panel-header h2 {
+  color: var(--color-marker-active);
+}

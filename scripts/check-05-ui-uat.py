@@ -568,6 +568,67 @@ def check_frozen_marker(page, item, label_prefix):
     ok(item, f"{label_prefix} 冻结轮 filter", "saturate(0.6)", read_style(page, "#round-doc", "filter"))
 
 
+def check_active_marker(page, item, label_prefix, panel_selector):
+    """活动面板标记(VISUAL-04 / D-17)的语义断言。
+
+    与 check_frozen_marker 同构:读 `.panel-header` 的 computed box-shadow,期望侧由
+    resolve_color(page, "--color-marker-active") 在**运行时**解析 —— 值层的仲裁者是
+    check-02-contrast.py,不是本 harness(故值层再改也不产生假 FAIL)。
+    解析失败 / 令牌未声明 / 元素不存在一律记 blocked,绝不记 PASS。
+    """
+    marker = resolve_color(page, "--color-marker-active")
+    info(f"{label_prefix} 令牌解析 --color-marker-active", marker)
+    header = f"{panel_selector} .panel-header"
+    raw = read_style(page, header, "box-shadow")
+    info(f"{label_prefix} {header} box-shadow 原始值", repr(raw))
+    expected = f"inset 3px 0 0 {marker}"
+    parsed = parse_box_shadow(raw) if raw else None
+    if parsed is None or marker is None:
+        blocked(
+            item,
+            f"{label_prefix} 活动面板竖条 box-shadow 语义",
+            expected,
+            raw,
+            "box-shadow 缺失或无法解析,或 --color-marker-active 解析失败",
+        )
+    else:
+        semantic_ok = (
+            parsed["inset"]
+            and parsed["x"] == "3px"
+            and parsed["y"] == "0px"
+            and parsed["blur"] == "0px"
+            and parsed["spread"] == "0px"
+            and norm(parsed["color"]) == norm(marker)
+        )
+        ok_true(
+            item,
+            f"{label_prefix} 活动面板竖条 box-shadow 语义(inset/3px/0/0/0/marker)",
+            semantic_ok,
+            expected,
+            raw,
+            "Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等",
+        )
+    ok(
+        item,
+        f"{label_prefix} 活动面板标题 color == var(--color-marker-active)",
+        marker,
+        read_style(page, f"{header} h2", "color"),
+    )
+
+
+def check_marker_control(page, item, label_prefix):
+    """活动面板标记的对照组(D-16)。
+
+    `#ai-panel` **从不**被 `.hidden`(app.js 里 grep `aiPanel` 零命中),它的可辨状态是
+    既有的折叠指示器,故不参与「三选一活动态」的 :not(.hidden) 推导,不得被标记。
+    `#doc-panel-header` 虽是 `.panel-header`,但不被三条 ID 选择器匹配 —— 无意外覆盖。
+    """
+    ok(item, f"{label_prefix} 对照组 #ai-panel .panel-header box-shadow == none", "none",
+       read_style(page, "#ai-panel .panel-header", "box-shadow"))
+    ok(item, f"{label_prefix} 对照组 #doc-panel-header box-shadow == none", "none",
+       read_style(page, "#doc-panel-header", "box-shadow"))
+
+
 def item2(page, tmp_root):
     item = "2"
     print("\n=== UAT 2: 冻结轮 backstop ===", flush=True)
@@ -931,11 +992,26 @@ def item4(page, tmp_root):
     ok(item, "[p1] #stream-banner z-index == var(--z-banner)", z_banner,
        read_style(page, "#stream-banner", "z-index"))
 
+    # ---- VISUAL-04:活动面板标记的三态实读 + 对照组(D-16 / D-17)----------------
+    # 三个互斥面板在任一状态里恰有一个可见,那一个就是「活动态」。三态各读一次:
+    # p1 → #session-panel、p3 → #annotations-panel、checking → #checks-panel。
+    # 每个样本同时跑对照组:活动面板之外的两个 `.panel-header` 必须保持 box-shadow: none。
+    check_active_marker(page, item, "[p1]", "#session-panel")
+    check_marker_control(page, item, "[p1]")
+
     # 冻结轮(与第 2 项共用读取器)
     proj = make_fixture("p3", tmp_root)
     enter_project(page, proj)
     goto_frozen_round(page, item)
     check_frozen_marker(page, item, "[p3→round1]")
+    check_active_marker(page, item, "[p3]", "#annotations-panel")
+    check_marker_control(page, item, "[p3]")
+
+    # checking 样本:p3 的批注流让位给自检报告面板(#checks-panel 变活动态)。
+    proj = make_fixture("checking", tmp_root)
+    enter_project(page, proj)
+    check_active_marker(page, item, "[checking]", "#checks-panel")
+    check_marker_control(page, item, "[checking]")
 
     # 归档态灰化
     proj = make_fixture("archive", tmp_root)
@@ -1186,6 +1262,8 @@ def item_smoke(page, tmp_root):
                 "0.2", shadow, "needle 只用短串 0.2,不复用 item3 的完整 rgba 字面")
     ok(item, "smoke .tier-desc opacity == 1(R-3 已删除 opacity: 0.9)",
        "1", read_style(page, ".tier-desc", "opacity"))
+    # VISUAL-04 快速切片:p3 样本下活动面板是 #annotations-panel(3px 竖条 + 标题变色)。
+    check_active_marker(page, item, "[smoke p3]", "#annotations-panel")
     # 透明记录:UAT/PLAN 里写的字面值 rgb(31,99,189) 是 260918-qrq 换肤前的 --blue-700;
     # 该字面值由 UAT 第 3 项逐字断言,故此处只作 INFO,不参与本切片的判定。
     info("smoke UAT 字面值对照",

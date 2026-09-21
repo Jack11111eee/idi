@@ -183,7 +183,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] idi-05-02-PLAN.md — 三段坡道值层重写(commit green-11/white、irreversible green-12/white)+ `#btn-authorize` 字号步进 14→16px + D-04 断言反转(档内相同 / 档间两两不同)+ VISUAL-03 复证
+- [x] idi-05-02-PLAN.md — 三段坡道值层重写(commit green-11/white、irreversible green-12/white)+ `#btn-authorize` 字号步进 14→16px + D-04 断言反转(档内相同 / 档间两两不同)+ VISUAL-03 复证
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -328,7 +328,7 @@ Plans:
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
 | 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | Complete    | 2026-09-20 |
 | 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
-| 5. 排版与视觉层级 | v1.14 | 1/3 | In Progress|  |
+| 5. 排版与视觉层级 | v1.14 | 2/3 | In Progress|  |
 | 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |

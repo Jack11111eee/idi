@@ -30,9 +30,9 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### TYPE — 排版系统
 
-- [ ] **TYPE-01**: `.markdown-body h1/h2/h3` 获得**显式** `font-size`,且**作用域限定在 `.markdown-body` 内**——不得写成全局 `h1,h2,h3` 规则(会与四处 chrome 覆盖碰撞:`.panel-header h2` 14px、`#draft-view h2` 15px、`#brainstorm-view h2` 14px、`.overlay-card h3` 16px)
-- [ ] **TYPE-02**: markdown 内容排版一致:`table th/td`(现 13px vs 正文 14px)、`code`(现 12.5px 分数值)、`blockquote`(现 `#666`)归入刻度与令牌
-- [ ] **TYPE-03**: 字重层级(基线:仅 600 / 400 两档)
+- [x] **TYPE-01**: `.markdown-body h1/h2/h3` 获得**显式** `font-size`,且**作用域限定在 `.markdown-body` 内**——不得写成全局 `h1,h2,h3` 规则(会与四处 chrome 覆盖碰撞:`.panel-header h2` 14px、`#draft-view h2` 15px、`#brainstorm-view h2` 14px、`.overlay-card h3` 16px)
+- [x] **TYPE-02**: markdown 内容排版一致:`table th/td`(现 13px vs 正文 14px)、`code`(现 12.5px 分数值)、`blockquote`(现 `#666`)归入刻度与令牌
+- [x] **TYPE-03**: 字重层级(基线:仅 600 / 400 两档)
 
 ### A11Y — 可访问性
 
@@ -131,9 +131,9 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | VISUAL-03 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-04 | Phase 5: 排版与视觉层级 | Pending |
 | VISUAL-05 | Phase 5: 排版与视觉层级 | Pending |
-| TYPE-01 | Phase 5: 排版与视觉层级 | Pending |
-| TYPE-02 | Phase 5: 排版与视觉层级 | Pending |
-| TYPE-03 | Phase 5: 排版与视觉层级 | Pending |
+| TYPE-01 | Phase 5: 排版与视觉层级 | Complete |
+| TYPE-02 | Phase 5: 排版与视觉层级 | Complete |
+| TYPE-03 | Phase 5: 排版与视觉层级 | Complete |
 | A11Y-01 | Phase 7: 交互状态与焦点样式 | Pending |
 | A11Y-02 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-03 | Phase 8: 可访问性语义与键盘 | Pending |

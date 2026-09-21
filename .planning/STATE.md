@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: 05
 current_phase_name: 排版与视觉层级
 status: executing
-stopped_at: Phase 5 UI-SPEC approved
-last_updated: "2026-09-20T15:45:39.041Z"
+stopped_at: Completed idi-05-01-PLAN.md (3/3 tasks; Task 1 committed by orchestrator as 7f4f589)
+last_updated: "2026-09-21T02:32:04.092Z"
 last_activity: 2026-09-20
 last_activity_desc: Phase idi-05 execution started
-state_head: 22ea1a76d195f2c0fdb1eed05b766dca49827b33
+state_head: a0845bbb9626faa44636b43b76160d8fbbc145e9
 progress:
   total_phases: 6
   completed_phases: 2
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 33
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 ## Current Position
 
 Phase: idi-05 (排版与视觉层级) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 Status: Executing Phase idi-05
 Last activity: 2026-09-20 — Phase idi-05 execution started
 
@@ -83,6 +83,7 @@ Progress: [███░░░░░░░] 33%
 | Phase 04.1 P02 | 2min | 2 tasks | 1 files |
 | Phase idi-04.1-radix P03 | 41min | 3 tasks | 2 files |
 | Phase idi-04.1 P04 | 20min | 3 tasks | 2 files |
+| Phase idi-05 P01 | 20min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -135,6 +136,10 @@ Recent decisions affecting current work:
 - [Phase 04.1]: C-1 复核:ROADMAP 五处 + 04-UI-SPEC.md 携带项 #7 的 #brainstorm-view h2 = 14px / #8a6508 全部失真(实测 16px / #4f3422);只留证不改写,裁决权交用户
 - [Phase idi-04.1]: CR-01 关闭:resolve_color 令牌未声明时返回 None,ok() 把 None 期望值记 BLOCKED —— 只改两处 helper,24 处调用点与全部 expected 字面值一字未动 — D-14 把 22 条硬编码 rgb(...) 断言换成令牌接线,移除了假 FAIL 的根因,同时移除了改名/删除时的 FAIL 能力;plan 03 已把该损失登记为由 check-02 的 43 对实测比值与接线断言旁的 info() 补偿 —— CR-01 证明该补偿只覆盖值轴,接线轴仍空转
 - [Phase idi-04.1]: CR-01 的修复用变异证明钉死:反事实常量(68309d0 的探针体)+ 浏览器侧拦截 /style.css 删掉 --color-text-muted 声明 + 未变异对照支,三件套进 scripts/probe-05-resolve-color.py(不是门,不进守卫契约) — 变异测试是唯一能证明守卫真的会失败的手段(本项目已记录的教训);只跑一次真实树无法区分「守卫在工作」与「守卫静默空转」,故反事实与对照两支缺一不可
+- [Phase 05]: D-07: --text-2xl 取 22px 而非契约的 18px(18px 已被 --text-lg 占用,改回会让 18px 有两个令牌名);围栏注释写明「名同值不同,不是笔误」
+- [Phase 05]: D-10: 行高复用 --lh-tight 零新增令牌;整数配对数学上不可得,改写为比率配对,18/28 算术错误修正为 18/24,--lh-compact 单列注明 chrome-only
+- [Phase 05]: D-08: TYPE-02 只复证、零 CSS 改动(三处已由 qrq 归入刻度与令牌,重写会改坏正确状态并使 --text-base 消费者计数漂移)
+- [Phase 05]: 执行期用户裁决:收窄三条 chrome 标题规则的选择器为 #draft-view > h2 / #round-title / #brainstorm-view > h2(后代形态 1-0-1 会伸进 .markdown-body 压掉 0-1-1 的 h2);声明体逐字不动,未改动任何规则先后位置
 
 ### Pending Todos
 
@@ -183,9 +188,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-20T12:07:48.451Z
-Stopped at: Phase 5 UI-SPEC approved
-Resume file: .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-UI-SPEC.md
+Last session: 2026-09-21T02:32:04.061Z
+Stopped at: Completed idi-05-01-PLAN.md (3/3 tasks; Task 1 committed by orchestrator as 7f4f589)
+Resume file: None
 
 ## Operator Next Steps
 

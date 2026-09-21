@@ -296,6 +296,30 @@
         perceptible; gray-4 would double the hover delta and collide with
         --color-surface-user. */
 
+  /* Inline glyphs (VISUAL-05 / D-20 / D-21 / D-22). Two hand-written SVG
+     data-URIs, consumed by .annotation-quote::before and .verdict-location::before
+     via mask-image + background-color.
+
+     The mechanism is deliberately NOT the contract's `content: url(data-URI)`:
+     a data-URI rendered through `content` is an IMAGE — it does not inherit page
+     CSS and `currentColor` is unavailable, so its fill could only be pinned to an
+     escaped hex. That makes "follows the text colour" a hand-synchronised
+     convention rather than a mechanism. A mask reads only ALPHA, so the <path>
+     carries no `fill` attribute at all (default black = opaque) and these URIs
+     contain ZERO colour information — no %23, no #, no fill=. That is the sole
+     basis for retiring the contract's literal exception L-3 entirely.
+
+     Shape contract (mechanically checkable): viewBox='0 0 12 12', exactly one
+     <path>, no fill attribute, xmlns present, solid (not outlined — at 12px an
+     outline is unreadable), and the two shapes must be distinguishable from each
+     other (a pin with a wide flat head, a flange and a thin needle vs. a smooth
+     teardrop with a hole). The `d` data is hand-written here: no external source,
+     no licence, no supply-chain surface. No semicolon may appear inside the URI —
+     check-02's DECL_RE takes a declaration value with [^;]+ and one would truncate
+     it. */
+  --icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0.6 L8.8 2.2 L8.8 5.2 L10.6 7.4 L7.1 7.4 L7.1 10.6 L6 12 L4.9 10.6 L4.9 7.4 L1.4 7.4 L3.2 5.2 L3.2 2.2 Z'/%3E%3C/svg%3E");
+  --icon-location: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0 C3.5 0 1.6 1.9 1.6 4.3 C1.6 6.2 3.4 8.4 6 12 C8.6 8.4 10.4 6.2 10.4 4.3 C10.4 1.9 8.5 0 6 0 Z M6 2.6 C7.5 2.6 8.7 3.8 8.7 5.2 C8.7 6.6 7.5 7.8 6 7.8 C4.5 7.8 3.3 6.6 3.3 5.2 C3.3 3.8 4.5 2.6 6 2.6 Z'/%3E%3C/svg%3E");
+
   /* ---- Contrast pair manifest (CHECK-02) -----------------------------------
      Every entry below names two tokens declared in this fence. The checker
      scripts/check-02-contrast.py reads this manifest and fails loudly on a name
@@ -902,7 +926,33 @@ button.primary {
 }
 #annotations-panel .annotation-item p { margin: var(--space-1) 0; }
 .annotation-quote { color: var(--color-text-secondary); }
-.annotation-quote::before { content: '📌 '; }
+/* VISUAL-05 / D-20 / D-21 / D-22:原地改写为 mask 盒模型(不在末尾追加重复选择器 ——
+   该选择器全文只出现一次、无竞争者,故原地改写在层叠上等价于追加,且不会在末尾留下
+   一条被覆盖的死 content 声明)。
+   三条实现细节缺一即错:
+   (1) margin-right 是必需的 —— 原来的 content 自带一个尾随空格,content: '' 的 12px
+       盒没有,不加间距图标会贴住文字;4px 是刻度内档,与 emoji 占位宽度相当。
+   (2) -webkit-mask-* 与 mask-* 都要写(本阶段唯一允许的冗余声明):无前缀是现代
+       Chrome 的写法,前缀是 WebKit 系的写法。
+   (3) mask-repeat 必须显式声明(默认值是 repeat),mask-size 也必须显式声明(SVG 有
+       viewBox 但无内在尺寸,auto 的落点依赖引擎)。 */
+.annotation-quote::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-1);
+  vertical-align: -2px;
+  background-color: var(--color-text-secondary);
+  -webkit-mask-image: var(--icon-pin);
+  mask-image: var(--icon-pin);
+  -webkit-mask-size: 12px 12px;
+  mask-size: 12px 12px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
 .annotation-note { color: var(--color-text); }
 .annotation-badge {
   display: inline-block;
@@ -1090,7 +1140,24 @@ button.primary {
 }
 .verdict-card p { margin: var(--space-1) 0; }
 .verdict-location { color: var(--color-text-secondary); }
-.verdict-location::before { content: '📍 '; }
+/* 同 .annotation-quote::before,只把 --icon-pin 换成 --icon-location(VISUAL-05 / D-22)。 */
+.verdict-location::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-1);
+  vertical-align: -2px;
+  background-color: var(--color-text-secondary);
+  -webkit-mask-image: var(--icon-location);
+  mask-image: var(--icon-location);
+  -webkit-mask-size: 12px 12px;
+  mask-size: 12px 12px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
 .verdict-issue { color: var(--color-text); }
 .verdict-suggestion { color: var(--color-text-muted); font-style: italic; }
 .verdict-note-input {

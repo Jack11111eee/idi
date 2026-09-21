@@ -248,6 +248,61 @@ def read_style(page, selector, prop):
     return page.evaluate(_READ_JS, [selector, prop])
 
 
+_PSEUDO_READ_JS = """([sel, pseudo, prop]) => {
+  const el = document.querySelector(sel);
+  if (!el) return null;
+  const v = getComputedStyle(el, pseudo)[prop];
+  return (v === undefined || v === null) ? null : v;
+}"""
+
+
+def read_pseudo_style(page, selector, pseudo, prop):
+    """读伪元素的 computed style。
+
+    既有的 read_style 只接受 (selector, prop),拿不到伪元素,故另开一个读取器。
+    元素本身不存在时返回 None → 调用方记 BLOCKED,绝不记 PASS。"""
+    return page.evaluate(_PSEUDO_READ_JS, [selector, pseudo, prop])
+
+
+def check_mask_glyph(page, item, label_prefix, selector, icon_token):
+    """两处内联掩码字形(VISUAL-05 / D-20 / D-21 / D-22)的四条运行时断言。
+
+    机制是 mask-image + background-color(不是 content: url(...)),故产物是一个
+    **盒模型**:尺寸 12×12、底色跟随 --color-text-secondary 令牌、mask-image 接上围栏
+    内的 data-URI 令牌。伪元素未渲染时四条一起记 BLOCKED,绝不记 PASS。
+    """
+    pseudo = "::before"
+    width = read_pseudo_style(page, selector, pseudo, "width")
+    height = read_pseudo_style(page, selector, pseudo, "height")
+    bg = read_pseudo_style(page, selector, pseudo, "background-color")
+    mask = read_pseudo_style(page, selector, pseudo, "mask-image")
+    if width is None or height is None or bg is None or mask is None:
+        blocked(
+            item,
+            f"{label_prefix} {selector}{pseudo} mask 盒模型",
+            "12px / 12px / <--color-text-secondary> / mask-image != none",
+            f"width={width} height={height} background-color={bg} mask-image={mask}",
+            "伪元素未渲染(元素不存在或 ::before 未生成)",
+        )
+        return
+    ok(item, f"{label_prefix} {selector}{pseudo} width", "12px", width)
+    ok(item, f"{label_prefix} {selector}{pseudo} height", "12px", height)
+    ok(
+        item,
+        f"{label_prefix} {selector}{pseudo} background-color == var(--color-text-secondary)",
+        resolve_color(page, "--color-text-secondary"),
+        bg,
+    )
+    info(f"{label_prefix} {selector}{pseudo} mask-image 原始值", repr(mask))
+    ok_true(
+        item,
+        f"{label_prefix} {selector}{pseudo} mask-image 接上 var({icon_token})",
+        mask != "none",
+        "!=none",
+        mask,
+    )
+
+
 # --- 三段坡道(D-04 的反转形态,Plan 02)------------------------------------
 # 六只动作按钮按「不可逆程度」分三档。档内三属性必须逐字节相同(它能抓到「改错了一只」),
 # 三档之间必须两两不同(它守卫的是核心价值红线:授权绝不与例行混同)。
@@ -999,6 +1054,28 @@ def item4(page, tmp_root):
     check_active_marker(page, item, "[p1]", "#session-panel")
     check_marker_control(page, item, "[p1]")
 
+    # ---- VISUAL-05:裁决位置行的掩码字形(D-20 / D-21 / D-22)-------------------
+    # 用应用自身的 renderVerdictCard 渲染一张裁决卡 —— 'p2' 模式才会创建
+    # .verdict-location(真实渲染路径,零网络、零 AI 调用)。
+    verdict_rendered = page.evaluate("""() => {
+        const host = document.querySelector('#verdict-cards');
+        if (!host || typeof renderVerdictCard !== 'function') return false;
+        host.innerHTML = '';
+        host.appendChild(renderVerdictCard(
+            { number: 1, location: 'harness 探针位置', issue: 'i', suggestion: 's' }, 'p2'));
+        return !!host.querySelector('.verdict-location');
+    }""")
+    if not verdict_rendered:
+        blocked(
+            item,
+            "[p1] .verdict-location::before mask 盒模型",
+            "裁决卡渲染出 .verdict-location",
+            "<未渲染>",
+            "renderVerdictCard(..., 'p2') 未产出 .verdict-location",
+        )
+    else:
+        check_mask_glyph(page, item, "[p1]", ".verdict-location", "--icon-location")
+
     # 冻结轮(与第 2 项共用读取器)
     proj = make_fixture("p3", tmp_root)
     enter_project(page, proj)
@@ -1230,6 +1307,10 @@ def item6(page, tmp_root):
         return
     ok(item, "CR-06 用户批注 .annotation-note color", muted, note_color)
     ok(item, "CR-06 AI 回应正文 .annotation-answer-body color", muted, body_color)
+
+    # VISUAL-05 / D-20…D-22:引用行前缀从写死的 emoji 换成跟随令牌的掩码字形。
+    # item6 已经写出批注并渲染出 .annotation-quote,是这条断言的天然落点。
+    check_mask_glyph(page, item, "[p3]", ".annotation-quote", "--icon-pin")
 
 
 # ---------------------------------------------------------------------------

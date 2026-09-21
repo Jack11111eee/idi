@@ -671,7 +671,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   background: var(--color-action-commit-surface);
   border-color: var(--color-action-commit);
   color: var(--color-action-commit-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-approve-draft:disabled { opacity: 0.55; cursor: not-allowed; }
 #approve-row .hint { margin: var(--space-1-5) 0 0; }
@@ -900,7 +900,7 @@ button.primary {
   background: var(--color-action-routine-surface);
   border-color: var(--color-action-routine);
   color: var(--color-action-routine-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-process-round:disabled { opacity: 0.55; cursor: not-allowed; }
 
@@ -963,7 +963,7 @@ button.primary {
   background: var(--color-action-commit-surface);
   border-color: var(--color-action-commit);
   color: var(--color-action-commit-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-start-writing:disabled { opacity: 0.55; cursor: not-allowed; }
 #writing-view .hint { margin: var(--space-1-5) 0 0; }
@@ -1021,7 +1021,7 @@ button.primary {
   background: var(--color-action-routine-surface);
   border-color: var(--color-action-routine);
   color: var(--color-action-routine-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-continue-check:disabled, #btn-continue-repair:disabled {
   opacity: 0.55;

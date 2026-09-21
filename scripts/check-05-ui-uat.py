@@ -805,6 +805,23 @@ def item4(page, tmp_root):
     ok(item, "[p1] .markdown-body blockquote color == var(--color-text-muted)", muted_color,
        read_style(page, "#draft-content blockquote", "color"))
 
+    # TYPE-03(D-09 / D-12):五只动作按钮的字重由 600 降到 500 —— 与 chrome 标题同档,
+    # 分工是「内容标题 600 / chrome 标题与按钮 500」。#btn-authorize 按 D-12 保持 600,
+    # 这是 D-09 的**唯一已登记例外**(授权绝不与例行混同,四个强调通道此处用满)。
+    # 六只按钮全部常驻 DOM;getComputedStyle 对 display:none 的元素仍返回解析后的
+    # font-weight(它不依赖布局),故此处无需检查可见性 —— 与上面读 #state-badge 的
+    # z-index 是同一个事实。期望侧写字面档值 500 / 600:Chrome 把 font-weight 序列化为
+    # 无单位的数字串,与 resolve_token 读到的自定义属性值同形(info() 里记录解析值以便核对)。
+    fw_medium = resolve_token(page, "--fw-medium")
+    fw_semibold = resolve_token(page, "--fw-semibold")
+    info("item4 令牌解析(字重档)", f"--fw-medium={fw_medium} --fw-semibold={fw_semibold}")
+    for sel in ("#btn-approve-draft", "#btn-process-round", "#btn-start-writing",
+                "#btn-continue-check", "#btn-continue-repair"):
+        ok(item, f"[p1] {sel} font-weight == 500(--fw-medium)", "500",
+           read_style(page, sel, "font-weight"))
+    ok(item, "[p1] #btn-authorize font-weight == 600(--fw-semibold,D-12 唯一例外)", "600",
+       read_style(page, "#btn-authorize", "font-weight"))
+
     # TOKEN-07 / R-1 的渲染层证据:三条 z-index 走令牌接线,值层再改也不产生假 FAIL。
     # #state-badge 的 z-index 由 R-1 恢复后 --z-badge 才重新有消费者,
     # 围栏断言的 `badge < banner` 承重序关系两端都在真实 DOM 上被读到。

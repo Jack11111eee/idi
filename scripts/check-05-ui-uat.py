@@ -29,12 +29,23 @@
     故:`--browser chrome` 仍保留,但它强制有头(headless=False),不能无人值守。
 
 运行方式
-    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..6 项
+    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..7 项
     .venv/bin/python scripts/check-05-ui-uat.py --item smoke    # 只跑 harness 自检切片
+    .venv/bin/python scripts/check-05-ui-uat.py --item 7        # 只跑渲染目标的标题刻度
     .venv/bin/python scripts/check-05-ui-uat.py --item 1 --item 2
     .venv/bin/python scripts/check-05-ui-uat.py --ai-smoke      # 额外真跑两次 AI 交互冒烟
     .venv/bin/python scripts/check-05-ui-uat.py --keep          # 保留临时工作目录供排查
     .venv/bin/python scripts/check-05-ui-uat.py --browser chrome  # 改用系统 Chrome(有头)
+
+第 7 项(G-idi-05-1)
+    `renderMarkdown()` 的返回值被注入**五个不是 `.markdown-body`** 的容器
+    (`.event-content` / `.chat-bubble` / `.say-chunk` / `.annotation-note` /
+    `.annotation-answer-body`),而标题尺寸规则此前只存在于 `.markdown-body` 作用域内,
+    故这些容器里的 h1/h2/h3 全部回落 UA 默认值(`.chat-bubble` 上下文 32px、
+    `.event-content` 上下文 28px,字重一律 700)。第 7 项用应用自身的四个渲染函数
+    **造出这五个容器再断言**(容器造不出记 BLOCKED,绝不记 PASS),并含一条**静态普查守卫**:
+    `frontend/app.js` 的 `renderMarkdown(` 计数一变即 FAIL,强制 `MARKDOWN_TARGETS` 跟上。
+    枚举纪律是**按调用点,不按类名** —— 只枚举四个 `.markdown-body` 宿主正是该缺陷存活的直接原因。
 
 退出码语义
     0 = 所选项全部 pass
@@ -860,12 +871,76 @@ def item3(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# 渲染目标枚举 —— 单一事实源(G-idi-05-1 的修法)
+# ---------------------------------------------------------------------------
+# **枚举纪律:按 `renderMarkdown()` 的调用点,不按类名。**
+#
+# 这里此前只有 `MARKDOWN_HOSTS`(4 个 `.markdown-body` 宿主),而 `renderMarkdown()`
+# 实际有 10 个调用点、9 个不同注入目标 —— 另外 5 个(`.event-content` / `.chat-bubble` /
+# `.say-chunk` / `.annotation-note` / `.annotation-answer-body`)**不是** `.markdown-body`,
+# 因此拿不到 `.markdown-body h1/h2/h3` 的字号规则,标题全部回落 UA 默认值
+# (`.chat-bubble` 上下文 32px、`.event-content` 上下文 28px,字重一律 700)。
+# **只枚举四个 `.markdown-body` 宿主正是 `G-idi-05-1` 存活到验证后的直接原因** ——
+# 与本阶段 plan 01 已登记的教训同型(当时是只探一个宿主)。
+#
+# 每项 = (选择器, 注入它的 app.js 函数名, 刻度族)。刻度族取 "doc" 或 "embedded"。
+# 「函数名」一栏是**给人核对的锚点**(它比行号稳 —— Phase 8 改 app.js 时行号会漂),
+# 不参与断言。
+MARKDOWN_TARGETS = (
+    ("#draft-content", "renderDraft", "doc"),
+    ("#brainstorm-content", "renderBrainstorm", "doc"),
+    ("#round-doc", "loadArchiveView", "doc"),          # 两个调用点:loadArchiveView 与冻结轮路径
+    ("#latest-check", "applyPhase5View", "doc"),
+    (".event-content", "renderEvent", "embedded"),
+    (".chat-bubble", "appendChatMessage", "embedded"),
+    (".say-chunk", "appendSayToChat", "embedded"),
+    (".annotation-note", "renderAnnotations", "embedded"),
+    (".annotation-answer-body", "renderAnnotations", "embedded"),
+)
+
+# 派生视图(不再是手写清单)。MARKDOWN_HOSTS 的顺序与拆分前逐字相同,item4 的既有循环
+# 与 check-06 的 `c05.MARKDOWN_HOSTS` 继续原样消费它。
+MARKDOWN_HOSTS = tuple(sel for sel, _fn, fam in MARKDOWN_TARGETS if fam == "doc")
+RENDER_TARGETS = tuple(sel for sel, _fn, fam in MARKDOWN_TARGETS if fam == "embedded")
+
+APP_JS = ROOT / "frontend" / "app.js"
+# 1 处定义(app.js:112)+ 10 个调用点。九个目标里 `#round-doc` 有两个调用点
+# (`loadArchiveView` 与冻结轮路径),故调用点数比目标数多 1。
+RENDER_MARKDOWN_CALL_SITES = 11
+
+
+def check_render_markdown_call_sites(item):
+    """调用点普查守卫(静态):让枚举无法悄悄过期。
+
+    新增一个渲染目标而不更新 `MARKDOWN_TARGETS`,本断言立刻 FAIL 并给出可执行的动作。
+    判据由脚本自己从 `frontend/app.js` 的文本算出(不用 shell 管道),且比的是
+    「调用点数 vs 枚举条数」两个独立量 —— 不是自比。
+    """
+    count = APP_JS.read_text(encoding="utf-8").count("renderMarkdown(")
+    ok_true(
+        item,
+        "app.js 的 renderMarkdown( 计数 == 11(1 定义 + 10 调用点)",
+        count == RENDER_MARKDOWN_CALL_SITES,
+        RENDER_MARKDOWN_CALL_SITES,
+        count,
+        "调用点数变了 ⇒ 按调用点更新 MARKDOWN_TARGETS,再跑本项",
+    )
+    ok_true(
+        item,
+        "MARKDOWN_TARGETS 条数 == 9(与调用点枚举一一对应)",
+        len(MARKDOWN_TARGETS) == 9,
+        9,
+        len(MARKDOWN_TARGETS),
+        "渲染目标数变了 ⇒ 按调用点更新 MARKDOWN_TARGETS,再跑本项",
+    )
+
+
+# ---------------------------------------------------------------------------
 # UAT 第 4 项 — Plan 02 的 16 项
 # ---------------------------------------------------------------------------
 # `.markdown-body` 的四个宿主(UI-SPEC §字号刻度的范围栅栏点名的影响面)。四个都要探:
 # 本阶段修掉的层叠缺陷(`#draft-view h2` 等 1-0-1 后代选择器压掉 `.markdown-body h2`)
 # 只在其中三个上出现,`#latest-check` 一直是对的 —— 只探一个宿主正是它存活到执行期的原因。
-MARKDOWN_HOSTS = ("#draft-content", "#brainstorm-content", "#round-doc", "#latest-check")
 
 
 def item4(page, tmp_root):
@@ -1314,6 +1389,126 @@ def item6(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# UAT 第 7 项 — G-idi-05-1:五个非 .markdown-body 渲染目标的标题刻度
+# ---------------------------------------------------------------------------
+# 这五项断言是**造出容器再断言**,不靠「fixture 里本来就有 .chat-bubble」。
+# 容器造不出时记 BLOCKED,绝不记 PASS(与 check-06 的 g4 / g5 同约定)。
+# 取值规则(契约 P-20):嵌入档 = 文档档沿数值阶梯下移一档 —— 28 → 24(--text-xl)、
+# 22 → 18(--text-lg)、18 → 16(--text-md),字重取内容标题档 --fw-semibold(600)。
+PROBE_MD = "# 探针一级\n\n## 探针二级\n\n### 探针三级"
+
+
+def px_of(value):
+    """'28px' → 28.0;取不到返回 None。比较必须用整数 —— 字符串比较会踩 "14px" < "9px"。"""
+    if not value or not isinstance(value, str) or not value.endswith("px"):
+        return None
+    try:
+        return float(value[:-2])
+    except ValueError:
+        return None
+
+
+def item7(page, tmp_root):
+    item = "7"
+    print("\n=== UAT 7: 五个嵌入渲染目标的标题刻度(G-idi-05-1 / SC3)===", flush=True)
+    proj = make_fixture("p1", tmp_root)
+    enter_project(page, proj)
+    info("item7 渲染目标枚举",
+         f"doc={list(MARKDOWN_HOSTS)} embedded={list(RENDER_TARGETS)}")
+
+    # 用应用自身的四个渲染函数把带三级标题的探针 markdown 注入五个容器 ——
+    # 真实渲染路径,零网络、零 AI 调用(`appendChatMessage` / `appendSayToChat` 就是
+    # 应用自己的注入路径,不需要真实 AI 轮次)。
+    # renderAnnotations 的入参是**对象** `{items: [...]}`,不是数组;条目用 type:'plain'
+    # 使 details.open = true,两个容器都真实渲染。
+    created = page.evaluate("""(md) => {
+        const sels = ['.event-content', '.chat-bubble', '.say-chunk',
+                      '.annotation-note', '.annotation-answer-body'];
+        try {
+            if (typeof renderEvent === 'function') renderEvent({ kind: 'say', content: md });
+            if (typeof appendChatMessage === 'function') appendChatMessage('ai', md);
+            if (typeof appendSayToChat === 'function') appendSayToChat(md);
+            if (typeof renderAnnotations === 'function') {
+                renderAnnotations({ items: [{
+                    id: 'probe-7', type: 'plain', status: 'answered',
+                    quote: '探针摘录', note: md, answer: md,
+                }] }, true);
+            }
+            const doc = document.querySelector('#draft-content');
+            if (doc) { doc.innerHTML = ''; doc.appendChild(renderMarkdown(md)); }
+        } catch (e) {
+            return { error: String(e) };
+        }
+        const out = {};
+        for (const s of sels) out[s] = document.querySelector(s) !== null;
+        return { created: out };
+    }""", PROBE_MD)
+    info("item7 容器创建", str(created))
+    if created.get("error"):
+        blocked(item, "item7 五个容器已渲染", "四个渲染函数产出五个容器",
+                "<ERROR>", created["error"])
+    hit = created.get("created") or {}
+
+    t_xl = resolve_token(page, "--text-xl")
+    t_lg = resolve_token(page, "--text-lg")
+    t_md = resolve_token(page, "--text-md")
+    fw_semibold = resolve_token(page, "--fw-semibold")
+    info("item7 令牌解析",
+         f"--text-xl={t_xl} --text-lg={t_lg} --text-md={t_md} --fw-semibold={fw_semibold}")
+
+    # 5 目标 × 3 档 × 2 属性 = 30 条。期望侧由 resolve_token 在运行时解析
+    # (D-03 第一类),值层再改也不产生假 FAIL。
+    scale = (("h1", t_xl, "--text-xl"), ("h2", t_lg, "--text-lg"), ("h3", t_md, "--text-md"))
+    weights = []
+    for sel in RENDER_TARGETS:
+        if not hit.get(sel):
+            blocked(item, f"[p1] {sel} 容器已渲染", "<容器存在>", "<MISSING>",
+                    "渲染函数未产出该容器")
+            continue
+        for tag, token, token_name in scale:
+            ok(item, f"[p1] {sel} {tag} font-size == var({token_name})", token,
+               read_style(page, f"{sel} {tag}", "font-size"))
+            weight = read_style(page, f"{sel} {tag}", "font-weight")
+            weights.append(weight)
+            ok(item, f"[p1] {sel} {tag} font-weight == var(--fw-semibold)", fw_semibold, weight)
+
+    # SC3 的机械形态:文档 h1 **严格大于**每个目标自己的 h1(先造容器再断言)。
+    # 注意 check-06 的 g2 只把探针注入四个 MARKDOWN_HOSTS,对下面五个容器状态盲
+    # (见 UI-SPEC 05-N-7),故它不是这条约束的依据 —— 依据就是下面这 5 条。
+    doc_h1 = px_of(read_style(page, "#draft-content h1", "font-size"))
+    info("item7 文档 h1", f"#draft-content h1 = {doc_h1}px")
+    if doc_h1 is None:
+        blocked(item, "[p1] 文档 h1 已渲染(#draft-content h1)", "px 值", "<MISSING>",
+                "renderMarkdown 未产出 #draft-content h1")
+    for sel in RENDER_TARGETS:
+        label = f"[p1] 文档 h1 严格大于 {sel} h1(SC3)"
+        if doc_h1 is None:
+            continue
+        if not hit.get(sel):
+            blocked(item, label, f">{doc_h1:g}px", "<MISSING>", "容器未渲染出来")
+            continue
+        target_h1 = px_of(read_style(page, f"{sel} h1", "font-size"))
+        if target_h1 is None:
+            blocked(item, label, f">{doc_h1:g}px", "<MISSING>", f"{sel} h1 未渲染出来")
+            continue
+        ok_true(item, label, doc_h1 > target_h1, f">{target_h1:g}px", f"{doc_h1:g}px",
+                "SC3:全屏最大最重的文字是文档自己的 h1")
+
+    # 第四字重档:五个目标的 h1/h2/h3 里不得有任何 700(契约只声明 400 / 500 / 600)。
+    # 读不到的字重是 None,`all(w != "700")` 对 None 恒真 —— 不加 None 支这条断言会在
+    # 「标题根本没渲染出来」时静默 PASS。故 None 与缺失同处置:记 BLOCKED。
+    if not weights or any(w is None for w in weights):
+        blocked(item, "[p1] 五个渲染目标无第四字重档 700(契约只声明 400/500/600)",
+                "15 个可读字重", ",".join(str(w) for w in weights) or "<MISSING>",
+                "五个容器有一个造不出,或标题未渲染出来")
+    else:
+        ok_true(item, "[p1] 五个渲染目标无第四字重档 700(契约只声明 400/500/600)",
+                all(w != "700" for w in weights), "无 700", ",".join(weights))
+
+    check_render_markdown_call_sites(item)
+
+
+# ---------------------------------------------------------------------------
 # harness 自检切片(--item smoke)
 # ---------------------------------------------------------------------------
 def item_smoke(page, tmp_root):
@@ -1351,6 +1546,19 @@ def item_smoke(page, tmp_root):
          "#state-badge color 的 UAT 字面期望 rgb(31,99,189) 实测="
          f"{read_style(page, '#state-badge', 'color')} —— 差异由 260918-qrq 令牌值换肤引入,"
          "该字面断言在第 3 项逐字执行")
+    # G-idi-05-1 的快速切片:用应用自身的 appendChatMessage 造一个 .chat-bubble,
+    # 其中的 h1 必须取嵌入刻度最高档 --text-xl(24px),不再是 UA 默认的 32px。
+    bubble_ok = page.evaluate("""(md) => {
+        if (typeof appendChatMessage !== 'function') return false;
+        appendChatMessage('ai', md);
+        return !!document.querySelector('.chat-bubble h1');
+    }""", "# 探针")
+    if not bubble_ok:
+        blocked(item, "smoke .chat-bubble h1 已渲染", "appendChatMessage('ai', ...) 产出 .chat-bubble h1",
+                "<未渲染>", "appendChatMessage 未产出 .chat-bubble h1")
+    else:
+        ok(item, "smoke .chat-bubble h1 font-size == var(--text-xl)",
+           resolve_token(page, "--text-xl"), read_style(page, ".chat-bubble h1", "font-size"))
 
 
 # ---------------------------------------------------------------------------
@@ -1359,7 +1567,7 @@ def item_smoke(page, tmp_root):
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="idi-04 UAT browser harness")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6(可重复,或逗号分隔)")
+                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7(可重复,或逗号分隔)")
     ap.add_argument("--ai-smoke", action="store_true",
                     help="第 5 项额外真跑两次 AI 交互冒烟(会产生真实 AI 调用与计费)")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
@@ -1372,7 +1580,7 @@ def parse_args():
 
 def normalize_items(raw):
     if not raw:
-        return ["1", "2", "3", "4", "5", "6"]
+        return ["1", "2", "3", "4", "5", "6", "7"]
     out = []
     for chunk in raw:
         for piece in chunk.split(","):
@@ -1385,7 +1593,7 @@ def normalize_items(raw):
 def main():
     args = parse_args()
     items = normalize_items(args.item)
-    known = {"smoke", "1", "2", "3", "4", "5", "6"}
+    known = {"smoke", "1", "2", "3", "4", "5", "6", "7"}
     bad = [i for i in items if i not in known]
     if bad:
         raise SystemExit(f"ERROR: 未知项 {bad}(可用:{sorted(known)})")
@@ -1424,6 +1632,8 @@ def main():
             item5(page, tmp_root, args.ai_smoke)
         if "6" in items:
             item6(page, tmp_root)
+        if "7" in items:
+            item7(page, tmp_root)
     finally:
         if browser is not None:
             browser.close()

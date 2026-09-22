@@ -1929,8 +1929,13 @@ def item8(page, tmp_root):
                     f"docPanelWidth={m['panelWidth']}",
                 )
                 # LAYOUT-02 的字面承诺「≥1024px 无横向溢出」—— 1440 与 1024 两处升为硬断言。
-                # 768 处保持只读诊断:它在 LAYOUT-02 里的承诺是「无内容遮挡」,已由本项前面的
-                # badge × banner 不相交断言覆盖(UI-SPEC §L-2 的判据表)。
+                # 768 处保持只读诊断:它在 LAYOUT-02 里的承诺是「无内容遮挡」,
+                # 而**该承诺未被覆盖** —— 本项前面的 badge × banner 断言(:1834)只测 #state-badge
+                # 那一对;768px 下真正发生遮挡的那一对(banner × #doc-panel-header 的 h1)
+                # 不在覆盖范围内,这里是显式「未覆盖」。
+                # 实测证伪:h1 = 439.0–481.0 × 8–28,banner = 285.3–482.7 × 12–39,
+                # 重叠 42×16px,相交带 768–855px。这是**已知缺口**,不是 PASS;
+                # 收窄已登记在 idi-06-UI-SPEC.md §L-2(A-10 行)。
                 if width >= 1024:
                     ok_true(
                         item,
@@ -1943,7 +1948,11 @@ def item8(page, tmp_root):
                 else:
                     info(f"item8 L-2 @{width}px",
                          "保持只读诊断(768px 处的承诺是「无内容遮挡」,"
-                         "已由 badge × banner 不相交断言覆盖)")
+                         "该承诺未被覆盖:badge × banner 断言只测 badge 那一对,"
+                         "banner × #doc-panel-header 的 h1 不在覆盖范围内 —— 显式「未覆盖」。"
+                         "实测:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,"
+                         "重叠 42×16px,相交带 768–855px。这是已知缺口(既未满足、也未断言),"
+                         "收窄已登记在 idi-06-UI-SPEC.md §L-2(A-10 行))")
                 # L-2 的**判别性探针**(理由见 _IDI06_OVERFLOW_JS 的注释):面板实测宽不得
                 # 超过它自己声明的 clamp 上界。这是「flex 项被长不可断内容顶破」这一失效模式
                 # 的直接读数 —— 文档级 scrollWidth 对该模式结构性失明。

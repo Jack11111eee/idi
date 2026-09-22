@@ -287,7 +287,12 @@ Plans:
 
 **Research flag**: 标准实践,无需研究阶段(`:focus-visible` + `outline-offset` 文档完备)。项目特有的工作(环色 vs 合成背景)研究阶段已算完。
 **Gates**: `grep -c ':focus-visible'` > 0;**没有任何焦点规则设置 `border` 或 `padding`**;每个环都对 0.55 与 0.75 合成背景验过;`prefers-reduced-motion` 与任何新 transition 同提交;Phase 4/6 全部 gate 仍通过。
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] idi-07-01-PLAN.md — 焦点环端到端(A11Y-01):`--color-focus` 令牌 + 7 选择器 `:focus-visible` 规则 + 三处验证面的 PAIR + `check-05` 第 10 项的元素普查 + 归档半场的一次性反事实探针
+- [ ] idi-07-02-PLAN.md — 交互态 hover / active / disabled(INTERACT-01):四个新 tier-2 令牌 + L587 选择器的 `:not(:disabled)` gate + 填充按钮 rgba 叠层 + input/select hover 加深
+- [ ] idi-07-03-PLAN.md — 过渡与减弱动效 + 契约计数门(INTERACT-02):过渡挂载规则 + `@media (prefers-reduced-motion: reduce)` 块 + `EXPECTED_MEDIA_QUERIES` 同步 + 静态契约守卫 + 整阶段收口与指纹披露
 **UI hint**: yes
 
 ### Phase 8: 可访问性语义与键盘

@@ -4,17 +4,17 @@ milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: 06
 current_phase_name: 布局稳健性
-status: executing
-stopped_at: Completed idi-06-02-PLAN.md
-last_updated: "2026-09-22T04:08:24.086Z"
+status: ready_for_verification
+stopped_at: Completed idi-06-03-PLAN.md
+last_updated: "2026-09-22T05:22:36.686Z"
 last_activity: 2026-09-22
-last_activity_desc: Phase idi-06 execution started
-state_head: 1bd93a66e10332556ff4274f8628ec5f378d8fcd
+last_activity_desc: Completed idi-06-03-PLAN.md (phase idi-06 all 3 plans done)
+state_head: c722d351d5484eb6f1695da85965c24795a328bc
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 13
+  completed_plans: 14
   percent: 50
 ---
 
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 
 Phase: idi-06 (布局稳健性) — EXECUTING
 Plan: 3 of 3
-Status: Executing Phase idi-06
-Last activity: 2026-09-22 — Completed idi-06-02-PLAN.md
+Status: Ready for verification (all 3 plans complete; phase closes at /gsd-verify-work)
+Last activity: 2026-09-22 — Completed idi-06-03-PLAN.md
 
 Progress: [█████░░░░░] 50%
 
@@ -89,6 +89,7 @@ Progress: [█████░░░░░] 50%
 | Phase idi-05 P04 | 17 min | 3 tasks | 3 files |
 | Phase idi-06 P01 | 12 min | 2 tasks | 2 files |
 | Phase idi-06 P02 | 24min | 3 tasks | 2 files |
+| Phase idi-06 P03 | 46 | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,10 @@ Recent decisions affecting current work:
 - [Phase idi-06]: 六目标 overflow-wrap 合并为一条规则而非通配:通配会波及已裁定的 .event-content word-break: break-all 并把影响面重新变成不可枚举(G-idi-05-1 的成因)
 - [Phase idi-06]: 恒 FAIL 的断言与被断言对象同属缺陷:计算样式对 vh 返回 px 用值(30vh→270px)⇒ #latest-check 的保留项护栏改读源码文本计数;末条子元素高于容器时 last.top >= container.top 恒假 ⇒ 判据改为 last.bottom 落在可视带内
 - [Phase idi-06]: #doc-panel 的 overflow-y: auto 必须保留:它是另一列的滚动者,不在面板区普查范围内,但 L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删掉它凑计数会同时打破 L-1 与计数门(期望值是 4 不是 3)
+- [Phase 06]: L-2 走「被实测推翻」这一支:三宽度(1440/1024/768)文档级溢出在波次 2 之后仍为 0px(与波次 1 基线逐字相同,该读数对目标失效模式结构性失明),另立判别性探针 #doc-panel 实测宽 vs clamp(340px, 30vw, 480px) 上界,实测 432/340/340 逐位等于上界 ⇒ @media 不写,计数保持 0
+- [Phase 06]: A11Y-07 的落点由普查定:全文件唯一实测 < 24×24 的是未被需求点名的 .annotation-answer summary(722 × 17),需求点名的 #btn-authorize 实测 178 × 40 本就达标。机制锁定为原地加 min-height/min-width 两条裸字面量(24px 是 WCAG 2.5.8 常数,刻意不挂 var(--space-6))
+- [Phase 06]: L-5 走「被实测推翻」:三样本判定行最小 clearance 40px,远高于 4px 阈值 ⇒ 零 padding 改动,#main-pane / #doc-panel / #chat-messages / #latest-check 一个都没抬
+- [Phase 06]: clearance 断言的判定面收窄为「visible 且 intersects」:p3 的 #btn-authorize × #doc-panel = -122.6px 是滚出视口(与 padding 盒不相交)而非被裁切,不收窄会把正常状态记成缺陷
 
 ### Pending Todos
 
@@ -208,8 +213,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-22T04:08:24.035Z
-Stopped at: Completed idi-06-02-PLAN.md
+Last session: 2026-09-22T05:22:36.648Z
+Stopped at: Completed idi-06-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

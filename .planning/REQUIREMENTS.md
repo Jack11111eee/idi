@@ -43,13 +43,13 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - [x] **A11Y-04b**: **opacity 合成**导致的失败必须一并覆盖——全站 4 处非 `:disabled` 的 opacity 态:`style.css:454` `.annotation-answered { opacity: 0.65 }`、`style.css:508` `#round-doc.round-frozen { opacity: 0.55; filter: saturate(0.6) }`(**冻结轮整篇文档**)、`style.css:562` `.tier-desc { opacity: 0.8 }`、`style.css:628` `#rounds-placeholder.archive-mode #round-doc { opacity: 0.75 }`(**归档态整篇文档**)。其中 `round-frozen` 是**设计决策与 AA 的正面冲突**:灰化是 D-P2-21 的"这轮只读"信号,但冻结轮恰恰是要被阅读的内容——须在 UI-SPEC 中裁定(提高不透明度满足 AA,或保留灰化但改用别的方式表达冻结),**不得静默改动**。**例外**:8 处 `:disabled` 态上的 `opacity: 0.55/0.5` 不属 AA 范围(WCAG SC 1.4.3 豁免非活动组件),且不得为它们软化 `:disabled` 视觉(见 INTERACT-02)
 - [ ] **A11Y-05**: 两个阻塞式弹窗(G3 确认、授权)支持 **Escape 关闭**——G3 确认弹窗按设计是默认拒绝,按不了 Escape 的键盘用户会被卡住
 - [ ] **A11Y-06**: 上述两个弹窗加 `role="dialog"` + `aria-modal="true"`(两个属性、零风险)
-- [ ] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
+- [x] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
 - [ ] **A11Y-08**: 键盘可达性人工验收——tab 序到达每一个交互控件;键盘划词路径可用。**标注为人工检查**:本环境无法自动化键盘文本选区(连 `contenteditable` 都选不中),不得因自动测试 FAIL 判定功能缺陷
 
 ### LAYOUT — 布局稳健性
 
 - [x] **LAYOUT-01**: `#state-badge { right: 448px }` 魔法数消除(改 `calc()` 或 `absolute`),与侧栏宽度决策作为**一个工作单元**处理,而非三件事
-- [ ] **LAYOUT-02**: 窄窗口不破版——≥1024px 无横向溢出,≥768px 无内容遮挡。范围是"不破版",**不是**"适配";一条 `@media` 守卫,不是断点系统
+- [x] **LAYOUT-02**: 窄窗口不破版——≥1024px 无横向溢出,≥768px 无内容遮挡。范围是"不破版",**不是**"适配";一条 `@media` 守卫,不是断点系统
 - [x] **LAYOUT-03**: `#state-badge` 不再遮挡滚动内容(该元素 `position: fixed` + 不透明背景,正文从其底下穿过被挡)
 - [x] **LAYOUT-04**: 侧栏滚动容器套娃收敛(基线:420px 侧栏内最多 4 个独立滚动容器,40vh / 55vh / 32vh / 30vh)
 
@@ -141,10 +141,10 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | A11Y-04b | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | A11Y-05 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-06 | Phase 8: 可访问性语义与键盘 | Pending |
-| A11Y-07 | Phase 6: 布局稳健性 | Pending |
+| A11Y-07 | Phase 6: 布局稳健性 | Complete |
 | A11Y-08 | Phase 8: 可访问性语义与键盘 | Pending |
 | LAYOUT-01 | Phase 6: 布局稳健性 | Complete |
-| LAYOUT-02 | Phase 6: 布局稳健性 | Pending |
+| LAYOUT-02 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-03 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-04 | Phase 6: 布局稳健性 | Complete |
 | INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |

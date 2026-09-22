@@ -201,3 +201,10 @@ None - no external service configuration required.
 
 *Phase: idi-06-layout-robustness*
 *Completed: 2026-09-22*
+
+## Self-Check: PASSED
+
+- All 6 files claimed in this SUMMARY exist on disk (`idi-06-04-SUMMARY.md`, `scripts/check-05-ui-uat.py`, `idi-06-UI-SPEC.md`, `idi-06-VERIFICATION.md`, `idi-06-03-PLAN.md`, `idi-06-03-SUMMARY.md`).
+- All commits exist in git history: `b15bd89`, `62efa70`, `24be8d8`, `7144c47`.
+- The frontmatter's `commits: 3` is MEASURED from the persisted ledger (`3c3db94..HEAD` = 3 task commits), with `plan_head_before: 3c3db94f07cf0cba3e61bf34e96dd5daa6981335` recorded alongside it. The metadata commit `7144c47` sits on top of that range.
+- Working tree after the metadata commit: clean apart from `.claude/settings.local.json`, which was already modified before this plan started and is not this plan's change.

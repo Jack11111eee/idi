@@ -147,7 +147,7 @@ status: complete
 ## Accomplishments
 
 - **L-2 走「被实测推翻」这一支,并有判别性证据。** 三宽度在波次 2 之后的树上文档级溢出均为 **0px**(与波次 1 基线逐字相同 ⇒ 该读数不能区分「修好了」与「本来就没破」)。本计划补上 `#doc-panel` 实测宽 vs 它自己声明的 `clamp(340px, 30vw, 480px)` 上界的探针:在含 12 列宽表格 + 240 字符不可断 token 的负载下实测 **432 / 340 / 340px**,逐位等于三个上界,零余量。`@media` 计数 **0**。
-- `scripts/check-05-ui-uat.py` 的 item 8 由 7 条断言扩到 **13 条**:1440 / 1024 两处文档级溢出升为硬断言、三条 `#doc-panel` 上界探针、一条守卫形态断言(读 `frontend/style.css` 文件文本算 `@media` 计数,与几何断言互补)。768 处保持只读诊断(它的承诺是「无内容遮挡」,已由 badge × banner 不相交断言覆盖)。
+- `scripts/check-05-ui-uat.py` 的 item 8 由 7 条断言扩到 **13 条**:1440 / 1024 两处文档级溢出升为硬断言、三条 `#doc-panel` 上界探针、一条守卫形态断言(读 `frontend/style.css` 文件文本算 `@media` 计数,与几何断言互补)。768 处保持只读诊断(它的承诺是「无内容遮挡」,已由 badge × banner 不相交断言覆盖)。**【更正 2026-09-22】上文「已由 badge × banner 断言覆盖」一句为假** —— 该断言只测 #state-badge,768px 下真正发生遮挡的 banner × #doc-panel-header 的 h1 从未被断言。实测:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,重叠 42×16px,相交带 768–855px。收窄已登记在 idi-06-UI-SPEC.md §L-2 / A-10,详见 idi-06-04-PLAN.md。
 - `frontend/style.css` 的 `.annotation-answer summary` 规则体内**原地加两行**:`min-height: 24px;` + `min-width: 24px;`。既有四条声明(`cursor` / `color` / `font-size` / `margin-top`)逐字保留;`.collapse-indicator` 零触碰;零新增令牌;围栏 `:root`(`:5`…`:431`)内零改动。整个 diff 是 **17 行纯新增、0 删除**,无规则块移动。
 - `scripts/check-05-ui-uat.py` 的 item 9 由 10 条断言扩到 **16 条**:两条按 DOM 遍历算出的普查断言(L-5 clearance >= 4px;可交互元素宽高均 >= 24px)。命中区断言先断言 `.annotation-answer summary` 经应用自身的 `renderAnnotations` 造出且可见,否则 `blocked(...)`。
 - L-5 的结论:**零 padding 改动**。三个样本(p1 / checking / p3)判定的 clearance 最小值 **40.0px**,远高于 4px 阈值;`#main-pane` / `#doc-panel` / `#chat-messages` / `#latest-check` 四者一个都没抬。

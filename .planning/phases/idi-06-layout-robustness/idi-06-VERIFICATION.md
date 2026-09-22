@@ -16,6 +16,11 @@ covered_files:
 covered_digest: "v1:sha256:c22afc1518c2b84ff59c4955035cc40fa5b587ed05f3b3a83411fc48fb23001e"
 behavior_unverified: 0
 overrides_applied: 0
+overrides:
+  - must_have: "LAYOUT-02:窄窗口不破版 —— ≥768px 无内容遮挡"
+    reason: "768–855px 下 fixed 居中横幅盖住 #doc-panel-header 的标题;几何既有且被 UI-SPEC 范围锁(#stream-banner 声明不得触碰 / --doc-panel-w 值由用户裁决)排除在阶段可修范围之外。经项目所有者本次会话显式选择 remediation (b)(收窄承诺 + 更正覆盖主张)后,本条登记为已知缺口,收窄为「badge 不被横幅遮挡」。"
+    accepted_by: "Jack11111eee"
+    accepted_at: "2026-09-22T06:43:50Z"
 re_verification:
   previous_status: none
   previous_score: 0/0
@@ -271,17 +276,9 @@ p3 @768×900:  同一结论(overlap 42.0 × 15.0 px)
 - **(a) 真正断言该判据** —— 扩展 `_IDI06_BADGE_BANNER_JS`(:1630)返回 `#doc-panel-header` 与其 h1 的 rect,并在 768px 加一条不相交断言。它今天会 FAIL,那正是正确的信号;但**底层修复需要先解开上述契约冲突**(改 banner 定位或改 `--doc-panel-w` 的值),不能只靠 harness。
 - **(b) 声明该对不在范围内** —— 用实测数值替换 :1932-1933 与 :1945-1946 两处措辞,写成显式「未覆盖」,并照 A-5 的先例把范围收窄登记进 `idi-06-UI-SPEC.md` §L-2 与验证记录,同时把 UI-SPEC :192 判据表里从未测过的「表头 × 正文」「按钮 × 视口」两对一并说明。
 
-如果项目决定采纳 (b),则 LAYOUT-02 的后半句应作为一次**有意偏离**走 override 机制(而不是悄悄留在 Complete 上):
+如果项目决定采纳 (b),则 LAYOUT-02 的后半句应作为一次**有意偏离**走 override 机制(而不是悄悄留在 Complete 上)。
 
-```yaml
-overrides:
-  - must_have: "LAYOUT-02:窄窗口不破版 —— ≥768px 无内容遮挡"
-    reason: "768–855px 下 fixed 居中横幅盖住 #doc-panel-header 的标题,几何既有且被 UI-SPEC 范围锁(#stream-banner 声明不得触碰 / --doc-panel-w 值由用户裁决)排除在阶段可修范围之外;本条登记为已知缺口并收窄为「badge 不被横幅遮挡」"
-    accepted_by: "{待人工填写}"
-    accepted_at: "{待人工填写}"
-```
-
-我**没有**代填 `accepted_by` / `accepted_at`,也没有据此把该 truth 记为 `PASSED (override)` —— override 需要人明确接受,而本报告的作者不是接受方。在缺省(无 override)状态下,LAYOUT-02 就是 FAILED。
+**【已接受 2026-09-22】** 项目所有者本次会话显式选择了 remediation (b),该 override 已写入本报告 **frontmatter** 的 `overrides:` 数组(`accepted_by` 取仓库 git 身份、`accepted_at` 为本次会话裁定时间戳;`overrides_applied` 仍为 0,留给复验时应用)。这份接受来自**用户的显式选择**,不是执行器的单方裁定。原先留空的模板已移除 —— override 只认 frontmatter,写在正文里的同名 YAML 复验器从不读取。在缺省(无 override)状态下,LAYOUT-02 就是 FAILED;现在它按 override 路径在复验时记 `PASSED (override)`。
 
 ### 与本阶段其余部分的区分
 

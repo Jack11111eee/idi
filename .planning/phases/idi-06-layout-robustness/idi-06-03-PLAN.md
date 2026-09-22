@@ -34,7 +34,7 @@ must_haves:
     - "无论走哪一支,三个宽度的**原始数值**(各一行 `scrollWidth / clientWidth`)必须落盘 —— UI-SPEC L-2 明文「不能只给结论」← L-2"
     - "若写出守卫:它是全文件**唯一**的媒体查询,块首带 UI-SPEC §L-2 的逐字围栏注释(显式声明断点字面量例外 L-1:CSS 禁止在媒体查询条件中使用 `var()`,带 `var()` 的 `@media` 会被静默丢弃),块内**只放实测证成的声明**,取值全部来自已声明令牌或媒体作用域内 `:root` 的重赋 ← L-2 / D-10 / 硬规则 4"
     - "若写出守卫:块内**不得**出现 `#app { flex-direction: column }`、任何堆叠布局、第二条断点、断点阶梯、`!important`、新令牌或 `#hex` ← L-2 的「禁止」列 / Q5 / 硬规则 2 / 4 / 8"
-    - "item 8 的三宽度文档级溢出读数由**只读诊断升为硬断言**:1440 与 1024 两处 `document.documentElement.scrollWidth <= document.documentElement.clientWidth` —— 这正是 LAYOUT-02 承诺的「≥1024px 无横向溢出」。768 处的读数保持诊断(它的承诺是「无内容遮挡」,已由 item 8 的 badge × banner 不相交断言覆盖)← L-2 / D-14"
+    - "item 8 的三宽度文档级溢出读数由**只读诊断升为硬断言**:1440 与 1024 两处 `document.documentElement.scrollWidth <= document.documentElement.clientWidth` —— 这正是 LAYOUT-02 承诺的「≥1024px 无横向溢出」。768 处的读数保持诊断(它的承诺是「无内容遮挡」,已由 item 8 的 badge × banner 不相交断言覆盖)← L-2 / D-14。**【更正 2026-09-22】上文「已由 badge × banner 断言覆盖」一句为假** —— 该断言只测 #state-badge,768px 下真正发生遮挡的 banner × #doc-panel-header 的 h1 从未被断言。实测:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,重叠 42×16px,相交带 768–855px。收窄已登记在 idi-06-UI-SPEC.md §L-2 / A-10,详见 idi-06-04-PLAN.md。"
     - "item 8 追加一条守卫形态断言:`@media` 块在全文件的出现次数与 `idi-06-03-SUMMARY.md` 记录的决策一致(写出守卫 ⇒ 恰 1;登记推翻 ⇒ 0)。**该断言读的是文件文本而非渲染结果**,与几何断言互补 ← L-2 / Anti-Pattern 3"
     - "A11Y-07 按**可交互元素普查**施加,不按点名:A11Y-07 点名了裁决按钮,而实测唯一确定不达标的是 `.annotation-answer summary`(`font-size: var(--text-xs)` = 12px、无 padding、无 min-height ⇒ ≈14–17px)。**只对实测 < 24×24 者施加,已达标者零改动** ← L-6 / D-15 / D-17"
     - "机制锁定为 `min-height: 24px` + `min-width: 24px`(原地加两行到该控件的既有规则体)。**不动现有 `padding`**(改 padding 改的是外观而非命中区);**不用 `::after` 撑开**(`.verdict-buttons { gap: var(--space-2) }` = 8px,扩展后的相邻命中区会互相重叠,反而可能违反 2.5.8 的「不与他者相交」)← L-6 / D-16"
@@ -209,7 +209,7 @@ Output: `frontend/style.css` 的条件守卫(若实测证成)、`.annotation-ans
 
     守卫块**追加在文件末尾**(波次 2 的六选择器规则之后),不重排任何既有规则(硬规则 3)。围栏 `:root` 内**零改动** —— 媒体作用域内的 `:root` 是另一个块,不是围栏。
 
-    **第 4 步 —— 把 item 8 的文档级溢出读数由只读诊断升为硬断言。** 对 1440 与 1024 两处各加一条 `ok_true`:`document.documentElement.scrollWidth <= document.documentElement.clientWidth`。**这正是 LAYOUT-02 承诺的「≥1024px 无横向溢出」**,而它是本任务之后才成立的 —— 故升级放在本任务而非波次 1(在波次 1 升它会得到一条必然失败的假红)。768 处的读数**保持只读诊断**:它在 LAYOUT-02 里的承诺是「无内容遮挡」,已由 item 8 的 badge × banner 不相交断言覆盖。每处断言旁用 `info()` 打印原始 `scrollWidth` / `clientWidth`。探针返回 `null` ⇒ `blocked(...)`。
+    **第 4 步 —— 把 item 8 的文档级溢出读数由只读诊断升为硬断言。** 对 1440 与 1024 两处各加一条 `ok_true`:`document.documentElement.scrollWidth <= document.documentElement.clientWidth`。**这正是 LAYOUT-02 承诺的「≥1024px 无横向溢出」**,而它是本任务之后才成立的 —— 故升级放在本任务而非波次 1(在波次 1 升它会得到一条必然失败的假红)。768 处的读数**保持只读诊断**:它在 LAYOUT-02 里的承诺是「无内容遮挡」,已由 item 8 的 badge × banner 不相交断言覆盖。**【更正 2026-09-22】上文「已由 badge × banner 断言覆盖」一句为假** —— 该断言只测 #state-badge,768px 下真正发生遮挡的 banner × #doc-panel-header 的 h1 从未被断言。实测:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,重叠 42×16px,相交带 768–855px。收窄已登记在 idi-06-UI-SPEC.md §L-2 / A-10,详见 idi-06-04-PLAN.md。每处断言旁用 `info()` 打印原始 `scrollWidth` / `clientWidth`。探针返回 `null` ⇒ `blocked(...)`。
 
     **第 5 步 —— item 8 追加一条守卫形态断言。** 加一条 `ok_true`:全文件 `@media` 出现次数与本次决策一致(走「写出守卫」⇒ 期望 1;走「登记推翻」⇒ 期望 0)。判据从 `frontend/style.css` 的文本算出(在 Python 侧 `read_text()` 后 `count("@media")`,与 `check_render_markdown_call_sites` 的算法同族),**不依赖 shell 管道**。这条断言读的是文件文本而非渲染结果,与几何断言互补:它抓的是「守卫被悄悄删掉 / 悄悄多写一条」。在 `info()` 里写明本次走的是哪一支与原始数值。
 

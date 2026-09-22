@@ -290,8 +290,16 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
+**Wave 1**
+
 - [ ] idi-07-01-PLAN.md — 焦点环端到端(A11Y-01):`--color-focus` 令牌 + 7 选择器 `:focus-visible` 规则 + 三处验证面的 PAIR + `check-05` 第 10 项的元素普查 + 归档半场的一次性反事实探针
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] idi-07-02-PLAN.md — 交互态 hover / active / disabled(INTERACT-01):四个新 tier-2 令牌 + L587 选择器的 `:not(:disabled)` gate + 填充按钮 rgba 叠层 + input/select hover 加深
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] idi-07-03-PLAN.md — 过渡与减弱动效 + 契约计数门(INTERACT-02):过渡挂载规则 + `@media (prefers-reduced-motion: reduce)` 块 + `EXPECTED_MEDIA_QUERIES` 同步 + 静态契约守卫 + 整阶段收口与指纹披露
 **UI hint**: yes
 

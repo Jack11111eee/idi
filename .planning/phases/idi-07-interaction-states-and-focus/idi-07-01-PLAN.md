@@ -176,7 +176,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - `grep -v '^#' frontend/style.css | grep -c 'outline: none'` 输出 == 0(不得把 `outline: none` 当焦点样式)
     - `grep -n 'textarea:focus-visible\|a\[href\]:focus-visible\|\[tabindex\]:focus-visible' frontend/style.css` 的输出覆盖三行(逐行核对,不数个数)
     - `grep -c 'round-doc:focus-visible' frontend/style.css` 输出 == 0(D-06 负空间)
-    - `grep -o 'var(--color-focus)' frontend/style.css | wc -l` 输出 >= 2(一处声明于围栏内、至少一处消费于围栏外)
+    - `grep -o 'var(--color-focus)' frontend/style.css | wc -l` 输出 >= 1(围栏外至少一处消费)。**全文件计数等于围栏外计数**:围栏内是声明 `--color-focus: #1f63bd;`,它不含 `var(` 子串,故不参与本计数;本任务恰好只落一处消费(`outline: 2px solid var(--color-focus);`),故执行后实测为 1。本判据与计划 03 Task 2 第 4 条的「围栏外 `var(--color-focus)` 引用计数 **> 0**」是**同一条不变量**,两者不得写成不同的数
     - `grep -n 'PAIR --color-focus ON --color-surface NON-TEXT \*/' frontend/style.css` 有输出
     - `grep -o 'PAIR --color-focus' frontend/style.css | wc -l` 输出 == 1(本任务只落这一条配对)
     - `grep -n 'def item10' scripts/check-05-ui-uat.py` 有输出;`grep -o '"10"' scripts/check-05-ui-uat.py | wc -l` 输出 >= 3(normalize_items 默认列表 / known 集合 / 分发块)
@@ -212,7 +212,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     写一次性注入探针 `scripts/probe-07-focus-composite.py`(新文件)。定位**逐字照** `scripts/probe-05-resolve-color.py`:
 
     - docstring 首段声明它是**反事实证据,不是门**:不进四条守卫命令契约(`check-01`…`check-04`),不被任何门禁 / CI 调用,`scripts/check-05-ui-uat.py` 也不引用它。存在的唯一目的:证明 `/* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */` 这条算术断言**真的会失败/成立**,而不是静默空转。
-    - 复用 harness 而不复制实现:按路径 `importlib.util.spec_from_file_location` 导入 `scripts/check-05-ui-uat.py`,复用它的 `make_fixture` / `enter_project` / `read_style` / `resolve_color` / `effective_bg`。
+    - 复用 harness 而不复制实现:**照 `scripts/probe-05-resolve-color.py` 写一个同名同形的 `load_harness()`**(`importlib.util.spec_from_file_location` 按路径导入 `scripts/check-05-ui-uat.py` 并返回该模块),再**经它**复用 `make_fixture` / `enter_project` / `read_style` / `resolve_color` / `effective_bg`(即 `h5 = load_harness()` 之后全部走 `h5.…`)。`load_harness` 这个名字必须同时出现在**定义处**与**至少一处调用处**(probe-05 的形态:定义一次、`main()` 里调用一次),否则本任务「复用而不复制」的判据无从检查。
     - 注入内容:在 `archive` 样本里用 `page.evaluate` 向 `#round-doc` 内**合成**一个 `<a href="#">`,然后在 `#rounds-placeholder.archive-mode` 生效的态下读它的 `outline-color`,与 `resolve_color(page, "--color-focus")` 对比;并断言「注入前 `#round-doc` 内 `a[href]` 计数 == 0、注入后 == 1」—— 这是「变异必须真的发生」的防线,**空转的注入会让整条证明失去意义**。
     - **不得用 `sed` 改磁盘文件**(本机是 darwin,BSD `sed` 的 `0,/re/` 地址会静默不替换)。注入只走 `page.evaluate`;磁盘上的 `frontend/style.css` 与五个样本**逐字节不变**。
     - 退出码:`0` = 全部断言成立;`1` = 任一条不成立(哪一条写到 stderr),用 `require(cond, msg)` 辅助实现。
@@ -235,7 +235,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - `grep -n 'PAIR --color-focus ON --color-surface NON-TEXT@0.75' frontend/style.css` 有输出
     - `grep -n '24 / 34 / 43 / 47 / 50' frontend/style.css` 有输出
     - `grep -n 'Phase 7 lands 50 pairs (35 TEXT + 15 NON-TEXT)' frontend/style.css` 有输出
-    - `.venv/bin/python scripts/check-02-contrast.py | grep -c '^PASS'` 输出 >= 50(47 原有 + 3 新增)
+    - `.venv/bin/python scripts/check-02-contrast.py | grep -c '^PASS'` 输出 >= 50(基线实测 48 条:其中 47 条为配对行,另 1 条为汇总行 `PASS: 0 failures`,它同样以 `^PASS` 开头;再加本任务 3 条新增,共 51 条)
     - `.venv/bin/python scripts/probe-07-focus-composite.py` exit 0(全部断言成立)
     - `grep -n 'def require' scripts/probe-07-focus-composite.py` 有输出且 `grep -o 'load_harness' scripts/probe-07-focus-composite.py | wc -l` 输出 >= 2
     - `grep -cE 'subprocess|os\.system' scripts/probe-07-focus-composite.py` 输出 == 0(注入只走浏览器侧的 `page.evaluate`,不经任何子进程 —— 判据锚在「有没有子进程调用」上,不锚在字符串 `sed` 上:探针 docstring 会照 `probe-05-resolve-color.py` 的先例**解释为什么不用 sed**,那个词合法地出现在散文里)

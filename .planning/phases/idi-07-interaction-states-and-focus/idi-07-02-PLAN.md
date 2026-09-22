@@ -133,7 +133,7 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,2,3,4,6,7,8,9</automated>
     <fails_when>exit != 0,或逐项结论里出现任一项非 PASS(尤其 item 8 的静态守卫与 item 9 的 L-6 命中区普查)</fails_when>
     <automated>git diff --numstat -- frontend/style.css</automated>
-    <fails_when>输出的第 2 列(删除行数)大于 2 —— 本任务只允许改写 L587 那一行的选择器,不得删除任何其他行</fails_when>
+    <fails_when>输出的第 2 列(删除行数)大于 2 —— 本任务只允许**两处**就地编辑:L587 那一行的选择器改写,以及 L293-297 第 3 条注释的扩写(③);除这两处外的改动全部必须是纯新增</fails_when>
   </verify>
   <done>四个新 tier-2 令牌已在围栏内声明且各自被围栏外的规则消费;`--color-surface-active` 的值碰撞注释点名 04.1-N-4 且 L293-297 的第 3 条已同步扩写;L587 的选择器已 gate,声明体逐字节不变;朴素按钮的 `:active` 规则已追加且特异性为 0-1-0;四条既有门与既有九项 UAT 仍全绿。</done>
   <acceptance_criteria>

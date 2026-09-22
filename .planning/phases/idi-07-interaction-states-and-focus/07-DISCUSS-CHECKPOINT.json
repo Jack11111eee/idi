@@ -1,0 +1,47 @@
+{
+  "phase": "7",
+  "phase_name": "交互状态与焦点样式",
+  "timestamp": "2026-09-22T00:00:00Z",
+  "areas_completed": ["焦点环:落点与颜色", "交互态语言与 disabled", "过渡的边界", "验收门与自动化边界"],
+  "areas_remaining": [],
+  "decisions": {
+    "焦点环:落点与颜色": [
+      {"question": "环色的验证面:3:1 必须对哪些背景成立?", "answer": "必须含 0.75 归档合成", "options_presented": ["只算实际相邻地面", "必须含 0.75 归档合成", "连 sunken 也算"]},
+      {"question": "`--color-focus` 取哪个值?", "answer": "#1f63bd(04-UI-SPEC 原值):5.57 全 / 3.45 归档合成", "options_presented": ["#1f63bd", "var(--radix-blue-11) = #0d74ce", "var(--radix-blue-12) = #113264"]},
+      {"question": "`:focus-visible` 通配还是枚举?", "answer": "枚举,与 check-05 普查脚本的可聚焦集同集(button, input, select, textarea, a[href], summary, [tabindex])", "options_presented": ["裸通配", "枚举(与普查同集)", "通配 + 显式排除文档区"]},
+      {"question": "`#round-doc` 的焦点环承载面?", "answer": "枚举含 [tabindex];#round-doc 的内嵌处理明确指派给 Phase 8,Phase 7 零死代码", "options_presented": ["含 [tabindex],指派给 Phase 8", "枚举不含 [tabindex]", "Phase 7 现在就写内嵌规则"]}
+    ],
+    "交互态语言与 disabled": [
+      {"question": "`:hover`/`:active` 是否 gate 在 `:not(:disabled)` 上?", "answer": "gate 在 `:not(:disabled)` 上", "options_presented": ["gate 在 :not(:disabled)", "不 gate,另加 :disabled 回写", "不处理,接受现状"]},
+      {"question": "填充按钮的 hover 怎么补?", "answer": "统一 rgba 压暗叠层 box-shadow: inset 0 0 0 999px rgba(0,0,0,0.06);opacity 路线经实测排除(三族白字跌破 AA:4.77→3.93 / 5.21→4.42 / 4.72→3.81)", "options_presented": ["统一 rgba 压暗叠层", "按族开 hover 令牌", "填充按钮不加 hover"]},
+      {"question": "`:active` 用什么视觉语汇?", "answer": "同机制加深:新开 --color-surface-active: var(--radix-gray-4)(与 --color-surface-hover 的 gray-3 构成 3→4 递进,零新 primitive);填充按钮同套 rgba 叠层、alpha 0.12", "options_presented": ["同机制加深", "内阴影凹陷感", "1px 位移"]},
+      {"question": "输入框与下拉要不要 hover?", "answer": "input 与 select 统一加 hover(border-color 加深一步),不加 :active", "options_presented": ["input 与 select 统一加 hover", "只给 select", "都不加"]}
+    ],
+    "过渡的边界": [
+      {"question": "既有的 `.event-list { transition: background-color 0.3s }` 怎么处置?", "answer": "保留 300ms,登记为具名例外(流式状态指示器而非控件态过渡;保住 Phase 7 的纯追加性质)", "options_presented": ["保留 300ms,登记例外", "归一化到 150ms", "删掉这条过渡"]},
+      {"question": "新的过渡声明挂在哪里?", "answer": "文件末尾新增一条独立规则 button, input, select { transition: background-color 120ms, border-color 120ms }", "options_presented": ["新增一条独立规则", "写进既有基础规则", "逐条写进 hover/active"]},
+      {"question": "`prefers-reduced-motion` 写成什么形态?", "answer": "reduce 里按选择器重写为 none,枚举含 .event-list;行业标准的通配 + !important 写法被硬规则 2/4 排除(!important 声明数会从 1 变 3,CHECK-04 变红)", "options_presented": ["reduce 里按选择器重写为 none", "用 no-preference 包裹", "只关新增的"]},
+      {"question": "过渡列表要不要包含 opacity?", "answer": "不含 opacity,禁用态瞬变(它是 G3 前提条件唯一的视觉信号)", "options_presented": ["不含 opacity,禁用态瞬变", "含 opacity,禁用态淡入"]}
+    ],
+    "验收门与自动化边界": [
+      {"question": "本阶段的门放在哪里?", "answer": "三段分工:算术比值→check-02 的 PAIR 清单(复用其已内建的 @alpha 合成);契约计数→新的零依赖静态断言;运行时→check-05 新增 item 10", "options_presented": ["三段分工", "全塞进 check-05 item 10", "新建 check-06"]},
+      {"question": "本阶段的自动化边界画在哪里?", "answer": "SC1-SC4 全部自动化;SC5 拆两半——可测的一半进机器门(禁用按钮 hover 背景不变 + opacity 仍为 0.55),「一眼看出不可点」作为具名人工验收项写进 VERIFICATION", "options_presented": ["SC1-SC4 自动化 + SC5 拆两半", "全部自动化,零人工项", "SC1 与 SC5 都标人工"]},
+      {"question": "SC3 的归档态那一半怎么验?", "answer": "算术进常驻门(check-02 的 NON-TEXT@0.75 PAIR);另写一次性注入探针(合成 <a href> 实测合成色)作反事实证据,不进守卫契约;门里显式登记「五个样本的 #round-doc 内 a[href] 计数为 0」", "options_presented": ["算术进常驻门 + 注入探针", "只走算术", "注入并写成常驻断言"]},
+      {"question": "焦点环覆盖的门用哪种口径?", "answer": "按元素普查(与 check-05 普查脚本的可聚焦集同集),逐个断言计算 outline 非零 + 断言「未被覆盖的可聚焦元素数为 0」", "options_presented": ["按元素普查", "硬编码选择器计数", "两者都做"]}
+    ]
+  },
+  "deferred_ideas": [
+    "#round-doc 的焦点环内嵌处理(环落在 #doc-pane 或 outline-offset: -2px)—— 明确指派给 Phase 8,Phase 7 零死代码",
+    "check-05 普查脚本的可聚焦集若日后新增类别,焦点环枚举须同步(与 L-5/L-6 普查同源风险)"
+  ],
+  "canonical_refs": [
+    ".planning/ROADMAP.md",
+    ".planning/REQUIREMENTS.md",
+    ".planning/phases/idi-04-tokens-contract/04-UI-SPEC.md",
+    ".planning/phases/idi-06-layout-robustness/06-CONTEXT.md",
+    ".planning/phases/idi-06-layout-robustness/idi-06-UI-SPEC.md",
+    "scripts/check-05-ui-uat.py",
+    "scripts/check-02-contrast.py",
+    "frontend/style.css"
+  ]
+}

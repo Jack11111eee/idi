@@ -72,7 +72,7 @@ must_haves:
     - "`frontend/style.css` 文件末尾新增恰好一条六选择器规则:`.markdown-body, .event-content, .chat-bubble, .say-chunk, .annotation-note, .annotation-answer-body { overflow-wrap: anywhere; }`,并带 UI-SPEC §L-3 的逐字注释(含「不写通配规则」与「必须用 anywhere 而非 break-word」两条理由)← L-3 / D-07"
     - "`overflow-wrap` 的声明数恰为 1;`.event-content` 的既有 `word-break: break-all` 与 `white-space: pre-wrap` 逐字保留、未被通配规则波及 ← L-3 / D-07"
     - "`#main-pane` 与 `#doc-panel` 两条**既有**规则体内各原地新增一行 `min-width: 0;`,各带一段注释写明「`anywhere` 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖六个目标长期全覆盖,将来新增一个未被 `overflow-wrap` 覆盖的渲染容器时仍能兜住,不得当作冗余代码删除」← L-3 / D-09"
-    - "`min-width: 0;` 声明数恰为 2(两条都在既有规则体内原地新增,未新增规则块);两条规则的既有声明逐字未动 ← L-3 / 硬规则 3"
+    - "`min-width: 0;` 声明数恰为 3 —— 其中 1 条是既有声明(`#enter-form input[type=\"text\"]`,磁盘 `style.css:658`);本阶段在 `#main-pane` / `#doc-panel` 两条**既有**规则体内各原地新增 1 条,未新增规则块;两条规则的既有声明逐字未动 ← L-3 / 硬规则 3"
     - "`.event-list` 规则体内原地删掉 `max-height: 55vh;` 与 `overflow-y: auto;` 两行;其余八条声明(`display` / `flex-direction` / `gap` / `border` / `border-radius` / `padding` / `background` / `transition: background-color 0.3s`)与 `.streaming` / `.aborted` 两条**逐字不变**;规则块未移动 ← L-4 / D-11 / 硬规则 3"
     - "`#annotation-list` 规则体内原地删掉 `max-height: 32vh;` 与 `overflow-y: auto;` 两行;其余四条声明(`display` / `flex-direction` / `gap` / `padding: var(--space-half)`)逐字不变;规则块未移动 ← L-4 / D-11 / 硬规则 3"
     - "`#latest-check` 的 `max-height: 30vh;` 与 `overflow-y: auto;` **保留** —— 去掉它会把裁决按钮(`#verdict-cards` 的「修」/「接受现状」)推到视口之外,那是把交互面推到折叠线以下 ← L-4 保留理由 / D-11"
@@ -80,7 +80,7 @@ must_haves:
     - "本阶段结束后面板区(`#main-pane` 及其后代)内计算 `overflow-y` 为 `auto` / `scroll` 的元素集合恰为 `{#main-pane, #chat-messages, #latest-check}` 三者;排除 SC#3 明文豁免的 `#chat-messages` 之后恰为 `{#main-pane, #latest-check}` 两者 ← D-14 第 1 条 / L-4 / SC#3 的偏离登记(A-5)"
     - "Success Criterion #3 的措辞偏离已登记:路线图写「侧栏内只剩一个滚动条(`#chat-messages` 除外)」,本阶段的实际目标状态是**面板区内 `#main-pane` + `#latest-check` 两个滚动者**(外加豁免的 `#chat-messages`)。**不改 `ROADMAP.md` / `REQUIREMENTS.md` 正文**(改会作废指纹),只在计划与验证记录里登记 ← UI-SPEC §契约修正登记 A-5"
     - "`scripts/check-05-ui-uat.py` 新增 item 9 并接入派发三处,`--item 9` 可单跑;item 9 的滚动者普查按 **DOM 遍历**算出,不硬编码选择器列表 ← D-14 / PATTERNS.md E-5"
-    - "item 9 的断言齐备:(a) 面板区滚动者集合 == `{#main-pane, #chat-messages, #latest-check}` 且排除 `#chat-messages` 后 == `{#main-pane, #latest-check}`;(b) `#main-pane` 与 `#latest-check` 两者滚到底后末条内容可达;(c) `#ai-events` / `#annotation-list` 的计算 `max-height` 为 `none`;(d) 两条保留项护栏(`#latest-check` 的 `max-height` 仍为 `30vh`、`#chat-messages` 的 `overflow-y` 仍为 `auto`)← D-14 / D-11"
+    - "item 9 的断言齐备:(a) 面板区滚动者集合 == `{#main-pane, #chat-messages, #latest-check}` 且排除 `#chat-messages` 后 == `{#main-pane, #latest-check}`;(b) `#main-pane` 与 `#latest-check` 两者滚到底后末条内容可达;(c) `#ai-events` / `#annotation-list` 的计算 `max-height` 为 `none`;(d) 两条保留项护栏(`#latest-check` 的 `max-height: 30vh` 按**源码文本计数**断言为 1 —— 计算样式对它返回的是 `vh` 的 px 用值,断言 `== \"30vh\"` 会恒 FAIL;`#chat-messages` 的 `overflow-y` 按计算样式断言为 `auto`)← D-14 / D-11"
     - "item 9 的滚动者普查是**状态无关**的 —— 七个 `overflow` 声明所在的元素全部是 `index.html` 的静态元素,与磁盘状态样本无关,故普查在任何样本下都成立 ← 静态 DOM 事实"
     - "item 9 的可达性断言在注入足量内容后做出(经应用自身的 `renderEvent` / `renderMarkdown` 渲染,不手工拼 DOM);在「容器无需滚动」时用 `info()` 报告而非记一条空转 PASS;末条元素读不到时记 BLOCKED ← PATTERNS.md E-2 的「绝不记假 PASS」纪律"
     - "`bash scripts/check-01-token-conformance.sh` 打印 `PASS` 且 exit 0(围栏外裸 `#hex` 仍为 0)← CHECK-01"
@@ -159,7 +159,9 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 
 **本阶段「打破既有断言」的登记结论(D-20):零项。** 已逐条普查 `scripts/check-05-ui-uat.py` 与 `scripts/check-06-idi05-validation.py`:**没有任何**既有断言触及 `#ai-events` / `.event-list` / `#annotation-list` / `#latest-check` 的 `max-height` 或 `overflow`,也**没有**断言 `#session-panel` 的 `flex` / `min-height`。本计划删除的四条声明因此**不打破任何既有门**。唯一需要登记的是**语义层**的措辞偏离:Success Criterion #3 写「侧栏内只剩一个滚动条(`#chat-messages` 除外)」,本阶段的实际目标状态是「面板区内 `#main-pane` + `#latest-check` 两个滚动者」(外加 SC#3 明文豁免的 `#chat-messages`)。**不改 `ROADMAP.md` / `REQUIREMENTS.md` 正文**(改会作废已通过的验证指纹),只在计划与验证记录里登记(UI-SPEC §契约修正登记 A-5)。
 
-**`#main-pane` 自身也是滚动者,这是 SC#3 口径必须收窄的原因。** HEAD 的 `overflow` 声明共七处:`#main-pane`(:458)、`#doc-panel`(:472)、`#doc-panel.collapsed`(:479,`overflow: hidden`)、`.event-list`(:569)、`#chat-messages`(:793)、`#annotation-list`(:918)、`#latest-check`(:1116)。删除 L-4 的两处之后,面板区(`#main-pane` 及其后代)内计算 `overflow-y` 为 `auto` 的元素是 `#main-pane` / `#chat-messages` / `#latest-check` 三者 —— 不是路线图写的「一个」。D-14 的「恰好两个」是**排除 SC#3 明文豁免的 `#chat-messages`** 之后的口径。item 9 把两种读法都断言,故「意外新增第四个滚动者」这类回归仍会被抓到。
+**`#main-pane` 自身也是滚动者,这是 SC#3 口径必须收窄的原因。** HEAD 的 `overflow` 声明共七处:`#main-pane`(:458)、`#doc-panel`(:472)、`#doc-panel.collapsed`(:479,`overflow: hidden`)、`.event-list`(:569)、`#chat-messages`(:793)、`#annotation-list`(:918)、`#latest-check`(:1116)。其中 `overflow-y: auto;` 逐字出现 **6** 次(:458 / :472 / :569 / :793 / :918 / :1116)。删除 L-4 的两处之后,面板区(`#main-pane` 及其后代)内计算 `overflow-y` 为 `auto` 的元素是 `#main-pane` / `#chat-messages` / `#latest-check` 三者 —— 不是路线图写的「一个」。D-14 的「恰好两个」是**排除 SC#3 明文豁免的 `#chat-messages`** 之后的口径。item 9 把两种读法都断言,故「意外新增第四个滚动者」这类回归仍会被抓到。
+
+**两条口径的差集是 `#doc-panel`,它必须被保留。** 本计划的门里有两个不同的计数:`overflow-y: auto;` 的**全文件**计数(6 → 4)与**面板区**(`#main-pane` 及其后代)的滚动者集合(3 → 3,其中 `#chat-messages` 是 SC#3 明文豁免)。差集恰是 `#doc-panel` —— 它是另一列,不是面板区的一部分,且 **L-1 的 sticky 表头依赖它仍是滚动容器**(sticky 的滚动容器是最近的可滚祖先)。故全文件计数期望值必须写成 **4** 而非 3;把 `#doc-panel` 的 `overflow-y: auto` 删掉以「凑到 3」是**破坏 L-1** 的越界改动,已被 prohibition 覆盖。
 
 **本计划关闭的需求:** LAYOUT-02(其判据的最终测量在计划 03)、LAYOUT-04。**本计划不触碰:** LAYOUT-01 / LAYOUT-03(计划 01 已关闭);A11Y-07 与窄窗口守卫(计划 03);`frontend/app.js` / `frontend/index.html` / `frontend/vendor/` / `scripts/ui-states/` 零改动;`scripts/check-01…04` 与 `scripts/check-06-idi05-validation.py` 代码零改动;围栏 `:root` 内零改动(零新增令牌);任何 `:focus` / `:hover` / `:active` / `transition` 规则(Phase 7)。
 </objective>
@@ -191,7 +193,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 | 类别 | 符号 | 位置 | 备注 |
 |---|---|---|---|
 | 新增 CSS 规则 | 六选择器 `overflow-wrap: anywhere` 规则(1 条声明、6 个选择器) | `frontend/style.css` 文件末尾 | 全文件**首条** `overflow-wrap` |
-| 新增 CSS 声明 | `min-width: 0;` × 2 | `#main-pane` / `#doc-panel` 两条既有规则体内 | 全文件**首条** `min-width` |
+| 新增 CSS 声明 | `min-width: 0;` × 2 | `#main-pane` / `#doc-panel` 两条既有规则体内 | `#app` flex 子项上的**首条** `min-width`(全文件已有两处 `min-width`,均在别处:`#enter-form input[type="text"]` 的 `min-width: 0` 与 `.modal-buttons button` 的 `min-width: 96px`) |
 | 删除 CSS 声明 | `max-height: 55vh;` / `overflow-y: auto;` | `.event-list` 规则体内 | 原地删,规则块不移动 |
 | 删除 CSS 声明 | `max-height: 32vh;` / `overflow-y: auto;` | `#annotation-list` 规则体内 | 原地删,规则块不移动 |
 | 新增 Python 函数 | `def item9(page, tmp_root)` | `scripts/check-05-ui-uat.py` | 滚动者 DOM 普查 / 末条可达性 / `max-height == none` / 保留项护栏 |
@@ -199,7 +201,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 | 新增断言标签 | 滚动者集合断言 ×2(全集 == 三者;排除 `#chat-messages` 后 == 两者) | item 9 | 两个独立量的比较,不是自比 |
 | 新增断言标签 | `#main-pane` / `#latest-check` 末条可达性 | item 9 | 需先注入足量内容 |
 | 新增断言标签 | `#ai-events` / `#annotation-list` 计算 `max-height == none` | item 9 | 状态无关(元素常驻静态 DOM) |
-| 新增断言标签 | 保留项护栏 ×2(`#latest-check` 的 `max-height == 30vh`;`#chat-messages` 的 `overflow-y == auto`) | item 9 | D-11 保留理由的机器化形态 |
+| 新增断言标签 | 保留项护栏 ×2(`#latest-check` 的 `max-height: 30vh` 按**源码文本计数 == 1**;`#chat-messages` 的 `overflow-y == auto` 按**计算样式**) | item 9 | D-11 保留理由的机器化形态 |
 
 **本计划明确不产生的新符号:** 零新增令牌、零新 CSS 自定义属性、零新文件、零新依赖、零新构建步骤;`.markdown-body` / `.event-content` / `.chat-bubble` / `.say-chunk` / `.annotation-note` / `.annotation-answer-body` 六个既有选择器**没有**新增任何规则块(只被新规则的选择器列表引用)。
 
@@ -238,7 +240,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 
     每处声明**正上方**加一段 2–3 行注释,写明 D-09 的理由(否则会被当成冗余代码删掉):`#app` 的两个 flex 子项都是 `min-width: auto` ⇒ `flex-basis` 不是硬约束、`min-width: auto` 胜出,长不可断内容能把 `#doc-panel` 顶得比它的 `clamp()` 还宽;上面的 `anywhere` 落地后 min-content 会塌缩,本行看似冗余 —— **它不依赖「六个目标长期全覆盖」**,将来新增一个未被 `overflow-wrap` 覆盖的渲染容器时仍能兜住,**不得当作冗余代码删除**。
 
-    **注释文本的硬约束:** 两段注释**不得**把该声明连分号一起复写出来(即不得出现 `min-width: 0;` 这个带分号的串)。理由:验收用 `grep -o 'min-width: 0;' | wc -l` 计数,注释里的同形串会把计数从 2 抬到 4。注释里写 `min-width: 0`(不带分号)即可。同理六目标规则的注释**不得**复写 `overflow-wrap: anywhere;`(带分号),计数须保持 1。
+    **注释文本的硬约束:** 两段注释**不得**把该声明连分号一起复写出来(即不得出现 `min-width: 0;` 这个带分号的串)。理由:验收用 `grep -o 'min-width: 0;' | wc -l` 计数,基线是 1(既有 `#enter-form input[type="text"]`)+ 本任务 2 条 = 3;注释里的同形串会把计数从 3 抬到 5。注释里写 `min-width: 0`(不带分号)即可。同理六目标规则的注释**不得**复写 `overflow-wrap: anywhere;`(带分号),计数须保持 1。
 
     另:两段注释与规则注释都**不得**包含字符串 `@media`、`!important`、`#hex`、`@layer`、`@property`、`var(--x, #fallback)` —— 它们会被本阶段与后续阶段的守卫命令在 `frontend/style.css` 上扫到。
 
@@ -250,9 +252,9 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
     <automated>grep -c '^\.markdown-body, \.event-content, \.chat-bubble, \.say-chunk, \.annotation-note, \.annotation-answer-body {' frontend/style.css</automated>
     <fails_when>the count is not exactly 1</fails_when>
     <automated>grep -o 'min-width: 0;' frontend/style.css | wc -l</automated>
-    <fails_when>the count is not exactly 2</fails_when>
-    <automated>grep -n -A 9 '^#main-pane {' frontend/style.css | grep -o 'min-width: 0;' | wc -l; grep -n -A 9 '^#doc-panel {' frontend/style.css | grep -o 'min-width: 0;' | wc -l</automated>
-    <fails_when>either count is not exactly 1</fails_when>
+    <fails_when>the count is not exactly 3 (HEAD has 1 — `#enter-form input[type="text"]` at style.css:658; this task adds 2, one inside each `#app` flex child's existing rule body)</fails_when>
+    <automated>grep -n -A 12 '^#main-pane {' frontend/style.css | grep -o 'min-width: 0;' | wc -l; grep -n -A 12 '^#doc-panel {' frontend/style.css | grep -o 'min-width: 0;' | wc -l</automated>
+    <fails_when>either count is not exactly 1 (the window must reach the new declaration, which sits after the rule's last pre-existing declaration plus the 2–3 comment lines added above it)</fails_when>
     <automated>grep -o 'word-break: break-all;' frontend/style.css | wc -l; grep -o 'white-space: pre-wrap;' frontend/style.css | wc -l</automated>
     <fails_when>either count is not exactly 1 (the adjudicated `.event-content` protection must survive untouched)</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
@@ -267,7 +269,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
   <acceptance_criteria>
     - `overflow-wrap: anywhere;` 声明数 == 1,且其选择器行逐字为 `.markdown-body, .event-content, .chat-bubble, .say-chunk, .annotation-note, .annotation-answer-body {`
     - 该规则位于文件**末尾**(`grep -n '^\.markdown-body, \.event-content' frontend/style.css` 的行号大于三条嵌入标题刻度规则的行号),未插入到任何既有规则之间
-    - `min-width: 0;` 声明数 == 2,且分别在 `#main-pane` 与 `#doc-panel` 的规则体内(`grep -n -A 9` 各命中 1 次)
+    - `min-width: 0;` 声明数 == 3(其中 1 条是 `#enter-form input[type="text"]` 的既有声明于 `style.css:658`),新增的 2 条分别在 `#main-pane` 与 `#doc-panel` 的规则体内(`grep -n -A 12` 各命中 1 次)
     - `git diff -- frontend/style.css` 的 hunk 里 `#main-pane` 与 `#doc-panel` 两条规则**只有新增行**(注释 + `min-width: 0;`),既有声明一行未改
     - `.event-content` 的 `word-break: break-all;` 与 `white-space: pre-wrap;` 逐字保留(计数各 == 1)
     - 围栏 `:root` 内零改动:`git diff -- frontend/style.css` 的 hunk 中没有任何行落在围栏 START/END 之间(零新增令牌)
@@ -300,7 +302,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 
     **第 2 步 —— `#annotation-list` 规则体内原地删两行。** 删掉 `max-height: 32vh;` 与 `overflow-y: auto;` 两行。**`padding: var(--space-half);` 必须保留**(L-5 普查的输入),`display` / `flex-direction` / `gap: var(--space-2-5)` 逐字不变。同样加一行注释写明是 L-4 的刻意收敛(行为变更:批注面板不再内部滚动)。
 
-    **第 3 步 —— 保留项复核(不改,只确认)。** 逐条确认并记录:`#latest-check` 的 `max-height: 30vh;` 与 `overflow-y: auto;` 仍在(去掉它会把 `#check-controls` 里的裁决按钮推出视口);`#chat-messages` 的 `overflow-y: auto;` 仍在;`#session-panel` 族的每一条声明仍在;`#main-pane` 的 `overflow-y: auto;` 仍在(唯一外层滚动者)。**这四项是「保留」而非「遗漏」,计划 03 的 item 9 会断言它们。**
+    **第 3 步 —— 保留项复核(不改,只确认)。** 逐条确认并记录:`#latest-check` 的 `max-height: 30vh;` 与 `overflow-y: auto;` 仍在(去掉它会把 `#check-controls` 里的裁决按钮推出视口);`#chat-messages` 的 `overflow-y: auto;` 仍在;`#session-panel` 族的每一条声明仍在;`#main-pane` 的 `overflow-y: auto;` 仍在(唯一外层滚动者);**`#doc-panel` 的 `overflow-y: auto;` 仍在** —— 它是**另一列**的滚动者,不在面板区普查范围内,但**计划 01 的 sticky 表头依赖它**(sticky 的滚动容器是最近的可滚祖先)。**这五项是「保留」而非「遗漏」;删除 `#doc-panel` 的那一条会同时打破 L-1 与全文件计数门(6 − 2 = 4),计划 03 的 item 9 会断言它们。**
 
     **第 4 步 —— 运行时验证(硬规则 7)。** 改完必须实跑:`check-01` / `check-02` / `check-03` / `check-04`,以及 `--item smoke,1,4,7,8`(五项必须与波次 1 结束时逐条一致 —— 本计划到此为止不改 harness)。**另外**把两条 Delta 显式登记进 SUMMARY:D6-4(`.event-list` 删限高 ⇒ AI 面板不再内部滚动,条目随 `#main-pane` 滚动)与 D6-5(`#annotation-list` 同上),二者都是**行为变更,不是纯视觉**。
   </action>
@@ -310,7 +312,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
     <automated>grep -o 'max-height: 30vh;' frontend/style.css | wc -l</automated>
     <fails_when>the count is not exactly 1 (`#latest-check` keeps its limit — removing it pushes the verdict buttons below the fold)</fails_when>
     <automated>grep -o 'overflow-y: auto;' frontend/style.css | wc -l</automated>
-    <fails_when>the count is not exactly 3 (HEAD has 5; L-4 deletes 2 ⇒ `#main-pane` / `#chat-messages` / `#latest-check` remain)</fails_when>
+    <fails_when>the count is not exactly 4 (HEAD has 6 — style.css:458 `#main-pane`, :472 `#doc-panel`, :569 `.event-list`, :793 `#chat-messages`, :918 `#annotation-list`, :1116 `#latest-check`; L-4 deletes 2 ⇒ `#main-pane` / `#doc-panel` / `#chat-messages` / `#latest-check` remain. `#doc-panel` is the sibling column, outside the panel-region census, and must NOT be deleted — L-1's sticky header depends on it being a scroll container)</fails_when>
     <automated>grep -n -A 9 '^\.event-list {' frontend/style.css | grep -o 'transition: background-color 0.3s;' | wc -l; grep -c '^\.event-list.streaming {' frontend/style.css; grep -c '^\.event-list.aborted {' frontend/style.css</automated>
     <fails_when>any count is not exactly 1 (the streaming/aborted states and the transition are Phase 7 / REG-03 material and must survive untouched)</fails_when>
     <automated>grep -n -A 6 '^#annotation-list {' frontend/style.css | grep -o 'padding: var(--space-half);' | wc -l</automated>
@@ -326,7 +328,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
   </verify>
   <acceptance_criteria>
     - `max-height: 55vh;` 与 `max-height: 32vh;` 计数均为 0;`max-height: 30vh;` 计数 == 1(`#latest-check` 保留)
-    - `overflow-y: auto;` 计数 == 3(`#main-pane` / `#chat-messages` / `#latest-check`);HEAD 的 5 处中恰有 2 处被删
+    - `overflow-y: auto;` 计数 == 4(`#main-pane` / `#doc-panel` / `#chat-messages` / `#latest-check`);HEAD 的 6 处中恰有 2 处被删(`.event-list` 与 `#annotation-list`),`#doc-panel` 的声明是**另一列**的滚动者、不在面板区普查范围内,不得被顺手删掉
     - `git diff -- frontend/style.css` 的 hunk 里 `.event-list` 与 `#annotation-list` 两条规则**只有删除行**,其余声明与规则位置逐字不变(硬规则 3)
     - `.event-list` 的 `transition: background-color 0.3s;` 仍在;`.event-list.streaming {` 与 `.event-list.aborted {` 各仍为 1 处
     - `#annotation-list` 的 `padding: var(--space-half);` 仍在(计数 == 1)
@@ -336,7 +338,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
     - `--item smoke` / `--item 1` / `--item 4` / `--item 7` / `--item 8` 五项全 PASS(0 FAIL / 0 BLOCKED)
     - `bash scripts/check-01-token-conformance.sh` / `check-03` / `check-04` 均 `PASS`;`check-02` 仍 `PASS: 0 failures`
   </acceptance_criteria>
-  <done>`.event-list` 与 `#annotation-list` 两条既有规则体内各原地删掉两行限高与内滚动声明,规则块与其余声明逐字不变;`#latest-check` / `#chat-messages` / `#session-panel` 族 / `#main-pane` 四处保留项逐条复核通过;两条行为变更(D6-4 / D6-5)登记进 SUMMARY;四条既有守卫与五项 harness 门全绿。</done>
+  <done>`.event-list` 与 `#annotation-list` 两条既有规则体内各原地删掉两行限高与内滚动声明,规则块与其余声明逐字不变;`#latest-check` / `#chat-messages` / `#session-panel` 族 / `#main-pane` / `#doc-panel` 五处保留项逐条复核通过;两条行为变更(D6-4 / D6-5)登记进 SUMMARY;四条既有守卫与五项 harness 门全绿。</done>
 </task>
 
 <task type="auto">
@@ -373,7 +375,12 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 
     **(c) 两处限高确已消失(D-14 第 3 条)。** `ok(item, "[p1] #ai-events 计算 max-height == none", "none", read_style(page, "#ai-events", "max-height"))` 与 `ok(item, "[p1] #annotation-list 计算 max-height == none", "none", read_style(page, "#annotation-list", "max-height"))`。**注意:`read_style` 对 `display: none` 的元素同样返回解析后的 computed 值**(computed style 不依赖布局),故这两条在 `p1`(`#annotation-list` 可能被隐藏)下依然有效 —— 把这一点写进注释,否则后续维护者会以为需要切样本。元素读不到时 `read_style` 返回 `None` ⇒ `ok()` 自动记 BLOCKED。
 
-    **(d) 保留项护栏两条。** `ok(item, "[p1] #latest-check 仍保留 max-height == 30vh", "30vh", read_style(page, "#latest-check", "max-height"))` 与 `ok(item, "[p1] #chat-messages overflow-y == auto", "auto", read_style(page, "#chat-messages", "overflow-y"))`。这两条是 D-11 保留理由的机器化形态,防止计划 03 或后续阶段顺手删掉它们。
+    **(d) 保留项护栏两条。** 两条护栏读的**量不同**,因为它们能读到的形态不同 —— 这不是风格选择,而是「断言必须能 PASS」的硬要求:
+
+    - **`#chat-messages` 的 `overflow-y`:按计算样式读。** `ok(item, "[p1] #chat-messages overflow-y == auto", "auto", read_style(page, "#chat-messages", "overflow-y"))`。`overflow-y: auto` 是**关键字值**,`getComputedStyle` 逐字返回 `auto`,故这条读法成立。元素读不到时 `read_style` 返回 `None` ⇒ `ok()` 自动记 BLOCKED。
+    - **`#latest-check` 的 `max-height: 30vh`:** **必须读源码文本,不得读计算样式。** `getComputedStyle` 返回的是 `vh` 解析后的**用值(px)** —— 本仓捆绑 chromium 下 `max-height: 30vh` 在 1440×900 解析为 `270px`、在 700px 高视口解析为 `210px`,**永远不会**返回字符串 `"30vh"`。用计算样式断言 `== "30vh"` 是一条**恒 FAIL** 的断言:它会让 `--item 9` 永远无法转绿,并使计划 03 Task 3 的 `--item smoke,1,2,3,4,6,7,8,9` 收口门同样不可达。故改为**源码文本断言**:在 Python 侧用 `Path("frontend/style.css").read_text(encoding="utf-8")` 读文件文本,数出 `max-height: 30vh;` 的出现次数,断言恰为 **1**(与 `check_render_markdown_call_sites` 的「读文件文本算计数」同族,**不依赖 shell 管道**),用 `ok_true` 记 PASS/FAIL,并在 `info()` 里打印该计数与命中的行号。文件读不到 ⇒ `blocked(...)`,**绝不**记 PASS。
+
+    这两条是 D-11 保留理由的机器化形态,防止计划 03 或后续阶段顺手删掉它们。**源码文本断言与几何/计算样式断言互补**:前者抓「保留项被悄悄删掉」,后者抓「保留项被悄悄改值」。
 
     **(e) viewport 纪律。** item 9 不需要变更 viewport;若调试期用过 `set_viewport_size`,必须在返回前复位 1440×900(与 item 8 同一纪律)。
 
@@ -389,7 +396,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
     <automated>grep -c 'def item9' scripts/check-05-ui-uat.py; grep -c 'if "9" in items' scripts/check-05-ui-uat.py; grep -o '"9"' scripts/check-05-ui-uat.py | wc -l</automated>
     <fails_when>the first count is not 1, or the second count is not 1, or the third count is less than 3</fails_when>
     <automated>grep -o 'overflow-y' scripts/check-05-ui-uat.py | wc -l; grep -o 'max-height' scripts/check-05-ui-uat.py | wc -l</automated>
-    <fails_when>either count is less than 2 (the census reads computed `overflow-y`; the assertions read computed `max-height` on both converged containers and both retained guards)</fails_when>
+    <fails_when>either count is less than 2 (the census reads computed `overflow-y`; the assertions read computed `max-height` on both converged containers and name `max-height` in the retained-guard labels — the `#latest-check` guard itself is asserted from `frontend/style.css` source text, not from a computed-style read)</fails_when>
     <automated>grep -o 'scrollHeight' scripts/check-05-ui-uat.py | wc -l; grep -o 'getBoundingClientRect' scripts/check-05-ui-uat.py | wc -l</automated>
     <fails_when>either count is less than 2 (reachability requires reading scrollHeight/clientHeight and the last child's rect)</fails_when>
     <automated>grep -o 'renderEvent(' scripts/check-05-ui-uat.py | wc -l; grep -o 'renderMarkdown(' scripts/check-05-ui-uat.py | wc -l</automated>
@@ -406,7 +413,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
     - item 9 的滚动者普查在 `page.evaluate` 内遍历 `#main-pane` 及其后代(不是硬编码选择器列表),且 Python 侧先断言 `#main-pane` 自身在结果内
     - item 9 含两条滚动者集合断言(全集 == 三者;排除 `#chat-messages` 后 == 两者),expected 与 actual 都是集合(两个独立量,不是自比)
     - item 9 的末条可达性断言先注入内容(经 `renderEvent` / `renderMarkdown`),并含 `scrollHeight` / `clientHeight` 与末条 `getBoundingClientRect()` 的读数;容器无需滚动时用 `info()` 报告而非记断言;末条读不到时记 `blocked(...)`
-    - item 9 含 `#ai-events` 与 `#annotation-list` 两条计算 `max-height == none` 断言,以及 `#latest-check` 的 `30vh` 与 `#chat-messages` 的 `auto` 两条保留项护栏
+    - item 9 含 `#ai-events` 与 `#annotation-list` 两条**计算** `max-height == none` 断言(这两条读计算样式是成立的:`none` 是关键字值),以及两条保留项护栏 —— `#latest-check` 的 `max-height: 30vh` 按**源码文本计数 == 1** 断言(不得用计算样式:它返回 `vh` 的 px 用值),`#chat-messages` 的 `overflow-y == auto` 按计算样式断言
     - `--item 9` 全 PASS(0 FAIL / 0 BLOCKED),输出里含实测滚动者数组
     - `--item smoke` / `--item 1` / `--item 4` / `--item 7` / `--item 8` 五项仍全 PASS(0 FAIL / 0 BLOCKED),断言条数不低于波次 1 结束时的值
     - `bash scripts/check-01-token-conformance.sh` / `check-03` / `check-04` 均 `PASS`;`check-02` 仍 `PASS: 0 failures`
@@ -432,7 +439,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 | Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
 |-----------|----------|-----------|----------|-------------|-----------------|
 | T-idi-06-06 | Denial of Service / Repudiation | 内容可达性(删除两个内层滚动者之后) | high | mitigate | item 9 的末条可达性断言:注入足量内容 → 滚到底 → 断言容器最后一个子元素落在容器 rect 之内。**这是「内容不可达」这一失败模式的唯一机器化形态**;容器无需滚动时用 `info()` 报告而非空转 PASS |
-| T-idi-06-07 | Tampering | 交互面被推到折叠线以下 | high | mitigate | `#latest-check` 的 `max-height: 30vh` 保留(prohibition 2),并由 item 9 的保留项护栏断言为 `30vh`;`#chat-messages` 的 `overflow-y` 保留并断言为 `auto`;`#session-panel` 族零改动(D-12 / prohibition 3) |
+| T-idi-06-07 | Tampering | 交互面被推到折叠线以下 | high | mitigate | `#latest-check` 的 `max-height: 30vh` 保留(prohibition 2),并由 item 9 的保留项护栏按**源码文本计数 == 1** 断言(计算样式对它返回 `vh` 的 px 用值,不能作为判据);`#chat-messages` 的 `overflow-y` 保留并按计算样式断言为 `auto`;`#session-panel` 族零改动(D-12 / prohibition 3) |
 | T-idi-06-08 | Tampering | `frontend/style.css` 的四条守卫不变量 | high | mitigate | 每个任务复跑 CHECK-01 / 02 / 03 / 04;围栏标记 1/1;`^\.hidden {` == 1;`!important` **声明**数 == 1;新增注释与规则体内不得出现 `!important` / `#hex` / `@layer` / `@property` / `var(--x, #fallback)`(硬规则 2 / 4) |
 | T-idi-06-09 | Tampering | 源码顺序被重排(硬规则 3) | medium | mitigate | 删除一律原地改声明、新增一律追加在文件末尾;验收以 `git diff` 的 hunk 形态为准(`.event-list` / `#annotation-list` 两条规则只有删除行,`#main-pane` / `#doc-panel` 只有新增行) |
 | T-idi-06-10 | Denial of Service | 假 PASS(空转断言) | high | mitigate | 滚动者普查在探针返回 `null` / 数组为空时记 `blocked(...)`;可达性断言在末条元素读不到时记 `blocked(...)`;容器无需滚动时记 `info()` 而非断言。与 item7 已登记的「对 `None` 恒真」陷阱同型 |
@@ -451,7 +458,7 @@ Output: `frontend/style.css` 末尾新增的一条六选择器 `overflow-wrap` �
 - `.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,4,7,8` → 五项全 PASS,断言条数不低于波次 1 结束时
 - Gate A(围栏纯度):`git diff -- frontend/style.css` 的 hunk 中没有任何行落在围栏 START/END 之间(零新增令牌)
 - Gate B(硬规则 3):`git diff -- frontend/style.css` 里 `.event-list` / `#annotation-list` 两条规则只有删除行,`#main-pane` / `#doc-panel` 两条规则只有新增行,无任何规则块位置变化
-- Gate C(保留项):`grep -o 'overflow-y: auto;' frontend/style.css | wc -l` == 3 且 `grep -o 'max-height: 30vh;' frontend/style.css | wc -l` == 1
+- Gate C(保留项):`grep -o 'overflow-y: auto;' frontend/style.css | wc -l` == 4 且 `grep -o 'max-height: 30vh;' frontend/style.css | wc -l` == 1
 - Gate D(零外溢):`git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/ scripts/ui-states/ scripts/check-01-token-conformance.sh scripts/check-02-contrast.py scripts/check-03-hidden-uniqueness.sh scripts/check-04-important-count.sh scripts/check-06-idi05-validation.py` 输出为空
 - Gate E(证据落盘):`idi-06-02-SUMMARY.md` 含三宽度诊断新数值(与波次 1 基线并列)、D6-4 / D6-5 两条行为变更登记、`--item 9` 的逐项结论
 </verification>

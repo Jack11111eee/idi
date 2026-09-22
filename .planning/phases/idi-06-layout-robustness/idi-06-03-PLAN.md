@@ -301,9 +301,9 @@ Output: `frontend/style.css` 的条件守卫(若实测证成)、`.annotation-ans
     <fails_when>exit code is not 0, or the summary reports anything other than `item smoke: PASS`, `item 1: PASS`, `item 4: PASS`, `item 7: PASS`, `item 8: PASS`</fails_when>
     <automated>grep -o 'min-height: 24px;' frontend/style.css | wc -l; grep -o 'min-width: 24px;' frontend/style.css | wc -l</automated>
     <fails_when>the two counts are not equal, or either is less than 1 (the measured under-sized interactive controls each receive both declarations)</fails_when>
-    <automated>grep -n -A 8 '^\.annotation-answer summary {' frontend/style.css | grep -o 'min-height: 24px;' | wc -l; grep -n -A 8 '^\.annotation-answer summary {' frontend/style.css | grep -o 'min-width: 24px;' | wc -l</automated>
-    <fails_when>either count is not exactly 1</fails_when>
-    <automated>grep -n -A 8 '^\.annotation-answer summary {' frontend/style.css | grep -oE '(font-size: var\(--text-xs\);|cursor: pointer;|color: var\(--color-text-muted\);|margin-top: var\(--space-1\);)' | wc -l</automated>
+    <automated>grep -n -A 12 '^\.annotation-answer summary {' frontend/style.css | grep -o 'min-height: 24px;' | wc -l; grep -n -A 12 '^\.annotation-answer summary {' frontend/style.css | grep -o 'min-width: 24px;' | wc -l</automated>
+    <fails_when>either count is not exactly 1 (the window must reach both new declarations — the rule body is HEAD `:991-996` and grows by the comment lines added above them)</fails_when>
+    <automated>grep -n -A 12 '^\.annotation-answer summary {' frontend/style.css | grep -oE '(font-size: var\(--text-xs\);|cursor: pointer;|color: var\(--color-text-muted\);|margin-top: var\(--space-1\);)' | wc -l</automated>
     <fails_when>the count is not exactly 4 (the four pre-existing declarations must survive verbatim — only two size declarations are added)</fails_when>
     <automated>grep -o 'font-size: 20px;' frontend/style.css | wc -l; grep -o 'line-height: 1;' frontend/style.css | wc -l</automated>
     <fails_when>either count is not exactly 1 (`.collapse-indicator` is on the do-not-touch list — backlog 999.1)</fails_when>
@@ -366,7 +366,9 @@ Output: `frontend/style.css` 的条件守卫(若实测证成)、`.annotation-ans
     - **04.1 的三处结论 + 数量差值(逐条从 HEAD 重算):** 清单规模与 `ORDER` 行;`--color-text-info ON --color-surface-info` 的比值;冻结轮的 `opacity` / `filter` / `box-shadow` 三值。Phase 5 已记过一轮(`ORDER 0.363` / 4.53 / `1` + `saturate(0.6)` + `inset 3px 0 0` 琥珀);本阶段**零颜色改动**,故这些值必须**逐字不变** —— 若有一处变了,说明本阶段意外触碰了颜色层,那是停止条件。
     - **三项 `human_verification`:** 照实记录其状态,**不静默转绿**(Phase 5 已记录 TOKEN-07 的序关系半场仍是 manual-only,本阶段不得单方面翻转)。
 
-    **第 3 步 —— 零外溢与范围锁复核。** 逐条确认:`git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/ scripts/ui-states/ scripts/check-01-token-conformance.sh scripts/check-02-contrast.py scripts/check-03-hidden-uniqueness.sh scripts/check-04-important-count.sh scripts/check-06-idi05-validation.py` 输出为空;`ls frontend/vendor/` 只有 `marked.min.js`;`.planning/phases/idi-04.1-radix/` 零改动;`ROADMAP.md` / `REQUIREMENTS.md` / `04-UI-SPEC.md` 正文零改动(口径登记只写在计划与 SUMMARY 里)。
+    **第 3 步 —— 零外溢与范围锁复核。** 逐条确认:`git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/ scripts/ui-states/ scripts/check-01-token-conformance.sh scripts/check-02-contrast.py scripts/check-03-hidden-uniqueness.sh scripts/check-04-important-count.sh scripts/check-06-idi05-validation.py` 输出为空;`ls frontend/vendor/` 只有 `marked.min.js`;`.planning/phases/idi-04.1-radix/` 零改动。
+
+    **`ROADMAP.md` / `REQUIREMENTS.md` / `04-UI-SPEC.md` 的正文零改动必须用内容比对证明,不能用 `git status`。** 判据:`ANCHOR=$(git log --diff-filter=A --format=%H -1 -- .planning/phases/idi-06-layout-robustness/idi-06-01-PLAN.md); git diff --stat "$ANCHOR" -- .planning/ROADMAP.md .planning/REQUIREMENTS.md .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md` 输出为空。理由:`git status --porcelain` 只反映**未提交**的改动,一次**已提交**的改写对它完全不可见 —— 那正是本阶段要防的失败模式(本仓已记录过 `phase.complete` 越权翻 `REQUIREMENTS.md` 行、并回改 `ROADMAP.md` 进度)。`git diff "$ANCHOR" -- <路径>` 比较的是**内容**,提交与否都拦得住;`$ANCHOR` 取计划集的引入提交,是本阶段开始时确定可复现的锚点。口径登记只写在计划与 SUMMARY 里。
 
     **第 4 步 —— 把「测量决策记录」的最终态写进 SUMMARY。** 本阶段的三个实测驱动决策(L-2 守卫是否落地、L-5 是否抬 padding、L-6 的落点清单)必须在本 SUMMARY 里有**最终裁定**,并各自附原始数值与依据 —— 这是后续 `/gsd-verify-work idi-06` 与本里程碑收口的唯一入口。
   </action>
@@ -385,8 +387,8 @@ Output: `frontend/style.css` 的条件守卫(若实测证成)、`.annotation-ans
     <fails_when>the output is not empty (the fingerprint write-back belongs to `/gsd-verify-work idi-04.1-radix`; this plan only supplies evidence)</fails_when>
     <automated>git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/ scripts/ui-states/ scripts/check-01-token-conformance.sh scripts/check-02-contrast.py scripts/check-03-hidden-uniqueness.sh scripts/check-04-important-count.sh scripts/check-06-idi05-validation.py</automated>
     <fails_when>the output is not empty</fails_when>
-    <automated>git status --porcelain -- .planning/ROADMAP.md .planning/REQUIREMENTS.md .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md</automated>
-    <fails_when>the output is not empty (changing these would invalidate already-passed verification fingerprints; deviations are registered in plans and summaries only)</fails_when>
+    <automated>ANCHOR=$(git log --diff-filter=A --format=%H -1 -- .planning/phases/idi-06-layout-robustness/idi-06-01-PLAN.md); git diff --stat "$ANCHOR" -- .planning/ROADMAP.md .planning/REQUIREMENTS.md .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md</automated>
+    <fails_when>the output is not empty (these three files' content must be byte-identical to the phase-planning commit. A **content** diff catches a rewrite whether or not it was committed; `git status --porcelain` sees only uncommitted changes, so a committed rewrite of these files is invisible to it — the exact failure this project has already recorded for `phase.complete` flipping REQUIREMENTS rows and clobbering ROADMAP progress)</fails_when>
     <automated>ls frontend/vendor/ | wc -l</automated>
     <fails_when>the count is not exactly 1 (`frontend/vendor/` must keep containing exactly `marked.min.js`; no dependency was added or removed)</fails_when>
   </verify>
@@ -399,7 +401,7 @@ Output: `frontend/style.css` 的条件守卫(若实测证成)、`.annotation-ans
     - 若无法逐字复现 04.1 的 sha256 方案,SUMMARY 照实写明「未能复现」并只提供逐文件 sha256 与变更清单 —— **不得填入猜测的指纹值**
     - `git status --porcelain -- .planning/phases/idi-04.1-radix/` 输出为空(`idi-04.1-VERIFICATION.md` 一字未改)
     - `frontend/app.js` / `frontend/index.html` / `frontend/vendor/` / `scripts/ui-states/` / `check-01`…`check-04` / `check-06` 零改动(`git status --porcelain` 为空)
-    - `ROADMAP.md` / `REQUIREMENTS.md` / `04-UI-SPEC.md` 正文零改动(口径登记只写在计划与 SUMMARY 里)
+    - `ROADMAP.md` / `REQUIREMENTS.md` / `04-UI-SPEC.md` 正文零改动 —— 判据是**内容比对**,不是工作区状态:`ANCHOR=$(git log --diff-filter=A --format=%H -1 -- .planning/phases/idi-06-layout-robustness/idi-06-01-PLAN.md); git diff "$ANCHOR" -- <三条路径>` 输出为空。`$ANCHOR` 是本阶段计划集的引入提交(`idi-06-01-PLAN.md` 的添加提交),确定可复现。**不得只用 `git status --porcelain`** —— 它只反映未提交的改动,一次已提交的改写对它完全不可见(假阴性);而本阶段的目标正包含「不改这三份文件」,该性质必须能观察到(口径登记只写在计划与 SUMMARY 里)
     - `frontend/vendor/` 仍恰好 1 个文件
     - SUMMARY 含「测量决策记录」的最终态:L-2 / L-5 / L-6 三个实测驱动决策各有最终裁定 + 原始数值 + 依据
   </acceptance_criteria>
@@ -454,8 +456,11 @@ grep -c 'var(--[a-z0-9-]*,' frontend/style.css                # 恒为 0(硬规�
 ```bash
 git status --porcelain -- frontend/app.js frontend/index.html frontend/vendor/ scripts/ui-states/
 git status --porcelain -- .planning/phases/idi-04.1-radix/
-git status --porcelain -- .planning/ROADMAP.md .planning/REQUIREMENTS.md
+ANCHOR=$(git log --diff-filter=A --format=%H -1 -- .planning/phases/idi-06-layout-robustness/idi-06-01-PLAN.md)
+git diff --stat "$ANCHOR" -- .planning/ROADMAP.md .planning/REQUIREMENTS.md .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md
 ```
+
+> 第三组的判据是**内容比对**而非工作区状态。`git status --porcelain` 只能看见未提交的改动,一次**已提交**的改写对它完全不可见(假阴性)—— 而本阶段要防的正是那种改写(本仓已记录过 `phase.complete` 越权翻 `REQUIREMENTS.md` 行、并回改 `ROADMAP.md` 进度)。`git diff "$ANCHOR" -- <三条路径>` 比较的是**内容**,提交与否都拦得住;`$ANCHOR` 取本阶段计划集的引入提交(`idi-06-01-PLAN.md` 的添加提交),是确定可复现的锚点。前两组仍用 `git status` —— 它们断言的是「本阶段从未碰过这些路径」,工作区状态对它们是充分的。
 
 **反向验证(T-idi06-01,证明新门真的会失败):** 临时注释掉 `.annotation-answer summary` 的两条尺寸声明 → 重跑 `--item 9` → 命中区断言必须 FAIL → 恢复 → 必须 PASS。临时删掉 `@media` 块(若存在)→ 重跑 `--item 8` → 守卫形态断言必须 FAIL → 恢复 → 必须 PASS。**这是唯一能证明守卫不是恒真的手段**;两组反向验证的原始输出记入 SUMMARY。
 </verification>

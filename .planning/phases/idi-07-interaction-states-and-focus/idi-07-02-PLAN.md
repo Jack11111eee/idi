@@ -6,7 +6,6 @@ wave: 2
 depends_on: [idi-07-01]
 files_modified:
   - frontend/style.css
-  - scripts/check-02-contrast.py
   - scripts/check-05-ui-uat.py
 autonomous: true
 requirements: [INTERACT-01]
@@ -28,7 +27,7 @@ must_haves:
     - "frontend/style.css:围栏内 --color-surface-active / --color-border-hover / --color-overlay-hover / --color-overlay-active 四个 tier-2 令牌"
     - "frontend/style.css:L587 的 button:hover 选择器就地改写为 button:where(:not(:disabled)):hover(声明一字不动)"
     - "frontend/style.css:末尾追加的 :where(button:not(:disabled)):active、填充按钮 hover/active 叠层规则组、input/select hover 规则组"
-    - "scripts/check-02-contrast.py / frontend/style.css 清单:两条 --color-border-hover NON-TEXT 配对 + 头部计数注释 50 → 52"
+    - "frontend/style.css 的 PAIR 清单:两条 --color-border-hover NON-TEXT 配对 + 头部计数注释 50 → 52(清单与计数注释都住在 style.css 的围栏注释里;`scripts/check-02-contrast.py` 只被读、不被改)"
     - "scripts/check-05-ui-uat.py:第 10 项的 SC5 / SC5′ 运行时探针"
   key_links:
     - "填充按钮 hover 的选择器特异性必须 >= 它自己的填充规则(1-0-0 的 #btn-*、0-1-1 的 button.primary / .overlay-card button、1-0-1 的 #chat-input-row button)"
@@ -147,8 +146,9 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     - `grep -c 'background: var(--color-surface-hover);' frontend/style.css` 输出 1(声明未被改动、也未被复制)
     - `grep -c '04.1-N-4' frontend/style.css` 输出 >= 2(原有第 3 条 + 新令牌注释)
     - `grep -c '--color-surface-user' frontend/style.css` 输出 >= 3(声明 + 原有注释 + 新令牌注释)
-    - `grep -o 'var(--radix-' frontend/style.css | wc -l` 与改动前**相同**(新令牌不引入新的 tier-1 引用:gray-4 与 gray-11 均已被既有令牌消费)
-    - `git diff -- frontend/style.css` 中 L587 附近只出现一行选择器的替换,`background: var(--color-surface-hover);` 那一行不在 diff 里
+    - `grep -o 'var(--radix-[a-z0-9-]*' frontend/style.css | sort -u | wc -l` 输出 == 24(与改动前相同 —— 判据是**去重后的 tier-1 名集合**,不是引用出现次数:新令牌 `--color-surface-active` 取 `--radix-gray-4`、`--color-border-hover` 取 `--radix-gray-11`,两个名都已被既有令牌消费,故集合不变;用出现次数会因新增 2 处引用而必然失败)
+    - `grep -c '^  --radix-gray-4:' frontend/style.css` 输出 == 1 且 `grep -c '^  --radix-gray-11:' frontend/style.css` 输出 == 1(新令牌没有复制出第二份 primitive 声明)
+    - `grep -c '^button:where(:not(:disabled)):hover { background: var(--color-surface-hover); }$' frontend/style.css` 输出 == 1(改写后的 L587 是**一整行**,声明体逐字节等于原行 —— 本判据 + 上一条 `^button:hover {` == 0 + `background: var(--color-surface-hover);` 全文件计数 == 1,三者合起来证明「只改了选择器,声明一字未动」。**判据不写成「那一行不在 diff 里」**:L587 是单行规则,改选择器时 git 必然把整行作为 `-` 行吐出,该措辞永远无法成立)
   </acceptance_criteria>
 </task>
 
@@ -181,7 +181,7 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     两条规则组的注释必须逐条写明六件事:
 
     1. **为什么必须逐 id / 按族枚举,不能写成 `button:not(:disabled):hover`** —— 后者是 0-2-1,ID 列为 0;而 `#btn-*` 是 1-0-0、`#chat-input-row button` 是 1-0-1、`button.primary` 与 `.overlay-card button` 是 0-1-1 且源码在本规则之前。**1-0-0 > 0-2-1**(ID 列大于类列),故那条写法对 `#btn-authorize` 完全无效 —— 这正是 D-02 第 7 条「今天所有有底色语义的按钮 hover 时零反馈」的成因,本规则必须正面跨过它。
-    2. **为什么用 `box-shadow` 的 inset 而非 `opacity`** —— 实测 `opacity: 0.88` 会把白字一起变浅,primary 4.77 → 3.93、danger 5.21 → 4.42、commit 4.72 → 3.81,**三个色族跌破 AA 4.5:1**;rgba 叠层把填充变深、文字不动,对比度反而上升(5.27 / 5.75 / 5.23),irreversible 12.32 → 12.97。
+    2. **为什么用 `box-shadow` 的 inset 而非 `opacity`** —— 实测 `opacity: 0.88` 会把白字一起变浅,primary 4.77 → 3.93、danger 5.21 → 4.42、commit 4.72 → 3.81,**三个色族跌破 AA 4.5:1**;rgba 叠层把填充变深、文字不动,对比度反而上升(5.27 / 5.75 / 5.23),irreversible 12.32 → 12.97。写这段注释时,`opacity: 0.88` 之后**不要跟分号** —— 本计划的验收判据是「带分号的 `opacity` 声明数仍为 9」,补上分号会把这条散文数成一条声明而误报
     3. **为什么是 999px 的整面铺满** —— 本文件既有的 `box-shadow: inset` 只有 3px 偏移的竖条形态(`#round-doc.round-frozen`、活动面板标记);999px 大于任何按钮的盒宽,故等价于整面覆盖。`box-shadow` 不参与布局 ⇒ 零位移。
     4. **`box-shadow` 不在过渡允许列表里 ⇒ 填充按钮的 hover 是瞬变**,这是刻意的(D-14);朴素按钮仍可过渡(D-12 的挂载规则,计划 03)。
     5. **`#selection-menu button` 不进这两组** —— 它是浮层内的透明底朴素控件,已有 `#selection-menu button:hover { background: var(--color-surface-info); }`(1-1-1);D-08 的 rgba 叠层针对的是**有底色语义**的填充按钮,叠层加到透明底上不可见。
@@ -194,8 +194,8 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     <fails_when>不是恰好一行 "PASS"</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,2,3,4,6,7,8,9</automated>
     <fails_when>exit != 0,或逐项结论里出现任一项非 PASS</fails_when>
-    <automated>grep -v '^#' frontend/style.css | grep -c 'rgba(0, 0, 0, 0.0[0-9]*)'</automated>
-    <fails_when>计数不为 0(围栏外出现裸 rgba() —— 违反了 R-2 的不变量;alpha 必须走围栏内的 --color-overlay-* 令牌)</fails_when>
+    <automated>awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c 'rgba('</automated>
+    <fails_when>计数不为 0(围栏外出现裸 rgba() —— 违反了 R-2 的不变量;alpha 必须走围栏内的 --color-overlay-* 令牌)。判据必须**围栏外**取样:围栏内 `--shadow-composer`(style.css:203)本来就带 `rgba(0, 0, 0, 0.04)`,全文件 grep 在基线就是 1,再加 `--color-overlay-hover` 就是 2,永远到不了 0</fails_when>
     <automated>awk '/===== DESIGN TOKENS: START/{f=1} /===== DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c 'box-shadow: inset 0 0 0 999px'</automated>
     <fails_when>计数不为 2(hover 组与 active 组各一条)</fails_when>
   </verify>
@@ -209,14 +209,15 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     - `grep -c 'button.primary:not(:disabled):hover' frontend/style.css` 输出 1
     - `grep -c '.overlay-card button:not(:disabled):hover' frontend/style.css` 输出 1
     - `grep -c 'selection-menu button' frontend/style.css` 输出 2(既有两条,未增未减)
-    - `grep -c 'opacity' frontend/style.css` 与改动前**相同**(本任务不引入任何 opacity 用途)
-    - `grep -c 'transform' frontend/style.css` 输出 0
+    - `grep -oE 'opacity: [0-9.]+;' frontend/style.css | wc -l` 输出 == 9(与改动前相同:本任务不新增任何 `opacity` 声明)。判据数的是**带分号的声明**而非裸子串 `opacity`:本任务的注释必须解释「为什么用 box-shadow 而不是 `opacity: 0.88`」,那个片段以散文形式出现在注释里;**注释里的 `opacity: 0.88` 不带分号,故不会计入**;同时该注释不得给 `0.88` 补分号
+    - `grep -cE '^[[:space:]]*transform:' frontend/style.css` 输出 == 1(仅既有的 `#selection-menu` 定位 `transform: translateX(-50%)`,style.css:714;本任务不新增任何 transform —— 按下位移只用 `box-shadow`,不用 `translateY`)。**不得写成全文件 `grep -c 'transform'` == 0**:那要求编辑 L714 这条与本事无关的既有声明,违反本计划自己的禁令与 CLAUDE.md §3
+    - `grep -c 'translateY' frontend/style.css` 输出 == 0(未用位移做按下反馈)
   </acceptance_criteria>
 </task>
 
 <task type="auto">
   <name>Task 3:input / select 的 hover 加深 + 两条新 PAIR + 清单计数 52 + SC5 / SC5′ 运行时探针</name>
-  <files>frontend/style.css, scripts/check-02-contrast.py, scripts/check-05-ui-uat.py</files>
+  <files>frontend/style.css, scripts/check-05-ui-uat.py</files>
   <read_first>
     - frontend/style.css(围栏内 PAIR 清单的 NON-TEXT 段 L405-425 与头部计数注释 L323-343;围栏外 L561-576 `#ai-route-select` / `#project-path-input`、L684-691 `#enter-form input[type="text"]`、L874-882 `#chat-input-row input`、L918-924 `#round-switcher`、L1122-1130 `#confirmation-modal input[type="text"]`、L1152-1159 `#check-switcher`、L1212-1219 `.verdict-note-input`;L1220-1222 `.verdict-buttons button:disabled`;L1227-1324 文件末尾追加区)
     - frontend/index.html(L22 `#message-input`、L46 `#check-switcher`、L67 `#ai-route-select`、L71 `#project-path-input`、L95 `#enter-path-input`、L136 `#round-switcher`、L174 `#confirm-word-input`)
@@ -298,7 +299,7 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
 | T-idi-07-06 | Tampering | 填充按钮 hover 规则的选择器特异性 | high | mitigate | 十条选择器逐条列出**具体特异性数值**并要求逐条跨过对应既有规则;注释里点名「`button:not(:disabled):hover`(0-2-1)对 `#btn-authorize`(1-0-0)无效」这条具体失效模式;SC5 在真实浏览器里读 `box-shadow` 验证 |
 | T-idi-07-07 | Elevation of privilege(禁用态响应交互) | L587 的 `button:hover` vs `.verdict-buttons button:disabled` | high | mitigate | gate 落在 L587 的选择器上(`:where(:not(:disabled))`),特异性逐位不变;SC5′ 用真实 `renderVerdictCard` + 真实 `.disabled` 切换断言「hover 背景 == 静默背景」;`opacity` 未被软化 |
 | T-idi-07-08 | Tampering | 朴素 `:active` 规则的特异性 | medium | mitigate | 规则写成 `:where(button:not(:disabled)):active`(0-1-0),刻意低于 0-1-1 的填充族;注释写明「改高即把填充按钮按下时刷成灰底」 |
-| T-idi-07-09 | Information disclosure / Repudiation | 围栏外的裸 `rgba()` | medium | mitigate | alpha 值收进围栏内的 `--color-overlay-hover` / `--color-overlay-active`;`grep -v '^#' | grep -c 'rgba(0, 0, 0, 0.0'` 必须为 0(该纪律**无机械守卫**,故本计划把它升为一条显式断言) |
+| T-idi-07-09 | Information disclosure / Repudiation | 围栏外的裸 `rgba()` | medium | mitigate | alpha 值收进围栏内的 `--color-overlay-hover` / `--color-overlay-active`;判据取**围栏外**取样:`awk '/DESIGN TOKENS: START/{f=1} /DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c 'rgba('` 必须为 0(围栏内 `--shadow-composer` 本就带 rgba,全文件判据在基线即非 0;该纪律**无机械守卫**,故本计划把它升为一条显式断言) |
 | T-idi-07-10 | Spoofing(假 PASS) | SC5 / SC5′ 探针 | high | mitigate | 读值前先断言目标元素存在且可见;造不出裁决卡 ⇒ `blocked`;期望侧用 `resolve_color` 解析令牌而非硬编码 rgb |
 | T-idi-07-11 | Tampering | 值碰撞被后来者「修正」 | low | mitigate | `--color-surface-active` 的注释点名 04.1-N-4 与 `--color-surface-user`,并同步扩写 L293-297 的第 3 条;`--color-border-hover` 与 `--color-text-muted` 的同值碰撞同样登记 |
 | T-idi-07-SC | Tampering | npm / pip / cargo 安装 | low | accept | 零新增运行时依赖、零构建步骤(硬规则 6):无包管理器调用进入范围;若执行期出现安装需求,即为计划偏差与停止条件 |

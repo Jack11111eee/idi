@@ -6,7 +6,6 @@ wave: 1
 depends_on: []
 files_modified:
   - frontend/style.css
-  - scripts/check-02-contrast.py
   - scripts/check-05-ui-uat.py
   - scripts/probe-07-focus-composite.py
 autonomous: true
@@ -26,7 +25,7 @@ must_haves:
     - "五个状态样本的 #round-doc 内 a[href] 计数为 0 这一事实被显式登记,归档半场的运行时断言以一次性注入探针交付(D-18)"
   artifacts:
     - "frontend/style.css:围栏内 --color-focus: #1f63bd 声明 + 围栏外末尾的 7 选择器 :focus-visible 规则"
-    - "scripts/check-02-contrast.py:清单头部的值层计数注释(47 → 50)"
+    - "frontend/style.css:PAIR 清单头部的值层计数注释(47 → 50;该注释住在 style.css:334,不在 check-02-contrast.py 里)"
     - "frontend/style.css:PAIR 清单新增三条 --color-focus 条目(含 @0.75)"
     - "scripts/check-05-ui-uat.py:第 10 项及其四处登记点 + _IDI07_* 普查 JS"
     - "scripts/probe-07-focus-composite.py(一次性注入探针,不进守卫契约)"
@@ -109,7 +108,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 **新的脚本符号与路径:**
 - `scripts/check-05-ui-uat.py`:`item10(page, tmp_root)`、`_idi07_focus_census_assert(...)`、`_idi07_hit_assert` 同族的 SC5 探针、`_idi07_focus_contract_guards(item)`(计划 03)、模块级 `_IDI07_*` 普查 JS 常量、`EXPECTED_MEDIA_QUERIES` 0 → 1(计划 03)
 - `scripts/probe-07-focus-composite.py`(新文件,一次性注入探针,**不进守卫契约**;计划 01)
-- `scripts/check-02-contrast.py`:仅新增 PAIR 清单条目与头部计数注释(零新代码;计划 01 / 02)
+- `frontend/style.css`:仅新增 PAIR 清单条目与头部计数注释(零新脚本代码;计划 01 / 02)。**`scripts/check-02-contrast.py` 只被读、不被改** —— 它只提供 `PAIR_RE` / `composite()` / 覆盖地板,清单与计数注释都住在 `frontend/style.css:334` 的围栏注释里
 
 **不新建:** `scripts/check-07-*.sh` 或 `check-06-*`(编号已占用,且与 Phase 6「扩在既有门」的先例相悖,D-15)。
 </artifacts_this_phase_produces>
@@ -118,7 +117,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 
 <task type="tracer">
   <name>Task 1 (tracer):焦点环端到端 —— 一条令牌 → 一条 CSS 规则 → 算术门 → 浏览器里读到的环</name>
-  <files>frontend/style.css, scripts/check-02-contrast.py, scripts/check-05-ui-uat.py</files>
+  <files>frontend/style.css, scripts/check-05-ui-uat.py</files>
   <read_first>
     - frontend/style.css(围栏 `:root` 的 L182-215 surface/border 段与 L320-425 的 PAIR 清单;L578-588 的 `button` 基础规则;L1227-1324 的文件末尾追加区,尤其 L1242 的 `button, input, select { color: var(--color-text); }` 与 L1313-1324 的枚举式规则注释)
     - scripts/check-01-token-conformance.sh(围栏配对断言 + 围栏外裸 `#hex` 与 tier-1 `var()` 引用的两条守卫)
@@ -181,13 +180,13 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - `grep -n 'PAIR --color-focus ON --color-surface NON-TEXT \*/' frontend/style.css` 有输出
     - `grep -o 'PAIR --color-focus' frontend/style.css | wc -l` 输出 == 1(本任务只落这一条配对)
     - `grep -n 'def item10' scripts/check-05-ui-uat.py` 有输出;`grep -o '"10"' scripts/check-05-ui-uat.py | wc -l` 输出 >= 3(normalize_items 默认列表 / known 集合 / 分发块)
-    - `git ls-files -- frontend/style.css scripts/check-02-contrast.py scripts/check-05-ui-uat.py` 三条路径全部非空(全是 tracked source)
+    - `git ls-files -- frontend/style.css scripts/check-05-ui-uat.py` 两条路径全部非空(全是 tracked source)
   </acceptance_criteria>
 </task>
 
 <task type="auto">
   <name>Task 2:补齐环色的三处验证面 + 清单计数注释 + 归档半场的一次性反事实探针</name>
-  <files>frontend/style.css, scripts/check-02-contrast.py, scripts/check-05-ui-uat.py, scripts/probe-07-focus-composite.py</files>
+  <files>frontend/style.css, scripts/check-05-ui-uat.py, scripts/probe-07-focus-composite.py</files>
   <read_first>
     - frontend/style.css(围栏内的 PAIR 清单 L320-425,尤其 L323-343 的清单头部计数演化注释与 L394-395 的 `@0.75` 条目)
     - scripts/check-02-contrast.py(L7-12 的 docstring「漂移必须可见」立身之本、L28-31 的 `PAIR_RE`、L125-127 的 `composite()`、L150-167 的覆盖地板与原始标记计数、L177-196 的 alpha 合成分支)
@@ -239,7 +238,8 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - `.venv/bin/python scripts/check-02-contrast.py | grep -c '^PASS'` 输出 >= 50(47 原有 + 3 新增)
     - `.venv/bin/python scripts/probe-07-focus-composite.py` exit 0(全部断言成立)
     - `grep -n 'def require' scripts/probe-07-focus-composite.py` 有输出且 `grep -o 'load_harness' scripts/probe-07-focus-composite.py | wc -l` 输出 >= 2
-    - `grep -c 'sed' scripts/probe-07-focus-composite.py` 输出 == 0(不得用 sed 注入)
+    - `grep -cE 'subprocess|os\.system' scripts/probe-07-focus-composite.py` 输出 == 0(注入只走浏览器侧的 `page.evaluate`,不经任何子进程 —— 判据锚在「有没有子进程调用」上,不锚在字符串 `sed` 上:探针 docstring 会照 `probe-05-resolve-color.py` 的先例**解释为什么不用 sed**,那个词合法地出现在散文里)
+    - `grep -o 'page.evaluate' scripts/probe-07-focus-composite.py | wc -l` 输出 >= 1(注入确实发生在浏览器侧,而不是在磁盘上)
     - `git status --porcelain -- scripts/ui-states/` 输出为空
     - `git ls-files -- scripts/probe-07-focus-composite.py` 在 `git add` 后非空(新文件,首次提交后即为 tracked source)
   </acceptance_criteria>
@@ -268,7 +268,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     4. 判据是 `not bad` —— 即 **「未被环覆盖的可聚焦元素数 == 0」**,其中 `bad` 定义为 `visible and (outlineWidth != "2px" or outlineColor != focus_color)`;
     5. 失败行的 note 给出**可执行的修复动作**:「该元素不在 `:focus-visible` 的七选择器枚举里 ⇒ 到 `frontend/style.css` 文件末尾补它的选择器,并同步 `check-05` 的 `FOCUSABLE_SELECTOR`」。
 
-    覆盖面的取得方式:**用 `page.keyboard.press("Tab")` 驱动焦点**,不得用 `el.focus()`(程序化聚焦在 Chrome 下不保证匹配 `:focus-visible`)。做法:先 `page.evaluate("() => document.body.focus()")` 复位,然后循环按 Tab(上限取 `FOCUSABLE_SELECTOR` 实例数 + 8 次余量),每按一次读 `document.activeElement` 的稳定标签,累计「被 Tab 覆盖过且当时 outline 命中环」的元素集合;循环结束后把该集合与普查集比对。**已登记的边界**:Tab 序可能不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由,过滤后的集合必须逐个被覆盖。
+    覆盖面的取得方式:**用 `page.keyboard.press("Tab")` 驱动焦点**,不得用程序化聚焦把环「点」到待测元素上(程序化聚焦在 Chrome 下不保证匹配 `:focus-visible`)。做法:先**清空焦点**复位 —— `page.evaluate("() => document.activeElement instanceof HTMLElement && document.activeElement.blur()")`(blur 把焦点交还 `document.body`,Tab 序列随即从头开始;**这不是「聚焦某个元素」,故本计划对 `scripts/check-05-ui-uat.py` 里 `.focus()` 调用的计数为 0 这条判据仍然成立**),然后循环按 Tab(上限取 `FOCUSABLE_SELECTOR` 实例数 + 8 次余量),每按一次读 `document.activeElement` 的稳定标签,累计「被 Tab 覆盖过且当时 outline 命中环」的元素集合;循环结束后把该集合与普查集比对。**已登记的边界**:Tab 序可能不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由,过滤后的集合必须逐个被覆盖。
 
     SC1 探针:`page.keyboard.press("Tab")` 后读 `document.activeElement` 的 `read_style(..., "outline-width")` 与 `"outline-color"`;期望 `"2px"` 与 `resolve_color(page, "--color-focus")`。读不到元素 ⇒ `blocked`。
 
@@ -298,7 +298,8 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - `grep -n 'FOCUS_RING_WIDTH_PX = 2.0' scripts/check-05-ui-uat.py` 有输出,且 `grep -n 'FOCUS_RING_OFFSET_PX = 2.0' scripts/check-05-ui-uat.py` 有输出
     - `.venv/bin/python scripts/check-05-ui-uat.py --item 10` 的逐项结论行形如 `item 10: PASS  (N 条断言,0 FAIL,0 BLOCKED)`
     - `grep -o 'document.activeElement' scripts/check-05-ui-uat.py | wc -l` 输出 >= 2(Tab 驱动的焦点读数确实存在)
-    - `grep -c '\.focus()' scripts/check-05-ui-uat.py` 输出 == 0(不得用程序化聚焦替代 Tab)
+    - `grep -c '\.focus()' scripts/check-05-ui-uat.py` 输出 == 0(不得用程序化聚焦替代 Tab;复位走 `document.activeElement.blur()`,不引入任何 `.focus()` 调用)
+    - `grep -o 'keyboard.press("Tab")' scripts/check-05-ui-uat.py | wc -l` 输出 >= 1(普查确实由 Tab 驱动 —— 这是上一条「无 `.focus()`」的正向对偶,单靠反向判据会把「干脆不驱动焦点」也放过去)
     - `grep -o 'blocked(item' scripts/check-05-ui-uat.py | wc -l` 相比改动前只增不减(前提检查只增不减)
   </acceptance_criteria>
 </task>

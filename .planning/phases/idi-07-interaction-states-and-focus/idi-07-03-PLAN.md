@@ -109,7 +109,7 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
 
     该块的注释必须写明三条:
 
-    1. **为什么不采用行业标准片段** —— 通行写法是 `*, *::before, *::after { transition-duration: 0.01ms !important; … }`,**带两个 `!important`**;本仓库的 `!important` **声明数必须恒为 1**(硬规则 2/4;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 依赖它),`scripts/check-04-important-count.sh` 会立刻从 1 变 3 而变红。**本阶段不得采纳任何带 `!important` 的减弱动效写法。**
+    1. **为什么不采用行业标准片段** —— 通行写法是 `*, *::before, *::after { transition-duration: 0.01ms !important … }`,**带两个 `!important` 声明**;本仓库的 `!important` **声明数必须恒为 1**(硬规则 2/4;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 依赖它),`scripts/check-04-important-count.sh` 会立刻从 1 变 3 而变红。**本阶段不得采纳任何带 `!important` 的减弱动效写法。** 引用该片段时,**`!important` 之后不要跟分号** —— `check-04` 数的是 `!important;` 这个**带分号的声明形态**(裸 `!important` 的注释散文是允许的,style.css:441/444 已有先例);把片段连同分号抄进注释会让 `check-04` 从 1 变 2 并立刻变红
     2. **为什么按选择器重写而不是改时长** —— `transition: none` 是确定性的、可被 `getComputedStyle` 断言的终态;0.01ms 之类的「几乎为零」不是。
     3. **为什么枚举写死而不是用通配** —— 与 Phase 5 / Phase 6 的同一口径:影响面必须可枚举、可对照;通配会把「哪些元素受影响」重新变成不可审。
 
@@ -130,8 +130,8 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
     <fails_when>末行不是 "PASS: 0 failures"</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 8</automated>
     <fails_when>exit != 0;或 `[static] frontend/style.css 的 @media 出现次数 == 决策` 出现 FAIL(说明常量与文件实际计数不同步)</fails_when>
-    <automated>grep -c 'prefers-reduced-motion' frontend/style.css</automated>
-    <fails_when>计数不为 1</fails_when>
+    <automated>grep -c '^@media (prefers-reduced-motion' frontend/style.css</automated>
+    <fails_when>计数不为 1(判据锚在 `^@media` 上,不数裸子串:该块的注释必须解释「为什么尊重减弱动效」,那句散文会合法地复述 `prefers-reduced-motion` 这个词,裸子串计数会因此 > 1 而永远无法变绿)</fails_when>
     <automated>git diff -- frontend/style.css</automated>
     <fails_when>输出中出现以 `-` 开头且含 `transition: background-color 0.3s` 的行(既有的 .event-list 300ms 声明被改动 —— D-11 要求一个字节都不动)</fails_when>
   </verify>
@@ -228,6 +228,8 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
     5. **登记本阶段唯一跨阶段的开放项**:`#round-doc` 的焦点环承载面指派给 Phase 8(D-06)。Phase 7 的枚举含 `[tabindex]`,Phase 8 加 `tabindex="0"` 时那条规则会自动把环套到一个数千像素高的盒子上 —— Phase 8 必须写内嵌处理(`outline-offset: -2px` 或把环落在 `#doc-pane`)。这条必须出现在 SUMMARY 与 VERIFICATION 两处。
 
     6. **登记 B1 的耦合**:`EXPECTED_MEDIA_QUERIES` 已随 media 块同步为 1;若日后有人删除该 media 块,必须同时把常量改回 0,否则 item 8 会误报。
+
+    7. **登记本阶段唯一的非追加编辑(L587 的选择器改写),使阶段级的「纯追加」声明不被下游无条件复述。** `ROADMAP.md` Phase 7 的 Rationale 原文是「纯追加 —— 不编辑任何既有规则」;本阶段实际有**且仅有**一处就地编辑:`frontend/style.css` L587 的 `button:hover` 选择器被改写为 `button:where(:not(:disabled)):hover`(声明体逐字节不变,特异性改写前后逐位相同,均为 0-1-1;理由与取证见计划 02 的 `<decision_register>`)。SUMMARY 与 VERIFICATION 复述「纯追加」时**必须带这个限定**,或直接写成「除 L587 的选择器改写外纯追加」;`CONTEXT.md` 的禁令面更窄(只禁「编辑既有规则的**声明**」),该改写不触犯它,但 ROADMAP 的阶段级措辞更宽,**不得无条件复述**。这一条同时为 VERIFICATION 里「阶段性质」那一栏提供准确措辞。
   </action>
   <verify>
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
@@ -243,13 +245,14 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
     <automated>git diff --numstat -- frontend/style.css</automated>
     <fails_when>输出的第 1 列(新增行数)为 0(本阶段必须真的落地了规则);同时人工核对第 2 列(删除行数)只来自 L587 那一行的选择器改写</fails_when>
   </verify>
-  <done>四条既有门 + 第 10 项 + 既有九项 UAT + 一次性探针全部通过;四份受影响报告的 `covered_files` 比对与 HEAD 内容重算的 digest 已记录,并逐份判定「重新验证」或「重算 + 披露」;人工项 5″、D-11 修正案、`#round-doc` 的跨阶段开放项、`EXPECTED_MEDIA_QUERIES` 的耦合都已登记进 SUMMARY 与 VERIFICATION。</done>
+  <done>四条既有门 + 第 10 项 + 既有九项 UAT + 一次性探针全部通过;四份受影响报告的 `covered_files` 比对与 HEAD 内容重算的 digest 已记录,并逐份判定「重新验证」或「重算 + 披露」;人工项 5″、D-11 修正案、`#round-doc` 的跨阶段开放项、`EXPECTED_MEDIA_QUERIES` 的耦合、以及**本阶段唯一的非追加编辑(L587 的选择器改写)**都已登记进 SUMMARY 与 VERIFICATION —— 后者确保阶段级的「纯追加」措辞不被下游无条件复述。</done>
   <acceptance_criteria>
     - SUMMARY 中逐条列出六条命令的原始输出或结论,无一条为 FAIL/BLOCKED
     - SUMMARY 中列出四份报告(`idi-04` / `idi-04.1-radix` / `idi-05` / `idi-06`)的 `covered_files` 比对结果与重算 digest,并对每份给出「重新验证」或「重算 + 披露」的处置
     - VERIFICATION 的 manual list 里恰有一条人工项(5″),且它逐字写明「禁用态仍一眼看出不可点」与「门绿不等于视觉上真的没被软化」
     - SUMMARY 与 VERIFICATION 两处都出现 `#round-doc` 的 Phase 8 指派
     - SUMMARY 中出现「UI-SPEC 那一处登记面不存在」的修正案说明
+    - SUMMARY 与 VERIFICATION 复述阶段性质时**带 L587 选择器改写的限定**(两处都不得出现无条件的「纯追加」措辞):逐字核对两处,`grep -c 'L587' ` 在两份产物里各 >= 1
     - `git status --porcelain` 里除 `.planning/` 与已声明的改动面外无其他文件
     - `grep -o 'inline-error' frontend/style.css | wc -l` 输出 >= 1(Phase 8 的既有回归门在本阶段结束时仍成立)
   </acceptance_criteria>

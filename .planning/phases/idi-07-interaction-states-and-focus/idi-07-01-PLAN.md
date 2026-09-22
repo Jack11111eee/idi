@@ -195,7 +195,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - scripts/check-05-ui-uat.py(L424-444 的 `make_fixture` / `enter_project`、L281-282 的 `read_style`、L369-389 的 `resolve_color`、L405-418 的 `effective_bg`)
   </read_first>
   <action>
-    补另两条环色配对。在 Task 1 新增的分组注释之后、`--color-focus ON --color-surface NON-TEXT` 条目之后,追加两条(逐字符合 `PAIR_RE`):
+    **本任务的一切计数与断言以磁盘 HEAD 的实测为唯一基线(依 D-01 的基线口径;ROADMAP Phase 7 段与 `04-UI-SPEC.md` 的条款仅作意图参考,两者的正文均不改动)。** 补另两条环色配对。在 Task 1 新增的分组注释之后、`--color-focus ON --color-surface NON-TEXT` 条目之后,追加两条(逐字符合 `PAIR_RE`):
 
     - `/* PAIR --color-focus ON --color-surface-page NON-TEXT */`
     - `/* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */`

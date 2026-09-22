@@ -231,8 +231,8 @@ Plans:
 - **Anti-Pattern 3**——断点值是该规则唯一的合法字面量例外,须在 UI-SPEC 中显式声明为例外,否则会被读成疏漏。
 
 **Research flag**: `calc()` vs `position: absolute` 是真实的行为取舍(fixed 且可能遮挡 vs 随内容滚走)。**本路线图按研究建议提交 `calc()`**——零行为变更的迁移步骤;但该取舍须在规划时与用户确认。A11Y-07 是否与 420px 侧栏冲突也需在规划时实测判定。
-**Gates**: 1440 → 1024 → 768 无横向溢出;badge 在每个宽度都在文档区右上角;1024/1280 下横幅不盖 badge;恰好一个侧栏滚动条 + `#chat-messages`;`#brainstorm-view h2` 仍 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
-**Plans**: 3/3 plans executed
+**Gates**: 1440 → 1024 → 768 无横向溢出;badge 在每个宽度都在文档区右上角;1024/1280 下横幅不盖 badge;恰好一个侧边栏滚动条 + `#chat-messages`;`#brainstorm-view h2` 仍 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
+**Plans**: 4 plans (3 executed + 1 gap-closure)
 
 Plans:
 **Wave 1**
@@ -246,6 +246,10 @@ Plans:
 **Wave 3** *(blocked on Wave 2 completion)*
 
 - [x] idi-06-03-PLAN.md — 窄窗口守卫决策(在 L-3/L-4 已落地的树上重测三宽度,按实测决定是否写唯一一条 `@media (max-width: 1023px)`)+ L-6 命中区与 L-5 焦点环解裁切(按元素普查施加 `min-height`/`min-width: 24px` 与条件 padding 抬升)+ item 8/item 9 两条普查门 + D-19 连带复验 `idi-04.1-radix` + 全量门禁收口
+
+**Wave 4** *(gap closure — blocked on Wave 3 completion)*
+
+- [ ] idi-06-04-PLAN.md — LAYOUT-02 的 768px 承诺收窄登记(用户裁定 remediation (b)「Narrow the promise, fix the claim」):更正 check-05 item 8 的失效覆盖主张使其陈述实测真相 + UI-SPEC 新增 A-10 收窄行与 §L-2 判据表注解 + 填实 VERIFICATION 的 override 条目 + 就地更正 03-PLAN / 03-SUMMARY 里的同一主张。**零布局改动**
 
 **UI hint**: yes
 

@@ -1,7 +1,8 @@
 ---
 phase: "6"
 slug: "idi-06-layout-robustness"
-status: draft
+status: approved
+reviewed_at: "2026-09-22"
 shadcn_initialized: false
 preset: none
 created: "2026-09-22"
@@ -689,38 +690,99 @@ python3 scripts/check-05-ui-uat.py --item 1   # 五态显隐(.hidden 的层叠�
 
 ## UI Considerations
 
-> 本节由 ui-phase 的 **UI-consideration probe(Step 9.5)** 填充,并由 plan-phase 的
-> `## UI Considerations` lift 规则按与 SPEC `## Edge Coverage` 相同的规则提升。
-> **probe 引擎在 checker 通过之后重算并整节替换本节的占位内容**(幂等,不追加)。
+> 本节由 ui-phase 的 **UI-consideration probe(Step 9.5)** 在 checker 通过之后生成,由
+> plan-phase 的 `## UI Considerations` lift 规则提升。**整节替换,不追加**(幂等)。
+> 空态 / 错误态 / 加载态的**文案**不在本节重复 —— 见 `## Copywriting Contract` 的冻结表(去重)。
 
-**状态:占位 —— 本节由 Step 9.5 的 probe 生成,当前 UI-SPEC 尚未跑 probe。**
+**probe 运行记录(2026-09-22,checker APPROVED 之后):**
 
-**供 probe 元素提取使用的具名界面面(本阶段相关的 8 个):**
+| 项 | 值 |
+|---|---|
+| 引擎 | `.claude/gsd-core/bin/lib/ui-consideration-probe.cjs` |
+| 元素 | 10(E1–E10,见下表) |
+| 覆盖 | applicable 43 / resolved 43 / unresolved 0 |
+| 验证档 | explicit 24 / backstop 19 |
+| 首跑(裸中文散文,无 override) | applicable 22;10 个元素中 **8 个 unclassified**;本阶段主题 `overflow` / `long-text` 中,`long-text` **全部漏检(0 条)** |
+| 重跑(作者逐条裁定 kind 覆盖) | applicable 43;unclassified 0;`long-text` 10 条 |
+| 差异 | 首跑漏掉 21 条,全部由作者裁定补回 |
 
-| id | 界面面 | 散文描述(供 kind 分类) |
+> **首跑的数字不是覆盖率,是分类失真。** 引擎的 cue 是**英文匹配**:中文散文会被大量判为
+> `unclassified`,而 `overflow` / `long-text` 这类本阶段的核心类别只在选择器里恰好含英文 `list`
+> 时才被 `list-collection` 顺带命中。两行必须一起读 —— 只引「applicable 43」会把**作者裁定的成分**
+> 误读成**引擎的认同**(沿用 Phase 5 的记录)。首跑 → 重跑的差异已逐条登记,可复核。
+
+**元素面(10 个)与作者裁定的 kind:**
+
+| id | 界面面 | 作者裁定的 kind |
 |---|---|---|
-| E1 | `#doc-panel-header`(文档面板标题行) | 常驻的容器标签行,含 `#state-badge` 状态读数与折叠指示符;本阶段起 `position: sticky`,滚动时钉在面板顶部 |
-| E2 | `#state-badge` | 流内的状态徽标(阶段 1-12 / 自检档),文本随推导状态变化,最宽文案 9 字 |
-| E3 | `#stream-banner` | `position: fixed` 居中的断流横幅,两态(重连中 / 致命),文本「事件流已断开,正在自动重连……」 |
-| E4 | `#ai-events`(`.event-list`) | 事件日志列表,条目逐条追加,条目文本可长;本阶段起不再内部滚动 |
-| E5 | `#annotation-list` | 本轮批注条目列表,条目含引用摘录 / 批注正文 / 可折叠的 AI 回复(`<details>`);本阶段起不再内部滚动 |
-| E6 | `#chat-messages` | 会话流消息气泡列表(用户右对齐 / AI 左对齐),流式追加,长 markdown;保留为第二滚动者 |
-| E7 | `#latest-check` | 自检报告 markdown 渲染区,保留 30vh 内部滚动;其下是裁决按钮交互面 |
-| E8 | `.annotation-answer summary` | `<details>` 的展开控件(`AI 回应` / `大白话回答`),本阶段起命中区 ≥24×24 |
-| E9 | `#doc-panel-body` | 文档面板正文区(草稿 / 轮次文档 / 归档视图的渲染宿主),`padding: 32px 40px` |
-| E10 | `#main-pane` | 主区外层滚动容器,四个 section 居中列;本阶段起 `min-width: 0` |
+| E1 | `#doc-panel-header`(sticky 表头) | `nav, static-content` |
+| E2 | `#state-badge` | `static-content` |
+| E3 | `#stream-banner` | `nav` |
+| E4 | `#ai-events` / `.event-list` | `list-collection, static-content` |
+| E5 | `#annotation-list` | `list-collection, static-content` |
+| E6 | `#chat-messages` | `list-collection, static-content` |
+| E7 | `#latest-check` | `static-content` |
+| E8 | `.annotation-answer summary` | `interactive-control` |
+| E9 | `#doc-panel-body` | `static-content` |
+| E10 | `#main-pane` | `static-content` |
 
-**本阶段真正相关的状态类别(供 probe 校对,不代替 probe 的裁定):**
+### explicit(24)—— 可直接提升为验收判据
 
-- `overflow` —— 本阶段的**全部主题**:窄窗口横向溢出(L-2)、容器内溢出(L-4)、长内容折行(L-3)。
-- `long-text` —— 六目标的 `overflow-wrap: anywhere`(L-3);`#stream-banner` 与 `#state-badge` 的最宽文案是 L-1 碰撞实检的输入。
-- `zero-one-many` —— `#annotation-list` 与 `#ai-events` 在 0 / 1 / 多条目下的高度行为(本阶段改变了它们的滚动行为)。
-- `empty` / `error` / `loading` / `populated` / `partial` —— 本阶段**零状态改动**:文案与显隐机制一字不动,
-  唯一例外是 `#latest-check` 的 `empty`(它由服务端报告的存在与否驱动,本阶段不改)。
+| id | 界面面 | 类别 | 判据(truth) |
+|---|---|---|---|
+| E1 | `#doc-panel-header`(sticky 表头) | `overflow` | `#doc-panel` 是滚动容器、`#doc-panel-header` 是其直接 flex 子项,故 `position: sticky; top: 0` 生效:滚动面板正文时表头钉在面板顶部,正文首行不被遮住。门:`check-05 --item 8`(D-06/D-14 扩写的 sticky 断言)。 |
+| E1 | `#doc-panel-header`(sticky 表头) | `long-text` | sticky 条在 `--doc-panel-w` 最小宽 340px 下仍单行:最宽文案是 `#state-badge` 的 9 字 + `文档区` h1,不折断、不换行。门:768/1024/1280 三处实检(L-1 的门)。 |
+| E2 | `#state-badge` | `overflow` | `#state-badge` 是流内元素(无 `position`、无 `right`,HEAD `style.css:671-679`),结构上不可能遮挡正文;本阶段**不得**把它改回 fixed。徽标随 sticky 条钉住,滚动时恒可见。 |
+| E2 | `#state-badge` | `long-text` | 最宽 badge 文案(阶段 1-12 / 自检档,9 字)在 340px 面板最小宽下不溢出、不换行,不把 `#doc-panel-header` 撑破。该文案是 L-1 碰撞实检的输入。 |
+| E3 | `#stream-banner` | `loading` | 重连中态由 `#stream-banner` 的非 `.fatal` 形态承载,对比度 4.78:1 保持 AA;本阶段零改动。 |
+| E3 | `#stream-banner` | `error` | 致命态由 `.fatal` 修饰符承载,`.fatal` 必须保留为**独立选择器**,对比度 4.76:1 保持 AA;门:`check-02-contrast.py` 两态实测。 |
+| E3 | `#stream-banner` | `overflow` | `#stream-banner` 与 `#state-badge` 的相交条件是视口 < 490px,低于本阶段 768px 下限 ⇒ 残余碰撞不存在;门:768 / 1024 / 1280 三处实检横幅不盖 badge(L-1 的门)。 |
+| E3 | `#stream-banner` | `long-text` | 横幅文案「事件流已断开,正在自动重连……」在 768px 下不折断、不换行溢出,且不因换行而增高到遮挡 badge。 |
+| E4 | `#ai-events` / `.event-list` | `overflow` | 删掉 `.event-list` 的 `max-height: 55vh` 与 `overflow-y: auto` 后不再内部滚动,条目随外层容器滚动,滚到侧栏底部时内容可达(L-4:侧栏只剩两个滚动者)。门:`check-05 --item 9`。 |
+| E4 | `#ai-events` / `.event-list` | `zero-one-many` | 0 / 1 / 多条目下高度随内容自然增长,无固定高度截断、无空白占位塌陷(本阶段删除了固定高度)。 |
+| E4 | `#ai-events` / `.event-list` | `long-text` | `.event-content` 在 L-3 的六目标 `overflow-wrap: anywhere` 之列,不可断长串换行而不撑破视口。 |
+| E5 | `#annotation-list` | `overflow` | 删掉 `#annotation-list` 的 `max-height: 32vh` 与 `overflow-y: auto` 后不再内部滚动,条目随外层容器滚动,滚到侧栏底部时内容可达(L-4)。门:`check-05 --item 9`。 |
+| E5 | `#annotation-list` | `zero-one-many` | 0 / 1 / 多条目下高度随内容自然增长;展开某条 `<details>` 后不把后续条目挤出不可达区域(不再内部滚动即达成)。 |
+| E5 | `#annotation-list` | `long-text` | `.annotation-note` 与 `.annotation-answer-body` 在 L-3 的六目标 `overflow-wrap: anywhere` 之列,引用摘录与批注正文的长串换行不撑破视口。 |
+| E6 | `#chat-messages` | `overflow` | `#chat-messages` **保留**为侧栏内唯一合理的第二滚动者(输入行必须钉底),本阶段不动其 `overflow`;门:`check-05 --item 9` 断言侧栏恰好两个滚动者。 |
+| E6 | `#chat-messages` | `zero-one-many` | 0 / 1 / 多条消息下 `#chat-messages` 的滚动行为一致;流式追加时新内容进入既有滚动区,不改变输入行的钉底位置。 |
+| E6 | `#chat-messages` | `long-text` | `.chat-bubble` 与 `.say-chunk` 在 L-3 的六目标 `overflow-wrap: anywhere` 之列,长 markdown 与不可断长串换行不撑破视口。 |
+| E7 | `#latest-check` | `overflow` | `#latest-check` **保留** 30vh 内部滚动(自检报告是本阶段唯一除 `#chat-messages` 外被显式允许保留的内部滚动者);L-4 只收敛 `.event-list` 与 `#annotation-list`。 |
+| E7 | `#latest-check` | `long-text` | 报告 markdown 的不可断长串(路径、长 token)在 30vh 滚动区内换行,不产生横向滚动条。 |
+| E8 | `.annotation-answer summary` | `long-text` | `.annotation-answer summary` 加 `min-height: 24px; min-width: 24px;` 后命中区 ≥24×24,而标签文案(`AI 回应` / `大白话回答`)不折断、不溢出该命中区。 |
+| E9 | `#doc-panel-body` | `overflow` | `#doc-panel { min-width: 0 }` 生效,flex 项默认 `min-width: auto` 不再让面板被不可断长内容撑破视口;门:1440 → 1024 → 768 无横向溢出。 |
+| E9 | `#doc-panel-body` | `long-text` | `.markdown-body` 在 L-3 的六目标 `overflow-wrap: anywhere` 之列,草稿 / 轮次文档 / 归档视图三态共用同一换行契约,长串换行不产生横向滚动。 |
+| E10 | `#main-pane` | `overflow` | `#main-pane { min-width: 0 }` 生效,四个居中 section 的列不再被长内容撑破;门:1440 → 1024 → 768 三档无横向溢出(L-2 的判据:文档级 `scrollWidth`,面板内部横向滚动条不计)。 |
+| E10 | `#main-pane` | `long-text` | 主区内不可断长内容(代码块、长路径)换行或在其自身容器内滚动,不把 `#main-pane` 的 `scrollWidth` 推过视口宽。 |
 
-**首跑分类失真的预防提示(沿用 Phase 5 的记录):** 直接喂中文散文时,引擎会把相当一部分元素判为
-`unclassified`。若首跑出现该情形,按工作流的 propose-then-confirm,由作者逐条裁定 kind 后重跑,
-**并把首跑与重跑的差异记录下来** —— 否则「引擎认同本表」会被误读。
+### backstop(19)—— 本阶段未改动该状态维度
+
+每行是一个扁平标量 `{ statement, verification: backstop }`。**本阶段对空态 / 加载 / 错误 /
+正常 / 局部这五类状态零改动** —— 文案与显隐机制一字不动,已由上游契约签核(见
+`## Copywriting Contract`)。verify 时若无 wired 证据,这些行按 `insufficient_spec → human_needed`
+上报,**不是静默通过**(#1154)。
+
+| id | 界面面 | 类别 | statement | verification |
+|---|---|---|---|---|
+| E1 | `#doc-panel-header`(sticky 表头) | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E1 | `#doc-panel-header`(sticky 表头) | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E4 | `#ai-events` / `.event-list` | `empty` | What is shown when there is no data — zero items, an unfilled form, or absent media? | `backstop` |
+| E4 | `#ai-events` / `.event-list` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E4 | `#ai-events` / `.event-list` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E4 | `#ai-events` / `.event-list` | `populated` | What does the normal populated (happy-path) state look like at a typical volume of content? | `backstop` |
+| E4 | `#ai-events` / `.event-list` | `partial` | What is shown for partial or incomplete data — some fields or rows present, others missing? | `backstop` |
+| E5 | `#annotation-list` | `empty` | What is shown when there is no data — zero items, an unfilled form, or absent media? | `backstop` |
+| E5 | `#annotation-list` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E5 | `#annotation-list` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E5 | `#annotation-list` | `populated` | What does the normal populated (happy-path) state look like at a typical volume of content? | `backstop` |
+| E5 | `#annotation-list` | `partial` | What is shown for partial or incomplete data — some fields or rows present, others missing? | `backstop` |
+| E6 | `#chat-messages` | `empty` | What is shown when there is no data — zero items, an unfilled form, or absent media? | `backstop` |
+| E6 | `#chat-messages` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E6 | `#chat-messages` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E6 | `#chat-messages` | `populated` | What does the normal populated (happy-path) state look like at a typical volume of content? | `backstop` |
+| E6 | `#chat-messages` | `partial` | What is shown for partial or incomplete data — some fields or rows present, others missing? | `backstop` |
+| E8 | `.annotation-answer summary` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E8 | `.annotation-answer summary` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
 
 ---
 
@@ -737,15 +799,31 @@ Not applicable —— 无 shadcn、无 registry、无第三方 block。项目没
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS
+- [x] Dimension 1 Copywriting: FLAG(非阻塞)
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: FLAG(非阻塞)
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS
 
-**Approval:** pending
+**Approval:** approved(7/7 通过,0 个 BLOCK,2 个非阻塞 FLAG)—— 2026-09-22
+
+**两条非阻塞 FLAG(不阻塞规划,均为文档层、且都在本阶段的编辑面之外):**
+
+1. **D1 · 冻结文案表记录了一条与权威设计文档矛盾的字符串。** 表中 `空态(批注流)` 行冻结
+   `本轮暂无批注——在左侧文档划词即可批注。`(实为 `frontend/app.js:1121`),但 `DESIGN.md`(v1.14)
+   §4.1 把文档面板放在**右侧**,v1.14 changelog 明写「会话流移入主区、文档区改为可折叠的右侧面板」。
+   该串相对权威文档是**过期**的。次要点:表的来源行称文案「逐字来自 index.html」,而该串在 `app.js`。
+   **处置:记为本阶段的已知过期串,交给拥有 `app.js` 的阶段(Phase 8)修 —— 本阶段零文案改动,
+   硬规则 5 禁止动 `app.js`,不得为此扩张范围。**
+2. **D5 · 签核 ID 命名空间碰撞。** `## Spacing Scale` 写 `04-UI-SPEC.md 的 12 档刻度(S-1)`,
+   而本文件的 `## Sign-Off Items` 定义了**另一个** `S-1`(sticky 表头 `border-radius`);`06-CONTEXT.md`
+   记录的锁定命名空间是 `S-1(间距 12 档)/ S-2(14px 为一级字号档)/ S-3(#ccc→#8a8a8a)/ S-4`。
+   规划者读到裸 `S-2` / `S-3` 时可能解析到 04/04.1 的锁定签核。
+   **处置(建议,未在本轮应用 —— FLAG 不阻塞规划):本文件的 `## Sign-Off Items` 三项宜写全
+   `06-S-1` / `06-S-2` / `06-S-3`,与 04/04.1 的 `S-1…S-6` 区分。规划者读到本文件的裸 `S-2` / `S-3`
+   时,按本节即可解析到**本阶段**的签核项,不是 04/04.1 的锁定签核。**
 
 ---
 

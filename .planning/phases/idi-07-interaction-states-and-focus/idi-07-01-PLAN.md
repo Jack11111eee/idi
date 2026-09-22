@@ -20,7 +20,7 @@ must_haves:
   truths:
     - "键盘 Tab 到任一按钮 / 输入框 / 下拉,该元素的计算 outline-width 为 2px 且 outline-color 等于运行时解析的 --color-focus(D-05 / D-17 SC1)"
     - "鼠标点击控件后该元素的计算 outline-color 不等于 --color-focus(:_focus-visible 语义成立,D-17 SC2)"
-    - "枚举 button, input, select, textarea, a[href], summary, [tabindex] 的全部实例后,「未被环覆盖的可聚焦元素数」为 0(D-16)"
+    - "枚举 button, input, select, textarea, a[href], summary, [tabindex] 的全部实例后,判定集(可见 ∧ 可聚焦,即 Tab 可达)里「未被环覆盖的元素数」为 0,且判定集非空(D-16)"
     - "环色对 --color-surface-page / --color-surface / --color-surface@0.75 三处的对比度 >= 3:1(D-03 / D-15)"
     - "五个状态样本的 #round-doc 内 a[href] 计数为 0 这一事实被显式登记,归档半场的运行时断言以一次性注入探针交付(D-18)"
   artifacts:
@@ -49,7 +49,7 @@ must_haves:
 <objective>
 把全站作者化焦点环从「零」建成「可断言」(A11Y-01 / D-03 / D-04 / D-05 / D-06 / D-15 / D-16 / D-17 / D-18 / D-20)。
 
-本计划交付三件事:①围栏内声明 `--color-focus: #1f63bd` 并在文件末尾追加 7 选择器的 `:focus-visible` 规则(几何固定 `outline: 2px solid` + `outline-offset: 2px`);②把环色的三处验证面落进 `check-02` 的 PAIR 清单(含 `.archive-mode` 的 0.75 合成);③在 `check-05` 新增第 10 项,按「元素普查」口径断言环覆盖全部可聚焦实例,并交付 D-18 的一次性反事实探针。
+本计划交付三件事:①围栏内声明 `--color-focus: #1f63bd` 并在文件末尾追加 7 选择器的 `:focus-visible` 规则(几何固定 `outline: 2px solid` + `outline-offset: 2px`);②把环色的三处验证面落进 `check-02` 的 PAIR 清单(含 `.archive-mode` 的 0.75 合成);③在 `check-05` 新增第 10 项,按「元素普查」口径断言环覆盖**全部 Tab 可达的可聚焦实例**(判定集 = 可见 ∧ 可聚焦,且非空),并交付 D-18 的一次性反事实探针。
 
 Purpose: 焦点环是本阶段唯一**新增**的样式层(HEAD 上 `:focus` / `outline` 计数均为 0),也是 Phase 8 `tabindex` 承诺的前置条件;它必须**先于**任何 tabindex 落地,否则会造出「可聚焦但焦点不可见」的中间状态。
 Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新配对与计数注释、`check-05` 的第 10 项、`scripts/probe-07-focus-composite.py`。
@@ -147,7 +147,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     在 `check-05` 新增第 10 项。`scripts/check-05-ui-uat.py` 有**四处登记点,漏一处即不可达或不可发现**,本任务全部补齐:
 
     1. 模块 docstring 的**运行方式**列表(L31-40)加一行 `.venv/bin/python scripts/check-05-ui-uat.py --item 10  # 只跑焦点环覆盖与交互态`;
-    2. 模块 docstring 的**逐项说明**块(L42-92)加「第 10 项(A11Y-01 / INTERACT-01 / INTERACT-02)」段落,照「第 9 项」的形态写明:断言分「静态契约计数」与「运行时元素普查」两段;普查口径是「未被环覆盖的可聚焦元素数为 0」而非「规则被写下了」;并登记五个状态样本的 `#round-doc` 内 `a[href]` 计数为 0 这一事实;
+    2. 模块 docstring 的**逐项说明**块(L42-92)加「第 10 项(A11Y-01 / INTERACT-01 / INTERACT-02)」段落,照「第 9 项」的形态写明:断言分「静态契约计数」与「运行时元素普查」两段;普查口径是「判定集(= 可见 ∧ 可聚焦,Tab 可达)里未被环覆盖的元素数为 0,且判定集非空」而非「规则被写下了」;并登记五个状态样本的 `#round-doc` 内 `a[href]` 计数为 0 这一事实;并登记判定集的两条过滤(`visible` / `focusable`),其中 `focusable` 排除禁用控件与 `tabindex="-1"`(禁用控件渲染在树里但不在顺序焦点序里,永远无法被 Tab 覆盖;`#btn-approve-draft` / `#btn-authorize` 是真实实例);
     3. `parse_args` 的 `--item` help 字符串(L2427-2428)改为 `smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9 / 10`;
     4. `normalize_items` 的默认列表(L2441)追加 `"10"`、`main()` 的 `known` 集合(L2454)追加 `"10"`(漏加会直接 `SystemExit("ERROR: 未知项 …")`),并在分发块(L2497-2498)之后加 `if "10" in items: item10(page, tmp_root)`。
 
@@ -258,17 +258,25 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 
     - `FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"` —— **逐字**等于 `_IDI06_CENSUS_JS` 里 `document.querySelectorAll(...)` 的那一串(顺序亦同),并加注释写明「这是 D-05 的枚举集,与 `frontend/style.css` 的 `:focus-visible` 规则逐字同集;两者必须同时改」。
     - `FOCUS_RING_WIDTH_PX = 2.0` 与 `FOCUS_RING_OFFSET_PX = 2.0`,注释写明「外伸量 4px = `check-05` 的 `CLEARANCE_MIN_PX = 4.0`;改几何即改那个门的阈值」。
-    - `_IDI07_FOCUS_CENSUS_JS = r"""…"""`,命名照 `_IDI06_*` 前缀族。它按 **DOM 遍历**枚举 `FOCUSABLE_SELECTOR` 的全部实例,对每个实例返回 `{el, tag, id, cls, visible, outlineWidth, outlineColor, focusMatches}`:`visible` 取 `el.getClientRects().length > 0`(被祖先藏住的元素 rect 全零,不得把它读成「未覆盖」);`focusMatches` 取 `el.matches(':focus-visible')`(只对当前 `document.activeElement` 有意义,其余恒 false)。
+    - `_IDI07_FOCUS_CENSUS_JS = r"""…"""`,命名照 `_IDI06_*` 前缀族。它按 **DOM 遍历**枚举 `FOCUSABLE_SELECTOR` 的全部实例,对每个实例返回**清单项** `{el, tag, id, cls, visible, focusable}` —— **只出清单,不出环读数**(环读数的唯一来源是下面的 `_IDI07_TAB_READ_JS` 采样表,清单里再放一份 outline 读数就是第二种说法):`visible` 取 `el.getClientRects().length > 0`(被祖先藏住的元素 rect 全零,不得把它读成「未覆盖」);`focusable` 取 `!el.matches(':disabled') && el.getAttribute('tabindex') !== '-1'` —— 用 `:disabled` 而不是 `[disabled]`:前者覆盖「实际被禁用」的全部形态(含被外层 `<fieldset disabled>` 包裹的控件),后者只认写在元素自己身上的那个属性。
+    - `_IDI07_TAB_READ_JS = r"""…"""`,读**当前焦点元素的那一瞬读数**:返回 `{label, outlineWidth, outlineColor, focusVisible}`(`document.activeElement` 不是 `HTMLElement` 时返回 `null`)。它是采样表的唯一数据源,与上面的清单常量分开命名。
+    - `focusable` 的**排除面必须登记在注释块里**(常量上方的 Python 注释 + `focusable` 计算式处的 `//` 行,照 `_IDI06_CENSUS_JS` 的 `intersects` 那条的两处形态):禁用控件与 `tabindex="-1"` 的元素 **rect 非零、确实渲染在树里,却不在 Tab 序里** —— 拿它们去要求「被环覆盖」会造出一条**永远无法满足**的判据(禁用控件被浏览器移出顺序焦点序,永远不会成为 `document.activeElement`)。注释要逐个点名本仓库真实存在的实例并给出可复跑的取证:`index.html:126` 的 `#btn-approve-draft[disabled]`(p1 样本里 `#draft-view` 被 `app.js:360` 取消隐藏,而该样本无 `docs/draft.md` ⇒ `app.js:419` 让它保持禁用)、`index.html:143` 的 `#btn-authorize[disabled]`(p3 样本里 `#authorize-row` 被 `app.js:445` 取消隐藏;`_IDI06_CENSUS_JS` 的注释已实测记录它 clearance `-122.6px`,即确实渲染在树里;它的点亮与否由 `app.js:446-452` 消费的 `g3_available` 决定 —— 若某样本里它被点亮,`focusable` 自动为真、它自动回到判定集并被 Tab 覆盖,登记面无需改动)、以及计划 02 在 `checking` 样本里新增的两个 `.verdict-buttons button:disabled`。结论写进注释:它们**有意**落在判定集之外 —— 禁用控件不参与顺序焦点序,不得用环去覆盖它们;本判据是 **Reachable**,不是 Exists。
 
-    新增 `_idi07_focus_census_assert(page, item, state)`,逐条复刻 `_idi06_clearance_assert` 的**五条形态纪律**:
+    新增 `_idi07_focus_census_assert(page, item, state)`,照 `_idi06_clearance_assert` 的形态写。**先把判定集与环读数的定义说一次;本节其余各条与后面两段都不得再给出第二种说法:**
+
+    - **环读数只在「该元素成为 `document.activeElement` 的那一刻」采**,唯一来源是下面「覆盖面的取得方式」里的采样表。本项**不存在**「未聚焦时的 outline 读数」这个概念:未聚焦元素在 `:focus-visible` 下计算 `outline-width` 为 `0px`、`outline-color` 回落到 UA 值,拿静态读数去判定会把**每一个**元素都判成 bad。
+    - **判定集**(= 被判定为「必须被环覆盖」的那一组)= `FOCUSABLE_SELECTOR` 的实例中同时满足 `visible` 与 `focusable` 的那些(两个字段都由 `_IDI07_FOCUS_CENSUS_JS` 逐元素返回)。
+    - **`bad`** = 判定集里「在其成为 `document.activeElement` 的时刻**从未读到过环**」的元素 —— 即采样表里没有它的条目,或它采样到的读数不等于 `("2px", focus_color)`(`focus_color` = `resolve_color(page, "--color-focus")`)。
+
+    五条形态纪律:
 
     1. `data is None` ⇒ `blocked(...)`,**绝不记 PASS**;
-    2. 先 `info()` 落**全部原始行**(每个元素的 tag/id/class + visible + outline 读数),再判定;
-    3. 若「可见的可聚焦元素」为空集,`info()` 声明「本样本无判定」并 `return`,**不记空转 PASS**;
-    4. 判据是 `not bad` —— 即 **「未被环覆盖的可聚焦元素数 == 0」**,其中 `bad` 定义为 `visible and (outlineWidth != "2px" or outlineColor != focus_color)`;
-    5. 失败行的 note 给出**可执行的修复动作**:「该元素不在 `:focus-visible` 的七选择器枚举里 ⇒ 到 `frontend/style.css` 文件末尾补它的选择器,并同步 `check-05` 的 `FOCUSABLE_SELECTOR`」。
+    2. 先 `info()` 落**全部原始行**(每个元素的 tag/id/class + `visible` + `focusable` + **采样到的环读数**,没采样到就写 `None`),再判定;
+    3. 若**判定集为空集**,走 `blocked(...)`,**不是** `info()` + `return` —— 这是对 item9 第 3 条的**有意收紧**,理由写进注释:item9 的样本可能真的没有「落在可视滚动区内」的组合,而本项三个样本各自都有**必然存在的可见可聚焦实例**(p1:`#message-input` / `#btn-send` / `#ai-route-select` / `#project-path-input` / `#btn-process-round`;checking:`#check-switcher` / `#btn-continue-check` / `#ai-route-select` / `#project-path-input`;p3:`summary` / `#round-switcher` / `#ai-route-select` / `#btn-enter`)—— 这些实例已由执行前基线的 `check-05 --item 9` 普查 INFO 行逐样本实测为 `visible=True`,判据可复跑。故**空集只可能是过滤式写错或样本没到位,不是「样本恰好没有可聚焦元素」**;空集若退化成 `info` + `return`,整条普查会以「0 条断言」静默通过,这正是「假 PASS」的形态。`len(judged) > 0` 必须是**真实守卫**,不是散文承诺;
+    4. 判据是 `not bad` —— 即 **「判定集里未被环覆盖的元素数 == 0」**(`bad` 的定义见上面那一段;**不得在代码注释或失败文案里重述成 `visible and (outlineWidth != "2px" or …)` 那种静态形态** —— 那会把已废弃的「未聚焦读数」又写回去);
+    5. 失败行的 note 给出**可执行的修复动作**:「该元素不在 `:focus-visible` 的七选择器枚举里 ⇒ 到 `frontend/style.css` 文件末尾补它的选择器,并同步 `check-05` 的 `FOCUSABLE_SELECTOR`」;若 bad 的元素其实是**不可聚焦**的(说明 `focusable` 漏了一类,例如被 `<fieldset disabled>` 包裹的控件),note 指向 `focusable` 的判定式**而不是** CSS。
 
-    覆盖面的取得方式:**用 `page.keyboard.press("Tab")` 驱动焦点**,不得用程序化聚焦把环「点」到待测元素上(程序化聚焦在 Chrome 下不保证匹配 `:focus-visible`)。做法:先**清空焦点**复位 —— `page.evaluate("() => document.activeElement instanceof HTMLElement && document.activeElement.blur()")`(blur 把焦点交还 `document.body`,Tab 序列随即从头开始;**这不是「聚焦某个元素」,故本计划对 `scripts/check-05-ui-uat.py` 里 `.focus()` 调用的计数为 0 这条判据仍然成立**),然后循环按 Tab(上限取 `FOCUSABLE_SELECTOR` 实例数 + 8 次余量),每按一次读 `document.activeElement` 的稳定标签,累计「被 Tab 覆盖过且当时 outline 命中环」的元素集合;循环结束后把该集合与普查集比对。**已登记的边界**:Tab 序可能不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由,过滤后的集合必须逐个被覆盖。
+    覆盖面的取得方式:**用 `page.keyboard.press("Tab")` 驱动焦点**,不得用程序化聚焦把环「点」到待测元素上(程序化聚焦在 Chrome 下不保证匹配 `:focus-visible`)。做法:先**清空焦点**复位 —— `page.evaluate("() => document.activeElement instanceof HTMLElement && document.activeElement.blur()")`(blur 把焦点交还 `document.body`,Tab 序列随即从头开始;**这不是「聚焦某个元素」,故本计划对 `scripts/check-05-ui-uat.py` 里 `.focus()` 调用的计数为 0 这条判据仍然成立**),然后循环按 Tab(上限取 `FOCUSABLE_SELECTOR` 实例数 + 8 次余量),**每按一次立即用 `_IDI07_TAB_READ_JS` 读当前 `document.activeElement` 的 `outline-width` / `outline-color`,按该元素的稳定标签写进采样表**;循环结束后用采样表的键集与判定集比对 —— 判定集里没被采样到的元素就是 `bad`。**已登记的两条边界**(照 `_IDI06_CENSUS_JS` 里 `intersects` 那条「登记而非静默」的先例,写在 `_IDI07_FOCUS_CENSUS_JS` 的注释块里,措辞见上一条):①Tab 序不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由;②Tab 序也**不覆盖不可聚焦的实例**,而本仓库真实存在这类实例(逐个点名与取证见上一条)。两条过滤之后剩下的集合必须逐个被 Tab 覆盖。
 
     SC1 探针:`page.keyboard.press("Tab")` 后读 `document.activeElement` 的 `read_style(..., "outline-width")` 与 `"outline-color"`;期望 `"2px"` 与 `resolve_color(page, "--color-focus")`。读不到元素 ⇒ `blocked`。
 
@@ -282,7 +290,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
   </action>
   <verify>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 10</automated>
-    <fails_when>exit != 0;或输出里出现 "未覆盖" 且计数 > 0 的 FAIL 行;或任一样本走 BLOCKED(普查无返回 / 元素读不到 / `--color-focus` 解析不出)</fails_when>
+    <fails_when>exit != 0;或输出里出现 "未覆盖" 且计数 > 0 的 FAIL 行;或任一样本走 BLOCKED(普查无返回 / 判定集为空集 / 元素读不到 / `--color-focus` 解析不出)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,2,3,4,6,7,8,9</automated>
     <fails_when>exit != 0,或逐项结论里出现任一项非 PASS(本计划不得让既有各项从 PASS 变红)</fails_when>
     <automated>grep -c 'FOCUSABLE_SELECTOR = "button, input, select, textarea, a\[href\], summary, \[tabindex\]"' scripts/check-05-ui-uat.py</automated>
@@ -290,10 +298,13 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     <automated>grep -v '^#' frontend/style.css | grep -c ':focus-visible'</automated>
     <fails_when>计数 < 7</fails_when>
   </verify>
-  <done>三个样本(p1 / checking / p3)上「未被环覆盖的可聚焦元素数」均为 0;SC1(Tab 出环)/ SC2(点击不出环)/ SC4(滚到底后环不被裁切)三条探针各有明确的 PASS 或 BLOCKED,无空转 PASS;既有九项(item smoke,1,2,3,4,6,7,8,9)仍全绿。</done>
+  <done>三个样本(p1 / checking / p3)上判定集(可见 ∧ 可聚焦,即 Tab 可达)均非空,且判定集里「未被环覆盖的元素数」均为 0;禁用控件与 `tabindex="-1"` 的排除已登记在 `_IDI07_FOCUS_CENSUS_JS` 的注释块里;SC1(Tab 出环)/ SC2(点击不出环)/ SC4(滚到底后环不被裁切)三条探针各有明确的 PASS 或 BLOCKED,无空转 PASS;既有九项(item smoke,1,2,3,4,6,7,8,9)仍全绿。</done>
   <acceptance_criteria>
     - `grep -o 'FOCUSABLE_SELECTOR' scripts/check-05-ui-uat.py | wc -l` 输出 >= 2(定义 + 至少一处消费)
     - `grep -o '_IDI07_FOCUS_CENSUS_JS' scripts/check-05-ui-uat.py | wc -l` 输出 >= 2
+    - `grep -c 'focusable' scripts/check-05-ui-uat.py` 输出 >= 2(判定集的两个字段 `visible` / `focusable` 在清单与断言两处都用到了)
+    - `grep -o '_IDI07_TAB_READ_JS' scripts/check-05-ui-uat.py | wc -l` 输出 >= 2(定义 + Tab 循环里的采样调用 —— 环读数只有这一个来源)
+    - `grep -o "matches(':disabled')" scripts/check-05-ui-uat.py | wc -l` 输出 >= 1(`focusable` 的排除式真的落在代码里,不只在注释里)
     - `grep -n 'def _idi07_focus_census_assert' scripts/check-05-ui-uat.py` 有输出
     - `grep -n 'FOCUS_RING_WIDTH_PX = 2.0' scripts/check-05-ui-uat.py` 有输出,且 `grep -n 'FOCUS_RING_OFFSET_PX = 2.0' scripts/check-05-ui-uat.py` 有输出
     - `.venv/bin/python scripts/check-05-ui-uat.py --item 10` 的逐项结论行形如 `item 10: PASS  (N 条断言,0 FAIL,0 BLOCKED)`
@@ -322,7 +333,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 | T-idi-07-01 | Information disclosure / Denial of service(无障碍) | `:focus-visible` 规则 vs 祖先 `opacity` | medium | mitigate | 三条 PAIR 覆盖 `--color-surface-page` / `--color-surface` / `--color-surface@0.75`;`--color-surface-sunken` 明确不进验证面并在注释里说明理由 |
 | T-idi-07-02 | Tampering | 焦点规则的几何(`border` / `padding`) | medium | mitigate | 规则体只声明 `outline` 与 `outline-offset`;静态守卫断言焦点规则块内 `border` / `padding` 计数为 0;几何与 `CLEARANCE_MIN_PX = 4.0` 双向绑定 |
 | T-idi-07-03 | Tampering / Denial of service | 环色的「顺手修正」(`#1f63bd` → `--radix-blue-11`) | medium | mitigate | 围栏注释逐字写明这是对 S-4 已签核契约的字面遵从;`--color-surface@0.75` 的 3.45 余量是选它的实测依据 |
-| T-idi-07-04 | Spoofing(假 PASS) | `item10` 的普查探针 | high | mitigate | `data is None` ⇒ `blocked`;空集 ⇒ `info` 声明「本样本无判定」并 `return`;元素读不到 ⇒ `blocked`;三样本(p1 / checking / p3)才覆盖全部「可见的可聚焦元素」组合 |
+| T-idi-07-04 | Spoofing(假 PASS) | `item10` 的普查探针 | high | mitigate | `data is None` ⇒ `blocked`;判定集为空集 ⇒ `blocked`(不是 `info` + `return` —— 「0 条断言静默通过」正是假 PASS 的形态);元素读不到 ⇒ `blocked`;判定集 = `visible ∧ focusable`,禁用控件与 `tabindex="-1"` 明确排除并登记(否则判据永远无法满足);三样本(p1 / checking / p3)才覆盖全部 Tab 可达的可聚焦元素组合 |
 | T-idi-07-05 | Repudiation | 归档半场的运行时断言 | medium | accept | 五个样本的 `#round-doc` 内 `a[href]` 计数为 0 ⇒ 今天无服务对象。**显式登记该事实**(不假装覆盖),由常驻算术门 + 一次性反事实探针共同承担 |
 | T-idi-07-SC | Tampering | npm / pip / cargo 安装 | low | accept | 本阶段**零新增运行时依赖、零构建步骤**(硬规则 6):无任何包管理器调用进入范围,故无供应链面;若执行期出现安装需求,即为计划偏差与停止条件 |
 </threat_model>
@@ -340,7 +351,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 1. `:focus-visible` 规则已落地且覆盖 D-05 的七个枚举,几何为 `outline: 2px solid` + `outline-offset: 2px`,规则体不含 `border` / `padding`,也不含 `outline: none`。
 2. `--color-focus: #1f63bd` 在围栏内声明一次、在围栏外被消费;围栏注释写明它是刻意字面遵从、不得被「修正」。
 3. 环色对 `--color-surface-page` / `--color-surface` / `--color-surface@0.75` 三处的 `check-02` 断言全部 PASS(>= 3:1)。
-4. `check-05 --item 10` 在三样本上断言「未被环覆盖的可聚焦元素数为 0」;SC1 / SC2 / SC4 各有明确结论,无空转 PASS。
+4. `check-05 --item 10` 在三样本上断言「判定集(可见 ∧ 可聚焦,即 Tab 可达)非空,且其中未被环覆盖的元素数为 0」;禁用控件与 `tabindex="-1"` 的排除被显式登记;SC1 / SC2 / SC4 各有明确结论,无空转 PASS。
 5. 归档半场的运行时空缺被**显式登记**,并由一次性反事实探针提供可复跑的证据。
 6. 四条既有门(check-01 / 02 / 03 / 04)与既有九项 UAT 仍全绿;`app.js` / `index.html` / `vendor/` / `ui-states/` 零改动。
 </success_criteria>

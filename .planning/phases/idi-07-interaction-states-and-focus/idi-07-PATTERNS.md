@@ -22,7 +22,7 @@
 | New/Modified File | Action | Role | Data Flow | Closest Analog | Match Quality |
 |---|---|---|---|---|---|
 | `frontend/style.css` | MODIFY (append-only) | config (token layer + stylesheet) | transform (declarative cascade) | 自身既有段落 — 见下方五组逐条 analog | exact (same file, same house style) |
-| `scripts/check-02-contrast.py` | MODIFY (PAIR 清单) | test (static arithmetic gate) | transform | 自身 L394-395 的 `@0.75` 条目 + L405-425 的 NON-TEXT 段 | exact |
+| `scripts/check-02-contrast.py` | **READ(只读参考)—— 不是本阶段的改动面**;PAIR 清单条目与头部计数注释都住在 `frontend/style.css:334` 的围栏注释里,故本文件不进任何计划的 `files_modified` | test (static arithmetic gate — 只被读:`PAIR_RE` / `composite()` / 覆盖地板) | transform | `frontend/style.css` L394-395 的 `@0.75` 条目 + L405-425 的 NON-TEXT 段 | exact |
 | `scripts/check-05-ui-uat.py` | MODIFY (新增 item 10) | test (runtime browser UAT gate) | request-response | 自身 `item9` (L2248-2366) + `_idi06_clearance_assert` (L2179-2209) | exact |
 | 契约计数静态断言(D-15 中段;落点未定 — 新零依赖脚本 **或** `check-05` 内静态守卫) | CREATE or MODIFY | test (static text census) | transform | `scripts/check-01-token-conformance.sh`(独立脚本形态)**或** `_l2_guard_shape` (L1606-1628) / `_latest_check_max_height_guard` (L2102-2122)(脚本内静态守卫形态) | exact (两种形态都有现成先例) |
 | 归档合成一次性注入探针(D-18;建议名 `scripts/probe-07-focus-composite.py`) | CREATE | test (one-off counterfactual probe — **不是门**) | request-response | `scripts/probe-05-resolve-color.py`(整个文件) | exact |
@@ -307,7 +307,7 @@ D-06 的注释须以同样口吻写明「`#round-doc` 今天不可聚焦,任何�
 
 ---
 
-### `scripts/check-02-contrast.py` — 新增三条 `--color-focus` PAIR
+### `frontend/style.css` 围栏内的三条 `--color-focus` PAIR(analog 与算术机制来自只读的 `scripts/check-02-contrast.py`)
 
 **Analog A — `@<alpha>` 后缀的唯一既有用例(D-15/D-18 的**零新代码**依据)。** L394-395 逐字:
 ```python

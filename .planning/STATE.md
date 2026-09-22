@@ -4,16 +4,16 @@ milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: 06
 current_phase_name: 布局稳健性
-status: ready_for_verification
+status: executing
 stopped_at: Completed idi-06-03-PLAN.md
-last_updated: "2026-09-22T05:22:36.686Z"
+last_updated: "2026-09-22T07:17:55.484Z"
 last_activity: 2026-09-22
-last_activity_desc: Completed idi-06-03-PLAN.md (phase idi-06 all 3 plans done)
-state_head: c722d351d5484eb6f1695da85965c24795a328bc
+last_activity_desc: "Gap-closure plan 04 created (phase idi-06: 3 executed + 1 gap-closure pending)"
+state_head: a27e823cc01f0c0732c8d91a0831f785b45f9b16
 progress:
   total_phases: 6
   completed_phases: 3
-  total_plans: 14
+  total_plans: 15
   completed_plans: 14
   percent: 50
 ---
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 
 ## Current Position
 
-Phase: idi-06 (布局稳健性) — EXECUTING
-Plan: 3 of 3
-Status: Ready for verification (all 3 plans complete; phase closes at /gsd-verify-work)
-Last activity: 2026-09-22 — Completed idi-06-03-PLAN.md
+Phase: idi-06 (布局稳健性) — READY TO EXECUTE
+Plan: 3 of 4 (04 pending — gap closure)
+Status: Ready to execute plan 04 (gap closure: narrow LAYOUT-02's 768px promise, fix the false coverage claim)
+Last activity: 2026-09-22 — Gap-closure plan 04 created
 
 Progress: [█████░░░░░] 50%
 

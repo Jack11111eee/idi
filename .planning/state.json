@@ -52,7 +52,7 @@
   "next": {
     "command": "/gsd:progress --next",
     "label": "Advance to the next step",
-    "reason": "Phase 06 of 6 · 0% · executing"
+    "reason": "Phase 06 of 6 · 50% · executing"
   },
-  "updated_at": "2026-09-22T04:07:29.278Z"
+  "updated_at": "2026-09-22T07:17:55.587Z"
 }

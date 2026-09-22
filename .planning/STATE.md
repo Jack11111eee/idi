@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: 06
 current_phase_name: 布局稳健性
 status: executing
-stopped_at: Phase 6 UI-SPEC approved
-last_updated: "2026-09-22T03:08:48.126Z"
+stopped_at: Completed idi-06-01-PLAN.md
+last_updated: "2026-09-22T03:30:37.159Z"
 last_activity: 2026-09-22
 last_activity_desc: Phase idi-06 execution started
-state_head: 5447ec36c9c0e6c7cb64abd77018bafc92351adc
+state_head: 9828dffb7f1f4b912ce8985f45d5c75c0f615c59
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 11
+  completed_plans: 12
   percent: 50
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 ## Current Position
 
 Phase: idi-06 (布局稳健性) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 Status: Executing Phase idi-06
 Last activity: 2026-09-22 — Phase idi-06 execution started
 
@@ -87,6 +87,7 @@ Progress: [█████░░░░░] 50%
 | Phase idi-05 P01 | 20min | 3 tasks | 2 files |
 | Phase idi-05 P03 | ~45min | 3 tasks | 2 files |
 | Phase idi-05 P04 | 17 min | 3 tasks | 3 files |
+| Phase idi-06 P01 | 12 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -152,6 +153,9 @@ Recent decisions affecting current work:
 - [Phase idi-05]: 修法是逐容器列举而非一条全局标题规则 —— 全局规则对四处 chrome 覆盖与 .markdown-body 都是惰性的,于是只命中这五个容器,却把影响面重新变成不可枚举(那正是 G-idi-05-1 的成因)
 - [Phase idi-05]: 影响面枚举按 renderMarkdown() 的调用点而非按类名:九个目标里 #round-doc 有两个调用点,故 renderMarkdown( 计数是 11 而非 9;只枚举四个 .markdown-body 宿主正是缺陷存活到验证后的直接原因
 - [Phase idi-05]: 变异探针抓到 item7 的静默 PASS 洞:all(w != "700") 对 None 恒真,故「无第四字重档」断言在标题读不到时会记 PASS;已改为 any(w is None) 与缺失同处置记 BLOCKED
+- [Phase idi-06]: sticky 表头自带背景 var(--color-surface):.panel-header 规则体内无 background 声明,不加背景则滚动正文从标题行底下穿过;该令牌已被 #doc-panel 消费(:474)⇒ 零新增令牌(硬规则 5/8)
+- [Phase idi-06]: 新规则不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测滚动无正文穿透,故不新增 --z-* 消费者(若日后补须连带登记序关系断言)
+- [Phase idi-06]: L-5/L-6 普查由单样本扩为 p1+p3 双样本:被祖先藏住的元素 getBoundingClientRect 全零,单样本会把隐藏静默读成 clearance 0 / 命中区 0(假 PASS 同型陷阱)
 
 ### Pending Todos
 
@@ -200,9 +204,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-22T02:16:27.396Z
-Stopped at: Phase 6 UI-SPEC approved
-Resume file: /Users/huaxinzhang/Desktop/trifles/interactive-discuss-iteration/.planning/phases/idi-06-layout-robustness/idi-06-UI-SPEC.md
+Last session: 2026-09-22T03:30:24.606Z
+Stopped at: Completed idi-06-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

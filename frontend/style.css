@@ -489,6 +489,21 @@ html, body {
   padding-inline: 0;
 }
 
+/* D-03 / D-05:sticky 表头 —— 把「恒可见」补回来,不改 badge 的流内机制。
+   背景是必需的,不是可选:`.panel-header` 规则体内没有任何 background 声明,
+   sticky 之后正文会从标题行底下穿过去。`--color-surface` 与 `#doc-panel` 自身背景
+   同值且已被消费(`:474`)⇒ 零新增令牌。
+   不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测若有穿透再补,
+   届时须连带登记 `--z-*` 的序关系断言(badge 10 < banner 20 < overlay 100 < selection-menu 200)。
+   border-radius: 0:半径在本元素上是加背景之后才**首次可见**的新视觉物,而 10px 圆角
+   会让滚动正文从四角露出;全宽条带没有卡片边缘需要圆角。 */
+#doc-panel-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  border-radius: 0;
+}
+
 /* 文档面板标题行:安静的容器标签,不是全屏最大最重的文字 */
 #doc-panel-header h1 {
   margin: 0;

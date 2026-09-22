@@ -29,13 +29,24 @@
     故:`--browser chrome` 仍保留,但它强制有头(headless=False),不能无人值守。
 
 运行方式
-    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..7 项
+    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..8 项
     .venv/bin/python scripts/check-05-ui-uat.py --item smoke    # 只跑 harness 自检切片
     .venv/bin/python scripts/check-05-ui-uat.py --item 7        # 只跑渲染目标的标题刻度
+    .venv/bin/python scripts/check-05-ui-uat.py --item 8        # 只跑 sticky 表头 / 流内 badge
     .venv/bin/python scripts/check-05-ui-uat.py --item 1 --item 2
     .venv/bin/python scripts/check-05-ui-uat.py --ai-smoke      # 额外真跑两次 AI 交互冒烟
     .venv/bin/python scripts/check-05-ui-uat.py --keep          # 保留临时工作目录供排查
     .venv/bin/python scripts/check-05-ui-uat.py --browser chrome  # 改用系统 Chrome(有头)
+
+第 8 项(L-1 / D-06)
+    文档面板标题行从「随面板内容滚走」改为「钉在面板顶部」(`#doc-panel-header` 新增
+    `position: sticky`)。三项断言:badge 仍是流内元素(computed position == static)、
+    768 / 1024 / 1280 三处 badge × banner 的 rect 不相交、滚动 `#doc-panel` 到底后表头仍可见。
+    两条几何断言各带**前提检查**(元素可见且 rect 非全零 / 容器真的可滚),前提不成立记
+    BLOCKED 而非 PASS —— 与第 7 项 `all(w != "700")` 对 None 恒真是同型陷阱。
+    本项还产出三项**只读诊断**(三宽度文档级 scrollWidth / L-5 clearance 普查 /
+    L-6 命中区普查),经 `info()` 输出、不参与判定 —— 它们是后续计划决策的原始输入。
+    本项是 harness 里**第一次**变更 viewport,结束前必须复位到 1440×900。
 
 第 7 项(G-idi-05-1)
     `renderMarkdown()` 的返回值被注入**五个不是 `.markdown-body`** 的容器
@@ -1509,6 +1520,347 @@ def item7(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# UAT 第 8 项 — L-1 徽标收口:流内 badge + sticky 表头(D-06)
+# ---------------------------------------------------------------------------
+# 三条断言(L-1 的门):
+#   (a) #state-badge 是流内元素(computed position == static,right 无声明);
+#   (b) 768 / 1024 / 1280 三处 #state-badge 与 #stream-banner 的 rect 不相交;
+#   (c) 滚动 #doc-panel 到底后 #doc-panel-header 仍可见(sticky 生效)。
+# 两条几何断言各带**前提检查**(元素可见且 rect 非全零 / 容器真的可滚),前提不成立记
+# blocked(...) 而非 ok_true(...) —— 与 item7 已登记的 `all(w != "700")` 对 None 恒真
+# 是同型陷阱(空转断言),也是本阶段威胁表 T-idi-06-04 的落点。
+# 另含三项**只读诊断**(三宽度文档级溢出 / L-5 clearance 普查 / L-6 命中区普查),
+# 一律经 info() 输出、本计划不把它们升为断言:前两项的判据要等计划 02 的 L-3 / L-4
+# 落地后才成立(L-2),第三项由计划 03 的 A11Y-07 承担。它们的**原始数值**是计划 03
+# 三个决策的唯一输入契约,故必须在波次 1 就产出。
+BADGE_BANNER_WIDTHS = (768, 1024, 1280)
+# harness 里**第一次** viewport 变更(item 8);任何一次 set_viewport_size 之后都必须
+# 复位到这个值,否则污染其后所有项(item 9 与任何依赖 1440 宽度的既有断言)。
+VIEWPORT_RESTORE = {"width": 1440, "height": 900}
+# L-1 的碰撞实检用的就是这个字符串(UI-SPEC §Copywriting Contract 的冻结表)。
+BANNER_TEXT = "事件流已断开,正在自动重连……"
+# 把 #doc-panel 撑到可滚所需的正文(经应用自身的 renderMarkdown 注入,真实渲染路径)。
+LONG_DOC_MD = "\n\n".join(
+    f"第 {i} 段探针正文:用于把文档面板撑到可滚,使 sticky 断言不是空转。" for i in range(1, 81)
+)
+# 三宽度溢出诊断的输入:一张宽 markdown 表 + 一个不可断长 token。
+# #doc-panel { overflow-y: auto } 会把 overflow-x 的 used value 一并算成 auto,
+# 故宽表只在**面板内部**产生横向滚动条 —— 那是可达内容,不是文档级溢出(L-2 明文)。
+WIDE_MD = (
+    "| " + " | ".join(f"列{c}" for c in range(1, 13)) + " |\n"
+    + "| " + " | ".join("---" for _ in range(12)) + " |\n"
+    + "| " + " | ".join("单元格内容" for _ in range(12)) + " |\n\n"
+    + "不可断长 token:" + ("a" * 240) + "\n"
+)
+
+_IDI06_BADGE_BANNER_JS = """() => {
+  const b = document.querySelector('#state-badge');
+  const n = document.querySelector('#stream-banner');
+  if (!b || !n) return null;
+  const rb = b.getBoundingClientRect();
+  const rn = n.getBoundingClientRect();
+  return {
+    badge: {left: rb.left, right: rb.right, top: rb.top, bottom: rb.bottom,
+            width: rb.width, height: rb.height},
+    banner: {left: rn.left, right: rn.right, top: rn.top, bottom: rn.bottom,
+             width: rn.width, height: rn.height},
+    badgeDisplay: getComputedStyle(b).display,
+    bannerDisplay: getComputedStyle(n).display,
+  };
+}"""
+
+_IDI06_SCROLL_JS = """() => {
+  const p = document.querySelector('#doc-panel');
+  const h = document.querySelector('#doc-panel-header');
+  if (!p || !h) return null;
+  p.scrollTop = p.scrollHeight;
+  const rp = p.getBoundingClientRect();
+  const rh = h.getBoundingClientRect();
+  return {
+    scrollTop: p.scrollTop, scrollHeight: p.scrollHeight, clientHeight: p.clientHeight,
+    panel: {top: rp.top, bottom: rp.bottom, left: rp.left, right: rp.right},
+    header: {top: rh.top, bottom: rh.bottom, left: rh.left, right: rh.right},
+  };
+}"""
+
+# L-5 / L-6 的普查。**按元素枚举,不按容器名** —— 按点名枚举会漏掉没被点名的那个
+# (Phase 5 的 G-idi-05-1 与本阶段 A11Y-07 是同构教训)。
+# clearance = 可聚焦元素 rect 到其**最近裁剪祖先**的 padding 边的距离,取四边最小值。
+# `visible` 一栏是承重的:被祖先藏住的元素 rect 全零,不得把它读成「命中区不足 24×24」。
+_IDI06_CENSUS_JS = r"""() => {
+  const px = (v) => parseFloat(v) || 0;
+  const isClipping = (el) => {
+    const s = getComputedStyle(el);
+    return s.overflowX !== 'visible' || s.overflowY !== 'visible';
+  };
+  const labelOf = (el) => {
+    if (el.id) return '#' + el.id;
+    const cls = (typeof el.className === 'string' && el.className.trim())
+      ? '.' + el.className.trim().split(/\s+/).join('.') : '';
+    return el.tagName.toLowerCase() + cls;
+  };
+  const rectOf = (el) => {
+    const r = el.getBoundingClientRect();
+    return {left: r.left, top: r.top, right: r.right, bottom: r.bottom,
+            width: r.width, height: r.height};
+  };
+
+  const clearance = [];
+  document.querySelectorAll(
+    'button, input, select, textarea, a[href], summary, [tabindex]'
+  ).forEach((el) => {
+    let anc = el.parentElement;
+    let nearest = null;
+    while (anc) {
+      if (isClipping(anc)) { nearest = anc; break; }
+      anc = anc.parentElement;
+    }
+    if (!nearest) return;
+    const r = el.getBoundingClientRect();
+    const ar = nearest.getBoundingClientRect();
+    const s = getComputedStyle(nearest);
+    const padLeft = ar.left + px(s.borderLeftWidth);
+    const padTop = ar.top + px(s.borderTopWidth);
+    const padRight = ar.right - px(s.borderRightWidth);
+    const padBottom = ar.bottom - px(s.borderBottomWidth);
+    const gap = Math.min(r.left - padLeft, padRight - r.right,
+                         r.top - padTop, padBottom - r.bottom);
+    clearance.push({el: labelOf(el), container: labelOf(nearest), clearance: gap,
+                    visible: r.width > 0 && r.height > 0, rect: rectOf(el)});
+  });
+
+  const hits = [];
+  document.querySelectorAll(
+    'button, input, select, textarea, summary, a[href], [role=button], [onclick]'
+  ).forEach((el) => {
+    const r = el.getBoundingClientRect();
+    const visible = r.width > 0 && r.height > 0;
+    hits.push({el: labelOf(el), w: r.width, h: r.height, visible: visible,
+               below24: visible ? (r.width < 24 || r.height < 24) : null});
+  });
+
+  return {clearance: clearance, hits: hits};
+}"""
+
+
+def _rects_intersect(a, b):
+    """两个 rect 是否相交(判据与 L-1 的门逐字一致)。"""
+    return not (
+        a["right"] <= b["left"]
+        or b["right"] <= a["left"]
+        or a["bottom"] <= b["top"]
+        or b["bottom"] <= a["top"]
+    )
+
+
+def _idi06_census(page, state):
+    """L-5 / L-6 的只读普查 —— 一律 info(),不判定(判据属计划 03)。"""
+    data = page.evaluate(_IDI06_CENSUS_JS)
+    if data is None:
+        info(f"item8 [{state}] 普查", "<SKIPPED> 普查脚本无返回")
+        return
+    info(f"item8 [{state}] L-5 clearance 普查(可聚焦元素 × 最近裁剪祖先 × 实测 clearance;阈值 4px)",
+         f"{len(data['clearance'])} 对")
+    for row in data["clearance"]:
+        info(f"item8 [{state}] L-5 clearance",
+             f"{row['el']} × {row['container']} = {row['clearance']:.1f}px "
+             f"visible={row['visible']} rect={row['rect']}")
+    info(f"item8 [{state}] L-6 命中区普查(可交互元素 rect;阈值 24×24)",
+         f"{len(data['hits'])} 个")
+    for row in data["hits"]:
+        info(f"item8 [{state}] L-6 命中区",
+             f"{row['el']} w={row['w']:.1f} h={row['h']:.1f} "
+             f"visible={row['visible']} below24={row['below24']}")
+
+
+def item8(page, tmp_root):
+    item = "8"
+    print("\n=== UAT 8: L-1 徽标收口 —— 流内 badge + sticky 表头(D-06)===", flush=True)
+    proj = make_fixture("p1", tmp_root)
+    enter_project(page, proj)
+    info("item8 样本", f"p1(会话流活动态,#state-badge 可见)→ {proj}")
+
+    # ---- (a) badge 是流内元素(运行时 computed style,不读源码)-----------------
+    # 元素读不到时 read_style 返回 None ⇒ ok() 自动记 BLOCKED,绝不记 PASS。
+    # `right` 在未声明时的 computed 值是 `auto`。
+    ok(item, "[p1] #state-badge position == static", "static",
+       read_style(page, "#state-badge", "position"),
+       "L-1 承重约束 1:流内机制一字不动")
+    ok(item, "[p1] #state-badge right 无声明", "auto",
+       read_style(page, "#state-badge", "right"),
+       "L-1 承重约束 1:不得给它加 right(加回浮层会复活 LAYOUT-03 的遮挡)")
+
+    # ---- (b) 三宽度下 badge × banner 不相交 -----------------------------------
+    # 768 是承诺的窄窗口下限,必须补上(路线图 Success Criterion #2 原本只在 1024/1280 实检)。
+    # try/finally:viewport 复位必须执行 —— 这是 harness 里**第一次**变更 viewport,
+    # 不复位会污染其后所有项。
+    try:
+        for width in BADGE_BANNER_WIDTHS:
+            page.set_viewport_size({"width": width, "height": 900})
+            page.wait_for_timeout(250)
+            # 用应用自身的 showStreamBanner(...) 让横幅可见 —— 不得手工
+            # classList.remove('hidden') 拼 DOM,那是伪造被测状态(威胁面「应用 JS → harness」)。
+            shown = page.evaluate(
+                """(text) => {
+                    if (typeof showStreamBanner !== 'function') return false;
+                    showStreamBanner(text, false);
+                    return true;
+                }""",
+                BANNER_TEXT,
+            )
+            if not shown:
+                blocked(item, f"[p1 @{width}px] 横幅可见态已构造",
+                        "showStreamBanner(text, false) 可调用", "<MISSING>",
+                        "应用未导出 showStreamBanner,被测状态造不出")
+                continue
+            geo = page.evaluate(_IDI06_BADGE_BANNER_JS)
+            if geo is None:
+                blocked(item, f"[p1 @{width}px] badge × banner 几何读数",
+                        "#state-badge 与 #stream-banner 都存在", "<MISSING>",
+                        "元素不存在,getBoundingClientRect 读不出")
+                continue
+            badge, banner = geo["badge"], geo["banner"]
+            info(f"item8 [{width}px] badge × banner 原始 rect",
+                 f"badge={badge} display={geo['badgeDisplay']} | "
+                 f"banner={banner} display={geo['bannerDisplay']}")
+            # 前提检查:两个元素都真的被渲染出来(可见 + rect 非全零)。
+            # 任一前提不成立 ⇒ blocked,绝不把「两个零矩形不相交」记成 PASS。
+            if (
+                geo["badgeDisplay"] == "none"
+                or geo["bannerDisplay"] == "none"
+                or badge["width"] <= 0
+                or badge["height"] <= 0
+                or banner["width"] <= 0
+                or banner["height"] <= 0
+            ):
+                blocked(
+                    item,
+                    f"[p1 @{width}px] #state-badge 与 #stream-banner 不相交",
+                    "两个元素均可见且 rect 宽高 > 0",
+                    f"badge display={geo['badgeDisplay']} rect={badge} / "
+                    f"banner display={geo['bannerDisplay']} rect={banner}",
+                    "前提不成立(元素被隐藏或 rect 全零)⇒ 不相交判定是空转,不记 PASS",
+                )
+                continue
+            ok_true(
+                item,
+                f"[p1 @{width}px] #state-badge 与 #stream-banner 不相交",
+                not _rects_intersect(badge, banner),
+                "不相交",
+                f"badge={badge} banner={banner}",
+                "L-1 的门断言几何不相交,不是「横幅不存在」",
+            )
+    finally:
+        page.set_viewport_size(VIEWPORT_RESTORE)
+
+    # ---- (c) 滚动 #doc-panel 到底后 #doc-panel-header 仍可见(sticky 生效)-------
+    # 先把内容加长(经应用自身的 renderMarkdown,真实渲染路径),否则 p1 下
+    # #doc-panel 内容可能不足一屏 ⇒「滚到底后仍可见」是空转断言。
+    grown = page.evaluate(
+        """(md) => {
+            const doc = document.querySelector('#draft-content');
+            if (!doc || typeof renderMarkdown !== 'function') return null;
+            doc.innerHTML = '';
+            doc.appendChild(renderMarkdown(md));
+            const p = document.querySelector('#doc-panel');
+            return p ? {scrollHeight: p.scrollHeight, clientHeight: p.clientHeight} : null;
+        }""",
+        LONG_DOC_MD,
+    )
+    if grown is None:
+        blocked(item, "[p1] 滚动 #doc-panel 到底后 #doc-panel-header 仍可见(sticky)",
+                "#draft-content 可注入长内容", "<MISSING>",
+                "#draft-content 或 renderMarkdown 不可用")
+    elif grown["scrollHeight"] <= grown["clientHeight"]:
+        blocked(
+            item,
+            "[p1] 滚动 #doc-panel 到底后 #doc-panel-header 仍可见(sticky)",
+            "scrollHeight > clientHeight(容器真的可滚)",
+            f"scrollHeight={grown['scrollHeight']} clientHeight={grown['clientHeight']}",
+            "#doc-panel 内容不足一屏,不可滚 ⇒「滚到底后仍可见」是空转断言,不记 PASS",
+        )
+    else:
+        scrolled = page.evaluate(_IDI06_SCROLL_JS)
+        if scrolled is None:
+            blocked(item, "[p1] 滚动 #doc-panel 到底后 #doc-panel-header 仍可见(sticky)",
+                    "#doc-panel 与 #doc-panel-header 都存在", "<MISSING>", "元素不存在")
+        else:
+            hp, pp = scrolled["header"], scrolled["panel"]
+            info("item8 sticky 原始数值",
+                 f"scrollTop={scrolled['scrollTop']} scrollHeight={scrolled['scrollHeight']} "
+                 f"clientHeight={scrolled['clientHeight']} header={hp} panel={pp}")
+            ok_true(
+                item,
+                "[p1] 滚动到底后 #doc-panel-header 仍落在 #doc-panel 可视区内",
+                hp["bottom"] > pp["top"] and hp["top"] < pp["bottom"],
+                "header.bottom > panel.top 且 header.top < panel.bottom",
+                f"header={hp} panel={pp}",
+                "sticky 生效:标题行钉在面板顶部而非随正文滚走",
+            )
+            ok_true(
+                item,
+                "[p1] sticky 把 #doc-panel-header 钉在 #doc-panel 顶部(<=1px)",
+                abs(hp["top"] - pp["top"]) <= 1.0,
+                "|header.top - panel.top| <= 1px",
+                f"{abs(hp['top'] - pp['top']):.3f}px",
+            )
+
+    # ---- 三项只读诊断(计划 03 的输入契约;本计划一律 info(),不判定)------------
+    injected = page.evaluate(
+        """(md) => {
+            const body = document.querySelector('#doc-panel-body');
+            if (!body || typeof renderMarkdown !== 'function') return null;
+            const d = document.createElement('div');
+            d.id = 'idi06-overflow-probe';
+            d.appendChild(renderMarkdown(md));
+            body.appendChild(d);
+            return true;
+        }""",
+        WIDE_MD,
+    )
+    if not injected:
+        info("item8 L-2 三宽度溢出诊断", "<SKIPPED> #doc-panel-body 或 renderMarkdown 不可用")
+    else:
+        try:
+            for width in (1440, 1024, 768):
+                page.set_viewport_size({"width": width, "height": 900})
+                page.wait_for_timeout(250)
+                m = page.evaluate(
+                    """() => ({
+                        scrollWidth: document.documentElement.scrollWidth,
+                        clientWidth: document.documentElement.clientWidth,
+                    })"""
+                )
+                info(
+                    f"item8 L-2 文档级溢出基线 @{width}px(波次 1 基线,L-3 / L-4 尚未落地;"
+                    "面板内部横向滚动条不计入)",
+                    f"scrollWidth={m['scrollWidth']} clientWidth={m['clientWidth']} "
+                    f"overflow={m['scrollWidth'] - m['clientWidth']}px",
+                )
+        finally:
+            page.set_viewport_size(VIEWPORT_RESTORE)
+
+    # L-5 / L-6 普查跑两个样本:p1 让 #session-panel / #chat-messages 可见,
+    # p3(补渲染一条批注)让 #annotations-panel / #annotation-list 与其中的
+    # `<summary>` 可见 —— 被祖先藏住的元素 rect 全零,普查会失真。
+    for state, with_annotations in (("p1", False), ("p3", True)):
+        proj_c = make_fixture(state, tmp_root)
+        enter_project(page, proj_c)
+        if with_annotations:
+            page.evaluate(
+                """() => {
+                    if (typeof renderAnnotations !== 'function') return false;
+                    renderAnnotations({items: [{
+                        id: 'idi06-census', type: 'plain', status: 'answered',
+                        quote: '普查探针摘录', note: '普查探针正文', answer: '普查探针回答',
+                    }]}, true);
+                    return true;
+                }"""
+            )
+        _idi06_census(page, state)
+
+
+# ---------------------------------------------------------------------------
 # harness 自检切片(--item smoke)
 # ---------------------------------------------------------------------------
 def item_smoke(page, tmp_root):
@@ -1567,7 +1919,7 @@ def item_smoke(page, tmp_root):
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="idi-04 UAT browser harness")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7(可重复,或逗号分隔)")
+                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8(可重复,或逗号分隔)")
     ap.add_argument("--ai-smoke", action="store_true",
                     help="第 5 项额外真跑两次 AI 交互冒烟(会产生真实 AI 调用与计费)")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
@@ -1580,7 +1932,7 @@ def parse_args():
 
 def normalize_items(raw):
     if not raw:
-        return ["1", "2", "3", "4", "5", "6", "7"]
+        return ["1", "2", "3", "4", "5", "6", "7", "8"]
     out = []
     for chunk in raw:
         for piece in chunk.split(","):
@@ -1593,7 +1945,7 @@ def normalize_items(raw):
 def main():
     args = parse_args()
     items = normalize_items(args.item)
-    known = {"smoke", "1", "2", "3", "4", "5", "6", "7"}
+    known = {"smoke", "1", "2", "3", "4", "5", "6", "7", "8"}
     bad = [i for i in items if i not in known]
     if bad:
         raise SystemExit(f"ERROR: 未知项 {bad}(可用:{sorted(known)})")
@@ -1634,6 +1986,8 @@ def main():
             item6(page, tmp_root)
         if "7" in items:
             item7(page, tmp_root)
+        if "8" in items:
+            item8(page, tmp_root)
     finally:
         if browser is not None:
             browser.close()

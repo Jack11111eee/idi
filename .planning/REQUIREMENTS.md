@@ -51,7 +51,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - [x] **LAYOUT-01**: `#state-badge { right: 448px }` 魔法数消除(改 `calc()` 或 `absolute`),与侧栏宽度决策作为**一个工作单元**处理,而非三件事
 - [ ] **LAYOUT-02**: 窄窗口不破版——≥1024px 无横向溢出,≥768px 无内容遮挡。范围是"不破版",**不是**"适配";一条 `@media` 守卫,不是断点系统
 - [x] **LAYOUT-03**: `#state-badge` 不再遮挡滚动内容(该元素 `position: fixed` + 不透明背景,正文从其底下穿过被挡)
-- [ ] **LAYOUT-04**: 侧栏滚动容器套娃收敛(基线:420px 侧栏内最多 4 个独立滚动容器,40vh / 55vh / 32vh / 30vh)
+- [x] **LAYOUT-04**: 侧栏滚动容器套娃收敛(基线:420px 侧栏内最多 4 个独立滚动容器,40vh / 55vh / 32vh / 30vh)
 
 ### INTERACT — 交互状态
 
@@ -146,7 +146,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | LAYOUT-01 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-02 | Phase 6: 布局稳健性 | Pending |
 | LAYOUT-03 | Phase 6: 布局稳健性 | Complete |
-| LAYOUT-04 | Phase 6: 布局稳健性 | Pending |
+| LAYOUT-04 | Phase 6: 布局稳健性 | Complete |
 | INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |
 | INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
 | CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |

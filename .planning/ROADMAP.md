@@ -232,7 +232,7 @@ Plans:
 
 **Research flag**: `calc()` vs `position: absolute` 是真实的行为取舍(fixed 且可能遮挡 vs 随内容滚走)。**本路线图按研究建议提交 `calc()`**——零行为变更的迁移步骤;但该取舍须在规划时与用户确认。A11Y-07 是否与 420px 侧栏冲突也需在规划时实测判定。
 **Gates**: 1440 → 1024 → 768 无横向溢出;badge 在每个宽度都在文档区右上角;1024/1280 下横幅不盖 badge;恰好一个侧栏滚动条 + `#chat-messages`;`#brainstorm-view h2` 仍 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
-**Plans**: 1/3 plans executed
+**Plans**: 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -241,7 +241,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] idi-06-02-PLAN.md — 换行与 flex 最小尺寸(六目标 `overflow-wrap: anywhere` + `#main-pane` / `#doc-panel` 各补 `min-width: 0`)+ 滚动容器收敛(删 `.event-list` 与 `#annotation-list` 的 `max-height` / `overflow-y`,保留 `#latest-check` 与 `#chat-messages`)+ check-05 item 9(滚动者 DOM 普查 / 末条可达性 / `max-height == none` / 保留项护栏)
+- [x] idi-06-02-PLAN.md — 换行与 flex 最小尺寸(六目标 `overflow-wrap: anywhere` + `#main-pane` / `#doc-panel` 各补 `min-width: 0`)+ 滚动容器收敛(删 `.event-list` 与 `#annotation-list` 的 `max-height` / `overflow-y`,保留 `#latest-check` 与 `#chat-messages`)+ check-05 item 9(滚动者 DOM 普查 / 末条可达性 / `max-height == none` / 保留项护栏)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -347,7 +347,7 @@ Plans:
 | 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | Complete    | 2026-09-20 |
 | 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
 | 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
-| 6. 布局稳健性 | v1.14 | 1/3 | In Progress|  |
+| 6. 布局稳健性 | v1.14 | 2/3 | In Progress|  |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |
 

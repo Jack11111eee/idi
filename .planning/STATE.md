@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: 06
 current_phase_name: 布局稳健性
 status: executing
-stopped_at: Completed idi-06-01-PLAN.md
-last_updated: "2026-09-22T03:30:37.159Z"
+stopped_at: Completed idi-06-02-PLAN.md
+last_updated: "2026-09-22T04:08:24.086Z"
 last_activity: 2026-09-22
 last_activity_desc: Phase idi-06 execution started
-state_head: 9828dffb7f1f4b912ce8985f45d5c75c0f615c59
+state_head: 1bd93a66e10332556ff4274f8628ec5f378d8fcd
 progress:
   total_phases: 6
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 50
 ---
 
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 ## Current Position
 
 Phase: idi-06 (布局稳健性) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Executing Phase idi-06
-Last activity: 2026-09-22 — Phase idi-06 execution started
+Last activity: 2026-09-22 — Completed idi-06-02-PLAN.md
 
 Progress: [█████░░░░░] 50%
 
@@ -88,6 +88,7 @@ Progress: [█████░░░░░] 50%
 | Phase idi-05 P03 | ~45min | 3 tasks | 2 files |
 | Phase idi-05 P04 | 17 min | 3 tasks | 3 files |
 | Phase idi-06 P01 | 12 min | 2 tasks | 2 files |
+| Phase idi-06 P02 | 24min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -156,6 +157,9 @@ Recent decisions affecting current work:
 - [Phase idi-06]: sticky 表头自带背景 var(--color-surface):.panel-header 规则体内无 background 声明,不加背景则滚动正文从标题行底下穿过;该令牌已被 #doc-panel 消费(:474)⇒ 零新增令牌(硬规则 5/8)
 - [Phase idi-06]: 新规则不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测滚动无正文穿透,故不新增 --z-* 消费者(若日后补须连带登记序关系断言)
 - [Phase idi-06]: L-5/L-6 普查由单样本扩为 p1+p3 双样本:被祖先藏住的元素 getBoundingClientRect 全零,单样本会把隐藏静默读成 clearance 0 / 命中区 0(假 PASS 同型陷阱)
+- [Phase idi-06]: 六目标 overflow-wrap 合并为一条规则而非通配:通配会波及已裁定的 .event-content word-break: break-all 并把影响面重新变成不可枚举(G-idi-05-1 的成因)
+- [Phase idi-06]: 恒 FAIL 的断言与被断言对象同属缺陷:计算样式对 vh 返回 px 用值(30vh→270px)⇒ #latest-check 的保留项护栏改读源码文本计数;末条子元素高于容器时 last.top >= container.top 恒假 ⇒ 判据改为 last.bottom 落在可视带内
+- [Phase idi-06]: #doc-panel 的 overflow-y: auto 必须保留:它是另一列的滚动者,不在面板区普查范围内,但 L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删掉它凑计数会同时打破 L-1 与计数门(期望值是 4 不是 3)
 
 ### Pending Todos
 
@@ -204,8 +208,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-22T03:30:24.606Z
-Stopped at: Completed idi-06-01-PLAN.md
+Last session: 2026-09-22T04:08:24.035Z
+Stopped at: Completed idi-06-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

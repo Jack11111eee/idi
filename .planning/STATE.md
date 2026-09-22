@@ -5,11 +5,11 @@ milestone_name: 前端视觉与可访问性
 current_phase: 06
 current_phase_name: 布局稳健性
 status: executing
-stopped_at: Completed idi-06-03-PLAN.md
-last_updated: "2026-09-22T07:17:55.484Z"
+stopped_at: Completed idi-06-04-PLAN.md
+last_updated: "2026-09-22T07:35:46.686Z"
 last_activity: 2026-09-22
-last_activity_desc: "Gap-closure plan 04 created (phase idi-06: 3 executed + 1 gap-closure pending)"
-state_head: a27e823cc01f0c0732c8d91a0831f785b45f9b16
+last_activity_desc: Plan 04 (gap closure) executed — LAYOUT-02 768px promise narrowed
+state_head: 24be8d8593ff26057b0222f7dc2dd237752cfae8
 progress:
   total_phases: 6
   completed_phases: 3
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 
 ## Current Position
 
-Phase: idi-06 (布局稳健性) — READY TO EXECUTE
-Plan: 3 of 4 (04 pending — gap closure)
-Status: Ready to execute plan 04 (gap closure: narrow LAYOUT-02's 768px promise, fix the false coverage claim)
-Last activity: 2026-09-22 — Gap-closure plan 04 created
+Phase: idi-06 (布局稳健性) — EXECUTING
+Plan: 4 of 4 (all plans executed; awaiting /gsd-verify-work idi-06)
+Status: Plan 04 (gap closure) executed — LAYOUT-02's 768px promise narrowed, coverage claim corrected
+Last activity: 2026-09-22 — Plan 04 (gap closure) executed
 
 Progress: [█████░░░░░] 50%
 
@@ -90,6 +90,7 @@ Progress: [█████░░░░░] 50%
 | Phase idi-06 P01 | 12 min | 2 tasks | 2 files |
 | Phase idi-06 P02 | 24min | 3 tasks | 2 files |
 | Phase idi-06 P03 | 46 | 3 tasks | 2 files |
+| Phase idi-06 P04 | 16m | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -165,6 +166,7 @@ Recent decisions affecting current work:
 - [Phase 06]: A11Y-07 的落点由普查定:全文件唯一实测 < 24×24 的是未被需求点名的 .annotation-answer summary(722 × 17),需求点名的 #btn-authorize 实测 178 × 40 本就达标。机制锁定为原地加 min-height/min-width 两条裸字面量(24px 是 WCAG 2.5.8 常数,刻意不挂 var(--space-6))
 - [Phase 06]: L-5 走「被实测推翻」:三样本判定行最小 clearance 40px,远高于 4px 阈值 ⇒ 零 padding 改动,#main-pane / #doc-panel / #chat-messages / #latest-check 一个都没抬
 - [Phase 06]: clearance 断言的判定面收窄为「visible 且 intersects」:p3 的 #btn-authorize × #doc-panel = -122.6px 是滚出视口(与 padding 盒不相交)而非被裁切,不收窄会把正常状态记成缺陷
+- [Phase 06]: [Phase idi-06]: Plan 04(gap closure)按项目所有者的显式裁定 remediation (b)把 LAYOUT-02 的 768px 承诺收窄为「badge 不被横幅遮挡」,并把 check-05 的 768px 分支改写为显式「未覆盖」+ 实测数值(h1 439.0–481.0 × 8–28 vs banner 285.3–482.7 × 12–39,相交带 768–855px);收窄登记于 UI-SPEC §L-2 / A-10 与 VERIFICATION.md frontmatter 的 override(accepted_by=Jack11111eee,overrides_applied 保持 0 留给复验);frontend/ 与 REQUIREMENTS/ROADMAP 零 diff
 
 ### Pending Todos
 
@@ -213,8 +215,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-22T05:22:36.648Z
-Stopped at: Completed idi-06-03-PLAN.md
+Last session: 2026-09-22T07:35:24.333Z
+Stopped at: Completed idi-06-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

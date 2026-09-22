@@ -19,19 +19,21 @@ must_haves:
   truths:
     - "悬停任一有底色语义的填充按钮时,它的计算 background-color 不变,而计算 box-shadow 里出现 inset 叠层(填充变深、白字不动)(D-08)"
     - "按下任一有底色语义的填充按钮时,叠层的 alpha 从 0.06 提到 0.12(D-09)"
-    - "悬停任一朴素(无底色)按钮时计算 background-color 变为 --color-surface-hover;按下时变为 --color-surface-active(D-09)"
+    - "悬停任一朴素(无底色)按钮时计算 background-color 变为 --color-surface-hover;按住不放时变为 --color-surface-active,且这个读数与悬停读数**不相等**(D-09 的 3 → 4 递进;由 SC5 的朴素按下读数判定)。朴素族 = 没有自己 hover 规则的无底色按钮(`.verdict-buttons button` / `#btn-enter` / `#btn-ping` / `#btn-abort` / `cli-recheck-btn`);`#selection-menu button` 有它自己的 hover 规则(1-1-1),是这个族之外的第三方,见 Task 2 第 5 条"
+    - "朴素按下态与 L587 hover 的让位是一对:改动其一必须同时改另一(只把朴素 active 升到 0-1-1 会刷掉 0-1-1 的填充族;只去掉 hover 的 :where(:not(:active)) 则朴素按下态不可达)"
     - "悬停一个被禁用的朴素按钮时,计算 background-color 与静默时**相同** —— 未 gate 的既有 button:hover 不再给它上色(D-07)"
     - "悬停任一 input / select 时计算 border-color 变为 --color-border-hover,且它的 7 个 ID 级规则体全部被覆盖(D-10)"
     - "所有有底色语义的按钮 hover 时,其前景文字对比度不低于静默时(D-08 的 opacity 排除理由)"
   artifacts:
     - "frontend/style.css:围栏内 --color-surface-active / --color-border-hover / --color-overlay-hover / --color-overlay-active 四个 tier-2 令牌"
-    - "frontend/style.css:L587 的 button:hover 选择器就地改写为 button:where(:not(:disabled)):hover(声明一字不动)"
-    - "frontend/style.css:末尾追加的 :where(button:not(:disabled)):active、填充按钮 hover/active 叠层规则组、input/select hover 规则组"
+    - "frontend/style.css:L587 的 button:hover 选择器就地改写为 button:where(:not(:disabled)):hover:where(:not(:active))(声明一字不动)"
+    - "frontend/style.css:末尾追加的 :where(button:not(:disabled)):active(停在 0-1-0,与 L587 的 :where(:not(:active)) 配对承担朴素按下态)、填充按钮 hover/active 叠层规则组、input/select hover 规则组"
     - "frontend/style.css 的 PAIR 清单:两条 --color-border-hover NON-TEXT 配对 + 头部计数注释 50 → 52(清单与计数注释都住在 style.css 的围栏注释里;`scripts/check-02-contrast.py` 只被读、不被改)"
     - "scripts/check-05-ui-uat.py:第 10 项的 SC5 / SC5′ 运行时探针"
   key_links:
     - "填充按钮 hover 的选择器特异性必须 >= 它自己的填充规则(1-0-0 的 #btn-*、0-1-1 的 button.primary / .overlay-card button、1-0-1 的 #chat-input-row button)"
-    - "朴素按钮的 :active 规则特异性必须停在 0-1-0,否则会压过 0-1-1 的填充族、把它们按下时刷成灰"
+    - "朴素按钮的 :active 规则特异性必须停在 0-1-0(否则会压过 0-1-1 的填充族、把它们按下时刷成灰),且它与 L587 的 :where(:not(:active)) 是一对:按下时 hover 声明停止匹配,0-1-0 才足以让 --color-surface-active 胜出"
+    - "填充族按下时保住自己填充的保护不来自朴素规则的特异性上限,而来自填充族自己的 1-0-0 / 1-0-1 / 0-1-1 填充声明与 0-3-1 / 1-2-0 的 active 规则;`button.primary` 与 `.overlay-card button` 都是 0-1-1,故朴素 active 一旦升到 0-1-1 就会靠源码顺序夺走它们的填充"
     - "--color-surface-active 与 --color-surface-user 同值(--radix-gray-4);注释必须点名 04.1-N-4,否则会被后来者当成违规「修」掉"
     - "叠层的 rgba() 字面量只出现在围栏内(R-2 的不变量:围栏外无裸 rgba())"
   prohibitions:
@@ -48,7 +50,7 @@ must_haves:
 <objective>
 给每一个交互控件补上可辨的 hover / active 反馈,并让禁用态在悬停时**零反馈**(INTERACT-01 / D-07 / D-08 / D-09 / D-10 / D-20)。
 
-本计划交付四件事:①围栏内四个新 tier-2 令牌(`--color-surface-active` / `--color-border-hover` / `--color-overlay-hover` / `--color-overlay-active`,零新增 tier-1 primitive);②把既有的 `button:hover` 选择器 gate 在 `:not(:disabled)` 上 —— **声明一字不动**;③按**逐条特异性核对过**的选择器组,给九个有底色语义的填充按钮规则体挂上统一 rgba 叠层(0.06 hover / 0.12 active);④给 `input` / `select` 挂上 `border-color` 加深一步的 hover。
+本计划交付四件事:①围栏内四个新 tier-2 令牌(`--color-surface-active` / `--color-border-hover` / `--color-overlay-hover` / `--color-overlay-active`,零新增 tier-1 primitive);②把既有的 `button:hover` 选择器 gate 在 `:not(:disabled)` 上、并在按住不放时让位(`:where(:not(:active))`,朴素按下态的必备另一半)—— **声明一字不动**;③按**逐条特异性核对过**的选择器组,给九个有底色语义的填充按钮规则体挂上统一 rgba 叠层(0.06 hover / 0.12 active);④给 `input` / `select` 挂上 `border-color` 加深一步的 hover。
 
 Purpose: D-02 第 7 条已实测证明 —— **今天所有有底色语义的按钮 hover 时零反馈**(`button:hover` 是 0-1-1,被九组 1-0-0 / 0-1-1 的填充规则全部盖掉);同时 `.verdict-buttons button:disabled` 会因那条未 gate 的 hover 而变色(D-02 第 5 条)。本计划正面修掉这两个缺陷。
 Output: 四个新令牌、一个既有规则的选择器改写、三组新规则、两条新 PAIR、第 10 项的 SC5 / SC5′ 探针。
@@ -76,16 +78,37 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
 - **修不了缺陷** —— `:not(:disabled)` 不匹配禁用按钮,而 L587 仍然匹配它;
 - **引入回归** —— 0-2-1 的 ID 列虽为 0,但类列 2 大于 `button.primary`(0-1-1)与 `.overlay-card button`(0-1-1)的类列 1,于是这两族填充按钮 hover 时会变成灰底,与 D-08「填充按钮用 rgba 叠层」的机制正面冲突。
 
-因此本计划把 gate 落在 **L587 的选择器上**(`button:hover` → `button:where(:not(:disabled)):hover`):
-- `:where()` 贡献 0 特异性,故改写后特异性**仍为 0-1-1,与改写前逐位相同** ⇒ 对任何元素的级联结果**可证明地不变**;
-- 唯一的变化是禁用按钮不再匹配 ⇒ 缺陷被一次性、全局、面向未来地修掉(将来任何新增的朴素按钮自动继承这条 gate);
+因此本计划把 gate 落在 **L587 的选择器上**(`button:hover` → `button:where(:not(:disabled)):hover:where(:not(:active))`):
+- `:where()` 贡献 0 特异性,故改写后特异性**仍为 0-1-1,与改写前逐位相同**;**但特异性相同不等于级联结果相同** —— 新选择器多带一个 `:where(:not(:active))`,把「按住不放中的按钮」从匹配集里去掉。这一处收窄是 D-09 的朴素按下态所必需的(见下条 D-09):对朴素按钮,那条 0-1-1 的 hover 声明与 0-1-0 的 active 声明在「指针按住不放」时**本来就同时匹配**,不让 hover 让位,`--color-surface-active` 就永远读不到;
+- 除 D-09 那一处外,唯一的变化是禁用按钮不再匹配 ⇒ 缺陷被一次性、全局、面向未来地修掉(将来任何新增的朴素按钮自动继承这条 gate);
 - **声明体 `background: var(--color-surface-hover);` 一字不动** —— 阶段边界禁的是「编辑既有规则的**声明**」,此处只改选择器。
 
 `#btn-authorize` 的不可逆权重(D-07 末段)由 `#btn-authorize:not(:disabled):hover`(1-2-0)保住:它的深绿填充与 16px 字号不因叠层而改变视觉档。
 
 **D-08 / B3 rgba() 落点裁定:选「围栏内令牌」支。** CONTEXT D-08 的片段把 `rgba(0,0,0,0.06)` 写在规则体内,而 style.css L199-204 的既有注释立下的是相反的先例:「R-2 恢复 shadow 令牌,**使围栏外不再出现裸 `rgba()`**」。`check-01` 只数裸 `#hex` 与 tier-1 `var()` 引用,**不数裸 `rgba()`** —— 这条纪律**没有机械守卫**,只能靠注释与 review 守。故本计划在围栏内声明 `--color-overlay-hover: rgba(0, 0, 0, 0.06);` 与 `--color-overlay-active: rgba(0, 0, 0, 0.12);`(紧邻既有的 `--color-overlay-backdrop`),规则体只写 `var(--color-overlay-hover)`。收益:①保住 R-2 的不变量;②两个 alpha 值成为可复算的**单一事实源**。代价:围栏内多两个 tier-2 令牌(它们不是对比度边界,故**不进 PAIR 清单** —— `--shadow-*` 同族也没有配对)。
 
-**D-09 朴素按钮 `:active` 的特异性上限。** 朴素按钮的 `:active` 规则写成 `:where(button:not(:disabled)):active`(特异性 **0-1-0**),刻意低于 `button:primary` 族。理由:0-1-1 的 `button.primary` / `.overlay-card button` 拥有自己的按下态(D-08 的 0.12 叠层);若朴素 `:active` 取到 0-1-1 并靠源码顺序取胜,这些填充按钮按下时会被刷成灰底。0-1-0 仍高于 `button` 基础规则(0-0-1),故朴素按钮的按下反馈成立。
+**D-09 朴素按钮 `:active`:停在 0-1-0,并让 L587 的 hover 在按下时让位(两半缺一不可)。**
+
+朴素按钮的 `:active` 规则写成 `:where(button:not(:disabled)):active`,特异性 **0-1-0**,**不升到 0-1-1**。理由:`button.primary` 与 `.overlay-card button` **都自带填充声明**(`background: var(--color-action-primary)`,style.css:668 / 902)且**都是 0-1-1**;朴素 active 追加在文件末尾,若它取到 0-1-1,**同特异性下源码顺序取胜**,这两族填充按钮按住不放时会被刷成 `--color-surface-active` 的灰底 —— 白字落在灰底上,与 D-08「填充变深、文字不动」正面冲突。
+
+但 0-1-0 **低于** L587 改写后的 hover(0-1-1),而指针按住不放时 `:hover` 与 `:active` **同时**成立 —— 光有 0-1-0,朴素按钮按住不放时读到的仍是 `--color-surface-hover`,D-09 的 `--color-surface-active` 对朴素族**不可达**。特异性在这一对上是死结:「必须胜过 hover」要求 ≥ 0-1-1,「必须让 0-1-1 的填充族保住填充」要求 ≤ 0-1-0。故本计划**不在特异性上解**,而是让 hover 在按下时**让位**:L587 的选择器带一个 `:where(:not(:active))`,按住不放时那条声明不再匹配,0-1-0 因而足够(`button` 基础规则是 0-0-1)。
+
+两半的配套关系是承重的:**只改 active 的选择器(升到 0-1-1)会刷掉填充族的填充;只改 hover(不带 `:where(:not(:active))`)则朴素按下态不可达。**
+
+**逐族核对(按 HEAD 实况逐条算过,结论三条):**
+
+| 族 | 自己的填充 / active 声明 | 按住不放时谁赢 | 按下读数 |
+|---|---|---|---|
+| `#btn-*`(填充 1-0-0) | active 组 `#btn-…:not(:disabled):active` = **1-2-0** | 填充 1-0-0 > 朴素 active 0-1-0(ID 列);active 组 1-2-0 给 box-shadow 0.12 | 填充不变 + 0.12 叠层 ✓ |
+| `#chat-input-row button`(填充 1-0-1) | active 组 = **1-2-1** | 同上,ID 列取胜 | 填充不变 + 0.12 ✓ |
+| `button.primary`(填充 0-1-1) | active 组 = **0-3-1** | 0-1-1 vs 0-1-0:ID 列同为 0、**类列同为 1**,元素列 1 > 0 ⇒ 填充赢 | 填充不变 + 0.12 ✓ |
+| `.overlay-card button`(0-1-1)/`.overlay-card button.danger`(0-2-1) | active 组 = **0-3-1** | 同 `button.primary` | 填充不变 + 0.12 ✓ |
+| 朴素无底色(无自己的填充:hover 让位后只剩 `button` 基础 0-0-1) | 无 | 朴素 active 0-1-0 > 0-0-1 | `--color-surface-active` ✓ |
+| `#selection-menu button`(1-0-1,透明底 + 自己的 hover 1-1-1) | 不属本承诺面(Task 2 第 5 条排除) | 其余规则(1-1-1)取胜 | 按下仍为 `--color-surface-info`,本条不承诺它有按下态 |
+
+**朴素 active 相对填充 active 组的源码位置无关紧要。** 填充 active 组的最低特异性是 0-3-1,朴素 active 是 0-1-0,两者在三列上都不可能同分,特异性严格可分 ⇒ 无论朴素 active 追加在填充 active 组之前还是之后,结果都一样(源码顺序只在**同特异性**时才是判据)。故本计划把朴素 active 追加在文件末尾(填充 active 组之后),**顺序不承担任何正确性**。
+
+**朴素 active 在 0-1-0 下不可能泄漏到任何填充族的底色:** 与 `button.primary` / `.overlay-card button`(0-1-1)相比元素列 0 < 1 ⇒ 填充赢;与 `#btn-*`(1-0-0)/ `#chat-input-row button`(1-0-1)相比 ID 列 0 < 1 ⇒ 填充赢。`#btn-authorize` 的深绿填充因此不可能被这条规则刷成灰,它的按下观感仍归 D-08 的 rgba 叠层(`box-shadow`,另一个属性)所有 —— **后来者不得为「对齐」把它升到 0-1-1**。
 </decision_register>
 
 <tasks>
@@ -117,11 +140,13 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
 
     围栏外:改写 L587 的选择器(声明一字不动)。把
     `button:hover { background: var(--color-surface-hover); }`
-    的选择器改为 `button:where(:not(:disabled)):hover`,声明体保持 `background: var(--color-surface-hover);` **逐字节不变**。就地改这一行,**不移动它的位置**(硬规则 3:追加,不重排)。在该行上方插入一条注释块,写明:①D-07 的 gate 落在选择器上而不是新增规则上,理由见本计划 `<decision_register>` 的两条取证(新增 `button:not(:disabled):hover` 既修不了缺陷、又会让 `button.primary` / `.overlay-card button` 变灰底);②`:where()` 贡献 0 特异性,改写后特异性**仍是 0-1-1**,对任何元素的级联结果不变,唯一变化是禁用按钮不再匹配;③**这不是硬规则 1 禁止的 `.hidden` 用法** —— 那条禁的是拿 `:where()` 给隐藏机制降特异性,本处是给交互态加 gate。
+    的选择器改为 `button:where(:not(:disabled)):hover:where(:not(:active))`,声明体保持 `background: var(--color-surface-hover);` **逐字节不变**。就地改这一行,**不移动它的位置**(硬规则 3:追加,不重排)。在该行上方插入一条注释块,写明:①D-07 的 gate 落在选择器上而不是新增规则上,理由见本计划 `<decision_register>` 的两条取证(新增 `button:not(:disabled):hover` 既修不了缺陷、又会让 `button.primary` / `.overlay-card button` 变灰底);②`:where()` 贡献 0 特异性,改写后特异性**仍是 0-1-1**;**但特异性不变不等于级联结果不变** —— 这个选择器收窄了**两处**匹配:禁用按钮不再匹配(D-07 的缺陷修复),**按住不放中的按钮也不再匹配**(`:where(:not(:active))`,D-09 的朴素按下态需要 hover 让位;没有这一处,0-1-0 的朴素 active 永远赢不过 0-1-1 的 hover);③**这不是硬规则 1 禁止的 `.hidden` 用法** —— 那条禁的是拿 `:where()` 给隐藏机制降特异性,本处是给交互态加 gate 与让位。
+
+    ⚠ **本段散文里的那个被否定的选择器字面量(通用 gate 写法,即 `button` 后直接接 `:not(:disabled):hover`)**不得被抄进 `frontend/style.css`,**包括以「为什么不能这样写」的论证注释形式** —— Task 2 的验收判据按行锚定 `:not(:disabled):hover` 的选择器行恰好 10 条,注释里出现该字面量会把它顶成 11。注释里指代该失效写法时**改写措辞**(例如写「那条通用 gate 写法」「不带 `:where()` 的写法」)。
 
     围栏外末尾追加朴素按钮的按下态(硬规则 3:追加,不重排):
     选择器 `:where(button:not(:disabled)):active`,声明体 `background: var(--color-surface-active);`。
-    注释写明:特异性 **0-1-0** 是刻意的 —— 它高于 `button` 基础规则(0-0-1)使朴素按钮的按下反馈成立,又低于 `button.primary` / `.overlay-card button`(0-1-1)使这两族填充按钮的按下态仍归 D-08 的 0.12 叠层所有;**改高即把填充按钮按下时刷成灰底**。
+    注释写明四条:①特异性 **0-1-0** 是刻意的 —— 它高于 `button` 基础规则(0-0-1)使朴素按钮的按下反馈成立,又低于 `button.primary` / `.overlay-card button`(0-1-1)使这两族填充按钮的按压观感仍归 D-08 的 0.12 叠层所有;**改高即把填充按钮按住不放时刷成灰底**(这两族的填充都是 0-1-1,朴素规则升到 0-1-1 后在源码顺序上就会夺走它们)。②它能胜过 L587 的 hover(0-1-1)**不是靠特异性**(0-1-0 < 0-1-1),而是靠 L587 的 hover 在按住不放时不再匹配(`:where(:not(:active))`)—— **两者是一对选择器改写,改一必须改另一**。③它与填充 active 组的**源码位置无关紧要**:填充 active 组最低 0-3-1,两者特异性严格可分,源码顺序只在同特异性时才是判据;本规则追加在文件末尾只是「追加,不重排」的默认落点。④本条不承诺 `#selection-menu button` 的按下态(它有自己 1-1-1 的 hover 规则,见 Task 2 第 5 条)。
   </action>
   <verify>
     <automated>bash scripts/check-01-token-conformance.sh</automated>
@@ -135,20 +160,21 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     <automated>git diff --numstat -- frontend/style.css</automated>
     <fails_when>输出的第 2 列(删除行数)大于 2 —— 本任务只允许**两处**就地编辑:L587 那一行的选择器改写,以及 L293-297 第 3 条注释的扩写(③);除这两处外的改动全部必须是纯新增</fails_when>
   </verify>
-  <done>四个新 tier-2 令牌已在围栏内声明且各自被围栏外的规则消费;`--color-surface-active` 的值碰撞注释点名 04.1-N-4 且 L293-297 的第 3 条已同步扩写;L587 的选择器已 gate,声明体逐字节不变;朴素按钮的 `:active` 规则已追加且特异性为 0-1-0;四条既有门与既有九项 UAT 仍全绿。</done>
+  <done>四个新 tier-2 令牌已在围栏内声明且各自被围栏外的规则消费;`--color-surface-active` 的值碰撞注释点名 04.1-N-4 且 L293-297 的第 3 条已同步扩写;L587 的选择器已 gate(禁用按钮)并带 `:where(:not(:active))`(按住不放时让位),声明体逐字节不变、特异性逐位不变(0-1-1);朴素按钮的 `:active` 规则已追加且特异性为 0-1-0,两半的配套关系写进了两处注释;四条既有门与既有九项 UAT 仍全绿。</done>
   <acceptance_criteria>
     - `grep -c '\-\-color-surface-active: var(--radix-gray-4);' frontend/style.css` 输出 1
     - `grep -c '\-\-color-border-hover: var(--radix-gray-11);' frontend/style.css` 输出 1
     - `grep -c '\-\-color-overlay-hover: rgba(0, 0, 0, 0.06);' frontend/style.css` 输出 1
     - `grep -c '\-\-color-overlay-active: rgba(0, 0, 0, 0.12);' frontend/style.css` 输出 1
-    - `grep -c '^button:hover {' frontend/style.css` 输出 **0**,且 `grep -c '^button:where(:not(:disabled)):hover {' frontend/style.css` 输出 1
+    - `grep -c '^button:hover {' frontend/style.css` 输出 **0**,且 `grep -c '^button:where(:not(:disabled)):hover:where(:not(:active)) {' frontend/style.css` 输出 1
     - `grep -c '^:where(button:not(:disabled)):active {' frontend/style.css` 输出 1
+    - `grep -c ':hover:where(:not(:active))' frontend/style.css` 输出 == 1(按下时让位的那一半真的落在 L587 上;它与上一条朴素 active 的判据是**一对**,缺任一即朴素按下态不可达)
     - `grep -c 'background: var(--color-surface-hover);' frontend/style.css` 输出 1(声明未被改动、也未被复制)
     - `grep -c '04.1-N-4' frontend/style.css` 输出 >= 2(原有第 3 条 + 新令牌注释)
     - `grep -c '--color-surface-user' frontend/style.css` 输出 >= 3(声明 + 原有注释 + 新令牌注释)
     - `grep -o 'var(--radix-[a-z0-9-]*' frontend/style.css | sort -u | wc -l` 输出 == 24(与改动前相同 —— 判据是**去重后的 tier-1 名集合**,不是引用出现次数:新令牌 `--color-surface-active` 取 `--radix-gray-4`、`--color-border-hover` 取 `--radix-gray-11`,两个名都已被既有令牌消费,故集合不变;用出现次数会因新增 2 处引用而必然失败)
     - `grep -c '^  --radix-gray-4:' frontend/style.css` 输出 == 1 且 `grep -c '^  --radix-gray-11:' frontend/style.css` 输出 == 1(新令牌没有复制出第二份 primitive 声明)
-    - `grep -c '^button:where(:not(:disabled)):hover { background: var(--color-surface-hover); }$' frontend/style.css` 输出 == 1(改写后的 L587 是**一整行**,声明体逐字节等于原行 —— 本判据 + 上一条 `^button:hover {` == 0 + `background: var(--color-surface-hover);` 全文件计数 == 1,三者合起来证明「只改了选择器,声明一字未动」。**判据不写成「那一行不在 diff 里」**:L587 是单行规则,改选择器时 git 必然把整行作为 `-` 行吐出,该措辞永远无法成立)
+    - `grep -c '^button:where(:not(:disabled)):hover:where(:not(:active)) { background: var(--color-surface-hover); }$' frontend/style.css` 输出 == 1(改写后的 L587 是**一整行**,声明体逐字节等于原行 —— 本判据 + 上一条 `^button:hover {` == 0 + `background: var(--color-surface-hover);` 全文件计数 == 1,三者合起来证明「只改了选择器,声明一字未动」。**判据不写成「那一行不在 diff 里」**:L587 是单行规则,改选择器时 git 必然把整行作为 `-` 行吐出,该措辞永远无法成立)
   </acceptance_criteria>
 </task>
 
@@ -161,7 +187,7 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     - .planning/phases/idi-07-interaction-states-and-focus/idi-07-PATTERNS.md 的「Analog D — 填充按钮的既有规则体」与「⚠ D-12 与 Analog 的特异性陷阱」
   </read_first>
   <action>
-    在文件末尾追加**两条**规则组(硬规则 3:追加,不重排),按「同族选择器列表」组织 —— 这与文件既有的 `#session-panel:not(.hidden) .panel-header, …` 三行枚举同族。
+    在文件末尾追加**两条**规则组(硬规则 3:追加,不重排),按「同族选择器列表」组织 —— 这与文件既有的 `#session-panel:not(.hidden) .panel-header, …` 三行枚举同族。**选择器列表按本文件既有的多行枚举形态书写:除最后一条外,每条选择器独占一行并以 `,` 结尾;最后一条同行接 ` {`**(范本:style.css:1233-1236 的 `.annotation-answered …` 四条枚举)—— 本任务的验收判据按这个形态逐行锚定,格式即判据的一部分。
 
     hover 组(声明体只有一行 `box-shadow: inset 0 0 0 999px var(--color-overlay-hover);`),选择器逐条为:
 
@@ -180,11 +206,15 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
 
     两条规则组的注释必须逐条写明六件事:
 
-    1. **为什么必须逐 id / 按族枚举,不能写成 `button:not(:disabled):hover`** —— 后者是 0-2-1,ID 列为 0;而 `#btn-*` 是 1-0-0、`#chat-input-row button` 是 1-0-1、`button.primary` 与 `.overlay-card button` 是 0-1-1 且源码在本规则之前。**1-0-0 > 0-2-1**(ID 列大于类列),故那条写法对 `#btn-authorize` 完全无效 —— 这正是 D-02 第 7 条「今天所有有底色语义的按钮 hover 时零反馈」的成因,本规则必须正面跨过它。
+    1. **为什么必须逐 id / 按族枚举,不能写成 `button:not(:disabled):hover`** —— 后者是 0-2-1,ID 列为 0;而 `#btn-*` 是 1-0-0、`#chat-input-row button` 是 1-0-1、`button.primary` 与 `.overlay-card button` 是 0-1-1 且源码在本规则之前。**1-0-0 > 0-2-1**(ID 列大于类列),故那条写法对 `#btn-authorize` 完全无效 —— 这正是 D-02 第 7 条「今天所有有底色语义的按钮 hover 时零反馈」的成因,本规则必须正面跨过它。⚠ **这里被否定的那个选择器字面量不得被抄进 `frontend/style.css`(包括本条这样的论证注释)** —— 验收判据按行锚定 `:not(:disabled):hover` 的选择器行恰 10 条,注释里出现该字面量会让它变成 11;注释里指代该失效写法时**改写措辞**(写「那条通用 gate 写法」「不带 id/族前缀的写法」)。
+
     2. **为什么用 `box-shadow` 的 inset 而非 `opacity`** —— 实测 `opacity: 0.88` 会把白字一起变浅,primary 4.77 → 3.93、danger 5.21 → 4.42、commit 4.72 → 3.81,**三个色族跌破 AA 4.5:1**;rgba 叠层把填充变深、文字不动,对比度反而上升(5.27 / 5.75 / 5.23),irreversible 12.32 → 12.97。写这段注释时,`opacity: 0.88` 之后**不要跟分号** —— 本计划的验收判据是「带分号的 `opacity` 声明数仍为 9」,补上分号会把这条散文数成一条声明而误报
+
     3. **为什么是 999px 的整面铺满** —— 本文件既有的 `box-shadow: inset` 只有 3px 偏移的竖条形态(`#round-doc.round-frozen`、活动面板标记);999px 大于任何按钮的盒宽,故等价于整面覆盖。`box-shadow` 不参与布局 ⇒ 零位移。
-    4. **`box-shadow` 不在过渡允许列表里 ⇒ 填充按钮的 hover 是瞬变**,这是刻意的(D-14);朴素按钮仍可过渡(D-12 的挂载规则,计划 03)。
-    5. **`#selection-menu button` 不进这两组** —— 它是浮层内的透明底朴素控件,已有 `#selection-menu button:hover { background: var(--color-surface-info); }`(1-1-1);D-08 的 rgba 叠层针对的是**有底色语义**的填充按钮,叠层加到透明底上不可见。
+
+    4. **`box-shadow` 不在过渡允许列表里 ⇒ 填充按钮的 hover 是瞬变**,这是刻意的(D-14);朴素按钮仍可过渡(D-12 的挂载规则,计划 03)。⚠ 讲「不用位移做按下反馈」时**不得写出那个被禁的位移函数名**(验收判据 `grep -c 'translateY' frontend/style.css` == 0);写「按下位移只用 `box-shadow`,不用位移」即可。
+
+    5. **`#selection-menu button` 不进这两组** —— 它是浮层内的透明底朴素控件,已有 `#selection-menu button:hover { background: var(--color-surface-info); }`(1-1-1);D-08 的 rgba 叠层针对的是**有底色语义**的填充按钮,叠层加到透明底上不可见。⚠ **不得把该选择器连同 `{` 或 `:hover {` 写在 `frontend/style.css` 的注释行的行首** —— 验收判据按行首形态锚定它恰 2 处(HEAD 实测);注释里指代它时写「浮层内的批注/大白话按钮」。
     6. **`#btn-authorize` 的不可逆权重不变** —— 叠层只改填充明度,不改它的深绿填充、白字与 `--text-md` 字号(D-07 末段)。
   </action>
   <verify>
@@ -203,15 +233,15 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
   <acceptance_criteria>
     - `grep -c 'box-shadow: inset 0 0 0 999px var(--color-overlay-hover);' frontend/style.css` 输出 1
     - `grep -c 'box-shadow: inset 0 0 0 999px var(--color-overlay-active);' frontend/style.css` 输出 1
-    - 十条 hover 选择器全部在位:`grep -c ':not(:disabled):hover' frontend/style.css` 输出 10
-    - 十条 active 选择器全部在位:`grep -c ':not(:disabled):active' frontend/style.css` 输出 10
+    - 十条 hover 选择器全部在位:`grep -cE ':not\(:disabled\):hover(,|[[:space:]]*\{)' frontend/style.css` 输出 10。判据**锚在选择器行上**(每条选择器独占一行并以 `,` 结尾、最后一条同行接 `{`)—— 因为**未锚定的裸子串计数会被注释污染**:本条规则组的注释必然要否定那个通用 gate 写法,那个字面量一旦进文件就会把裸计数顶成 11(规划期已用等形样本实测:3 条选择器 + 1 行注释 → 裸计数 4、锚定计数 3)。锚定形态在 HEAD 上的实测值为 0,故本判据只会被本任务新增的选择器行满足
+    - 十条 active 选择器全部在位:`grep -cE ':not\(:disabled\):active(,|[[:space:]]*\{)' frontend/style.css` 输出 10(同一锚定口径;它天然不匹配 L587 的让位写法与朴素 active 的 `:where(button:not(:disabled)):active`)—— 注释里讲「同族列表把 `:hover` 换成 `:active`」时,该句不得落在行末形成 `…:active,` 或 `…:active {` 的形态
     - `grep -c '#chat-input-row button:not(:disabled):hover' frontend/style.css` 输出 1
     - `grep -c 'button.primary:not(:disabled):hover' frontend/style.css` 输出 1
     - `grep -c '.overlay-card button:not(:disabled):hover' frontend/style.css` 输出 1
-    - `grep -c 'selection-menu button' frontend/style.css` 输出 2(既有两条,未增未减)
+    - `grep -cE '^#selection-menu button( \{|:hover \{)' frontend/style.css` 输出 2(既有两条**规则行**(style.css:1065 / 1070),未增未减;判据锚在行首的规则形态上,故注释里点名该选择器不会污染计数 —— HEAD 实测为 2)
     - `grep -oE 'opacity: [0-9.]+;' frontend/style.css | wc -l` 输出 == 9(与改动前相同:本任务不新增任何 `opacity` 声明)。判据数的是**带分号的声明**而非裸子串 `opacity`:本任务的注释必须解释「为什么用 box-shadow 而不是 `opacity: 0.88`」,那个片段以散文形式出现在注释里;**注释里的 `opacity: 0.88` 不带分号,故不会计入**;同时该注释不得给 `0.88` 补分号
     - `grep -cE '^[[:space:]]*transform:' frontend/style.css` 输出 == 1(仅既有的 `#selection-menu` 定位 `transform: translateX(-50%)`,style.css:714;本任务不新增任何 transform —— 按下位移只用 `box-shadow`,不用 `translateY`)。**不得写成全文件 `grep -c 'transform'` == 0**:那要求编辑 L714 这条与本事无关的既有声明,违反本计划自己的禁令与 CLAUDE.md §3
-    - `grep -c 'translateY' frontend/style.css` 输出 == 0(未用位移做按下反馈)
+    - `grep -c 'translateY' frontend/style.css` 输出 == 0(未用位移做按下反馈;**注释里也不得出现该字面量** —— 讲「按下位移只用 `box-shadow`」时不写它)
   </acceptance_criteria>
 </task>
 
@@ -251,7 +281,9 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     在 `check-05` 第 10 项里加 SC5 / SC5′ 两条运行时探针:
 
     - **SC5(hover / active 有反馈)**:在 `p1` 样本上,对 `#btn-process-round`(填充,1-0-0)与 `#message-input`(输入框)各做一次「静默读值 → `page.hover(sel)` → 再读值」的对照。填充按钮断言 `background-color` **不变**且 `box-shadow` 含 `inset 0 0 0 999px`(期望值里的 alpha 用 `resolve_color(page, "--color-overlay-hover")` 与 `resolve_token` 解析,不硬编码);输入框断言 `border-color` 从静默值变为 `resolve_color(page, "--color-border-hover")`。随后 `page.mouse.down()` 读填充按钮的 `box-shadow`,断言其中出现 `--color-overlay-active` 的 alpha。**每个探针在读值前必须先断言目标元素存在且可见**(`getBoundingClientRect()` 非全零),否则读数会让断言退化成空转 PASS —— 这是 `check-05` docstring 点名的同型陷阱。
-    - **SC5′(禁用态零反馈)**:在 `checking` 样本上(`#checks-panel` / `#verdict-cards` 可见),用应用自身的 `renderVerdictCard({number: …, question: …, …}, mode)` 造出一张裁决卡(它产生 `.verdict-buttons button` —— **朴素**按钮,无 class),再用 `page.evaluate` 把这两个按钮的 `.disabled` 置为 `true`(这正是 `app.js` L718-719 的真实状态切换,不是伪造 DOM)。然后「静默读 `background-color` → `page.hover(sel)` → 再读」,断言**两者相同**。这条断言是 D-07 的 gate 生效证明 —— 它今天会 FAIL(未 gate 的 `button:hover` 会给它上 `--color-surface-hover`)。另断言该禁用按钮的计算 `opacity` 仍为 `"0.5"`(未被软化;`.verdict-buttons button:disabled` 用的是 0.5,不是 0.55)。**造不出裁决卡或按钮不可见 ⇒ `blocked(...)`,绝不记 PASS。**
+    - **SC5-朴素按下(D-09 的朴素族 —— 判据必须真的决定「按住不放 ≠ 悬停」)**:与 SC5′ 共用 `checking` 样本里那张裁决卡,**但必须先跑:此时两个按钮还没被禁用**(裁决卡由 `renderVerdictCard` 新建,`app.js` 只在 `submit` 里把 `.disabled` 置真)。目标元素取该卡的首个 `.verdict-buttons button` —— 它是本仓库里**在样本中稳定可达的朴素无底色按钮**:`.modal-buttons button` 与 `.tier-buttons button` 虽然也叫「模态按钮」,但它们都在 `.overlay-card` 内,已被 `.overlay-card button`(0-1-1)填成主色,不是朴素族(故本探针不使用它们)。三次 `read_style(page, sel, "background-color")`:①静默 → 期望 `resolve_color(page, "--color-surface")`;②`page.hover(sel)` → 期望 `resolve_color(page, "--color-surface-hover")`;③`page.mouse.down()`(指针仍在该按钮上)→ 期望 `resolve_color(page, "--color-surface-active")`,**并断言 ③ 的读数与 ② 的读数不相等** —— 只断言 ③ 等于 surface-active 还不够:如果没有 L587 的 `:where(:not(:active))`,③ 会读到 ② 的值,而那条断言**仍然成立**(它只要求等于 surface-active 的期望,不要求不等于 hover)—— 所以「不相等」这半条是 D-09 的判据本体,必须显式写出来。读完**先把指针移开再抬手**:`page.mouse.move(0, 0)` 之后再 `page.mouse.up()` —— 裁决按钮的 click 会触发 `app.js` 的 `submit('修')` 并发一次 `POST /api/checks/verdict`,在按钮上原地上抬会真的发请求并改动样本状态;移到按钮外上抬不产生 click。读数前同样先断言该按钮存在且可见(`getBoundingClientRect()` 非全零),否则 `blocked(...)`。**两个按钮存在但都不可用(例如 `renderVerdictCard` 造不出可点的按钮)⇒ `blocked(...)`,绝不记 PASS。**
+
+    - **SC5′(禁用态零反馈)**:在 `checking` 样本上(`#checks-panel` / `#verdict-cards` 可见),用应用自身的 `renderVerdictCard({number: …, question: …, …}, mode)` 造出一张裁决卡(它产生 `.verdict-buttons button` —— **朴素**按钮,无 class),再用 `page.evaluate` 把这两个按钮的 `.disabled` 置为 `true`(这正是 `app.js` L718-719 的真实状态切换,不是伪造 DOM)。然后「静默读 `background-color` → `page.hover(sel)` → 再读」,断言**两者相同**。这条断言是 D-07 的 gate 生效证明 —— 它今天会 FAIL(未 gate 的 `button:hover` 会给它上 `--color-surface-hover`)。另断言该禁用按钮的计算 `opacity` 仍为 `"0.5"`(未被软化;`.verdict-buttons button:disabled` 用的是 0.5,不是 0.55)。**造不出裁决卡或按钮不可见 ⇒ `blocked(...)`,绝不记 PASS。** 本条**复用** SC5-朴素按下已经造好的那张卡,不重复造第二张。
     - 项末尾 `page.set_viewport_size(VIEWPORT_RESTORE)` 兜底复位(本项用 `page.hover()` / `page.mouse.down()`,可能改变滚动位置)。
   </action>
   <verify>
@@ -262,11 +294,11 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
     <fails_when>任一条不是恰好一行 "PASS"</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 10</automated>
-    <fails_when>exit != 0;或 SC5′ 的「禁用态 hover 背景与静默相同」出现 FAIL(说明 gate 没生效);或任一条走 BLOCKED</fails_when>
+    <fails_when>exit != 0;或 SC5-朴素按下的「按住不放读数 ≠ 悬停读数」出现 FAIL(说明 L587 的 `:where(:not(:active))` 让位没生效,朴素按下态仍被 hover 盖住);或 SC5′ 的「禁用态 hover 背景与静默相同」出现 FAIL(说明 gate 没生效);或任一条走 BLOCKED</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,2,3,4,6,7,8,9</automated>
     <fails_when>exit != 0,或逐项结论里出现任一项非 PASS</fails_when>
   </verify>
-  <done>输入控件的 hover 加深规则覆盖 4 个静态 input + 3 个 select + 1 个动态 input;两条 `--color-border-hover` 配对 PASS;清单头部计数注释为 52 且与清单实际条目数一致;SC5 在 p1 上读到填充按钮 hover 的 inset 叠层与输入框的 border-color 变化;SC5′ 在 checking 上证明禁用朴素按钮 hover 时背景与静默**相同**且 `opacity` 仍为 0.5;既有九项 UAT 与四条既有门全绿。</done>
+  <done>输入控件的 hover 加深规则覆盖 4 个静态 input + 3 个 select + 1 个动态 input;两条 `--color-border-hover` 配对 PASS;清单头部计数注释为 52 且与清单实际条目数一致;SC5 在 p1 上读到填充按钮 hover 的 inset 叠层与输入框的 border-color 变化;SC5-朴素按下在 checking 的裁决卡上读到「静默 `--color-surface` → 悬停 `--color-surface-hover` → 按住不放 `--color-surface-active`」且按住读数与悬停读数**不相等**;SC5′ 在 checking 上证明禁用朴素按钮 hover 时背景与静默**相同**且 `opacity` 仍为 0.5;既有九项 UAT 与四条既有门全绿。</done>
   <acceptance_criteria>
     - `grep -c 'PAIR --color-border-hover' frontend/style.css` 输出 2
     - `grep -c '24 / 34 / 43 / 47 / 50 / 52' frontend/style.css` 输出 1
@@ -298,9 +330,10 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
 |-----------|----------|-----------|----------|-------------|-----------------|
 | T-idi-07-06 | Tampering | 填充按钮 hover 规则的选择器特异性 | high | mitigate | 十条选择器逐条列出**具体特异性数值**并要求逐条跨过对应既有规则;注释里点名「`button:not(:disabled):hover`(0-2-1)对 `#btn-authorize`(1-0-0)无效」这条具体失效模式;SC5 在真实浏览器里读 `box-shadow` 验证 |
 | T-idi-07-07 | Elevation of privilege(禁用态响应交互) | L587 的 `button:hover` vs `.verdict-buttons button:disabled` | high | mitigate | gate 落在 L587 的选择器上(`:where(:not(:disabled))`),特异性逐位不变;SC5′ 用真实 `renderVerdictCard` + 真实 `.disabled` 切换断言「hover 背景 == 静默背景」;`opacity` 未被软化 |
-| T-idi-07-08 | Tampering | 朴素 `:active` 规则的特异性 | medium | mitigate | 规则写成 `:where(button:not(:disabled)):active`(0-1-0),刻意低于 0-1-1 的填充族;注释写明「改高即把填充按钮按下时刷成灰底」 |
+| T-idi-07-08 | Tampering | 朴素 `:active` 与 L587 hover 的配对 | high | mitigate | 朴素 active 停在 `:where(button:not(:disabled)):active` 的 0-1-0 —— **升到 0-1-1 就会靠源码顺序夺走 `button.primary` / `.overlay-card button` 的填充**(两者自带 `background` 声明且都是 0-1-1,style.css:668 / 902);让位由 L587 的 `:where(:not(:active))` 承担,两半必须同提交、**缺一即朴素按下态不可达**;两处注释都写明这层配套关系 |
 | T-idi-07-09 | Information disclosure / Repudiation | 围栏外的裸 `rgba()` | medium | mitigate | alpha 值收进围栏内的 `--color-overlay-hover` / `--color-overlay-active`;判据取**围栏外**取样:`awk '/DESIGN TOKENS: START/{f=1} /DESIGN TOKENS: END/{f=0} !f' frontend/style.css | grep -c 'rgba('` 必须为 0(围栏内 `--shadow-composer` 本就带 rgba,全文件判据在基线即非 0;该纪律**无机械守卫**,故本计划把它升为一条显式断言) |
-| T-idi-07-10 | Spoofing(假 PASS) | SC5 / SC5′ 探针 | high | mitigate | 读值前先断言目标元素存在且可见;造不出裁决卡 ⇒ `blocked`;期望侧用 `resolve_color` 解析令牌而非硬编码 rgb |
+| T-idi-07-19 | Spoofing(假 PASS) | 朴素按下读数可能只是 hover 读数的回声 | high | mitigate | SC5-朴素按下同时断言 ③ == `--color-surface-active` **与** ③ ≠ ②(同一元素的 hover 读数);只断言前者时,让位未生效的实现会读到 hover 值而**不会变红** |
+| T-idi-07-10 | Spoofing(假 PASS) | SC5 / SC5-朴素按下 / SC5′ 探针 | high | mitigate | 读值前先断言目标元素存在且可见;造不出裁决卡 ⇒ `blocked`;期望侧用 `resolve_color` 解析令牌而非硬编码 rgb;朴素按下读完**先 `page.mouse.move(0, 0)` 再 `page.mouse.up()`** —— 在裁决按钮上原地上抬会触发 `app.js` 的 `submit` 并发一次 `POST /api/checks/verdict`,污染其后各项 |
 | T-idi-07-11 | Tampering | 值碰撞被后来者「修正」 | low | mitigate | `--color-surface-active` 的注释点名 04.1-N-4 与 `--color-surface-user`,并同步扩写 L293-297 的第 3 条;`--color-border-hover` 与 `--color-text-muted` 的同值碰撞同样登记 |
 | T-idi-07-SC | Tampering | npm / pip / cargo 安装 | low | accept | 零新增运行时依赖、零构建步骤(硬规则 6):无包管理器调用进入范围;若执行期出现安装需求,即为计划偏差与停止条件 |
 </threat_model>
@@ -315,7 +348,7 @@ Output: 四个新令牌、一个既有规则的选择器改写、三组新规则
 
 <success_criteria>
 1. 所有有底色语义的按钮 hover 时出现统一 rgba 压暗叠层(`background-color` 不变、`box-shadow` 出现 inset),按下时 alpha 提到 0.12。
-2. 朴素按钮 hover 变 `--color-surface-hover`、按下变 `--color-surface-active`;填充按钮的按下态不被朴素规则抢走。
+2. 朴素按钮 hover 变 `--color-surface-hover`、按住不放变 `--color-surface-active`,两者读数**不相等**(由 SC5-朴素按下在检查样本的裁决卡上判定;`#selection-menu button` 有它自己的 hover 规则,不在本条);填充按钮的按压态不被朴素规则抢走 —— 保护来自填充族自己的 1-0-0 / 1-0-1 / 0-1-1 填充声明,而不是靠把朴素规则压低。
 3. **禁用按钮 hover 时背景与静默时完全相同**(`.verdict-buttons button:disabled` 的缺陷被修掉),`opacity` 未被软化。
 4. `input` / `select` hover 时边框加深一步,8 条既有 ID 级规则体全部被覆盖。
 5. `--color-surface-active` 与 `--color-border-hover` 的值碰撞被显式登记,不会被后来者当违规修掉。

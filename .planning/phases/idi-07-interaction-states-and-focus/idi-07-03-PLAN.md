@@ -115,7 +115,7 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
 
     ⚠ **注释散文里不得写出 `@media` 字面量。** `check-05` 的 `_l2_guard_shape` 数的是 `text.count("@media")` —— **全文件、裸子串**,不是锚定的规则行;本任务把 `EXPECTED_MEDIA_QUERIES` 同步为 1 之后,任何一处复述该词都会让计数变成 2,`item 8` 的静态守卫立刻 FAIL。故本块与挂载规则的注释在指代它时**必须改写措辞**(写「本块」/「减弱动效媒体块」/「该媒体块」即可),不得出现 `@media` 后跟小写词的裸形态。注意本任务验收判据里的 `grep -c '^@media (prefers-reduced-motion'` 锚在行首,**与守卫的全文件裸子串计数不是同一个判据** —— 锚定判据通过不代表守卫通过,两者必须同时为绿。
 
-    ⚠ **同一类散文陷阱共有三个,三个都要点名。** 除上面的媒体查询字面量(甲)外:(乙)`!important` **后面不得跟分号** —— `check-04` 数的是 `!important;` 这个**带分号的声明形态**(裸 `!important` 的注释散文是允许的,style.css:441/444 已有先例);把片段连同分号抄进注释会让计数从 1 变 2 并立刻变红。(丙)**注释里不得让 `opacity` 或 `outline` 与「过渡属性的那个冒号写法」落在同一行** —— 本任务验收清单的最后三条里有两条是按行匹配的裸子串断言、且要求该计数恰为零(一条锚 `opacity`、一条锚 `outline`),它们的前缀正是「过渡属性名 + 冒号」,而 `.*` 会跨过整行散文,故「属性列表里没有某属性」这种**对照句式**会被判死(HEAD 上这两条判据实测均为零,见执行前基线)。照 (甲)(乙) 的先例**改写措辞**:讲「属性列表只有两个」时直接写「只有 `background-color` 与 `border-color`」,不要用「某属性 vs 某属性」的对照句式,或把两者拆到两行。
+    ⚠ **同一类散文陷阱共有五个,五个都要点名。** 除上面的媒体查询字面量(甲)外:(乙)`!important` **后面不得跟分号** —— `check-04` 数的是 `!important;` 这个**带分号的声明形态**(裸 `!important` 的注释散文是允许的,style.css:441/444 已有先例);把片段连同分号抄进注释会让计数从 1 变 2 并立刻变红。(丙)**注释里不得让 `opacity` 或 `outline` 与「过渡属性的那个冒号写法」落在同一行** —— 本任务验收清单的最后三条里有两条是按行匹配的裸子串断言、且要求该计数恰为零(一条锚 `opacity`、一条锚 `outline`),它们的前缀正是「过渡属性名 + 冒号」,而 `.*` 会跨过整行散文,故「属性列表里没有某属性」这种**对照句式**会被判死(HEAD 上这两条判据实测均为零,见执行前基线)。照 (甲)(乙) 的先例**改写措辞**:讲「属性列表只有两个」时直接写「只有 `background-color` 与 `border-color`」,不要用「某属性 vs 某属性」的对照句式,或把两者拆到两行。(丁)**那段行业标准片段的通配选择器开头不得出现在 `frontend/style.css` 的行首**(它由 `*` 与两个 `*::` 伪元素组成)—— 本任务有一条**列首锚定**的判据要求该计数恰为 0;注释里引用该片段时,必须让它前面有不属于选择器的字符(例如行首先写 `/*`),或**改成措辞描述**(写「通配 + 两个伪元素 + 两个 `!important` 的通行片段 …」)。(戊)**那段全局通配过渡的写法名同样不得被抄进文件** —— 本任务有一条按裸子串计数的判据(锚在「过渡属性 + 冒号 + 通配值」的形态上)要求它恰为 0;讲「不得写全局通配过渡」时写「不得写全局通配过渡」即可,不要给出那个属性值形态。
 
     同步 `check-05` 的媒体查询决策常量。`scripts/check-05-ui-uat.py` 里:
 
@@ -233,7 +233,12 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
 
     6. **登记 B1 的耦合**:`EXPECTED_MEDIA_QUERIES` 已随 media 块同步为 1;若日后有人删除该 media 块,必须同时把常量改回 0,否则 item 8 会误报。
 
-    7. **登记本阶段唯一的非追加编辑(L587 的选择器改写),使阶段级的「纯追加」声明不被下游无条件复述。** `ROADMAP.md` Phase 7 的 Rationale 原文是「纯追加 —— 不编辑任何既有规则」;本阶段实际有**且仅有**一处就地编辑:`frontend/style.css` L587 的 `button:hover` 选择器被改写为 `button:where(:not(:disabled)):hover`(声明体逐字节不变,特异性改写前后逐位相同,均为 0-1-1;理由与取证见计划 02 的 `<decision_register>`)。SUMMARY 与 VERIFICATION 复述「纯追加」时**必须带这个限定**,或直接写成「除 L587 的选择器改写外纯追加」;`CONTEXT.md` 的禁令面更窄(只禁「编辑既有规则的**声明**」),该改写不触犯它,但 ROADMAP 的阶段级措辞更宽,**不得无条件复述**。这一条同时为 VERIFICATION 里「阶段性质」那一栏提供准确措辞。
+    7. **登记本阶段唯一的非追加编辑(L587 的选择器改写),使阶段级的「纯追加」声明不被下游无条件复述。** `ROADMAP.md` Phase 7 的 Rationale 原文是「纯追加 —— 不编辑任何既有规则」;本阶段实际有**且仅有**一处就地编辑:`frontend/style.css` L587 的 `button:hover` 选择器被改写为 `button:where(:not(:disabled)):hover:where(:not(:active))`(声明体逐字节不变,特异性改写前后逐位相同,均为 0-1-1;**匹配集收窄两处** —— 禁用按钮(D-07)与按住不放中的按钮(D-09 的朴素按下态需要 hover 让位);理由与取证见计划 02 的 `<decision_register>` 与 D-09 那张逐族核对表)。SUMMARY 与 VERIFICATION 复述「纯追加」时**必须带这个限定**,或直接写成「除 L587 的选择器改写外纯追加」;`CONTEXT.md` 的禁令面更窄(只禁「编辑既有规则的**声明**」),该改写不触犯它,但 ROADMAP 的阶段级措辞更宽,**不得无条件复述**。这一条同时为 VERIFICATION 里「阶段性质」那一栏提供准确措辞。
+
+    8. **登记 ROADMAP Phase 7 Gates 里那行 0.55 / 0.75 门的作废半场(否则收口会静默跳过一行 gate 文本)。** `ROADMAP.md` 的 Gates 原文是「每个环都对 0.55 与 0.75 合成背景验过」。
+       - **0.75 半场有门**:三条 `--color-focus` PAIR(计划 01),其中 `@0.75` 那条由 `check-02` 的 alpha 合成承担;归档半场的**运行时**空缺已由 D-18 显式登记。
+       - **0.55 半场整行作废**:那个 `opacity: 0.55` 已由 S-4 删除(`CONTEXT` D-02 第 1 条),`#round-doc.round-frozen`(style.css:1085-1087)今天只剩 `filter: saturate(0.6)` + 琥珀 `box-shadow: inset 3px 0 0 var(--color-action-warning)`。**`filter: saturate()` 不是 alpha 合成**,它不做「环色与地面按比例混合」这件事 ⇒ Pitfall 5 的「被祖先 opacity 相乘」那一支**已不存在**,没有任何 0.55 合成背景可供验色。
+       - **结论与动作:不新增 PAIR、不改任何代码、也不得把这行 gate 当成「已满足」** —— 收口时必须在 SUMMARY 与 VERIFICATION 两处写明「该 gate 的 0.55 支无服务对象,已随 S-4 作废;存活的 `filter` 不构成合成背景」。**不登记 = 阶段收口静默跳过一行 ROADMAP gate 文本**,与 D-02 的登记纪律相悖。
   </action>
   <verify>
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
@@ -249,7 +254,7 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
     <automated>git diff --numstat -- frontend/style.css</automated>
     <fails_when>输出的第 1 列(新增行数)为 0(本阶段必须真的落地了规则);同时人工核对第 2 列(删除行数)只来自 L587 那一行的选择器改写</fails_when>
   </verify>
-  <done>四条既有门 + 第 10 项 + 既有九项 UAT + 一次性探针全部通过;四份受影响报告的 `covered_files` 比对与 HEAD 内容重算的 digest 已记录,并逐份判定「重新验证」或「重算 + 披露」;人工项 5″、D-11 修正案、`#round-doc` 的跨阶段开放项、`EXPECTED_MEDIA_QUERIES` 的耦合、以及**本阶段唯一的非追加编辑(L587 的选择器改写)**都已登记进 SUMMARY 与 VERIFICATION —— 后者确保阶段级的「纯追加」措辞不被下游无条件复述。</done>
+  <done>四条既有门 + 第 10 项 + 既有九项 UAT + 一次性探针全部通过;四份受影响报告的 `covered_files` 比对与 HEAD 内容重算的 digest 已记录,并逐份判定「重新验证」或「重算 + 披露」;人工项 5″、D-11 修正案、`#round-doc` 的跨阶段开放项、`EXPECTED_MEDIA_QUERIES` 的耦合、**本阶段唯一的非追加编辑(L587 的选择器改写)**、以及 **ROADMAP Gates 的 0.55 合成支作废**都已登记进 SUMMARY 与 VERIFICATION —— 前者确保阶段级的「纯追加」措辞不被无条件复述,后者确保收口不静默跳过一行 ROADMAP gate 文本。</done>
   <acceptance_criteria>
     - SUMMARY 中逐条列出六条命令的原始输出或结论,无一条为 FAIL/BLOCKED
     - SUMMARY 中列出四份报告(`idi-04` / `idi-04.1-radix` / `idi-05` / `idi-06`)的 `covered_files` 比对结果与重算 digest,并对每份给出「重新验证」或「重算 + 披露」的处置
@@ -257,6 +262,7 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
     - SUMMARY 与 VERIFICATION 两处都出现 `#round-doc` 的 Phase 8 指派
     - SUMMARY 中出现「UI-SPEC 那一处登记面不存在」的修正案说明
     - SUMMARY 与 VERIFICATION 复述阶段性质时**带 L587 选择器改写的限定**(两处都不得出现无条件的「纯追加」措辞):逐字核对两处,`grep -c 'L587' ` 在两份产物里各 >= 1
+    - SUMMARY 与 VERIFICATION 两处都登记「ROADMAP Gates 的 0.55 合成支已随 S-4 作废」,并说明存活的 `filter: saturate(0.6)` 不是 alpha 合成(逐字核对两处,`grep -c '0.55' ` 在两份产物里各 >= 1;`grep -c 'saturate' ` 在两份产物里各 >= 1)
     - `git status --porcelain` 里除 `.planning/` 与已声明的改动面外无其他文件
     - `grep -o 'inline-error' frontend/style.css | wc -l` 输出 >= 1(Phase 8 的既有回归门在本阶段结束时仍成立)
   </acceptance_criteria>
@@ -302,7 +308,7 @@ Output: 一条过渡挂载规则、一个 `@media` 块、`EXPECTED_MEDIA_QUERIES
 3. 既有的 `.event-list` 300ms 过渡一个字节未改,并在 CONTEXT 与新规则的围栏注释两处登记为具名例外;UI-SPEC 那一处的缺失以修正案记账。
 4. `EXPECTED_MEDIA_QUERIES == 1` 且其注释/标签说明「这是 Phase 7 的 media 块,不是 L-2 的窄窗口守卫」。
 5. D-15 中段的四条契约计数断言全部落成静态守卫,其中「同提交」一条明确声明其局限。
-6. 四份受影响报告的指纹以 HEAD 内容重算并逐份披露;人工项 5″ 与 `#round-doc` 的跨阶段开放项已登记。
+6. 四份受影响报告的指纹以 HEAD 内容重算并逐份披露;人工项 5″ 与 `#round-doc` 的跨阶段开放项已登记;ROADMAP Gates 的 0.55 合成支已登记为随 S-4 作废。
 7. 四条既有门、既有九项 UAT 与第 10 项全绿;`app.js` / `index.html` / `vendor/` / `ui-states/` 零改动;`!important` 声明数仍为 1。
 </success_criteria>
 

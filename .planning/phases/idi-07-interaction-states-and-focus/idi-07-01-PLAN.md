@@ -133,7 +133,12 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     - 注释正文必须写明三条承重事实:①`#1f63bd` 是整个颜色层里**唯一不在 Radix 刻度上**的值(除 `--white` 与两个 `rgba()` 阴影),它与 04.1「值必须来自 Radix 步」的纪律相冲;②它是**对已签核契约的字面遵从,不是漏改** —— S-4 的签核算术(`04-UI-SPEC.md` §Sign-Off Items S-4:「删除 `opacity` 后环回到 5.62」)是拿它算的,**不得被「修」成 `--radix-blue-11`**;③不选 `--radix-blue-11` 的理由是它在 `.archive-mode` 的 0.75 合成下只剩 3.03:1(余量 0.03),不选 `--radix-blue-12` 的理由是它是高对比文字步、作为 2px 环视觉上接近边框。
     - 声明行:`--color-focus: #1f63bd;`
 
-    围栏外追加焦点规则。在文件**末尾**追加一条独立规则(硬规则 3:追加,不重排),选择器**逐字**为 D-05 的七个枚举,顺序亦同:`button:focus-visible,` / `input:focus-visible,` / `select:focus-visible,` / `textarea:focus-visible,` / `a[href]:focus-visible,` / `summary:focus-visible,` / `[tabindex]:focus-visible`。声明体恰为两行:`outline: 2px solid var(--color-focus);` 与 `outline-offset: 2px;`。**绝不出现 `border` 或 `padding`**(后者会 reflow `#probe-controls`,Tab 一次按钮跳一次)。**绝不写 `outline: none`**。**绝不写针对 `#round-doc` 的规则**(D-06:它今天不可聚焦,那条是死代码,指派 Phase 8)。
+    围栏外追加焦点规则。在文件**末尾**追加一条独立规则(硬规则 3:追加,不重排),选择器**逐字**为 D-05 的七个枚举,顺序亦同:`button:focus-visible,` / `input:focus-visible,` / `select:focus-visible,` / `textarea:focus-visible,` / `a[href]:focus-visible,` / `summary:focus-visible,` / `[tabindex]:focus-visible`。声明体恰为两行:`outline: 2px solid var(--color-focus);` 与 `outline-offset: 2px;`。**绝不出现 `border` 或 `padding`**(后者会 reflow `#probe-controls`,Tab 一次按钮跳一次)。**绝不写把 `outline` 置空的那种声明**(不得把焦点样式做成「没有轮廓」)。**绝不写针对 `#round-doc` 的规则**(D-06:它今天不可聚焦,那条是死代码,指派 Phase 8)。
+
+    ⚠ **上面两条禁令,以及下面注释里要解释的负空间,都不得把对应的字面量抄进 `frontend/style.css`** —— 本任务有两条**按全文件裸子串计数、要求恰为 0** 的验收判据,注释散文同样计入:
+    (甲)那个把 `outline` 置空的声明形态(它与真声明逐字同形,会被判据数到)—— 在注释里讲「不用它当焦点样式」时**改写措辞**(写「不用置空 outline 的写法」「保留 outline」);
+    (丙)`#round-doc` 与焦点伪类**连写**成一体(形如选择器紧接伪类)的形态 —— 这正是下面第 ④ 条要求注释解释的那条负空间,解释时写「本阶段不为 `#round-doc` 写任何焦点规则」,**不要把两者连写出来**;
+    (乙)见 Task 3 的同类提示(程序化聚焦的调用名)。
 
     该规则的注释必须写明四条:①**为什么枚举而不是裸 `:focus-visible`** —— 与本项目 Phase 5(`G-idi-05-1`)/ Phase 6(`overflow-wrap`)建立的同一口径:影响面必须可枚举、可对照;裸通配不是「更全」而是「不可审」。②**枚举集与 `check-05` 的普查集逐字同集** —— 点名 `scripts/check-05-ui-uat.py` 的可聚焦普查集 `button, input, select, textarea, a[href], summary, [tabindex]`,并写明「新增一类可聚焦元素要**同时**改两处」。③**几何是双向绑定的** —— `2px + outline-offset: 2px` 的外伸量恰为 4px,正是 `check-05` 的 `CLEARANCE_MIN_PX = 4.0` 与 `idi-06-UI-SPEC.md` §L-5 所假设的值;改几何即改那个门的阈值。④`[tabindex]` 今天**无服务对象**(全站 `[tabindex]` 计数为 0),这是**防御性非冗余**写法 —— 照 06-CONTEXT D-09 的 `min-width: 0` 注释形态说明「它今天看似冗余,为什么不是」,并登记 Phase 8 会给 `#round-doc` 加 `tabindex="0"`、届时这条规则会自动把环套上去。
 
@@ -272,17 +277,17 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 
     1. `data is None` ⇒ `blocked(...)`,**绝不记 PASS**;
     2. 先 `info()` 落**全部原始行**(每个元素的 tag/id/class + `visible` + `focusable` + **采样到的环读数**,没采样到就写 `None`),再判定;
-    3. 若**判定集为空集**,走 `blocked(...)`,**不是** `info()` + `return` —— 这是对 item9 第 3 条的**有意收紧**,理由写进注释:item9 的样本可能真的没有「落在可视滚动区内」的组合,而本项三个样本各自都有**必然存在的可见可聚焦实例**(p1:`#message-input` / `#btn-send` / `#ai-route-select` / `#project-path-input` / `#btn-process-round`;checking:`#check-switcher` / `#btn-continue-check` / `#ai-route-select` / `#project-path-input`;p3:`summary` / `#round-switcher` / `#ai-route-select` / `#btn-enter`)—— 这些实例已由执行前基线的 `check-05 --item 9` 普查 INFO 行逐样本实测为 `visible=True`,判据可复跑。故**空集只可能是过滤式写错或样本没到位,不是「样本恰好没有可聚焦元素」**;空集若退化成 `info` + `return`,整条普查会以「0 条断言」静默通过,这正是「假 PASS」的形态。`len(judged) > 0` 必须是**真实守卫**,不是散文承诺;
+    3. 若**判定集为空集**,走 `blocked(...)`,**不是** `info()` + `return` —— 这是对 item9 第 3 条的**有意收紧**,理由写进注释:item9 的样本可能真的没有「落在可视滚动区内」的组合,而本项三个样本各自都有**必然存在的可见可聚焦实例**(p1:`#message-input` / `#btn-send` / `#ai-route-select` / `#project-path-input` / `#btn-process-round`;checking:`#check-switcher` / `#btn-continue-check` / `#ai-route-select` / `#project-path-input`;p3:`summary` / `#round-switcher` / `#ai-route-select` / `#btn-enter`)—— 这些实例已由执行前基线的 `check-05 --item 9` 普查 INFO 行逐样本实测为 `visible=True`,判据可复跑。故**空集只可能是过滤式写错或样本没到位,不是「样本恰好没有可聚焦元素」**;空集若退化成 `info` + `return`,整条普查会以「0 条断言」静默通过,这正是「假 PASS」的形态。`len(judged) > 0` 必须是**真实守卫**,不是散文承诺。同一条根因也适用于本项的 SC4 探针(见下文):本 harness 的 `item_verdict` 只读行级裁决,**没有任何机制把「一行都没断言」读成非 PASS**,故任何 `info()` + `return` 的空转路径都不会在逐项结论里留下痕迹 —— 未判定的探针必须以 `blocked(...)` 现身;
     4. 判据是 `not bad` —— 即 **「判定集里未被环覆盖的元素数 == 0」**(`bad` 的定义见上面那一段;**不得在代码注释或失败文案里重述成 `visible and (outlineWidth != "2px" or …)` 那种静态形态** —— 那会把已废弃的「未聚焦读数」又写回去);
     5. 失败行的 note 给出**可执行的修复动作**:「该元素不在 `:focus-visible` 的七选择器枚举里 ⇒ 到 `frontend/style.css` 文件末尾补它的选择器,并同步 `check-05` 的 `FOCUSABLE_SELECTOR`」;若 bad 的元素其实是**不可聚焦**的(说明 `focusable` 漏了一类,例如被 `<fieldset disabled>` 包裹的控件),note 指向 `focusable` 的判定式**而不是** CSS。
 
-    覆盖面的取得方式:**用 `page.keyboard.press("Tab")` 驱动焦点**,不得用程序化聚焦把环「点」到待测元素上(程序化聚焦在 Chrome 下不保证匹配 `:focus-visible`)。做法:先**清空焦点**复位 —— `page.evaluate("() => document.activeElement instanceof HTMLElement && document.activeElement.blur()")`(blur 把焦点交还 `document.body`,Tab 序列随即从头开始;**这不是「聚焦某个元素」,故本计划对 `scripts/check-05-ui-uat.py` 里 `.focus()` 调用的计数为 0 这条判据仍然成立**),然后循环按 Tab(上限取 `FOCUSABLE_SELECTOR` 实例数 + 8 次余量),**每按一次立即用 `_IDI07_TAB_READ_JS` 读当前 `document.activeElement` 的 `outline-width` / `outline-color`,按该元素的稳定标签写进采样表**;循环结束后用采样表的键集与判定集比对 —— 判定集里没被采样到的元素就是 `bad`。**已登记的两条边界**(照 `_IDI06_CENSUS_JS` 里 `intersects` 那条「登记而非静默」的先例,写在 `_IDI07_FOCUS_CENSUS_JS` 的注释块里,措辞见上一条):①Tab 序不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由;②Tab 序也**不覆盖不可聚焦的实例**,而本仓库真实存在这类实例(逐个点名与取证见上一条)。两条过滤之后剩下的集合必须逐个被 Tab 覆盖。
+    覆盖面的取得方式:**用 `page.keyboard.press("Tab")` 驱动焦点**,不得用程序化聚焦把环「点」到待测元素上(程序化聚焦在 Chrome 下不保证匹配 `:focus-visible`)。做法:先**清空焦点**复位 —— `page.evaluate("() => document.activeElement instanceof HTMLElement && document.activeElement.blur()")`(blur 把焦点交还 `document.body`,Tab 序列随即从头开始;**这不是「聚焦某个元素」,故本计划对 `scripts/check-05-ui-uat.py` 里程序化聚焦调用的计数为 0 这条判据仍然成立** —— ⚠ 那个方法名**不得被抄进 `scripts/check-05-ui-uat.py`**:验收判据是裸子串、按行计数、要求恰为 0,在注释里解释「为什么复位用 blur 而不是它」时**改写措辞**(写「程序化聚焦」「显式聚焦调用」即可)),然后循环按 Tab(上限取 `FOCUSABLE_SELECTOR` 实例数 + 8 次余量),**每按一次立即用 `_IDI07_TAB_READ_JS` 读当前 `document.activeElement` 的 `outline-width` / `outline-color`,按该元素的稳定标签写进采样表**;循环结束后用采样表的键集与判定集比对 —— 判定集里没被采样到的元素就是 `bad`。**已登记的两条边界**(照 `_IDI06_CENSUS_JS` 里 `intersects` 那条「登记而非静默」的先例,写在 `_IDI07_FOCUS_CENSUS_JS` 的注释块里,措辞见上一条):①Tab 序不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由;②Tab 序也**不覆盖不可聚焦的实例**,而本仓库真实存在这类实例(逐个点名与取证见上一条)。两条过滤之后剩下的集合必须逐个被 Tab 覆盖。
 
     SC1 探针:`page.keyboard.press("Tab")` 后读 `document.activeElement` 的 `read_style(..., "outline-width")` 与 `"outline-color"`;期望 `"2px"` 与 `resolve_color(page, "--color-focus")`。读不到元素 ⇒ `blocked`。
 
     SC2 探针:先 `page.keyboard.press("Tab")` 让环出现,再 `page.click(sel)`(sel 取该样本里一个可见按钮的稳定选择器,优先 `#btn-process-round`),然后读同一元素的 `outline-color`;断言它**不等于** `resolve_color(page, "--color-focus")` —— 这直接证明「鼠标点击不出现环」,比断言 UA 基线字符串稳。同时把 `outline-style` / `outline-width` 作为 `info()` 诊断落盘,不参与判定。
 
-    SC4 探针:复用 item 9 的 L-5 clearance 普查口径。在**侧栏滚到底**之后(`#main-pane` / `#chat-messages` 视情况 `scrollTop = scrollHeight`),对每个新 Tab 聚焦的元素,用与 `_IDI06_CENSUS_JS` 相同的「到最近裁剪祖先 padding 边的最小距离」算法算 clearance,断言 `>= CLEARANCE_MIN_PX`(4.0);空集或元素不可见时 `info()` 声明「本样本无判定」,不记 PASS。几何 `2px + offset 2px` 是本探针的**前提**,注释里点名这个绑定。
+    SC4 探针:复用 item 9 的 L-5 clearance 普查口径。在**侧栏滚到底**之后(`#main-pane` / `#chat-messages` 视情况 `scrollTop = scrollHeight`),对每个新 Tab 聚焦的元素,用与 `_IDI06_CENSUS_JS` 相同的「到最近裁剪祖先 padding 边的最小距离」算法算 clearance,断言 `>= CLEARANCE_MIN_PX`(4.0)。**判定集为空(滚到底后没有任何新 Tab 聚焦到的可见元素)或元素不可见 ⇒ `blocked(...)`,不是 `info()` 声明「本样本无判定」、更不得记 PASS** —— 理由与上面普查第 3 条同源,在这里更硬:`item_verdict`(`scripts/check-05-ui-uat.py:193-201`)只看**行级裁决** —— 一个「其余行全 PASS」的项会返回 `pass`,所以一条未判定的探针会**以 `item 10: PASS (N 条断言,0 FAIL,0 BLOCKED)` 的形态现身**,这正是本任务要消灭的空转 PASS;而 SC4 的判定集比普查更窄(只限「滚到底之后新 Tab 覆盖到」的那些元素),它的空集更不可能是「样本恰好没有裁切风险」,只可能是探针写错或样本没到位。**确实没有裁剪祖先的元素**:clearance 无定义,写进 `info()` 的原始行记为 `None` 并从判定集里剔除(剔除后判定集为空则仍走 `blocked`)。几何 `2px + offset 2px` 是本探针的**前提**,注释里点名这个绑定。
 
     样本选择照 item 9 的教训(单样本会把「藏住」读成「不达标」):`p1`(会话流活动态:按钮、`#message-input`、`#ai-route-select`、`#project-path-input` 可见)、`checking`(`#checks-panel` / `#check-switcher` / `#btn-continue-check` / `#btn-continue-repair` 可见)、`p3`(批注面板的 `<summary>` 可见)。三个样本各跑一遍普查与 SC1;SC2 / SC4 至少跑 `p1`。
 
@@ -290,7 +295,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
   </action>
   <verify>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 10</automated>
-    <fails_when>exit != 0;或输出里出现 "未覆盖" 且计数 > 0 的 FAIL 行;或任一样本走 BLOCKED(普查无返回 / 判定集为空集 / 元素读不到 / `--color-focus` 解析不出)</fails_when>
+    <fails_when>exit != 0;或输出里出现 "未覆盖" 且计数 > 0 的 FAIL 行;或任一样本走 BLOCKED(普查无返回 / 普查判定集为空集 / **SC4 判定集为空或元素不可见** / SC1 / SC2 的目标元素读不到 / `--color-focus` 解析不出)</fails_when>
     <automated>.venv/bin/python scripts/check-05-ui-uat.py --item smoke,1,2,3,4,6,7,8,9</automated>
     <fails_when>exit != 0,或逐项结论里出现任一项非 PASS(本计划不得让既有各项从 PASS 变红)</fails_when>
     <automated>grep -c 'FOCUSABLE_SELECTOR = "button, input, select, textarea, a\[href\], summary, \[tabindex\]"' scripts/check-05-ui-uat.py</automated>
@@ -298,7 +303,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
     <automated>grep -v '^#' frontend/style.css | grep -c ':focus-visible'</automated>
     <fails_when>计数 < 7</fails_when>
   </verify>
-  <done>三个样本(p1 / checking / p3)上判定集(可见 ∧ 可聚焦,即 Tab 可达)均非空,且判定集里「未被环覆盖的元素数」均为 0;禁用控件与 `tabindex="-1"` 的排除已登记在 `_IDI07_FOCUS_CENSUS_JS` 的注释块里;SC1(Tab 出环)/ SC2(点击不出环)/ SC4(滚到底后环不被裁切)三条探针各有明确的 PASS 或 BLOCKED,无空转 PASS;既有九项(item smoke,1,2,3,4,6,7,8,9)仍全绿。</done>
+  <done>三个样本(p1 / checking / p3)上判定集(可见 ∧ 可聚焦,即 Tab 可达)均非空,且判定集里「未被环覆盖的元素数」均为 0;禁用控件与 `tabindex="-1"` 的排除已登记在 `_IDI07_FOCUS_CENSUS_JS` 的注释块里;SC1(Tab 出环)/ SC2(点击不出环)/ SC4(滚到底后环不被裁切)三条探针各有明确的 PASS 或 BLOCKED(SC4 的空集 / 不可见路径与普查同口径地走 `blocked(...)`),无空转 PASS;既有九项(item smoke,1,2,3,4,6,7,8,9)仍全绿。</done>
   <acceptance_criteria>
     - `grep -o 'FOCUSABLE_SELECTOR' scripts/check-05-ui-uat.py | wc -l` 输出 >= 2(定义 + 至少一处消费)
     - `grep -o '_IDI07_FOCUS_CENSUS_JS' scripts/check-05-ui-uat.py | wc -l` 输出 >= 2
@@ -333,7 +338,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 | T-idi-07-01 | Information disclosure / Denial of service(无障碍) | `:focus-visible` 规则 vs 祖先 `opacity` | medium | mitigate | 三条 PAIR 覆盖 `--color-surface-page` / `--color-surface` / `--color-surface@0.75`;`--color-surface-sunken` 明确不进验证面并在注释里说明理由 |
 | T-idi-07-02 | Tampering | 焦点规则的几何(`border` / `padding`) | medium | mitigate | 规则体只声明 `outline` 与 `outline-offset`;静态守卫断言焦点规则块内 `border` / `padding` 计数为 0;几何与 `CLEARANCE_MIN_PX = 4.0` 双向绑定 |
 | T-idi-07-03 | Tampering / Denial of service | 环色的「顺手修正」(`#1f63bd` → `--radix-blue-11`) | medium | mitigate | 围栏注释逐字写明这是对 S-4 已签核契约的字面遵从;`--color-surface@0.75` 的 3.45 余量是选它的实测依据 |
-| T-idi-07-04 | Spoofing(假 PASS) | `item10` 的普查探针 | high | mitigate | `data is None` ⇒ `blocked`;判定集为空集 ⇒ `blocked`(不是 `info` + `return` —— 「0 条断言静默通过」正是假 PASS 的形态);元素读不到 ⇒ `blocked`;判定集 = `visible ∧ focusable`,禁用控件与 `tabindex="-1"` 明确排除并登记(否则判据永远无法满足);三样本(p1 / checking / p3)才覆盖全部 Tab 可达的可聚焦元素组合 |
+| T-idi-07-04 | Spoofing(假 PASS) | `item10` 的普查探针与 SC4 探针 | high | mitigate | `data is None` ⇒ `blocked`;判定集为空集 ⇒ `blocked`(不是 `info` + `return` —— 「0 条断言静默通过」正是假 PASS 的形态);**SC4 的空集 / 元素不可见同样 ⇒ `blocked`**(它比普查更窄,空集更不可能是巧合);判据取 `item_verdict`(`scripts/check-05-ui-uat.py:193-201`)的行级语义:只有出现 FAIL / BLOCKED 行时才不返回 PASS,故 `info()` + `return` 的空转路径不留任何痕迹;元素读不到 ⇒ `blocked`;判定集 = `visible ∧ focusable`,禁用控件与 `tabindex="-1"` 明确排除并登记(否则判据永远无法满足);三样本(p1 / checking / p3)才覆盖全部 Tab 可达的可聚焦元素组合 |
 | T-idi-07-05 | Repudiation | 归档半场的运行时断言 | medium | accept | 五个样本的 `#round-doc` 内 `a[href]` 计数为 0 ⇒ 今天无服务对象。**显式登记该事实**(不假装覆盖),由常驻算术门 + 一次性反事实探针共同承担 |
 | T-idi-07-SC | Tampering | npm / pip / cargo 安装 | low | accept | 本阶段**零新增运行时依赖、零构建步骤**(硬规则 6):无任何包管理器调用进入范围,故无供应链面;若执行期出现安装需求,即为计划偏差与停止条件 |
 </threat_model>
@@ -351,7 +356,7 @@ Output: `frontend/style.css` 的新令牌与新规则、`check-02` 的三条新�
 1. `:focus-visible` 规则已落地且覆盖 D-05 的七个枚举,几何为 `outline: 2px solid` + `outline-offset: 2px`,规则体不含 `border` / `padding`,也不含 `outline: none`。
 2. `--color-focus: #1f63bd` 在围栏内声明一次、在围栏外被消费;围栏注释写明它是刻意字面遵从、不得被「修正」。
 3. 环色对 `--color-surface-page` / `--color-surface` / `--color-surface@0.75` 三处的 `check-02` 断言全部 PASS(>= 3:1)。
-4. `check-05 --item 10` 在三样本上断言「判定集(可见 ∧ 可聚焦,即 Tab 可达)非空,且其中未被环覆盖的元素数为 0」;禁用控件与 `tabindex="-1"` 的排除被显式登记;SC1 / SC2 / SC4 各有明确结论,无空转 PASS。
+4. `check-05 --item 10` 在三样本上断言「判定集(可见 ∧ 可聚焦,即 Tab 可达)非空,且其中未被环覆盖的元素数为 0」;禁用控件与 `tabindex="-1"` 的排除被显式登记;SC1 / SC2 / SC4 各有明确结论(SC4 的空集 / 不可见路径走 `blocked`,与普查同口径 —— 未判定的探针不得以 PASS 现身),无空转 PASS。
 5. 归档半场的运行时空缺被**显式登记**,并由一次性反事实探针提供可复跑的证据。
 6. 四条既有门(check-01 / 02 / 03 / 04)与既有九项 UAT 仍全绿;`app.js` / `index.html` / `vendor/` / `ui-states/` 零改动。
 </success_criteria>

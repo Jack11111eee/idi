@@ -191,6 +191,18 @@ shadcn **不适用**且未被提议 —— 硬约束 D-06 禁止框架与构建�
 | 无横向溢出 | `document.documentElement.scrollWidth <= document.documentElement.clientWidth` | ≥1024px |
 | 无内容被遮挡 | 关键元素 rect 两两不相交(badge × banner、表头 × 正文、按钮 × 视口) | ≥768px |
 
+> **就地注解(2026-09-22,A-10 登记)。** 上表「无内容被遮挡」一行点了三对关键元素,
+> 但本阶段**只测量过 `badge × banner` 这一对**(`scripts/check-05-ui-uat.py` 的 badge × banner
+> 不相交断言)。**「表头 × 正文」与「按钮 × 视口」两对在本阶段从未被测量过一次**
+> (harness / SUMMARY / 任何探针均零命中),且收窄后的承诺**不主张**它们 ——
+> 因为 768px 的承诺已按项目所有者本次会话的显式裁定收窄为「badge 不被横幅遮挡」
+> (见下方「契约修正登记」表的 A-10 行)。
+>
+> 原承诺「≥768px 无内容遮挡」在 768–855px 区间**被实测证伪**:`#stream-banner`(fixed、
+> 不透明)压住 `#doc-panel-header` 的 h1 —— h1 = 439.0–481.0 × 8–28 vs banner =
+> 285.3–482.7 × 12–39,重叠 42×16px。收窄由项目所有者授权(remediation (b)),同时登记在
+> `idi-06-VERIFICATION.md` 的 override 条目里。**本表行未被删除、未被重排。**
+
 **三宽度实测:1440 / 1024 / 768。** 工具与「遮挡」的精确判据属 Claude's Discretion,
 但**必须产出可复核的原始数值**(三个宽度各一行 `scrollWidth / clientWidth`),不能只给结论。
 
@@ -570,6 +582,7 @@ L-1 让表头**恒可见**,其**文本**(`文档区`)一字不动。**本阶段�
 | **A-7** | **A11Y-07 的两处边界前提失效**(21–22px 数字 / 420px 侧栏 3 个按钮) | D-02 第 5/6 项 + D-18 | fence 不再构成本阶段的具体约束 |
 | **A-8** | **LAYOUT-04 基线从「4 个滚动容器」更正为「3 个嵌套 + 1 个外层」** | D-11 | 路线图写的 40vh 那只已不存在 |
 | **A-9** | **`ROADMAP.md` Phase 7 段的「`#sidebar` 的 padding 为 0」更正为 `#main-pane` / `#doc-panel`** | D-13 | 路线图内部不一致;本阶段只登记,不改文件 |
+| **A-10** | **LAYOUT-02 的 768px 承诺收窄为「badge 不被横幅遮挡」**(原为「无内容遮挡」) | **用户本次会话显式裁定 remediation (b)** | 该遮挡是**既有几何**,且被本阶段自己的范围锁排除在可修范围之外:`#stream-banner` 的任何声明不得触碰(`:665`)、`--doc-panel-w` 的值由用户裁决(`frontend/style.css:224-227`)、唯一合法的 `@media` 形态在几何上不可能(需面板 ≤285.3px,而 clamp 下限是 340px)。实测证伪:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,重叠 42×16px,相交带 768–855px。**跟随 A-5 先例**:只登记在计划与验证记录里,`REQUIREMENTS.md` / `ROADMAP.md` 不改(改会作废指纹)。这是**已登记的偏离,不是静默通过**;同时见 `idi-06-04-PLAN.md` / `idi-06-04-SUMMARY.md` 与 `idi-06-VERIFICATION.md` 的 override 条目 |
 
 ---
 

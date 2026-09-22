@@ -1017,11 +1017,28 @@ button.primary {
   font-style: italic;
   color: var(--color-text-muted);
 }
+/* A11Y-07(WCAG 2.5.8 目标尺寸)—— 命中区下限 24×24,按**可交互元素普查**施加(不是按点名)。
+   实测本控件的计算盒是 722 × 17:宽早已达标,高不足(12px 字号、无 padding、无 min-height),
+   它是全文件唯一一个实测不达标的可交互元素 —— 也正是「等紧凑控件」里那个「等」所指、
+   却未被需求点名的那个(按点名枚举会漏掉它,与 Phase 5 的 G-idi-05-1 同构)。
+   机制锁定为原地加两条**尺寸下限**声明(下方 min-height / min-width 各 24px):
+   - 为什么 24 是**裸字面量**而不是间距刻度令牌:24 是 WCAG 2.5.8 的目标尺寸常数,把它挂到
+     间距刻度上会让一次间距改动静默地把命中区压到下限之下 —— 「名必须说实话」的同一条方法论。
+     本文件已有同一族的未令牌化**尺寸**字面量(min-height 160 / 200 / 52、min-width 96、
+     height 36、width/height 12);间距刻度覆盖的是 padding / margin / gap,不覆盖尺寸。
+   - 为什么不动 padding、不用 ::after 撑开:抬 padding 改的是**外观**而非命中区,且连锁影响
+     行高与相邻间距观感;::after 撑开会让 .verdict-buttons(gap 8px)的相邻命中区互相重叠,
+     反而可能违反 2.5.8 的「不与他者相交」要求。
+   下方既有四条声明(cursor / color / font-size / margin-top)逐字保留,本项只加两条尺寸声明。
+   已登记的视觉变更:该控件从 ≈17px 抬到 ≥24px 会改变 .annotation-item 的高度
+   (每个带 AI 回复的批注条目 +7…10px)。 */
 .annotation-answer summary {
   cursor: pointer;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   margin-top: var(--space-1);
+  min-height: 24px;
+  min-width: 24px;
 }
 .annotation-answer-body { margin-top: var(--space-half); }
 

@@ -1699,8 +1699,16 @@ _IDI06_CENSUS_JS = r"""() => {
     const padBottom = ar.bottom - px(s.borderBottomWidth);
     const gap = Math.min(r.left - padLeft, padRight - r.right,
                          r.top - padTop, padBottom - r.bottom);
+    // `intersects` 是承重的:元素若与容器的 padding 盒**完全不相交**,说明它被滚动到
+    // 视口之外 —— 当前不渲染,焦点环无被裁风险,它的 clearance 是负的噪声(p3 下
+    // `#btn-authorize × #doc-panel = -122.6px` 就是这一类,应读作「需滚动才能到达」
+    // 而非「被裁切」,见 idi-06-01-SUMMARY.md 的判读)。反之,元素与 padding 盒**相交
+    // 却越界**才是真正的裁切,其 clearance 为负,必须被断言抓到。
+    const intersects = r.right > padLeft && r.left < padRight
+                    && r.bottom > padTop && r.top < padBottom;
     clearance.push({el: labelOf(el), container: labelOf(nearest), clearance: gap,
-                    visible: r.width > 0 && r.height > 0, rect: rectOf(el)});
+                    visible: r.width > 0 && r.height > 0, intersects: intersects,
+                    rect: rectOf(el)});
   });
 
   const hits = [];
@@ -1728,23 +1736,28 @@ def _rects_intersect(a, b):
 
 
 def _idi06_census(page, state):
-    """L-5 / L-6 的只读普查 —— 一律 info(),不判定(判据属计划 03)。"""
+    """L-5 / L-6 的普查读数。
+
+    波次 1 / 2 里调用方一律 info()、不判定(判据属计划 03);波次 3 起 item 9 消费同一份
+    返回值做断言(`clearance` / `hits` 两个数组)。返回 `None` 表示普查脚本无返回。
+    """
     data = page.evaluate(_IDI06_CENSUS_JS)
     if data is None:
         info(f"item8 [{state}] 普查", "<SKIPPED> 普查脚本无返回")
-        return
+        return None
     info(f"item8 [{state}] L-5 clearance 普查(可聚焦元素 × 最近裁剪祖先 × 实测 clearance;阈值 4px)",
          f"{len(data['clearance'])} 对")
     for row in data["clearance"]:
         info(f"item8 [{state}] L-5 clearance",
              f"{row['el']} × {row['container']} = {row['clearance']:.1f}px "
-             f"visible={row['visible']} rect={row['rect']}")
+             f"visible={row['visible']} intersects={row['intersects']} rect={row['rect']}")
     info(f"item8 [{state}] L-6 命中区普查(可交互元素 rect;阈值 24×24)",
          f"{len(data['hits'])} 个")
     for row in data["hits"]:
         info(f"item8 [{state}] L-6 命中区",
              f"{row['el']} w={row['w']:.1f} h={row['h']:.1f} "
              f"visible={row['visible']} below24={row['below24']}")
+    return data
 
 
 def item8(page, tmp_root):
@@ -1992,6 +2005,13 @@ def item8(page, tmp_root):
 #   **恒 FAIL** 的断言,会让本项永远无法转绿。两条护栏互补:前者抓「保留项被改值」,
 #   后者抓「保留项被悄悄删掉」。
 #
+# 波次 3(D-13 / D-17)另加两条**普查断言**,均按 DOM 遍历算出、不硬编码选择器列表:
+#   (f) L-5:每个裁剪容器 × 其每个可聚焦后代的实测 clearance >= 4px;
+#   (g) L-6:每个可交互元素的计算盒宽与高均 >= 24px(主要对象 `.annotation-answer summary`
+#       须先经应用自身的 renderAnnotations 造出并断言存在,否则断言失去证明力)。
+# 两条在三样本(p1 / checking / p3)上跑,以覆盖全部裁剪容器 —— 被祖先藏住的元素 rect
+# 全零,单样本会把「藏住」静默读成「不达标」(T-idi-06-01 的假 PASS 落点)。
+#
 # 普查的**状态无关性**:七个 `overflow` 声明所在的元素全部是 `index.html` 的静态元素
 # (`#main-pane` / `#doc-panel` / `#ai-events` / `#chat-messages` / `#annotation-list` /
 # `#latest-check`),与磁盘状态样本无关,故普查在 `p1` 下得到的结论对五个样本同样成立 ——
@@ -2004,6 +2024,16 @@ PANEL_SCROLLERS = ("#chat-messages", "#latest-check", "#main-pane")
 # SC#3 明文豁免的会话流滚动者(D-14 第 1 条:排除它之后「恰好两个」)。
 PANEL_SCROLLERS_EXEMPT = ("#chat-messages",)
 STYLE_CSS = ROOT / "frontend" / "style.css"
+# ---- L-5 / L-6 两条普查断言的阈值(波次 3 落地)-------------------------------
+# L-5:裁剪容器的每个可聚焦后代距其 padding 边 >= 4px(= Phase 7 的
+# `outline: 2px solid` + `outline-offset: 2px` 的环外伸量)。本阶段只为它**解裁切**,
+# 不写任何焦点规则。
+CLEARANCE_MIN_PX = 4.0
+# L-6:每个可交互元素的计算盒宽与高均 >= 24px(WCAG 2.5.8 目标尺寸,AA;按字面走尺寸,
+# 不走 2.5.8 的间距例外 —— A11Y-07 明文要求「达到 24×24」)。
+TARGET_MIN_PX = 24.0
+# `.annotation-answer summary` 在普查里的标签(无 id、无 class 的 `<summary>` 即此形态)。
+SUMMARY_TAG = "summary"
 # 保留项护栏读的源码文本(D-11:去掉限高会把裁决按钮推出视口)。
 LATEST_CHECK_MAX_HEIGHT_DECL = "max-height: 30vh;"
 # `#latest-check` 的可达性探针正文(经应用自身的 renderMarkdown 渲染 60 次)。
@@ -2137,6 +2167,75 @@ def _idi06_reach(page, item, sel, sample, injected, inject_error):
             "内容末端可达:末条不被限高截断到可视区之外")
 
 
+def _idi06_clearance_assert(page, item, state):
+    """L-5 的 clearance 普查断言(D-13):每个裁剪容器 × 其可聚焦后代的实测 clearance >= 4px。
+
+    按 **DOM 遍历**算出,不硬编码选择器列表。只判定**当前落在容器可视滚动区内**的行:
+    与 padding 盒完全不相交的元素被滚动到视口之外,当前不渲染,其负 clearance 是噪声
+    (见 `_IDI06_CENSUS_JS` 里 `intersects` 的注释);相交却越界才是真裁切,clearance 为负。
+    """
+    data = page.evaluate(_IDI06_CENSUS_JS)
+    if data is None:
+        blocked(item, f"[{state}] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= {CLEARANCE_MIN_PX:.0f}px",
+                "普查脚本返回数据", "<MISSING>", "普查无返回 ⇒ 不记 PASS")
+        return
+    rows = data["clearance"]
+    info(f"item9 [{state}] L-5 clearance 普查(全部原始行)",
+         f"{len(rows)} 对:"
+         f"{[(r['el'], r['container'], round(r['clearance'], 1), r['visible'], r['intersects']) for r in rows]}")
+    judged = [r for r in rows if r["visible"] and r["intersects"]]
+    if not judged:
+        info(f"item9 [{state}] L-5 clearance",
+             "无「裁剪容器 × 可聚焦后代」组合落在可视滚动区内 ⇒ 本样本无判定"
+             "(不记断言,避免空转 PASS)")
+        return
+    bad = [r for r in judged if r["clearance"] < CLEARANCE_MIN_PX]
+    ok_true(item,
+            f"[{state}] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= {CLEARANCE_MIN_PX:.0f}px",
+            not bad, f"全部 >= {CLEARANCE_MIN_PX:.0f}px",
+            f"共 {len(judged)} 行,未达标 "
+            f"{[(r['el'], r['container'], round(r['clearance'], 1)) for r in bad]}",
+            "4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。"
+            "实测未达标时**只改那一个容器**的 padding 为 var(--space-1),"
+            "禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)")
+
+
+def _idi06_hit_assert(page, item, state, require_summary):
+    """L-6 的命中区普查断言(D-17):每个可交互元素的计算盒宽与高均 >= 24px。
+
+    `require_summary=True` 时先断言 `.annotation-answer summary` 存在且可见 —— 它是本
+    断言的**主要对象**(全文件唯一实测不达标的可交互元素)。元素读不到时
+    `getBoundingClientRect()` 返回全零矩形,断言会退化成一条空转 PASS;复刻 item7 已登记的
+    `all(w != "700")` 对 `None` 恒真的陷阱,故不成立即 blocked(...)。
+    """
+    data = page.evaluate(_IDI06_CENSUS_JS)
+    if data is None:
+        blocked(item, f"[{state}] 每个可交互元素的计算盒宽高均 >= {TARGET_MIN_PX:.0f}px",
+                "普查脚本返回数据", "<MISSING>", "普查无返回 ⇒ 不记 PASS")
+        return
+    rows = [r for r in data["hits"] if r["visible"]]
+    info(f"item9 [{state}] L-6 命中区普查(可见行;阈值 24×24)",
+         f"{len(rows)} 个:"
+         f"{[(r['el'], r['w'], r['h']) for r in rows]}")
+    if require_summary:
+        summary_rows = [r for r in rows if r["el"].split(".")[0] == SUMMARY_TAG]
+        if not summary_rows:
+            blocked(item,
+                    f"[{state}] .annotation-answer summary 已由 renderAnnotations 造出且可见",
+                    ">= 1 个可见的 <summary>", "<MISSING>",
+                    "本断言的主要对象不存在 ⇒ 命中区断言失去证明力,不记 PASS")
+            return
+        info(f"item9 [{state}] 命中区断言的主要对象",
+             f"<summary> 实测 {[(r['el'], r['w'], r['h']) for r in summary_rows]}")
+    bad = [r for r in rows if r["w"] < TARGET_MIN_PX or r["h"] < TARGET_MIN_PX]
+    ok_true(item,
+            f"[{state}] 每个可交互元素的计算盒宽高均 >= {TARGET_MIN_PX:.0f}px",
+            not bad, f"全部 >= {TARGET_MIN_PX:.0f}px",
+            f"共 {len(rows)} 行,未达标 {[(r['el'], r['w'], r['h']) for r in bad]}",
+            "WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width "
+            "两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开")
+
+
 def item9(page, tmp_root):
     item = "9"
     print("\n=== UAT 9: L-4 面板区滚动容器收敛(D-14)===", flush=True)
@@ -2216,6 +2315,41 @@ def item9(page, tmp_root):
     }""", LATEST_CHECK_PROBE_MD)
     _idi06_reach(page, item, "#latest-check", "checking", grown_lc,
                  "#latest-check 或 renderMarkdown 不可用")
+
+    # ---- (f) L-5 clearance 普查断言 + L-6 命中区普查断言(D-13 / D-17)-----------
+    # 两条都按 **DOM 遍历**算出,不硬编码选择器列表。三样本合起来才覆盖全部
+    # 「裁剪容器 × 可聚焦后代」组合:p1 覆盖 #main-pane / #doc-panel / #chat-messages,
+    # checking 覆盖 #latest-check,p3 覆盖批注面板里的 `<summary>`(它只在批注面板可见时
+    # 才有非零 rect —— 被祖先藏住的元素 rect 全零,单样本会把「藏住」读成「不达标」)。
+    for state in ("p1", "checking"):
+        proj_c = make_fixture(state, tmp_root)
+        enter_project(page, proj_c)
+        _idi06_clearance_assert(page, item, state)
+        _idi06_hit_assert(page, item, state, require_summary=False)
+
+    # p3(补渲染一条批注):L-6 的主要对象 `.annotation-answer summary` 经应用自身的
+    # renderAnnotations 造出 —— 不手工拼 DOM,那是伪造被测状态。
+    proj_p3 = make_fixture("p3", tmp_root)
+    enter_project(page, proj_p3)
+    info("item9 样本",
+         f"p3(批注面板可见态,#annotations-panel / #annotation-list 可见)→ {proj_p3}")
+    built = page.evaluate(
+        """() => {
+            if (typeof renderAnnotations !== 'function') return false;
+            renderAnnotations({items: [{
+                id: 'idi06-a11y-probe', type: 'plain', status: 'answered',
+                quote: '命中区普查探针摘录', note: '命中区普查探针正文',
+                answer: '命中区普查探针回答',
+            }]}, true);
+            return true;
+        }"""
+    )
+    if not built:
+        blocked(item, "[p3] .annotation-answer summary 已由 renderAnnotations 造出且可见",
+                "renderAnnotations(items, true) 可调用", "<MISSING>",
+                "应用未导出 renderAnnotations ⇒ 被测状态造不出,不记 PASS")
+    _idi06_clearance_assert(page, item, "p3")
+    _idi06_hit_assert(page, item, "p3", require_summary=True)
 
     # ---- (e) viewport 纪律 ---------------------------------------------------
     # 本项不变更 viewport;此处是兜底复位(若调试期用过 set_viewport_size),

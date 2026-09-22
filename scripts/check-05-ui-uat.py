@@ -1541,10 +1541,10 @@ def item7(page, tmp_root):
 # 两条几何断言各带**前提检查**(元素可见且 rect 非全零 / 容器真的可滚),前提不成立记
 # blocked(...) 而非 ok_true(...) —— 与 item7 已登记的 `all(w != "700")` 对 None 恒真
 # 是同型陷阱(空转断言),也是本阶段威胁表 T-idi-06-04 的落点。
-# 另含三项**只读诊断**(三宽度文档级溢出 / L-5 clearance 普查 / L-6 命中区普查),
-# 一律经 info() 输出、本计划不把它们升为断言:前两项的判据要等计划 02 的 L-3 / L-4
-# 落地后才成立(L-2),第三项由计划 03 的 A11Y-07 承担。它们的**原始数值**是计划 03
-# 三个决策的唯一输入契约,故必须在波次 1 就产出。
+# 另含三项诊断(三宽度文档级溢出 / L-5 clearance 普查 / L-6 命中区普查):波次 1 一律经
+# info() 输出、不升为断言(判据要等 L-3 / L-4 落地后才成立);波次 3 把其中两项升为断言
+# (三宽度文档级溢出 → L-2 的硬断言 + `#doc-panel` 实测宽的判别性探针;L-5 / L-6 两条普查
+# → item 9 的断言)。**原始数值**始终逐行落盘,不给结论替代证据(UI-SPEC §L-2 明文)。
 BADGE_BANNER_WIDTHS = (768, 1024, 1280)
 # harness 里**第一次** viewport 变更(item 8);任何一次 set_viewport_size 之后都必须
 # 复位到这个值,否则污染其后所有项(item 9 与任何依赖 1440 宽度的既有断言)。
@@ -1564,6 +1564,68 @@ WIDE_MD = (
     + "| " + " | ".join("单元格内容" for _ in range(12)) + " |\n\n"
     + "不可断长 token:" + ("a" * 240) + "\n"
 )
+
+# L-2 的三宽度判据读数:文档级 scrollWidth / clientWidth + `#doc-panel` 的**实测宽**。
+# `#doc-panel` 的实测宽是本阶段 LAYOUT-02 的**判别性探针**,不是补充读数:文档级
+# `scrollWidth` 对「flex 项被长不可断内容顶破」这一失效模式是**结构性失明**的 ——
+# `#doc-panel { overflow-y: auto }` 会把 `overflow-x` 的 used value 一并算成 `auto`,
+# 且滚动容器的自动最小尺寸(`min-width: auto`)解析为 0,故宽内容只在**面板内部**产生
+# 横向滚动条,永远推不高文档级 `scrollWidth`。面板自身的实测宽则直接测「它有没有被顶得
+# 比它自己声明的 `clamp(340px, 30vw, 480px)` 还宽」—— 那正是 L-3 的 `min-width: 0` 的
+# 保护对象。(波次 1 / 2 的三宽度读数在波次 1 就已经是 0px,该读数无法区分「修好了」与
+# 「本来就没破」;本节的两个读数一起才构成判据。)
+_IDI06_OVERFLOW_JS = """() => {
+  const p = document.querySelector('#doc-panel');
+  return {
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+    panelWidth: p ? p.getBoundingClientRect().width : null,
+  };
+}"""
+
+# `--doc-panel-w: clamp(340px, 30vw, 480px)`(frontend/style.css:228)的三个参数。
+# 面板宽的**声明上界**就是这条 clamp 在当前视口宽下的解析值。
+DOC_PANEL_W_MIN_PX = 340.0
+DOC_PANEL_W_VW = 0.30
+DOC_PANEL_W_MAX_PX = 480.0
+
+
+def _doc_panel_declared_width(viewport_width):
+    """`clamp(340px, 30vw, 480px)` 在给定视口宽下的解析值(= 面板宽的声明上界)。"""
+    return min(DOC_PANEL_W_MAX_PX, max(DOC_PANEL_W_MIN_PX, DOC_PANEL_W_VW * viewport_width))
+
+
+# L-2 的决策(本阶段实测结论,见 `idi-06-03-SUMMARY.md` 的「测量决策记录(最终态)」):
+# 1440 / 1024 / 768 三处在波次 2 之后的树上均无破版 ⇒ 按 UI-SPEC §L-2 的决策规则第一支,
+# 守卫**不写**,该交付物登记为「被实测推翻」。故期望的 `@media` 出现次数是 **0**。
+# 若日后实测证成并写出守卫,把这里改成 1 并同步更新 SUMMARY 的决策记录与 UI-SPEC §L-2。
+MEDIA_QUERY_DECL = "@media"
+EXPECTED_MEDIA_QUERIES = 0
+
+
+def _l2_guard_shape(item):
+    """L-2 守卫形态(静态):`frontend/style.css` 里 `@media` 出现次数与本次决策一致。
+
+    读的是**文件文本**而非渲染结果 —— 与几何断言互补:它抓「守卫被悄悄删掉 / 悄悄多写
+    一条」。读法与 `check_render_markdown_call_sites` 同族:脚本自己从文件文本算,不依赖
+    shell 管道;比的是「实测计数 vs 决策」两个独立量,不是自比。
+    """
+    try:
+        text = STYLE_CSS.read_text(encoding="utf-8")
+    except OSError as exc:
+        blocked(item, "[static] frontend/style.css 的 @media 出现次数 == 决策",
+                EXPECTED_MEDIA_QUERIES, "<MISSING>", f"{STYLE_CSS} 读不到:{exc}")
+        return
+    count = text.count(MEDIA_QUERY_DECL)
+    lines = [i for i, ln in enumerate(text.splitlines(), 1) if MEDIA_QUERY_DECL in ln]
+    info("item8 [static] L-2 守卫形态",
+         f"frontend/style.css 里 '{MEDIA_QUERY_DECL}' 计数={count} 命中行={lines};"
+         f"本次决策=「被实测推翻」(三宽度均无破版)⇒ 期望 {EXPECTED_MEDIA_QUERIES}")
+    ok_true(item,
+            "[static] frontend/style.css 的 @media 出现次数 == 决策(被实测推翻 ⇒ 0)",
+            count == EXPECTED_MEDIA_QUERIES, EXPECTED_MEDIA_QUERIES, count,
+            "该断言读文件文本而非渲染结果,与几何断言互补。若实测证成并写出守卫,"
+            "须同步改本常量与 idi-06-03-SUMMARY.md 的决策记录")
 
 _IDI06_BADGE_BANNER_JS = """() => {
   const b = document.querySelector('#state-badge');
@@ -1832,25 +1894,66 @@ def item8(page, tmp_root):
     )
     if not injected:
         info("item8 L-2 三宽度溢出诊断", "<SKIPPED> #doc-panel-body 或 renderMarkdown 不可用")
+        blocked(item, "[L-2] 三宽度溢出读数",
+                "#doc-panel-body 与 renderMarkdown 均可用", "<MISSING>",
+                "探针内容注入失败 ⇒ 三宽度判据读不出,不记 PASS")
     else:
         try:
             for width in (1440, 1024, 768):
                 page.set_viewport_size({"width": width, "height": 900})
                 page.wait_for_timeout(250)
-                m = page.evaluate(
-                    """() => ({
-                        scrollWidth: document.documentElement.scrollWidth,
-                        clientWidth: document.documentElement.clientWidth,
-                    })"""
-                )
+                m = page.evaluate(_IDI06_OVERFLOW_JS)
+                if m is None:
+                    blocked(item, f"[@{width}px] L-2 文档级溢出读数",
+                            "documentElement 与 #doc-panel 均可读", "<MISSING>",
+                            "读数返回 null ⇒ 不记 PASS")
+                    continue
                 info(
-                    f"item8 L-2 文档级溢出基线 @{width}px(波次 1 基线,L-3 / L-4 尚未落地;"
+                    f"item8 L-2 文档级溢出 @{width}px(波次 2 之后:L-3 / L-4 已落地;"
                     "面板内部横向滚动条不计入)",
                     f"scrollWidth={m['scrollWidth']} clientWidth={m['clientWidth']} "
-                    f"overflow={m['scrollWidth'] - m['clientWidth']}px",
+                    f"overflow={m['scrollWidth'] - m['clientWidth']}px "
+                    f"docPanelWidth={m['panelWidth']}",
                 )
+                # LAYOUT-02 的字面承诺「≥1024px 无横向溢出」—— 1440 与 1024 两处升为硬断言。
+                # 768 处保持只读诊断:它在 LAYOUT-02 里的承诺是「无内容遮挡」,已由本项前面的
+                # badge × banner 不相交断言覆盖(UI-SPEC §L-2 的判据表)。
+                if width >= 1024:
+                    ok_true(
+                        item,
+                        f"[@{width}px] 文档级 scrollWidth <= clientWidth",
+                        m["scrollWidth"] <= m["clientWidth"],
+                        "scrollWidth <= clientWidth",
+                        f"{m['scrollWidth']} <= {m['clientWidth']}",
+                        "LAYOUT-02 的字面承诺:≥1024px 无横向溢出",
+                    )
+                else:
+                    info(f"item8 L-2 @{width}px",
+                         "保持只读诊断(768px 处的承诺是「无内容遮挡」,"
+                         "已由 badge × banner 不相交断言覆盖)")
+                # L-2 的**判别性探针**(理由见 _IDI06_OVERFLOW_JS 的注释):面板实测宽不得
+                # 超过它自己声明的 clamp 上界。这是「flex 项被长不可断内容顶破」这一失效模式
+                # 的直接读数 —— 文档级 scrollWidth 对该模式结构性失明。
+                if m["panelWidth"] is None:
+                    blocked(item, f"[@{width}px] #doc-panel 实测宽 <= clamp() 上界",
+                            f"<= {_doc_panel_declared_width(width):.1f}px", "<MISSING>",
+                            "#doc-panel 不存在 ⇒ 不记 PASS")
+                else:
+                    expected_w = _doc_panel_declared_width(width)
+                    ok_true(
+                        item,
+                        f"[@{width}px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界",
+                        m["panelWidth"] <= expected_w + 1.0,
+                        f"<= {expected_w:.1f}px",
+                        f"{m['panelWidth']:.1f}px",
+                        "L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽"
+                        "(文档级 scrollWidth 对该失效模式结构性失明)",
+                    )
         finally:
             page.set_viewport_size(VIEWPORT_RESTORE)
+
+    # L-2 的守卫形态断言(静态,读 style.css 文件文本;不依赖 viewport)。
+    _l2_guard_shape(item)
 
     # L-5 / L-6 普查跑两个样本:p1 让 #session-panel / #chat-messages 可见,
     # p3(补渲染一条批注)让 #annotations-panel / #annotation-list 与其中的

@@ -232,7 +232,21 @@ Plans:
 
 **Research flag**: `calc()` vs `position: absolute` 是真实的行为取舍(fixed 且可能遮挡 vs 随内容滚走)。**本路线图按研究建议提交 `calc()`**——零行为变更的迁移步骤;但该取舍须在规划时与用户确认。A11Y-07 是否与 420px 侧栏冲突也需在规划时实测判定。
 **Gates**: 1440 → 1024 → 768 无横向溢出;badge 在每个宽度都在文档区右上角;1024/1280 下横幅不盖 badge;恰好一个侧栏滚动条 + `#chat-messages`;`#brainstorm-view h2` 仍 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] idi-06-01-PLAN.md — 徽标收口:`#doc-panel-header { position: sticky; top: 0; background: var(--color-surface); border-radius: 0 }` + check-05 item 8 三条断言(流内机制 / 768·1024·1280 三宽度 badge×banner 不相交 / 滚动到底后表头仍可见)+ 三项只读诊断(三宽度文档级溢出 / 焦点环 clearance 普查 / 命中区普查)落盘为波次 3 的判据基线
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-06-02-PLAN.md — 换行与 flex 最小尺寸(六目标 `overflow-wrap: anywhere` + `#main-pane` / `#doc-panel` 各补 `min-width: 0`)+ 滚动容器收敛(删 `.event-list` 与 `#annotation-list` 的 `max-height` / `overflow-y`,保留 `#latest-check` 与 `#chat-messages`)+ check-05 item 9(滚动者 DOM 普查 / 末条可达性 / `max-height == none` / 保留项护栏)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] idi-06-03-PLAN.md — 窄窗口守卫决策(在 L-3/L-4 已落地的树上重测三宽度,按实测决定是否写唯一一条 `@media (max-width: 1023px)`)+ L-6 命中区与 L-5 焦点环解裁切(按元素普查施加 `min-height`/`min-width: 24px` 与条件 padding 抬升)+ item 8/item 9 两条普查门 + D-19 连带复验 `idi-04.1-radix` + 全量门禁收口
+
 **UI hint**: yes
 
 ### Phase 7: 交互状态与焦点样式

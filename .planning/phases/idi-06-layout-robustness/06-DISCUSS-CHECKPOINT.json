@@ -1,0 +1,46 @@
+{
+  "phase": "6",
+  "phase_name": "布局稳健性",
+  "timestamp": "2026-09-22T00:00:00Z",
+  "areas_completed": ["徽标收口口径", "窄窗口守卫职责", "滚动容器收敛", "24×24 命中区"],
+  "areas_remaining": [],
+  "decisions": {
+    "徽标收口口径": [
+      {"question": "Q1: #state-badge 的收口机制取哪一条?", "answer": "A) 接受 HEAD 的流内机制,并给 #doc-panel-header 加 position: sticky 补回「恒可见」", "options_presented": ["A) 接受 HEAD + 补 sticky", "B) 接受 HEAD,代价照收", "C) 回退 fixed + calc()"]},
+      {"question": "Q2: 折叠态的 #state-badge 怎么处置?", "answer": "A) 保持 display: none 不动,登记为「有意设计」", "options_presented": ["A) 保持隐藏,登记为有意设计", "B) 折叠态显示紧凑形态", "C) 保持隐藏,记入 backlog"]},
+      {"question": "Q3: sticky 的实现取哪一种?", "answer": "A) 只给 #doc-panel-header 加 position: sticky / top: 0 / background: var(--color-surface),不加 z-index", "options_presented": ["A) 仅 sticky + 背景,不加 z-index", "B) sticky + 显式 z-index 档", "C) 改成 #doc-panel-body 单独滚"]},
+      {"question": "Q4: 徽标收口用什么门验证?", "answer": "A) 扩 scripts/check-05-ui-uat.py,新增条目", "options_presented": ["A) 扩 check-05-ui-uat.py", "B) 新建专用脚本", "C) 仅静态断言 + 人工步骤"]}
+    ],
+    "窄窗口守卫职责": [
+      {"question": "Q1: overflow-wrap 的作用域取哪一档?", "answer": "A) 枚举全部六个 renderMarkdown 注入目标", "options_presented": ["A) 枚举全部六个目标", "B) 只护 .markdown-body", "C) 写通配规则"]},
+      {"question": "Q2: @media 窄窗口守卫的存在性判据取哪一条?", "answer": "A) 实测驱动", "options_presented": ["A) 实测驱动", "B) 契约驱动,照写", "C) 现在判定不需要"]},
+      {"question": "Q3: min-width: 0 的落点取哪一种?", "answer": "A) #main-pane 与 #doc-panel 两个 #app flex 子项都加", "options_presented": ["A) 两个子项都加", "B) 只加 #main-pane", "C) 不加 min-width"]},
+      {"question": "Q4: 断点字面量例外的声明协议取哪一种?", "answer": "A) 条件声明", "options_presented": ["A) 条件声明", "B) 预先声明", "C) 只文档登记"]}
+    ],
+    "滚动容器收敛": [
+      {"question": "Q1: 三个嵌套滚动容器的处置范围取哪一档?", "answer": "B) 删 #ai-events 与 #annotation-list 两处,保留 #latest-check 的 30vh 滚动", "options_presented": ["A) 三个全删", "B) 保留 #latest-check", "C) 全删 + 另立机制"]},
+      {"question": "Q2: #session-panel 的 min-height / flex 怎么处置?", "answer": "A) 零改动,登记路线图该交付物为「被 HEAD 推翻 + 执行会造成回归」", "options_presented": ["A) 零改动 + 登记推翻", "B) 照路线图执行 flex: 0 0 auto", "C) 只去掉 min-height"]},
+      {"question": "Q3: 焦点环解裁切的容器枚举取哪种口径?", "answer": "A) 按可聚焦元素枚举(门按元素普查,不按容器名)", "options_presented": ["A) 按可聚焦元素枚举", "B) 照路线图抬两个", "C) 四个全抬"]},
+      {"question": "Q4: LAYOUT-04 的验证门取哪一种?", "answer": "A) 扩 check-05-ui-uat.py,断言恰好两个滚动容器 + 可达性 + 两处计算 max-height 为 none", "options_presented": ["A) 恰好两个 + 可达性", "B) 至多两个", "C) 静态 + 仅可达性"]}
+    ],
+    "24×24 命中区": [
+      {"question": "Q1: A11Y-07 的判定基准取哪一条?", "answer": "A) 实测驱动", "options_presented": ["A) 实测驱动", "B) 照路线图数字补", "C) 直接加 min-height"]},
+      {"question": "Q2: 若实测不足,命中区机制取哪一种?", "answer": "A) min-height: 24px + min-width: 24px", "options_presented": ["A) min-height + min-width", "B) 抬 padding", "C) ::after 撑开命中区"]},
+      {"question": "Q3: A11Y-07 的作用范围取哪一档?", "answer": "A) 按可交互元素普查枚举", "options_presented": ["A) 可交互元素普查", "B) 只做点名的裁决按钮", "C) 普查 + 全部加 min-height"]},
+      {"question": "Q4: 「不得为此重构侧栏」这条 fence 怎么处置?", "answer": "A) fence 随前提失效", "options_presented": ["A) fence 随前提失效", "B) fence 仍然生效", "C) 重述为可验证判据"]}
+    ]
+  },
+  "deferred_ideas": [],
+  "canonical_refs": [
+    ".planning/ROADMAP.md §Phase 6",
+    ".planning/ROADMAP.md §全局硬规则 1-7",
+    ".planning/phases/idi-04-tokens-contract/04-UI-SPEC.md §Q5/Q6",
+    ".planning/phases/idi-04-tokens-contract/04-UI-SPEC.md §UI Considerations",
+    ".planning/phases/idi-04.1-radix/idi-04.1-CONTEXT.md",
+    ".planning/phases/idi-05-typography-and-visual-hierarchy/05-CONTEXT.md",
+    "frontend/style.css",
+    "frontend/index.html",
+    "frontend/app.js",
+    "scripts/check-05-ui-uat.py"
+  ]
+}

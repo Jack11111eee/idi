@@ -29,14 +29,26 @@
     故:`--browser chrome` 仍保留,但它强制有头(headless=False),不能无人值守。
 
 运行方式
-    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..8 项
+    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..9 项
     .venv/bin/python scripts/check-05-ui-uat.py --item smoke    # 只跑 harness 自检切片
     .venv/bin/python scripts/check-05-ui-uat.py --item 7        # 只跑渲染目标的标题刻度
     .venv/bin/python scripts/check-05-ui-uat.py --item 8        # 只跑 sticky 表头 / 流内 badge
+    .venv/bin/python scripts/check-05-ui-uat.py --item 9        # 只跑面板区滚动容器收敛
     .venv/bin/python scripts/check-05-ui-uat.py --item 1 --item 2
     .venv/bin/python scripts/check-05-ui-uat.py --ai-smoke      # 额外真跑两次 AI 交互冒烟
     .venv/bin/python scripts/check-05-ui-uat.py --keep          # 保留临时工作目录供排查
     .venv/bin/python scripts/check-05-ui-uat.py --browser chrome  # 改用系统 Chrome(有头)
+
+第 9 项(L-4 / D-14)
+    面板区的滚动容器从「3 个嵌套 + 1 个外层」收敛为「1 个外层(`#main-pane`)+ 1 个被
+    保留的内层(`#latest-check`)+ 1 个 SC#3 明文豁免的会话流滚动者(`#chat-messages`)」。
+    三项断言:滚动者集合按 **DOM 遍历**普查恰为三者(排除豁免后恰为两者)、
+    `#main-pane` 与 `#latest-check` 滚到底后末条内容可达、`#ai-events` 与
+    `#annotation-list` 的计算 `max-height` 为 `none`。另含两条**保留项护栏**:
+    `#chat-messages` 的 `overflow-y == auto`(计算样式)、`#latest-check` 的
+    `max-height: 30vh;` 按**源码文本计数 == 1**(计算样式对 `vh` 返回 px 用值,
+    断言 `== "30vh"` 会恒 FAIL)。可达性断言各带**前提检查**(容器可见且 rect 高 > 0),
+    前提不成立记 BLOCKED 而非 PASS。
 
 第 8 项(L-1 / D-06)
     文档面板标题行从「随面板内容滚走」改为「钉在面板顶部」(`#doc-panel-header` 新增
@@ -1861,6 +1873,254 @@ def item8(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# UAT 第 9 项 — L-4 滚动容器收敛(D-14 / LAYOUT-04)
+# ---------------------------------------------------------------------------
+# 三件事(UI-SPEC §L-4 的门):
+#   (a) 面板区(`#main-pane` 及其**全部后代**)内计算 `overflow-y` 为 `auto` / `scroll`
+#       的元素集合恰为 `{#main-pane, #chat-messages, #latest-check}`;排除 SC#3 明文豁免的
+#       `#chat-messages` 之后恰为 `{#main-pane, #latest-check}`;
+#   (b) `#main-pane` 与 `#latest-check` 滚到底后末条内容可达;
+#   (c) `#ai-events` / `#annotation-list` 的计算 `max-height` 为 `none`。
+# 另含两条**保留项护栏**(D-11 的保留理由是承重约束,不是风格偏好,故必须机器化):
+#   `#chat-messages` 的 `overflow-y` 按**计算样式**断言为 `auto` —— `auto` 是关键字值,
+#   `getComputedStyle` 逐字返回它,读法成立;
+#   `#latest-check` 的限高按**源码文本计数**断言为 1 —— `getComputedStyle` 对 `vh` 返回的
+#   是解析后的**用值(px)**(1440×900 下 `30vh` → `270px`),断言 `== "30vh"` 是一条
+#   **恒 FAIL** 的断言,会让本项永远无法转绿。两条护栏互补:前者抓「保留项被改值」,
+#   后者抓「保留项被悄悄删掉」。
+#
+# 普查的**状态无关性**:七个 `overflow` 声明所在的元素全部是 `index.html` 的静态元素
+# (`#main-pane` / `#doc-panel` / `#ai-events` / `#chat-messages` / `#annotation-list` /
+# `#latest-check`),与磁盘状态样本无关,故普查在 `p1` 下得到的结论对五个样本同样成立 ——
+# 这是本断言比「按状态样本逐格探」更强的地方(也正是不必逐样本重跑的原因)。
+#
+# 两个样本各出一半**可达性**证据:`#main-pane` 要 `#ai-events` 可见(仅 p1),
+# `#latest-check` 要 `#checks-panel` 可见(仅 checking)。在错误的样本上读到的 rect 全零,
+# 那正是本阶段威胁表 T-idi-06-10(假 PASS)的落点,故两条都带显式前提检查。
+PANEL_SCROLLERS = ("#chat-messages", "#latest-check", "#main-pane")
+# SC#3 明文豁免的会话流滚动者(D-14 第 1 条:排除它之后「恰好两个」)。
+PANEL_SCROLLERS_EXEMPT = ("#chat-messages",)
+STYLE_CSS = ROOT / "frontend" / "style.css"
+# 保留项护栏读的源码文本(D-11:去掉限高会把裁决按钮推出视口)。
+LATEST_CHECK_MAX_HEIGHT_DECL = "max-height: 30vh;"
+# `#latest-check` 的可达性探针正文(经应用自身的 renderMarkdown 渲染 60 次)。
+LATEST_CHECK_PROBE_MD = (
+    "## 探针核查段落\n\n"
+    "这是一段足够长的自检报告探针正文,用于把 `#latest-check` 撑到可滚,"
+    "使末条可达性断言不是空转。\n"
+)
+
+# 滚动者普查:遍历 `#main-pane` **及其全部后代**,读每个元素的计算 `overflow-y`。
+# 按 **DOM 遍历**算出,不硬编码选择器列表(PATTERNS.md E-5 第 1 条纪律)。
+_IDI06_SCROLLERS_JS = """() => {
+  const root = document.querySelector('#main-pane');
+  if (!root) return null;
+  const labelOf = (el) => {
+    if (el.id) return '#' + el.id;
+    const cls = (typeof el.className === 'string' && el.className.trim())
+      ? '.' + el.className.trim().split(/\\s+/).join('.') : '';
+    return el.tagName.toLowerCase() + cls;
+  };
+  const out = [];
+  [root, ...root.querySelectorAll('*')].forEach((el) => {
+    const oy = getComputedStyle(el).overflowY;
+    if (oy === 'auto' || oy === 'scroll') out.push(labelOf(el));
+  });
+  return out;
+}"""
+
+# 末条可达性:读 scrollHeight / clientHeight → 滚到底 → 读容器与末条子元素的 rect。
+# 元素不存在返回 null ⇒ 调用方记 blocked(),绝不记假 PASS。
+_IDI06_REACH_JS = """(sel) => {
+  const c = document.querySelector(sel);
+  if (!c) return null;
+  const scrollHeight = c.scrollHeight;
+  const clientHeight = c.clientHeight;
+  c.scrollTop = scrollHeight;
+  const rc = c.getBoundingClientRect();
+  const last = c.lastElementChild;
+  const rl = last ? last.getBoundingClientRect() : null;
+  const label = last
+    ? (last.id ? '#' + last.id
+       : last.tagName.toLowerCase() + ((typeof last.className === 'string' && last.className.trim())
+         ? '.' + last.className.trim().split(/\\s+/).join('.') : ''))
+    : null;
+  return {
+    scrollHeight: scrollHeight, clientHeight: clientHeight, scrollTop: c.scrollTop,
+    display: getComputedStyle(c).display,
+    container: {top: rc.top, bottom: rc.bottom, left: rc.left, right: rc.right,
+                width: rc.width, height: rc.height},
+    last: rl ? {top: rl.top, bottom: rl.bottom, left: rl.left, right: rl.right,
+                width: rl.width, height: rl.height} : null,
+    lastLabel: label,
+  };
+}"""
+
+
+def _latest_check_max_height_guard(item):
+    """D-11 保留项护栏(静态):`#latest-check` 的 `max-height: 30vh;` 仍在。
+
+    按**源码文本**计数,不读计算样式 —— 理由见本节头注释。读法与
+    `check_render_markdown_call_sites` 同族:脚本自己从文件文本算,不依赖 shell 管道。
+    """
+    try:
+        text = STYLE_CSS.read_text(encoding="utf-8")
+    except OSError as exc:
+        blocked(item, "[static] frontend/style.css 的 max-height: 30vh 声明计数 == 1",
+                "1", "<MISSING>", f"{STYLE_CSS} 读不到:{exc}")
+        return
+    count = text.count(LATEST_CHECK_MAX_HEIGHT_DECL)
+    lines = [i for i, ln in enumerate(text.splitlines(), 1)
+             if LATEST_CHECK_MAX_HEIGHT_DECL in ln]
+    info("item9 [static] #latest-check 保留项护栏",
+         f"frontend/style.css 里 '{LATEST_CHECK_MAX_HEIGHT_DECL}' 计数={count} 命中行={lines}")
+    ok_true(item, "[static] frontend/style.css 的 max-height: 30vh 声明计数 == 1",
+            count == 1, 1, count,
+            "删掉它会去掉 #latest-check 的内部滚动、把裁决按钮推出视口 ⇒ "
+            "若要改口径,先更新本断言与 UI-SPEC §L-4 的保留理由")
+
+
+def _idi06_reach(page, item, sel, sample, injected, inject_error):
+    """末条可达性(D-14 第 2 条)。
+
+    前提链:内容已注入 → 容器存在 → 容器**可见且 rect 高 > 0**。任一前提不成立记
+    `blocked(...)` —— 被祖先藏住的容器 rect 全零,「末条落在容器内」会平凡成立,
+    那是一条空转 PASS(威胁表 T-idi-06-10),与 item7 已登记的 `all(w != "700")`
+    对 `None` 恒真是同型陷阱。
+    """
+    label = f"[{sample}] {sel} 末条内容可达"
+    if injected is None:
+        blocked(item, label, "内容经应用自身的渲染路径注入", "<MISSING>", inject_error)
+        return
+    geo = page.evaluate(_IDI06_REACH_JS, sel)
+    if geo is None:
+        blocked(item, label, f"{sel} 存在", "<MISSING>", "元素不存在")
+        return
+    if geo["display"] == "none" or geo["container"]["height"] <= 0:
+        blocked(item, label, "容器可见且 rect 高 > 0",
+                f"display={geo['display']} rect={geo['container']}",
+                "容器被祖先藏住 ⇒ 几何读数全零,可达性判定是空转,不记 PASS")
+        return
+    info(f"item9 {label} 原始数值",
+         f"scrollHeight={geo['scrollHeight']} clientHeight={geo['clientHeight']} "
+         f"scrollTop={geo['scrollTop']} last={geo['lastLabel']} lastRect={geo['last']} "
+         f"container={geo['container']}")
+    if geo["scrollHeight"] <= geo["clientHeight"]:
+        info(f"item9 {label}",
+             "容器无需滚动,可达性平凡成立(不记断言,避免空转 PASS)")
+    else:
+        ok_true(item, f"[{sample}] {sel} 滚到底(scrollTop + clientHeight >= scrollHeight - 1)",
+                geo["scrollTop"] + geo["clientHeight"] >= geo["scrollHeight"] - 1,
+                f">= {geo['scrollHeight'] - 1}",
+                f"{geo['scrollTop'] + geo['clientHeight']}")
+    if geo["last"] is None:
+        blocked(item, f"[{sample}] {sel} 末条子元素落在容器可视区内",
+                "容器有子元素", "<MISSING>",
+                "末条读不到 ⇒ 可达性判定是空转,不记 PASS")
+        return
+    # 承重判据:末条元素的**下边缘**落在容器可视带内(上界 +1px 容差吸收子像素),
+    # 且不低于容器上边缘(内容末端没被滚过头)。
+    # 为何不写成 `last.top >= container.top - 1`:当末条子元素本身**高于**容器
+    # (p1 下 `#main-pane` 的末条 `#ai-panel` 实测高 2434px > 容器 900px)时,该式
+    # 恒不成立 —— 那是一条恒 FAIL 的断言,与 `max-height == "30vh"` 同类。真正的
+    # 主张是「内容末端可达」,即下边缘落在可视带内;上边缘属于被滚动遮住的部分,
+    # 不影响末端可达性。
+    ok_true(item, f"[{sample}] {sel} 末条子元素落在容器可视区内",
+            geo["last"]["bottom"] <= geo["container"]["bottom"] + 1
+            and geo["last"]["bottom"] >= geo["container"]["top"],
+            "container.top <= last.bottom <= container.bottom + 1",
+            f"last.bottom={geo['last']['bottom']} "
+            f"container=[{geo['container']['top']}, {geo['container']['bottom']}]",
+            "内容末端可达:末条不被限高截断到可视区之外")
+
+
+def item9(page, tmp_root):
+    item = "9"
+    print("\n=== UAT 9: L-4 面板区滚动容器收敛(D-14)===", flush=True)
+
+    # ---- (a) 滚动者 DOM 普查 + (c) 两处限高消失 + (d) 保留项护栏 ---------------
+    proj = make_fixture("p1", tmp_root)
+    enter_project(page, proj)
+    info("item9 样本", f"p1(会话流活动态,#session-panel / #ai-events 可见)→ {proj}")
+
+    scrollers = page.evaluate(_IDI06_SCROLLERS_JS)
+    expected_all = sorted(PANEL_SCROLLERS)
+    if scrollers is None:
+        blocked(item, "[p1] 面板区滚动者集合(#main-pane 及其全部后代)",
+                expected_all, "<MISSING>",
+                "#main-pane 不存在,普查无法跑 ⇒ 不记 PASS")
+    else:
+        info("item9 [p1] 面板区滚动者普查(实测数组)",
+             f"{len(scrollers)} 个:{scrollers}")
+        if "#main-pane" not in scrollers:
+            blocked(item, "[p1] 面板区滚动者集合(#main-pane 及其全部后代)",
+                    expected_all, scrollers,
+                    "实测结果里没有 #main-pane ⇒ 探针跑错了范围,不记 PASS")
+        else:
+            actual = sorted(scrollers)
+            ok_true(item,
+                    "[p1] 面板区滚动者集合 == {#main-pane, #chat-messages, #latest-check}",
+                    actual == expected_all, expected_all, actual,
+                    "口径取「恰好」而非「至多」:意外新增第四个滚动者会在这里 FAIL")
+            exempted = sorted(s for s in scrollers if s not in PANEL_SCROLLERS_EXEMPT)
+            expected_exempted = sorted(
+                s for s in PANEL_SCROLLERS if s not in PANEL_SCROLLERS_EXEMPT)
+            ok_true(item,
+                    "[p1] 排除 #chat-messages(SC#3 明文豁免)后 == {#main-pane, #latest-check}",
+                    exempted == expected_exempted, expected_exempted, exempted,
+                    "D-14 第 1 条的字面读法:面板区内恰好两个滚动容器")
+
+    # 读计算样式即可 —— `getComputedStyle` 对 `display: none` 的元素同样返回解析后的值
+    # (computed style 不依赖布局),故 `#annotation-list` 在 p1 下(被祖先藏住)这两条
+    # 依然有效,无需为它切样本。
+    ok(item, "[p1] #ai-events 计算 max-height == none", "none",
+       read_style(page, "#ai-events", "max-height"),
+       "L-4:套娃第一层(55vh 限高 + 内滚动)已原地删除")
+    ok(item, "[p1] #annotation-list 计算 max-height == none", "none",
+       read_style(page, "#annotation-list", "max-height"),
+       "L-4:套娃第二层(32vh 限高 + 内滚动)已原地删除")
+
+    ok(item, "[p1] #chat-messages overflow-y == auto", "auto",
+       read_style(page, "#chat-messages", "overflow-y"),
+       "D-12:输入行必须钉底,会话流滚动者按保留项对待")
+    _latest_check_max_height_guard(item)
+
+    # ---- (b) 末条可达性(D-14 第 2 条)---------------------------------------
+    # `#main-pane`:经应用自身的 renderEvent 注入足量条目到 #ai-events(不手工拼 DOM)。
+    grown = page.evaluate("""() => {
+        const list = document.querySelector('#ai-events');
+        if (!list || typeof renderEvent !== 'function') return null;
+        for (let i = 0; i < 40; i++) {
+          renderEvent({kind: 'say', content: '第 ' + i + ' 条可达性探针:把面板撑到可滚。'});
+        }
+        return document.querySelectorAll('#ai-events .event-item').length;
+    }""")
+    _idi06_reach(page, item, "#main-pane", "p1", grown,
+                 "#ai-events 或 renderEvent 不可用")
+
+    # `#latest-check`:`#checks-panel` 只在 checking 样本可见 —— p1 下它的 rect 全零,
+    # 前提检查会记 BLOCKED 而不是记一条假 PASS。
+    proj_c = make_fixture("checking", tmp_root)
+    enter_project(page, proj_c)
+    info("item9 样本",
+         f"checking(自检报告态,#checks-panel / #latest-check 可见)→ {proj_c}")
+    grown_lc = page.evaluate("""(md) => {
+        const c = document.querySelector('#latest-check');
+        if (!c || typeof renderMarkdown !== 'function') return null;
+        c.innerHTML = '';
+        for (let i = 0; i < 60; i++) c.appendChild(renderMarkdown(md));
+        return c.childElementCount;
+    }""", LATEST_CHECK_PROBE_MD)
+    _idi06_reach(page, item, "#latest-check", "checking", grown_lc,
+                 "#latest-check 或 renderMarkdown 不可用")
+
+    # ---- (e) viewport 纪律 ---------------------------------------------------
+    # 本项不变更 viewport;此处是兜底复位(若调试期用过 set_viewport_size),
+    # 与 item 8 同一纪律:VIEWPORT_RESTORE 是 harness 的基准视口,不复位会污染其后各项。
+    page.set_viewport_size(VIEWPORT_RESTORE)
+
+
+# ---------------------------------------------------------------------------
 # harness 自检切片(--item smoke)
 # ---------------------------------------------------------------------------
 def item_smoke(page, tmp_root):
@@ -1919,7 +2179,7 @@ def item_smoke(page, tmp_root):
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="idi-04 UAT browser harness")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8(可重复,或逗号分隔)")
+                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9(可重复,或逗号分隔)")
     ap.add_argument("--ai-smoke", action="store_true",
                     help="第 5 项额外真跑两次 AI 交互冒烟(会产生真实 AI 调用与计费)")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
@@ -1932,7 +2192,7 @@ def parse_args():
 
 def normalize_items(raw):
     if not raw:
-        return ["1", "2", "3", "4", "5", "6", "7", "8"]
+        return ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
     out = []
     for chunk in raw:
         for piece in chunk.split(","):
@@ -1945,7 +2205,7 @@ def normalize_items(raw):
 def main():
     args = parse_args()
     items = normalize_items(args.item)
-    known = {"smoke", "1", "2", "3", "4", "5", "6", "7", "8"}
+    known = {"smoke", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
     bad = [i for i in items if i not in known]
     if bad:
         raise SystemExit(f"ERROR: 未知项 {bad}(可用:{sorted(known)})")
@@ -1988,6 +2248,8 @@ def main():
             item7(page, tmp_root)
         if "8" in items:
             item8(page, tmp_root)
+        if "9" in items:
+            item9(page, tmp_root)
     finally:
         if browser is not None:
             browser.close()

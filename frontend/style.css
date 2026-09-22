@@ -588,12 +588,13 @@ button:hover { background: var(--color-surface-hover); }
 button.danger { color: var(--color-action-danger); border-color: var(--color-action-danger); }
 
 /* 事件列表与条目 */
+/* L-4 / D-11 的刻意收敛(行为变更,不是纯视觉):原地删掉限高与内滚动两条声明 ——
+   AI 面板不再内部滚动,条目随外层 #main-pane 滚动,滚到面板区底部时内容可达。
+   门:check-05 --item 9 的滚动者 DOM 普查 + 末条可达性断言;其余声明一字不动。 */
 .event-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-1-5);
-  max-height: 55vh;
-  overflow-y: auto;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   padding: var(--space-2);
@@ -937,12 +938,13 @@ button.primary {
   border-radius: var(--radius-pill);
   padding: var(--space-half) var(--space-2-5);
 }
+/* L-4 / D-11 的刻意收敛(行为变更,不是纯视觉):原地删掉限高与内滚动两条声明 ——
+   批注面板不再内部滚动,条目随外层 #main-pane 滚动。
+   padding 是 L-5 普查的输入,必须保留;其余声明一字不动。门:check-05 --item 9。 */
 #annotation-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-2-5);
-  max-height: 32vh;
-  overflow-y: auto;
   padding: var(--space-half);
 }
 

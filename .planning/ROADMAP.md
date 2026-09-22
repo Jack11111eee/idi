@@ -49,7 +49,7 @@
 
 - [x] **Phase 4: 设计契约、令牌层与契约校验** - 书面 UI-SPEC(含含义清单)+ 单一 `:root` 令牌块 + 全部字面量替换 + 四条契约校验命令 (completed 2026-09-20)
 - [x] **Phase 5: 排版与视觉层级** - markdown 正文字号受控、不可逆动作权重、页面级层级、面板活动态、两处内联 SVG (completed 2026-09-21)
-- [ ] **Phase 6: 布局稳健性** - 魔法数消除、窄窗口不破版、滚动容器收敛、24×24 命中区
+- [x] **Phase 6: 布局稳健性** - 魔法数消除、窄窗口不破版、滚动容器收敛、24×24 命中区 (completed 2026-09-22)
 - [ ] **Phase 7: 交互状态与焦点样式** - hover/active/disabled/transition + 全站 `:focus-visible`
 - [ ] **Phase 8: 可访问性语义与键盘** - 唯一触碰 `app.js`/`index.html` 的阶段:tabindex、划词焦点交接、Escape、dialog 语义、内联错误结构修复、五条修复回归复验
 
@@ -249,7 +249,7 @@ Plans:
 
 **Wave 4** *(gap closure — blocked on Wave 3 completion)*
 
-- [ ] idi-06-04-PLAN.md — LAYOUT-02 的 768px 承诺收窄登记(用户裁定 remediation (b)「Narrow the promise, fix the claim」):更正 check-05 item 8 的失效覆盖主张使其陈述实测真相 + UI-SPEC 新增 A-10 收窄行与 §L-2 判据表注解 + 填实 VERIFICATION 的 override 条目 + 就地更正 03-PLAN / 03-SUMMARY 里的同一主张。**零布局改动**
+- [x] idi-06-04-PLAN.md — LAYOUT-02 的 768px 承诺收窄登记(用户裁定 remediation (b)「Narrow the promise, fix the claim」):更正 check-05 item 8 的失效覆盖主张使其陈述实测真相 + UI-SPEC 新增 A-10 收窄行与 §L-2 判据表注解 + 填实 VERIFICATION 的 override 条目 + 就地更正 03-PLAN / 03-SUMMARY 里的同一主张。**零布局改动**
 
 **UI hint**: yes
 
@@ -351,7 +351,7 @@ Plans:
 | 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | Complete    | 2026-09-20 |
 | 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
 | 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
-| 6. 布局稳健性 | v1.14 | 3/3 | In Progress|  |
+| 6. 布局稳健性 | v1.14 | 4/4 | Complete    | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |
 

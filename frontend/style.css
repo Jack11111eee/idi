@@ -457,6 +457,12 @@ html, body {
   gap: var(--space-1-5);
   overflow-y: auto;
   align-items: center;
+  /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
+     min-width: auto 胜出,长不可断内容能把 #doc-panel 顶得比它的 clamp() 还宽。
+     上面的 anywhere 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖「六个目标
+     长期全覆盖」,将来新增一个未被 overflow-wrap 覆盖的渲染容器时仍能兜住,
+     不得当作冗余代码删除。 */
+  min-width: 0;
 }
 
 #main-pane > section {
@@ -472,6 +478,12 @@ html, body {
   overflow-y: auto;
   border-left: 1px solid var(--color-border-subtle);
   background: var(--color-surface);
+  /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
+     min-width: auto 胜出,长不可断内容能把 #doc-panel 顶得比它的 clamp() 还宽。
+     上面的 anywhere 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖「六个目标
+     长期全覆盖」,将来新增一个未被 overflow-wrap 覆盖的渲染容器时仍能兜住,
+     不得当作冗余代码删除。 */
+  min-width: 0;
 }
 
 #doc-panel.collapsed {
@@ -1278,3 +1290,16 @@ button, input, select { color: var(--color-text); }
 .event-content h1, .chat-bubble h1, .say-chunk h1, .annotation-note h1, .annotation-answer-body h1 { font-size: var(--text-xl); font-weight: var(--fw-semibold); }
 .event-content h2, .chat-bubble h2, .say-chunk h2, .annotation-note h2, .annotation-answer-body h2 { font-size: var(--text-lg); font-weight: var(--fw-semibold); }
 .event-content h3, .chat-bubble h3, .say-chunk h3, .annotation-note h3, .annotation-answer-body h3 { font-size: var(--text-md); font-weight: var(--fw-semibold); }
+
+/* 六目标换行保护(L-3 / D-07,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   六目标枚举 —— 与 renderMarkdown() 的调用点一一对应(Phase 5 idi-05-04 已建立该枚举,
+   见 `:1229-1262` 的注释与 check-05 的 MARKDOWN_TARGETS)。
+   不写通配规则:那会波及已裁定的 `.event-content { word-break: break-all }`(L598-601),
+   并把「哪些容器受影响」重新变成不可枚举 —— 那正是 G-idi-05-1 的成因。
+   必须用 anywhere 而非 break-word:按 CSS Text 3,只有 anywhere 参与 min-content 内在尺寸计算,
+   break-word 不参与 —— 这是上面 min-width: 0 能生效的前提,注释必须写明。
+   `.event-content` 已在 `break-all` 之下(break-all 同样影响 min-content),故此处的 anywhere
+   对它渲染零影响 —— 仍列入六目标,因为枚举必须与渲染目标一一对应(部分枚举正是缺陷存活的原因)。 */
+.markdown-body, .event-content, .chat-bubble, .say-chunk, .annotation-note, .annotation-answer-body {
+  overflow-wrap: anywhere;
+}

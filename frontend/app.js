@@ -24,6 +24,7 @@ const roundsHint = document.getElementById('rounds-hint');
 const roundTitle = document.getElementById('round-title');
 const roundSwitcher = document.getElementById('round-switcher');
 const roundDoc = document.getElementById('round-doc');
+const sessionPanel = document.getElementById('session-panel');
 const chatMessages = document.getElementById('chat-messages');
 const messageInput = document.getElementById('message-input');
 const sendBtn = document.getElementById('btn-send');
@@ -349,6 +350,10 @@ function applySessionGates(data) {
   processRoundBtn.classList.remove('hidden');
   messageInput.disabled = false;
   sendBtn.disabled = false;
+
+  // 主区承载「操作对象」:阶段 1-2 会话流 / 阶段 3+ 批注流——是切换不是叠加(§4.1 说明 1、§4.2 第 4 条,D-P2-2)
+  const isSessionPhase = data.state === 'phase1_new' || data.state === 'phase12_in_progress';
+  sessionPanel.classList.toggle('hidden', !isSessionPhase);
 
   // 子视图切换:阶段 1-2 → draft-view;阶段 3+ → rounds-placeholder
   if (data.state === 'phase1_new' || data.state === 'phase12_in_progress') {

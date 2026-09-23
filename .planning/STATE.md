@@ -2,45 +2,45 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 04
-current_phase_name: tokens-contract
-status: executing
-stopped_at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
-last_updated: "2026-09-18T13:55:04.869Z"
-last_activity: 2026-09-18
-last_activity_desc: Phase idi-04 Plan 03 complete — CHECK-02 contrast checker + pair manifest + failure-direction proofs; all 4 guard commands PASS
-state_head: 253d4d329ccd7be28542578e20102f3aa0a218cf
+current_phase: 8
+current_phase_name: 可访问性语义与键盘
+status: planning
+stopped_at: Phase idi-07 complete, ready to plan Phase 8
+last_updated: "2026-09-23T11:33:53.303Z"
+last_activity: 2026-09-23
+last_activity_desc: Phase idi-07 complete, transitioned to Phase 8
+state_head: e673fb70ff3cb87e3fa10fa26b3b4a5f8c079ea9
 progress:
-  total_phases: 5
-  completed_phases: 0
-  total_plans: 3
-  completed_plans: 3
-  percent: 100
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 18
+  completed_plans: 18
+  percent: 83
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-17)
+See: .planning/PROJECT.md (updated 2026-09-21)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-04 — tokens-contract
+**Current focus:** Phase 8 — 可访问性语义与键盘
 
 ## Current Position
 
-Phase: idi-04 (tokens-contract) — PLANS COMPLETE
-Plan: 3 of 3
-Status: All 3 plans of Phase idi-04 executed; awaiting phase verification
-Last activity: 2026-09-18 — Completed quick task 260918-qrq: 信息架构对调 + ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订
+Phase: 8 — 可访问性语义与键盘
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-23 — Phase idi-07 complete, transitioned to Phase 8
 
-Progress: [██████████] 100%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 13
+- Total plans completed: 31
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -51,6 +51,11 @@ Progress: [██████████] 100%
 | 1. 行走骨架 | 4 | - | - |
 | 2. 轮次收敛循环 | 4 | - | - |
 | 3. 授权、自检与终点 | 5 | - | - |
+| idi-04.1 | 4 | - | - |
+| idi-04 | 3 | - | - |
+| idi-05 | 4 | - | - |
+| idi-06 | 4 | - | - |
+| idi-07 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -77,6 +82,20 @@ Progress: [██████████] 100%
 | Phase idi-03 P05 | - | 2 tasks | 3 files |
 | Phase idi-04 P01 | ~30min | 3 tasks | 4 files |
 | Phase idi-04 P03 | 11min | 2 tasks | 2 files |
+| Phase 04.1 P01 | 22min | 3 tasks | 2 files |
+| Phase 04.1 P02 | 2min | 2 tasks | 1 files |
+| Phase idi-04.1-radix P03 | 41min | 3 tasks | 2 files |
+| Phase idi-04.1 P04 | 20min | 3 tasks | 2 files |
+| Phase idi-05 P01 | 20min | 3 tasks | 2 files |
+| Phase idi-05 P03 | ~45min | 3 tasks | 2 files |
+| Phase idi-05 P04 | 17 min | 3 tasks | 3 files |
+| Phase idi-06 P01 | 12 min | 2 tasks | 2 files |
+| Phase idi-06 P02 | 24min | 3 tasks | 2 files |
+| Phase idi-06 P03 | 46 | 3 tasks | 2 files |
+| Phase idi-06 P04 | 16m | 3 tasks | 5 files |
+| Phase idi-07 P01 | 10 min | 3 tasks | 3 files |
+| Phase idi-07 P02 | 14 min | 3 tasks | 2 files |
+| Phase idi-07 P03 | 33 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -117,6 +136,61 @@ Recent decisions affecting current work:
 - [Phase 04]: idi-04-03: ORDER 断言取严格序关系(ratio(quieter) < ratio(louder)),非 ≤0.30 阈值门——UI-SPEC 已显式接受 0.311 对 ≤~0.30 guide 的残差,阈值门会在 HEAD 上立即失败;实测打印 ORDER 0.311(=5.18/16.67)。失败方向已实证:把 --gray-600 加深到 #000000 时四条 muted 背景对全部 PASS(20.12/21.00/19.26/18.10),只有 ORDER 报 FAIL: hierarchy inverted 1.207 并 exit 1 —— 这正是 SC3「层级与比值一起校验」的机器化形态
 - [Phase 04]: idi-04-03: --gray-100 保持 #eeeeee,实测 muted 比值 4.66(非折叠前 #f0f0f0 上的 4.75);不得为凑 4.75 回改——那会违反 D-15 并带动 --color-surface-hover / --color-border-subtle 漂移
 - [Phase 04]: idi-04-03: 四条命令的失败方向全部实证(CHECK-02 两次:阈值失败 + 层级倒置);Task 2 为纯注入→观察→还原,净 diff 为零,故无独立提交——残留扫描即为验收(grep #deadbe=0 / 注入对=0 / !important;=1 / --gray-600:#6a6a6a=1)
+- [Phase 04.1]: D-16 核实成立:无 muted-text 类元素落在 <button> 内,PAIR --color-text-muted ON --color-surface-hover 不进清单,CHECK-02 清单为 43 对(34 TEXT + 9 NON-TEXT)+ 1 ORDER
+- [Phase 04.1]: R-3 只删 .tier-desc 的 opacity: 0.9 一条声明,font-size/font-weight 一字未动;R-1 只加 z-index 一条声明,不加 position(#state-badge 刻意不是 position: fixed 浮层)
+- [Phase 04.1]: 新 shadow 令牌 shadow-overlay 与 .overlay-card 的 box-shadow 消费者同一次提交落地(Hard Rule 5);item_smoke 的 R-2 断言用短 needle "0.2",守住 wave 3 的「全文件唯一颜色字面」计数不变量
+- [Phase 04.1]: CHECK-01 的 tier-1 交替式加宽为含 radix(仅一处正则),其余断言逐字未动;D-03 改名后旧交替式对 var(--radix-… 不匹配,守卫静默空转而仍打印 PASS,加宽后重新可机械查
+- [Phase 04.1]: 空转对照被实证:同一份注入 var(--radix-gray-11) 的样式表,新守卫 FAIL/exit=1,用 sed 's/|radix//' 重建的旧守卫 PASS/exit=0 —— 这是本次修复的全部理由,不是推论
+- [Phase 04.1]: check-02-contrast.py 在 43 对清单上四条硬失败路径逐一复证(未知名/标记数 44 vs 43/覆盖率 10 below floor 24/20/4/ORDER inverted 2.753),代码 delta 为零故无独立提交,沿 idi-04-03 先例
+- [Phase 04.1]: 全部八次变异运行在 mktemp -d 临时仓库根上完成;frontend/style.css 是本阶段已提交的交付物,变异前后逐字节一致(git diff --exit-code 为空)
+- [Phase 04.1]: D-14 断言改造落地:#btn-authorize 的 color 接 --color-action-irreversible-fg(green-12),不是 --color-action-irreversible(green-11) —— 计划原文的令牌对位有误,照抄会让 item 3 永远 FAIL
+- [Phase 04.1]: box-shadow 的 rgba(0, 0, 0, 0.2) 是全文件唯一保留的颜色字面(计数不变量 == 1),其形状由 R-2 的 --shadow-overlay 固定,不是令牌接线对象
+- [Phase 04.1]: C-1 复核:ROADMAP 五处 + 04-UI-SPEC.md 携带项 #7 的 #brainstorm-view h2 = 14px / #8a6508 全部失真(实测 16px / #4f3422);只留证不改写,裁决权交用户
+- [Phase idi-04.1]: CR-01 关闭:resolve_color 令牌未声明时返回 None,ok() 把 None 期望值记 BLOCKED —— 只改两处 helper,24 处调用点与全部 expected 字面值一字未动 — D-14 把 22 条硬编码 rgb(...) 断言换成令牌接线,移除了假 FAIL 的根因,同时移除了改名/删除时的 FAIL 能力;plan 03 已把该损失登记为由 check-02 的 43 对实测比值与接线断言旁的 info() 补偿 —— CR-01 证明该补偿只覆盖值轴,接线轴仍空转
+- [Phase idi-04.1]: CR-01 的修复用变异证明钉死:反事实常量(68309d0 的探针体)+ 浏览器侧拦截 /style.css 删掉 --color-text-muted 声明 + 未变异对照支,三件套进 scripts/probe-05-resolve-color.py(不是门,不进守卫契约) — 变异测试是唯一能证明守卫真的会失败的手段(本项目已记录的教训);只跑一次真实树无法区分「守卫在工作」与「守卫静默空转」,故反事实与对照两支缺一不可
+- [Phase 05]: D-07: --text-2xl 取 22px 而非契约的 18px(18px 已被 --text-lg 占用,改回会让 18px 有两个令牌名);围栏注释写明「名同值不同,不是笔误」
+- [Phase 05]: D-10: 行高复用 --lh-tight 零新增令牌;整数配对数学上不可得,改写为比率配对,18/28 算术错误修正为 18/24,--lh-compact 单列注明 chrome-only
+- [Phase 05]: D-08: TYPE-02 只复证、零 CSS 改动(三处已由 qrq 归入刻度与令牌,重写会改坏正确状态并使 --text-base 消费者计数漂移)
+- [Phase 05]: 执行期用户裁决:收窄三条 chrome 标题规则的选择器为 #draft-view > h2 / #round-title / #brainstorm-view > h2(后代形态 1-0-1 会伸进 .markdown-body 压掉 0-1-1 的 h2);声明体逐字不动,未改动任何规则先后位置
+- [Phase 05]: [Phase 05]: D-18 新开 --color-marker-active(= --radix-blue-11)承载活动面板标记,不复用 --color-action-primary —— 那个名字说的是「主要动作」,拿它做面板指示器会让名说谎(04.1 的 D-03 为同一条方法论付过代价)。颜色值不变,只换承载令牌名;60/30/10 的 Accent 域偏离登记为 A-7
+- [Phase 05]: [Phase 05]: D-17 竖条用 box-shadow: inset 3px 0 0 而非 border-left(零布局位移),落在 .panel-header 而非 <section>(三个 section 的子元素都带背景色,会盖住左边缘的 inset 竖条);标题只改 color 不改 font-weight。3px 是 box-shadow 的偏移分量,不是 --space-* 刻度值(L-1…L-5 从未覆盖 box-shadow,冻结轮已有先例)
+- [Phase 05]: [Phase 05]: D-20/D-21/D-22 两处 emoji 改用 mask-image + background-color 而非契约的 content: url(data-URI) —— 后者经 content 渲染为图片、不继承页面 CSS、currentColor 不可用,只能把 fill 钉死为转义 hex,那让「跟文字色」成为人工同步的约定。mask 只看 alpha,故 <path> 不带 fill、data-URI 内零颜色信息,契约字面量例外 L-3 整个撤掉(Gate 5 机械钉死)
+- [Phase 05]: [Phase 05]: D-23 .collapse-indicator 零触碰(app.js 用 textContent 赋值,内联 <svg> 会被静默擦掉);mask 方案顺带消解 Pitfall 7 的第二半 —— 本阶段 DOM 里没有任何内联 <svg>
+- [Phase 05]: [Phase 05]: D-05 连带义务履行完毕 —— idi-04.1-radix 因 covered_files 内容真变而 stale,走重新验证而非补指纹:四条守卫重跑全绿,04.1 三处结论逐条从 HEAD 重算(ORDER 0.363 / 4.53 / 3.24+3.15 / 冻结轮 1+saturate(0.6)+inset 琥珀 逐字不变),数量差值已登记(tier-1 25 不变、tier-2 47→48、清单 43→47)。04.1 报告文件零改动,指纹写回留给 /gsd-verify-work idi-04.1-radix
+- [Phase idi-05]: 嵌入刻度取 24 / 18 / 16(文档档沿契约的数值阶梯下移一档),不是 28 / 22 / 18(同档会让 SC3 的「文档 h1 是全屏最大」为假)也不是 22 / 18 / 16(嵌入 h1 会与文档 h2 撞档)
+- [Phase idi-05]: 修法是逐容器列举而非一条全局标题规则 —— 全局规则对四处 chrome 覆盖与 .markdown-body 都是惰性的,于是只命中这五个容器,却把影响面重新变成不可枚举(那正是 G-idi-05-1 的成因)
+- [Phase idi-05]: 影响面枚举按 renderMarkdown() 的调用点而非按类名:九个目标里 #round-doc 有两个调用点,故 renderMarkdown( 计数是 11 而非 9;只枚举四个 .markdown-body 宿主正是缺陷存活到验证后的直接原因
+- [Phase idi-05]: 变异探针抓到 item7 的静默 PASS 洞:all(w != "700") 对 None 恒真,故「无第四字重档」断言在标题读不到时会记 PASS;已改为 any(w is None) 与缺失同处置记 BLOCKED
+- [Phase idi-06]: sticky 表头自带背景 var(--color-surface):.panel-header 规则体内无 background 声明,不加背景则滚动正文从标题行底下穿过;该令牌已被 #doc-panel 消费(:474)⇒ 零新增令牌(硬规则 5/8)
+- [Phase idi-06]: 新规则不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测滚动无正文穿透,故不新增 --z-* 消费者(若日后补须连带登记序关系断言)
+- [Phase idi-06]: L-5/L-6 普查由单样本扩为 p1+p3 双样本:被祖先藏住的元素 getBoundingClientRect 全零,单样本会把隐藏静默读成 clearance 0 / 命中区 0(假 PASS 同型陷阱)
+- [Phase idi-06]: 六目标 overflow-wrap 合并为一条规则而非通配:通配会波及已裁定的 .event-content word-break: break-all 并把影响面重新变成不可枚举(G-idi-05-1 的成因)
+- [Phase idi-06]: 恒 FAIL 的断言与被断言对象同属缺陷:计算样式对 vh 返回 px 用值(30vh→270px)⇒ #latest-check 的保留项护栏改读源码文本计数;末条子元素高于容器时 last.top >= container.top 恒假 ⇒ 判据改为 last.bottom 落在可视带内
+- [Phase idi-06]: #doc-panel 的 overflow-y: auto 必须保留:它是另一列的滚动者,不在面板区普查范围内,但 L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删掉它凑计数会同时打破 L-1 与计数门(期望值是 4 不是 3)
+- [Phase 06]: L-2 走「被实测推翻」这一支:三宽度(1440/1024/768)文档级溢出在波次 2 之后仍为 0px(与波次 1 基线逐字相同,该读数对目标失效模式结构性失明),另立判别性探针 #doc-panel 实测宽 vs clamp(340px, 30vw, 480px) 上界,实测 432/340/340 逐位等于上界 ⇒ @media 不写,计数保持 0
+- [Phase 06]: A11Y-07 的落点由普查定:全文件唯一实测 < 24×24 的是未被需求点名的 .annotation-answer summary(722 × 17),需求点名的 #btn-authorize 实测 178 × 40 本就达标。机制锁定为原地加 min-height/min-width 两条裸字面量(24px 是 WCAG 2.5.8 常数,刻意不挂 var(--space-6))
+- [Phase 06]: L-5 走「被实测推翻」:三样本判定行最小 clearance 40px,远高于 4px 阈值 ⇒ 零 padding 改动,#main-pane / #doc-panel / #chat-messages / #latest-check 一个都没抬
+- [Phase 06]: clearance 断言的判定面收窄为「visible 且 intersects」:p3 的 #btn-authorize × #doc-panel = -122.6px 是滚出视口(与 padding 盒不相交)而非被裁切,不收窄会把正常状态记成缺陷
+- [Phase 06]: [Phase idi-06]: Plan 04(gap closure)按项目所有者的显式裁定 remediation (b)把 LAYOUT-02 的 768px 承诺收窄为「badge 不被横幅遮挡」,并把 check-05 的 768px 分支改写为显式「未覆盖」+ 实测数值(h1 439.0–481.0 × 8–28 vs banner 285.3–482.7 × 12–39,相交带 768–855px);收窄登记于 UI-SPEC §L-2 / A-10 与 VERIFICATION.md frontmatter 的 override(accepted_by=Jack11111eee,overrides_applied 保持 0 留给复验);frontend/ 与 REQUIREMENTS/ROADMAP 零 diff
+- [Phase idi-07]: **`ui.safety-gate` 经项目所有者预授权为已知假阳性(2026-09-23,执行期),且实测该门在整个阶段一次都没开火 —— 原因是它结构性地看不见本阶段的任何 UI 改动**。该门判据为 `block = frontend && hasUiFiles && !hasUiSpec`,只读**最后一次提交**的 `git diff HEAD~1..HEAD`。Phase 7 的 `frontend=true`(ROADMAP 带 `**UI hint**: yes`)、`hasUiSpec=false`(无 `idi-07-UI-SPEC.md`),故 `block` 退化为 `hasUiFiles`。**判为假阳性的依据:** 同能力的确定性门 `ui.plan-gate` 对本阶段返回 `block: false`,因为它的判据多一个 `hasFrontendEvidence`(需要带 UI 框架依赖的 `package.json`)——本仓库是 Python + 原生 HTML/JS,该信号恒为 false;两个门用不同谓词,`ui.safety-gate` 不咨询该信号。本阶段的契约面是 `07-CONTEXT.md` 的 D-01…D-20 + `idi-07-PATTERNS.md`,且 `idi-07-03-PLAN.md:71` 的 D-11 明文**禁止**新建 UI-SPEC 文件(`不得为了凑齐三处而新建 UI-SPEC 文件`)。故执行期不生成 UI-SPEC、不修改本阶段任何计划。
+  **⚠ 修正执行前的预测(必须留档,原预测已被实测推翻):** 规划期曾推断「wave 2 / wave 3 的末次提交改 `style.css` ⇒ 该门会 halt」。**实测不成立。** GSD executor 的收尾提交恒为 docs/metadata 提交(只碰 `.planning/`),而该门只看末次提交,故 wave 1 / wave 2 实测 `hasUiFiles=false`、`block=false`,**预授权未被行使**。wave 1 的 `ee47beb`/`0e5820a`/`0243d6b` 与 wave 2 的 `cd5a1a1`/`0b40da5`/`aa7194b` 六次提交全部改过 `frontend/style.css`,该门一次都没看过。⇒ 该门的真实缺陷不是「偶尔误报」,而是**对本阶段完全失明**:它的单提交窗口恒落在 docs 提交上,故恒绿。**门绿不等于该波 UI 改动被审查过** —— 这是本阶段必须留档的方法论结论(与 `[Phase 3]` 的「门通过须以行为验证佐证」同族)。
+- [Phase idi-07]: 环色 --color-focus 取 #1f63bd,逐字遵从 04-UI-SPEC S-4 的签核算术(「删除 opacity 后环回到 5.62」);它是整个颜色层里唯一不在 Radix 刻度上的值,与 04.1「值必须来自 Radix 步」相冲 —— 这条冲突已写进围栏注释,否则会被后来者当成漂移「修掉」。实测代价面:--radix-blue-11 在 .archive-mode 的 0.75 合成下只剩 3.03:1(余量 0.03);--radix-blue-12 是高对比文字步,作为 2px 环视觉上接近边框。
+- [Phase idi-07]: item 10 的焦点环普查把「判定集为空集」判为 blocked 而不是 info() + return —— 这是对 item9 第 3 条的有意收紧。理由:item_verdict 只读行级裁决,一条未判定的探针会以 `item 10: PASS (N 条断言,0 FAIL,0 BLOCKED)` 的形态现身,「0 条断言静默通过」正是假 PASS 的形态。同一条根因也适用于 SC4(它的判定集更窄,空集更不可能是巧合)。
+- [Phase idi-07]: item 10 的环读数只在「该元素成为 document.activeElement 的那一刻」采,唯一来源是 _IDI07_TAB_READ_JS;本项不存在「未聚焦时的 outline 读数」这个概念(未聚焦元素计算 outline-width 为 0px、outline-color 回落到 UA 值,拿静态读数判定会把每一个元素都判成 bad)。配套结论:焦点读数不得用 read_style(page, sel, prop)(它按选择器取值,结构上读不到「当前焦点元素」)。
+- [Phase idi-07]: idi-07-02:D-07 的 gate 落在既有 L627 选择器上(`button:where(:not(:disabled)):hover:where(:not(:active))`),不落在新增规则上 —— 新增 `button:not(:disabled):hover`(0-2-1)既修不了缺陷(`:not(:disabled)` 不匹配禁用按钮,而旧规则仍匹配它,`.verdict-buttons button:disabled` 只设 opacity / cursor、不钉 background),又引入回归(类列 2 > `button.primary` / `.overlay-card button` 的类列 1,两族填充按钮 hover 时变灰底)。`:where()` 贡献 0 特异性 ⇒ 改写后特异性逐位不变(0-1-1),声明体逐字节不变。
+- [Phase idi-07]: idi-07-02:朴素按钮的 :active 停在 0-1-0,让位由 L627 的 :where(:not(:active)) 承担 —— 特异性死结(必须胜过 hover 要求 >= 0-1-1,必须让 0-1-1 的填充族保住填充要求 <= 0-1-0)不在特异性上解。两半是一对选择器改写,改一必须改另一;**后来者不得为「对齐」把朴素 active 升到 0-1-1**(同特异性下源码顺序会夺走 button.primary 与 .overlay-card button 的填充,白字落在灰底上)。
+- [Phase idi-07]: idi-07-02:D-08 的 rgba 落点选「围栏内令牌」支 —— --color-overlay-hover(0.06)/ --color-overlay-active(0.12)与消费者同提交,R-2 的「围栏外无裸 rgba()」不变量保住。check-01 不数裸 rgba()(这条纪律本无机械守卫),本计划把它落成围栏外 grep -c 为 0 的显式断言。两令牌不是对比度边界 ⇒ 不进 PAIR 清单(--shadow-* 同族也没有配对)。
+- [Phase idi-07]: idi-07-02:两处值碰撞显式登记 —— --color-surface-active 与 --color-surface-user 同值(gray-4,注释点名 04.1-N-4 并同步扩写既有「Three values that must NOT be helpfully changed back」第 3 条,否则同一份注释自相矛盾);--color-border-hover 与 --color-text-muted 同值(gray-11)。同值不同名、不共享消费者,不得当违规「修掉」。
+- [Phase idi-07]: idi-07-02:SC5 的填充半场取 #btn-send,不用 #btn-process-round —— 后者在 p1 标记里带 disabled(index.html:73),applySessionGates() 只 classList.remove(hidden)、从不清 disabled,故 #btn-process-round:not(:disabled):hover 根本不匹配,断言会 FAIL 而非 BLOCKED。SC5-朴素按下 的目标取 renderVerdictCard() 造出的裁决卡首个按钮(样本中稳定可达的朴素无底色按钮;.modal-buttons button 与 .tier-buttons button 都在 .overlay-card 内、已被填成主色,不是朴素族)。**「可见」不等于「可交互」**:前提检查必须是存在 ∧ 可见 ∧ 未被禁用三合一。
+- [Phase idi-07]: idi-07-02:两条承重断言经变异测试证明非空转 —— 去掉 L627 的 :where(:not(:active)) ⇒ SC5-朴素按下 的「③ 按住不放读数 != ② 悬停读数」FAIL、item 10 报 2 FAIL;去掉 :where(:not(:disabled)) ⇒ SC5′ 的「禁用态 hover 背景 == 静默背景」FAIL。变异在已提交的树上做、定向 git checkout -- frontend/style.css 复原(不用 git stash —— 它跨工作树共享,本项目明令禁止)。
+- [Phase idi-07]: idi-07-02:围栏内注释不能出现「令牌名 + 冒号」—— check-02 的 DECL_RE 扫围栏全文(含注释),写 --radix-gray-12: ... 会被当成一条值不可解析的声明而 FAIL;围栏外的机械判据是子串计数,连「规则体不写裸 rgba()」这样一句论证性散文都会把 grep -c 顶成 1。两条陷阱各付过一次 FAIL,修法都只是改写措辞。
+- [Phase idi-07]: idi-07-02:**state.update-progress 再次把派生进度往回改**(写完 0 / 0%),已按 ROADMAP 的 ## Progress 校正为 completed_phases: 4 / percent: 67 / [███████░░░] 67%;同一批写入还把 .planning/state.json 的 next.reason 从 Phase 7 of 6 · 67% · executing 改成 Phase 07 of 6 · 0% · executing,已改回。completed_plans 的 16 → 17 是正确的增量,保留。**下一份计划执行后请复跑同样的核盘判据,不要采信该 handler 的输出。**
+- [Phase idi-07]: idi-07-03:过渡挂载规则 + 减弱动效媒体块 + EXPECTED_MEDIA_QUERIES 0→1 **三者同一次提交** —— 只落块不改常量会让 check-05 --item 8 立刻变红,只改常量不落块会让守卫恒红。决策注释与 ok_true 标签一并改写,明确区分「这是 Phase 7 的减弱动效块」与「L-2 的窄窗口守卫仍走被实测推翻支、仍未写出」:混为一谈会让后来者把计数 1 读成「L-2 的守卫被写了」。删除该媒体块的人必须同时把常量改回 0。
+- [Phase idi-07]: idi-07-03:行业标准的减弱动效片段在本项目里**不存在** —— 通行写法带两个 !important 声明,而本仓库的 !important 声明数必须恒为 1(唯一一条是 .hidden 的 display:none,44 处 classList 依赖它),采纳会让 check-04 从 1 变 3 而立刻变红。改走**按选择器重写为 transition: none** 的路线:它是确定性的、可被 getComputedStyle 直接断言的终态,而「几乎为零」不是;枚举写死而非通配,延续 Phase 5/6「影响面必须可枚举」的口径。
+- [Phase idi-07]: idi-07-03:过渡落地暴露了跨计划耦合 —— 计划 02 的两条 hover 探针在 page.hover() / mouse.down() 之后**立刻**读 getComputedStyle,读到的是**过渡中间值**(实测 #message-input 读到 rgb(112,112,112) 而终态是 rgb(100,100,100);裁决按钮的悬停/按下同理),4 条 FAIL。修法是新增 read_settled_style 把读数**推到终态**(等两帧确保过渡已注册,再 await 该元素上所有动画 finished),**不是**放宽期望值 / 加容差 / 改读中间值 —— 后者会把过渡的瞬时行为写进契约。
+- [Phase idi-07]: idi-07-03:时长判据**先按逗号拆成列表再逐项比**,不用子串包含 —— transition-duration 对两个属性序列化成 0.12s, 0.12s,而 0s 是它的子串,用 0s in raw 判「reduce 下全为 0s」会在**未生效**时假绿(与本项目已记录的 all(w != 700) 对 None 恒真是同型陷阱)。
+- [Phase idi-07]: idi-07-03:收口记录 idi-07-VERIFICATION.md 刻意声明 status: human_needed 且**不声明** covered_files / covered_digest。前者因为本阶段有一条具名人工项(5″:禁用态仍一眼看出不可点);后者因为 #4155 的指纹对是 fail-closed 的(声明其一而缺另一直接判 stale),且指纹必须在**全部 PLAN/SUMMARY 都在盘之后**才能算(allCurrentArtifactsCovered 会扫活目录)。指纹写回与独立复核留给 /gsd-verify-work idi-07。
+- [Phase idi-07]: idi-07-03:D-19 的四份报告(idi-04 / idi-04.1-radix / idi-05 / idi-06)**全部判为「内容真变 ⇒ 重新验证」**而非「重算 + 披露」—— 四份的 covered_files 都含 frontend/style.css(三份另含 scripts/check-05-ui-uat.py),两个文件在本阶段三个计划里都**真的变了字节**。**不得**用 gsd-tools query verification status 判定(这些相位目录一律返回 missing);判据只能是逐份比对 covered_files + 以 HEAD 内容重算 digest。四份各自的自身门已在 HEAD 上复跑全绿(证据见 SUMMARY),报告文件本身零改动。
 
 ### Pending Todos
 
@@ -127,7 +201,16 @@ None yet.
 - [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
 - [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
-- [v1.14 P4] **idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行**(本计划在 auto 模式下运行,tracer 的 human-verify 门被自动批准)。13 项具名检查逐条记在 `idi-04-01-SUMMARY.md` 的「Manual / Pending Human Checks」表,状态一律 `pending`;**未声称任何证据**。阶段收口时须汇入 `idi-04-UAT.md`;冻结轮 backstop 无法确认时按 `human_needed`(`insufficient_spec`)上报,绝不静默判过
+- [v1.14 P4] ~~idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行~~ **已执行(2026-09-19,`cc11e9f`)** — `scripts/check-05-ui-uat.py` 把 6 项全部自动化并实跑。**已闭合(2026-09-20):6/6 pass** —— 当时的 3 fail 是 260918-qrq 令牌值漂移造成的**假 FAIL**,已由 04.1 的 D-14(断言改令牌接线)+ D-10(值层重写)结构性消解;本阶段实跑 item 1/2/3/4/6 全 PASS(0 FAIL / 0 BLOCKED),item 5 的 2 BLOCKED 是需真实 AI 调用的冒烟(已用 `--ai-smoke` 补齐并 PASS)。**结果 3 pass / 3 fail** 为历史记录:
+  - **PASS**:① SC4 `.hidden` 实检(38 断言,含 3 个 1-0-0 竞争者);② 冻结轮 backstop(`inset 3px 0 0 rgb(138,101,8)` / `opacity 1` / `filter saturate(0.6)` / 正文对比度 19.44:1);⑥ CR-06(两侧均为运行时 `--color-text-muted`)
+  - **FAIL**:③④⑤ 共 20 条断言失败。**根因单一**:UAT 期望值定稿于 `0c658aa`(2026-09-17),其后 `448686b`「令牌值层换血」(属 quick 260918-qrq)改动了令牌值——`--gray-600 #6a6a6a→#8f8f8f`、`--gray-500 #8a8a8a→#d9d9d9`、`--blue-700 #1f63bd→#3a83f7`、`--gray-900 #1a1a1a→#0d0d0d`、`--gray-25 #fafafa→#ffffff`、字号 13/14/15/16→14/16/18/24,并删除 `.overlay-card` box-shadow 与 `#state-badge` z-index。**不是新缺陷,是「UAT 期望值 vs HEAD 现状」差异待裁**;已按 YAML 写入 UAT `## Gaps` 供 `/gsd-plan-phase --gaps` 消费。待裁:更新 UAT 期望值,或回退令牌值(注:令牌颜色族已定于 v1.14 重写为 Radix Colors,该裁决将随之消解)
+  - **S-2 依赖 PASS**:`--text-base` = 14px 存活(Phase 5 SC5 / Phase 6 SC5 的下游门仍可满足)
+  - **UAT 里「本环境无法自动化」的三条理由,两条被证伪**:screenshots 可用(`channel` 与 headless 策略见 `scripts/check-05-ui-uat.py` 头部注释),DevTools computed-style 有等价物(`getComputedStyle`)。**「键盘文本选区无法自动化」仍成立**,保留
+- [v1.14 P4] ~~**对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**~~ **已结构性解决(2026-09-20,Phase 04.1)** — Radix 重写后 `--color-text-muted: var(--radix-gray-11)`,实测 `check-02-contrast.py`:`5.62 --color-text-muted on --color-surface` / `5.77 … on --color-surface-page` / `5.19 … on --color-surface-sunken` / `5.82 … on --color-surface-warning-subtle`,脚本 exit 0。与 260918-qrq 的 check-02 14 条失败同源,一并消解
+- [v1.14 P4] ~~**阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**~~ **已修复(2026-09-19,`1d849b1`)** — 根因与 D1/D2 同源:`app.js` **从未引用过** `#session-panel`(grep 零匹配;`git log -S` 证明是长期 bug,非 260918-qrq 引入),而 `style.css:566` 的 `flex: 1 1 auto` 让它吃掉主区全部剩余高度。修复 = 在 `applySessionGates`(`app.js:343`,唯一必经派发点)加一行 `classList.toggle('hidden', !isSessionPhase)`。**实测五个样本:`p1=flex` / `p12=flex` / `p3=none` / `checking=none` / `archive=none`**。`.hidden` 靠 `style.css:238` 的 `!important` 压过 `display:flex`,**无需改 CSS**;`style.css`/`index.html` 零改动。守卫经 RED→GREEN 实证非空转(修前 3 条 `FAIL expected=none actual=flex`)
+- [v1.14 P7] **UI 审计(19/24)的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):①`#session-panel .panel-header` 有 `cursor: pointer` 却无点击行为(文件自己的惯例对另两个面板显式复位);②`.annotation-answer summary` 无 `:hover`/`:active` 且不在过渡挂载规则里,更关键的是**三个样本都没有 fixture 渲染 `<summary>`**,故 item 10 的普查从未见过它——「已覆盖」是名义的;③焦点环的 PAIR 清单漏 `--color-surface-warning-subtle`(`.verdict-card` 的底色,环在其上实测 5.77:1 达标),与本文件自订纪律「a token drawn as a UI boundary must have its own NON-TEXT pair on each ground it is drawn on」直接冲突,而兄弟令牌 `--color-border-hover` 正是按该纪律补上了这处底色。**修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证。
+- [v1.14 P7] **`phase.complete` 的 STATE.md 字段异常第三次复现**(`completed_phases` 4→1、`percent` 67→17,进度条同步退化)。已注册的 `tech-debt`,不会自愈;判据一律取 ROADMAP 的 `## Milestones` + `## Progress`。**注意 `state.json` 的 `phases` 数组本次是正确的**(1-7 全 complete、8 pending),错的只有 STATE.md 的派生计数——不要把 `state.json` 当判据来源。
+- [v1.14 P7] **归档半场的焦点环断言仍无服务对象**(五个样本 `#round-doc` 内 `a[href]` 计数为 0)。已按 `accept` 登记于 `idi-07-SECURITY.md` 的 Accepted Risks Log;一次性反事实探针 `scripts/probe-07-focus-composite.py` 承担可外推性。**Phase 8 给 `#round-doc` 加 `tabindex="0"` 后该场景变为活体,届时须复跑该探针**。
 
 ### Quick Tasks Completed
 
@@ -137,6 +220,12 @@ None yet.
 | 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
 | 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
 | 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
+| 260919-0h3 | 建立前端验证 harness(`scripts/check-05-ui-uat.py` + `scripts/ui-states/` 5 个磁盘状态样本 + `requirements-dev.txt`),跑掉 idi-04 UAT 6 项。**结果 3 pass / 3 fail**——FAIL 全部是 260918-qrq 令牌值漂移(UAT 期望值定稿于 `0c658aa`,其后 `448686b` 换了令牌值层),非新缺陷;已按 YAML 写入 UAT `## Gaps` | 2026-09-19 | cc11e9f | [260919-0h3-harness-idi-04-uat-6](./quick/260919-0h3-harness-idi-04-uat-6/) |
+| 260919-1w1 | **P6 前置修正**:`#session-panel` 在阶段 3+ 该隐藏却从未隐藏(DESIGN.md §4.1/§4.2 明文「切换」非「叠加」)。一次修掉 D1(主区 90% 空白)/ D2(归档态与阶段5 仍渲染输入框)/ 发送按钮被批注流覆盖不可点 三个症状。harness 加五态显隐守卫,经 RED→GREEN 实证非空转 | 2026-09-19 | 1d849b1 | [260919-1w1-session-panel-3-d1-d2](./quick/260919-1w1-session-panel-3-d1-d2/) |
+
+### Roadmap Evolution
+
+- Phase 04.1 inserted after Phase 4: Radix 颜色族重写
 
 ## Deferred Items
 
@@ -153,14 +242,28 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-17T14:58:17.620Z
-Stopped at: Completed idi-04-03-PLAN.md (all 3 plans of phase idi-04 done)
+Last session: 2026-09-23T11:33:53.303Z
+Stopped at: Phase idi-07 complete, ready to plan Phase 8
 Resume file: None
 
 ## Operator Next Steps
 
-- Plan the first v1.14 phase: `/gsd-plan-phase 4` — UI-SPEC 已就绪并通过 checker(APPROVED),7 个未决问题已全部关闭,不再是规划前置。
-  ✅ **四个签核项 S-1…S-4 已于 2026-09-17 规划期呈上并获用户逐项批准(照契约原文)**——不再是待办,规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
+- **当前待办(一条):** **`/gsd-plan-phase 8`** —— `idi-07`(交互状态与焦点样式)已收口:UAT 1/1 pass(唯一人工项 D-17 的 5″ 经用户确认)、`idi-07-VERIFICATION.md` `status: passed`(8/9 机器 + 1 具名人工)、`threats_open: 0`、Nyquist 0 缺口、UI 审计 19/24。
+  - **本阶段收口时的两条登记(不阻断 Phase 8):**
+    1. **`phase.complete` 的 STATE.md 字段异常第三次复现。** 本次把 `progress.completed_phases` 从 **4 改回 1**、`percent` **67 → 17**(进度条同步退化)。成因与 idi-05 那次逐字相同(见本文件 `## Deferred Items` 的 `tech-debt` 行与下方第 1 条的注),已按 ROADMAP 的 `## Progress` 校正为 **5 / 83%**。`total_plans` / `completed_plans`(18/18)与 `Total plans completed`(31)本次**正确**,未越权翻需求(`requirements_updated: false`)。**判据一律取 ROADMAP 的 `## Milestones` + `## Progress`,不从 `state.json` 的 `phases` 推。**
+    2. **UI 审计的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):`#session-panel .panel-header` 的假 `cursor: pointer`、`.annotation-answer summary` 无交互态且普查从未见过它、焦点环 PAIR 清单漏 `--color-surface-warning-subtle` 底色。**注意:修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证 idi-07。
+- ~~**当前待办:规划 Phase 5**~~ **已完成** —— `idi-05` 的 3 个计划(`idi-05-01` / `idi-05-02` / `idi-05-03`)全部执行完毕,各有 SUMMARY。
+- **当前待办(一条):**
+  1. ~~**`/gsd-verify-work idi-05`**~~ **已收口(2026-09-21,`/gsd-execute-phase idi-05 --gaps-only`)** —— 计划 04 关闭 BLOCKER `G-idi-05-1`,verifier 独立复核报 9/9 must-haves `passed`;`phase.complete` 已执行(ROADMAP Phase 5 → `Complete 2026-09-21`,REQUIREMENTS 的 8 条阶段行已翻)。收口后两条门(`check-05 --item 7` / `check-06`)已在 post-complete 树上复跑,仍绿。**注:本次 `phase.complete` 未越权翻需求(`requirements_updated: false`),但把 `progress.completed_phases` 从 2 改回 1、`percent` 33 → 17 —— 已按 ROADMAP 的 `## Progress` 校正为 3 / 50%。**
+  2. **`/gsd-verify-work idi-04.1-radix`** —— **D-05 的连带义务,本计划已把输入备齐但未写指纹**。`idi-04.1-radix` 的 `covered_digest`(`v1:sha256:25d5f1fe…`)因 `frontend/style.css` 与 `scripts/check-05-ui-uat.py` 被 wave 1/2/3 改写而 **stale**;成因是**内容真变**,故走**重新验证**而非补指纹。重算后的全部数值与逐条核对结果见 `idi-05-03-SUMMARY.md` 的「D-05 复验记录」节(`ORDER 0.363` 不变 / `--color-text-info ON --color-surface-info` 4.53 逐字不变 / `--color-border-strong` 3.24+3.15 逐字不变 / 冻结轮 `opacity 1` + `filter saturate(0.6)` + `inset 3px 0 0` 琥珀 逐字不变 / tier-1 25 不变、tier-2 47 → **48**、清单 43 → **47**)。**`idi-04.1-VERIFICATION.md` 一字未改**(`git status --porcelain` 为空)。
+- ~~04.1 的上游三步路线~~ **已走完(2026-09-20)** —— discuss → ui-phase → plan → execute → verify 全程完成,4/4 计划交付,`idi-04.1-UAT.md` 3/3 pass。
+- ~~**当前待办:Phase 4 的复验收口**~~ **已收口(2026-09-20)** —— `/gsd-verify-work idi-04` 完成:
+  - 旧报告指纹 stale 成因为**内容真变**(04.1 重写了它覆盖的 `frontend/style.css` 值层,实测 `f4dd04b6…` → `cd9aa761…`),故走**重新验证**而非补指纹:新 `idi-04-VERIFICATION.md` 对 HEAD 逐条重核,`14/15`、`behavior_unverified: 0`,全部数值从 HEAD 重算(`ORDER 0.363`、43 对、`--color-text-muted` `rgb(100,100,100)` 5.62)。
+  - UAT 6 项全部与报告的人工项一一对应并复现(除第 5 项两次需真实 AI 调用的冒烟,沿用已记录的 `--ai-smoke` 证据)。
+  - 复核中发现一条**阶段后引入**的新缺口:`frontend/style.css:434` `.collapse-indicator { font-size: 20px; line-height: 1; }`(由 quick `260918-qrq` / `3684353` 在 Phase 4 收口后引入)。**用户裁定为 Phase 4 范围外**,以 `overrides:` 落证并指派到 backlog **`999.1`**(连同 `check-05-ui-uat.py:588` 的陈旧诊断文案)。TOKEN-08 因此标为 `Complete (PARTIAL — …)`。
+  - `phase.complete` 已跑:ROADMAP Progress 表 Phase 4 → `Complete 2026-09-20`;REQUIREMENTS.md 的 Phase 4 需求行随之翻转。两份报告(idi-04 / idi-04.1)的指纹因 `REQUIREMENTS.md` 被改而重算一次,各自在报告内披露。
+- **~~当前待办:规划 Phase 5~~ 已执行** —— `idi-05`(排版与视觉层级)3/3 计划完成,待 `/gsd-verify-work idi-05` 收口。Pitfall 7 把触碰 `.collapse-indicator` 的范围锁死为两处 `content:` emoji(本阶段已把这两处换成 mask 字形),而 backlog `999.1` 的第 1 项是该元素的 `font-size` —— 两者未互相覆盖,`.collapse-indicator` 逐字节与 HEAD 相同。
+  以下 S-1…S-4 签核项仍然有效(04.1 明令不改 S-1/S-2),规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
   - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
   - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
   - **S-3** ✅ 批准:控件边框 `#ccc` → `#8a8a8a`(10 处;本阶段最大视觉变更,依据 SC 1.4.11)

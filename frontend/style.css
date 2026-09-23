@@ -4,103 +4,289 @@
 
 /* ===== DESIGN TOKENS: START ===== */
 :root {
-  /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence. */
+  /* Tier 1 — primitives. Bare literals are legal ONLY inside this fence.
+
+     Name ↔ step mapping (D-03 / V-12), written down so an upstream Radix update
+     can be synced mechanically. Family choice (D-07): the Radix family closest
+     in hue to the value it replaces — neutral→gray, blue→blue, green→green,
+     amber→amber, red→red, purple→violet. The AA guarantee comes from the STEP,
+     never from the family, so no hue had to be sacrificed for contrast.
+
+       --white            family: none   step: —    (the light scales are 1-12
+                          and none of them is white; its name does not lie)
+       --radix-gray-1     family: gray   step: 1    band 1-2
+       --radix-gray-2     family: gray   step: 2    band 1-2
+       --radix-gray-3     family: gray   step: 3    band 3-5
+       --radix-gray-4     family: gray   step: 4    band 3-5
+       --radix-gray-6     family: gray   step: 6    band 6-8
+       --radix-gray-7     family: gray   step: 7    band 6-8
+       --radix-gray-9     family: gray   step: 9    band 9-10  (forced — see below)
+       --radix-gray-11    family: gray   step: 11   band 11-12
+       --radix-gray-12    family: gray   step: 12   band 11-12
+       --radix-blue-2     family: blue   step: 2    band 1-2
+       --radix-blue-11    family: blue   step: 11   band 11-12
+       --radix-green-3    family: green  step: 3    band 3-5
+       --radix-green-11   family: green  step: 11   band 11-12
+       --radix-green-12   family: green  step: 12   band 11-12 (forced — see below)
+       --radix-amber-1    family: amber  step: 1    band 1-2
+       --radix-amber-2    family: amber  step: 2    band 1-2
+       --radix-amber-3    family: amber  step: 3    band 3-5
+       --radix-amber-6    family: amber  step: 6    band 6-8
+       --radix-amber-11   family: amber  step: 11   band 11-12
+       --radix-amber-12   family: amber  step: 12   band 11-12 (forced — see below)
+       --radix-red-2      family: red    step: 2    band 1-2
+       --radix-red-7      family: red    step: 7    band 6-8
+       --radix-red-11     family: red    step: 11   band 11-12
+       --radix-violet-11  family: violet step: 11   band 11-12
+
+     Only the steps a tier-2 token consumes in this same commit are declared
+     (D-04 / Hard Rule 5 — never declare a token you are not consuming), so the
+     1-12 scale is deliberately incomplete; Phase 5 reuses the already-declared
+     11/12 fill steps rather than declaring new ones (the role-band record below
+     is the reason). */
   --white: #ffffff;
-  --black: #000000;
-  --gray-900: #0d0d0d;
-  --gray-700: #8f8f8f;
-  --gray-600: #8f8f8f; /* 与 --gray-700 同值:规格只给一档次要文字色,两个语义角色各自保留;AA 倒退为用户知情决策 */
-  --gray-500: #d9d9d9; /* 组件描边 rgba(0,0,0,.15) 的白底不透明等价(check-02 只对前景做 alpha 合成) */
-  --gray-300: #dddddd;
-  --gray-200: #ececec; /* 用户消息气泡 */
-  --gray-100: #f2f2f2; /* 分割线 rgba(0,0,0,.05) 的白底不透明等价 */
-  --gray-50: #f3f3f3;
-  --gray-25: #ffffff;
-  --green-800: #1f5c3a; /* new — Phase 5 destination for --color-action-irreversible */
-  --green-700: #26754a;
-  --green-100: #e9f7ef;
-  --blue-700: #3a83f7;
-  --blue-100: #eef4ff;
-  --blue-50: #f0f7ff;
-  --amber-800: #8a6508;
-  --amber-300: #d9c58a;
-  --amber-100: #fff3c4;
-  --amber-50: #fdf6ec;
-  --amber-25: #fffdf5;
-  --red-600: #c0392b;
-  --red-200: #e8b4ae;
-  --red-50: #fdecea;
-  --purple-600: #6f42c1;
+  --radix-gray-1: #fcfcfc;
+  --radix-gray-2: #f9f9f9;
+  --radix-gray-3: #f0f0f0;
+  --radix-gray-4: #e8e8e8;
+  --radix-gray-6: #d9d9d9;
+  --radix-gray-7: #cecece;
+  --radix-gray-9: #8d8d8d;
+  --radix-gray-11: #646464;
+  --radix-gray-12: #202020;
+  --radix-blue-2: #f4faff;
+  --radix-blue-11: #0d74ce;
+  --radix-green-3: #e6f6eb;
+  --radix-green-11: #218358;
+  --radix-green-12: #193b2d;
+  --radix-amber-1: #fefdfb;
+  --radix-amber-2: #fefbe9;
+  --radix-amber-3: #fff7c2;
+  --radix-amber-6: #f3d673;
+  --radix-amber-11: #ab6400;
+  --radix-amber-12: #4f3422;
+  --radix-red-2: #fff7f7;
+  --radix-red-7: #f4a9aa;
+  --radix-red-11: #ce2c31;
+  --radix-violet-11: #6550b9;
+
+  /* Role bands (D-09) — a working assumption, and the four places it fails.
+
+     Radix's 12 steps are read as: 1-2 ground / 3-5 component surface / 6-8
+     border / 9-10 solid fill / 11-12 text. Two of those bands survive
+     measurement intact (1-2 and 3-5). Four do not, on THIS project's real
+     background combinations — the arithmetic wins and each override is
+     recorded here with its numbers (scripts/check-02-contrast.py is the
+     arbiter; Radix's own AA documentation is deliberately not adopted):
+
+       · solid fill band 9-10 → step 11 for every fill that carries white text.
+         White on 9/10 fails 4.5:1 in every family: blue-9 3.26, blue-10 3.63,
+         green-9 3.16, green-10 3.55, red-10 4.37, amber-9 1.58. Step 11 is in
+         each case the LIGHTEST step that passes — blue 4.77, green 4.72,
+         red 5.21, amber 4.61, gray 5.92 — i.e. the signed-off "lightest passing
+         value" rule applied to fills instead of to text.
+
+       · border band 6-8 → step 9 for --color-border-strong. Nothing in 6-8
+         clears SC 1.4.11's 3:1 on any surface: gray-6 1.34, gray-7 1.49,
+         gray-8 1.82 on --color-surface. This border is the control boundary —
+         the only thing identifying a text input's edge — so it has to leave the
+         band. gray-9 = 3.24 / 3.15, which restores the intent signed off as S-3
+         (#8a8a8a, 3.45:1) in Radix terms rather than re-deciding it. The other
+         three borders stay in band 6-8: they are decorative, and SC 1.4.11 does
+         not apply to a border that identifies nothing.
+
+       · text band 11-12 → step 12 for the three green -fg tokens. Step 11 is AA
+         on step-1/2 grounds but not on step-3 grounds: green-11 on green-3 =
+         4.21 and FAILS. Only green-1 (4.65) would pass, and green-1 is
+         near-white — it would erase the routine buttons' green tint entirely.
+         green-12 on green-3 = 11.00.
+
+       · text band 11-12 → step 12 for --color-action-warning. amber-11 fails as
+         text on amber-2 (4.43), on amber-3 (4.25), and misses even on gray-1
+         (4.49). D-08's mechanism — lighten the ground — cannot rescue it: the
+         amber grounds would have to become amber-1, which would make `mark`
+         (the "highlighted = has annotation" affordance) and #stream-banner
+         effectively white and delete the affordance. amber-12 = 10.93 / 11.19 /
+         10.47; the amber hue identity is carried by the amber-1/2/3 grounds and
+         by amber-6 on the decorative container border.
+
+     D-08 governs the two text overrides: when step 11 fails on some ground,
+     move the GROUND to a lighter step and keep the muted = 11 / body = 12
+     same-family hierarchy — do NOT promote muted to step 12. That is why the
+     grounds moved step and the text steps did not. */
 
   /* Tier 2 — semantic. The only names any selector outside the fence may reference. */
-  --color-text: var(--gray-900);
-  --color-text-secondary: var(--gray-700);
-  --color-text-muted: var(--gray-600);
-  --color-surface-page: var(--gray-25);
-  --color-surface-sunken: var(--gray-50);
-  --color-kind-default: var(--gray-600);
-  --color-kind-result: var(--gray-700);
-  --color-action-danger: var(--red-600);
+  --color-text: var(--radix-gray-12);
+  --color-text-secondary: var(--radix-gray-11);
+  --color-text-muted: var(--radix-gray-11);
+  --color-surface-page: var(--radix-gray-1);
+  --color-surface-sunken: var(--radix-gray-3);
+  --color-kind-default: var(--radix-gray-11);
+  --color-kind-result: var(--radix-gray-11);
+  --color-action-danger: var(--radix-red-11);
 
-  /* Tier 2 — action families (Q1). Phase 4: the three green families share one value pair;
-     visual differentiation is Phase 5's one-line value edit. */
-  --color-action-primary: var(--blue-700);
+  /* Tier 2 — action families (Q1). Phase 4 declared the three green families on a single
+     shared value pair; Phase 5 splits them into the three-step ramp — routine = green-3
+     ground + green-12 text, commit = green-11 fill + white text, irreversible = green-12
+     fill + white text. */
+  --color-action-primary: var(--radix-blue-11);
   --color-action-primary-fg: var(--white);
   --color-action-danger-fg: var(--white);
-  --color-action-warning: var(--amber-800);
-  --color-action-warning-surface: var(--amber-50);
-  --color-action-routine: var(--green-700);
-  --color-action-routine-surface: var(--green-100);
-  --color-action-routine-fg: var(--green-700);
-  --color-action-commit: var(--green-700);
-  --color-action-commit-surface: var(--green-100);
-  --color-action-commit-fg: var(--green-700);
-  --color-action-irreversible: var(--green-700);
-  --color-action-irreversible-surface: var(--green-100);
-  --color-action-irreversible-fg: var(--green-700);
+  --color-action-warning: var(--radix-amber-12);
+  --color-action-warning-surface: var(--radix-amber-2);
+  --color-action-routine: var(--radix-green-11);
+  --color-action-routine-surface: var(--radix-green-3);
+  --color-action-routine-fg: var(--radix-green-12);
+  --color-action-commit: var(--radix-green-11);
+  --color-action-commit-surface: var(--radix-green-11);
+  --color-action-commit-fg: var(--white);
+  --color-action-irreversible: var(--radix-green-12);
+  --color-action-irreversible-surface: var(--radix-green-12);
+  --color-action-irreversible-fg: var(--white);
+
+  /* Tier 2 — the active sidebar panel marker (VISUAL-04 / D-18).
+
+     Deliberately NOT --color-action-primary. That name says "the primary
+     action"; reusing it for a panel indicator would make the name lie — the
+     same methodology this project already paid for once, when 04.1's D-03
+     renamed all 26 primitives for exactly this reason.
+
+     Blue, not the amber the contract pencilled in: amber already carries two
+     meanings here (warning — --color-action-warning / #pending-count /
+     #state-badge — and the frozen round's amber inset bar), and "active panel"
+     would make a third collision. Blue is this system's information / streaming
+     colour (--color-surface-info / --color-text-info / --color-border-streaming)
+     and is cleanly separated from amber.
+
+     blue-11 rather than a lighter step: blue-2/3 are too light for both a 3px
+     bar and a 14px heading. blue-11 is already declared and already consumed
+     (it backs --color-action-primary / --color-text-info / --color-kind-say /
+     --color-border-streaming); this phase makes it the fifth. Measured 4.65 on
+     --color-surface-page — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
+     and is this phase's thinnest margin (0.15). Do NOT "play it safe" and step
+     it darker (05-N-2 / Pitfall 4a). Because the step is already declared,
+     this phase adds ZERO tier-1 primitives. */
+  --color-marker-active: var(--radix-blue-11);
 
   /* Tier 2 — event-kind vocabulary (its own closed group) */
-  --color-kind-say: var(--blue-700);
-  --color-kind-read: var(--purple-600);
-  --color-kind-write: var(--green-700);
-  --color-kind-command: var(--amber-800);
-  --color-kind-error: var(--red-600);
-  --color-kind-done: var(--black);
+  --color-kind-say: var(--radix-blue-11);
+  --color-kind-read: var(--radix-violet-11);
+  --color-kind-write: var(--radix-green-11);
+  --color-kind-command: var(--radix-amber-11);
+  --color-kind-error: var(--radix-red-11);
+  --color-kind-done: var(--radix-gray-12);
 
   /* Tier 2 — completion boundary (a boundary, not an action) */
-  --color-border-success: var(--green-700);
+  --color-border-success: var(--radix-green-11);
 
   /* Tier 2 — surface / border */
-  --color-surface: var(--white);
-  --color-surface-hover: var(--gray-100);
-  --color-surface-user: var(--gray-200);
-  --color-surface-info: var(--blue-100);
-  --color-surface-warning: var(--amber-50);
-  --color-surface-warning-subtle: var(--amber-25);
-  --color-surface-mark: var(--amber-100);
-  --color-surface-danger: var(--red-50);
-  --color-surface-streaming: var(--blue-50);
-  --color-border-strong: var(--gray-500);
-  --color-border: var(--gray-300);
-  --color-border-subtle: var(--gray-100);
-  --color-border-warning-subtle: var(--amber-300);
-  --color-border-streaming: var(--blue-700);
-  /* 保留 --color-surface-info-strong 这一声明 —— 其消费者 .chat-user 已改引 --color-surface-user,
-     但 check-02 清单按名引用它(PAIR --color-text-inverse ON --color-surface-info-strong),
-     删除声明会让脚本以 unknown token 提前退出,偏差证据表随之失效。 */
-  --color-surface-info-strong: var(--blue-700);
-  --color-text-info: var(--blue-700);
+  --color-surface: var(--radix-gray-2);
+  --color-surface-hover: var(--radix-gray-3);
+  /* Tier 2 — the plain (no-fill) button's pressed state (INTERACT-01 / D-09),
+     declared with its consumer: the :where(button:not(:disabled)):active rule at
+     the end of this file (Hard Rule 5).
 
-  /* Tier 2 — overlay backdrop and the single shadow token (composer, three layers) */
+     Three load-bearing facts, so that a later reader does not "fix" this value.
+
+     1. gray-4 is the deliberate END of the 3 -> 4 progression. --color-surface-hover
+        is gray-3, and this token is its immediate next step on the same scale,
+        which is what makes "pressed" perceptibly deeper than "hovered". Do NOT
+        collapse it back onto gray-3.
+
+     2. It shares its value with --color-surface-user. That is a value collision,
+        not a misnomer: the two names say different things, have different
+        semantics and share no consumer (04.1 D-03 — "the name must tell the
+        truth"). The collision is registered here rather than removed.
+
+     3. It must name 04.1-N-4. The note below ("Three values that must NOT be
+        'helpfully' changed back", item 3) warns verbatim that "gray-4 would
+        double the hover delta and collide with --color-surface-user". Taking
+        gray-4 here is DELIBERATE — active is the end of the progression, not a
+        violation of 04.1-N-4. Without this paragraph that note reads as
+        self-contradictory and a later reader will "fix" this token away. */
+  --color-surface-active: var(--radix-gray-4);
+  --color-surface-user: var(--radix-gray-4);
+  --color-surface-info: var(--radix-blue-2);
+  --color-surface-warning: var(--radix-amber-2);
+  --color-surface-warning-subtle: var(--radix-amber-1);
+  --color-surface-mark: var(--radix-amber-3);
+  --color-surface-danger: var(--radix-red-2);
+  --color-surface-streaming: var(--radix-blue-2);
+  --color-border-strong: var(--radix-gray-9);
+  /* Tier 2 — the hover boundary of the input controls (INTERACT-01 / D-10),
+     declared with its consumer: the input / select hover group at the end of
+     this file (Hard Rule 5).
+
+     The resting border of every input / select is --color-border-strong
+     (gray-9, #8d8d8d). "One step deeper" takes the already-declared
+     --radix-gray-11 (#646464) — zero new tier-1 primitives. It deliberately does
+     NOT take the high-contrast TEXT step --radix-gray-12 either: that step reads
+     near-black (#202020) as a border and is far too heavy — the same reason D-04
+     rejected --radix-blue-12 for the focus ring.
+
+     It shares its value with --color-text-muted (also gray-11). That is a value
+     collision, not a misnomer (04.1 D-03): one is a text colour, the other is a
+     boundary, and they share no consumer. Registered here so that a later reader
+     does not "fix" it. */
+  --color-border-hover: var(--radix-gray-11);
+  --color-border: var(--radix-gray-7);
+  --color-border-subtle: var(--radix-gray-6);
+  --color-border-warning-subtle: var(--radix-amber-6);
+  --color-border-streaming: var(--radix-blue-11);
+  --color-text-info: var(--radix-blue-11);
+
+  /* Tier 2 — focus ring (A11Y-01 / D-04, declared with its consumer: the
+     :focus-visible rule at the end of this file — Hard Rule 5).
+
+     Three load-bearing facts, so that a later reader does not "fix" this value.
+
+     1. This is the ONLY value in the whole colour layer that is not a Radix
+        step. The other exceptions are --white and the two rgba() literals in
+        the shadow / backdrop group. It therefore conflicts on its face with
+        04.1's "every value must come from a Radix step" discipline.
+
+     2. That conflict is deliberate. This is LITERAL COMPLIANCE with an
+        already-signed contract, not an oversight: S-4's sign-off arithmetic
+        (04-UI-SPEC.md, Sign-Off Items S-4 — "delete the opacity and the ring
+        returns to 5.62") was computed with this exact value. Do NOT "fix" it
+        to --radix-blue-11.
+
+     3. Why not the neighbouring steps. --radix-blue-11 is rejected because
+        under .archive-mode's 0.75 composite it measures 3.03:1 — a margin of
+        0.03, which any later nudge would push back over the line. --radix-blue-12
+        is rejected because it is the high-contrast TEXT step: as a 2px ring it
+        reads as a border rather than as a focus indicator. */
+  --color-focus: #1f63bd;
+
+  /* Tier 2 — overlay backdrop and the shadow tokens (composer: three layers;
+     overlay: the modal card's elevation, restored by R-2 so that no bare
+     rgba() appears outside the fence). */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.45);
-  --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
+  /* Tier 2 — the interaction-state scrims for filled buttons (INTERACT-01 /
+     D-08 / D-09), declared with their consumers: the filled-button hover /
+     active groups at the end of this file (Hard Rule 5).
 
-  /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal.
-     保留 --color-text-inverse 这一声明 —— .chat-user 已改引 --color-text,但 check-02 清单按名引用它,
-     删除声明会让脚本以 unknown token 提前退出。 */
-  --color-text-inverse: var(--white);
+     One of the reasons these live as tokens rather than as literals in the rule
+     bodies is the invariant the group comment above already states: R-2 restored
+     the shadow tokens so that no bare rgba() appears outside the fence. check-01
+     counts bare #hex and tier-1 var() references — it does NOT count bare
+     rgba() — so that discipline has no mechanical guard and is kept by comments
+     and review alone. Hoisting the two alpha values here also makes them a single
+     recomputable source of truth (0.06 for hover, 0.12 for active).
+
+     The consumers paint them as `box-shadow: inset ...`, which does not
+     participate in layout => zero displacement.
+
+     They are NOT contrast boundaries, so they do NOT enter the PAIR manifest
+     below — the --shadow-* family has no pair either. */
+  --color-overlay-hover: rgba(0, 0, 0, 0.06);
+  --color-overlay-active: rgba(0, 0, 0, 0.12);
+  --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
+  --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
+
+  /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
-  --color-border-danger-subtle: var(--red-200);
+  --color-border-danger-subtle: var(--radix-red-7);
 
   /* Spacing scale — 4px base + the half-step band (S-1). All 12 steps are consumed. */
   --space-px: 1px;
@@ -123,12 +309,20 @@
   --doc-panel-w: clamp(340px, 30vw, 480px);
   --doc-panel-w-collapsed: 48px;
 
-  /* Type scale — 5 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed. */
+  /* Type scale — 7 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed.
+     D-07 命名冲突警示:`04-UI-SPEC.md` 的字号表把 `--text-2xl` 写作 18px、`--text-3xl` 写作 22px,
+     而本围栏的 `--text-2xl` 是 22px、`--text-3xl` 是 28px —— **名同值不同,不是笔误**。
+     理由是 18px 已被 `--text-lg` 占用,而本阶段继续跟随 xs / base / md / lg / xl 的尺寸递进命名法,
+     2xl 只能是 xl(24)之上的下一档;故数值序与名字序在 xl(24) → 2xl(22) 这一处不单调。
+     七档依次为 xs 12px / base 14px / md 16px / lg 18px / xl 24px / 2xl 22px / 3xl 28px。
+     这段注释的作用是防止日后有人把 22px「修正」回 18px —— 那会让 18px 有两个令牌名(2xl 与 lg),即第二事实源。 */
   --text-xs: 12px;
   --text-base: 14px;
   --text-md: 16px;
   --text-lg: 18px;
   --text-xl: 24px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
 
   /* Weight — three ranks, all consumed. The 500 rank is declared because the target
      chrome scale requires w400/500/600; the former "no consumer" reason no longer holds. */
@@ -136,7 +330,12 @@
   --fw-medium: 500;
   --fw-semibold: 600;
 
-  /* Line height — four, paired with the size scale (24/32, 12/16, 14/20, 18/28, 16/26). */
+  /* Line height — 四条声明,与 7 档字号刻度按**比率配对**(不是整数配对):
+       12/16.00(--lh-tight) 14/20.00(--lh-snug 1.4286) 16/26.00(--lh-reading 1.625)
+       18/24.00(--lh-tight) 24/32.00(--lh-tight) 22/29.33(--lh-tight,非整数) 28/37.33(--lh-tight,非整数)
+     整数配对在数学上不可得:28k 与 22k 同时为整数要求 k 是 0.5 的倍数,而 k = 1.5 太松
+     (28 × 1.5 = 42px,标题会散开),故 2xl / 3xl 两档的乘积必然带小数。
+     --lh-compact(1.5556)是 **chrome-only** 行高,不属字号刻度配对 —— 唯一消费者是 .overlay-card p。 */
   --lh-tight: 1.3333;
   --lh-snug: 1.4286;
   --lh-compact: 1.5556;
@@ -156,6 +355,56 @@
   --z-overlay: 100;
   --z-selection-menu: 200;
 
+  /* Three values that must NOT be "helpfully" changed back.
+
+     1. --color-text-muted stays --radix-gray-11 (step 11). Step 10 measures
+        3.79 on --color-surface and FAILS AA; step 12 is occupied by body text.
+        The ordering residual 0.363 below is therefore forced by the scale, not
+        a lapse of judgement (04.1-N-1). Darkening muted "to restore the
+        hierarchy" is the N-1 trap from 04-UI-SPEC wearing new clothes — it
+        would break the AA pair it was meant to improve.
+
+     2. --color-text-info on --color-surface-info measures 4.53 — a 0.03 margin.
+        It is the LIGHTEST passing combination (04.1-N-3). The tempting "safer"
+        moves are both wrong: blue-12 would abandon the lightest-passing rule and
+        turn the state badge's foreground dark navy, and moving the ground to
+        blue-3 drops the ratio to 4.25 and fails. 4.53 passes the closed-interval
+        rule; do not round it up to feel safer.
+
+     3. --color-surface-hover and --color-surface-sunken deliberately share
+        --radix-gray-3 (04.1-N-4). gray-3 is the canonical next step above the
+        default component surface (gray-2), which is what makes button:hover
+        perceptible; gray-4 would double the hover delta and collide with
+        --color-surface-user. (Phase 7 note: gray-4 is now ALSO consumed by
+        --color-surface-active — the deliberate end of the 3 -> 4 progression for
+        the plain button's pressed state. The two tokens share no consumer:
+        --color-surface-user means "the user message background". This note exists
+        so that the warning above is not read as self-contradictory.) */
+
+  /* Inline glyphs (VISUAL-05 / D-20 / D-21 / D-22). Two hand-written SVG
+     data-URIs, consumed by .annotation-quote::before and .verdict-location::before
+     via mask-image + background-color.
+
+     The mechanism is deliberately NOT the contract's `content: url(data-URI)`:
+     a data-URI rendered through `content` is an IMAGE — it does not inherit page
+     CSS and `currentColor` is unavailable, so its fill could only be pinned to an
+     escaped hex. That makes "follows the text colour" a hand-synchronised
+     convention rather than a mechanism. A mask reads only ALPHA, so the <path>
+     carries no `fill` attribute at all (default black = opaque) and these URIs
+     contain ZERO colour information — no %23, no #, no fill=. That is the sole
+     basis for retiring the contract's literal exception L-3 entirely.
+
+     Shape contract (mechanically checkable): viewBox='0 0 12 12', exactly one
+     <path>, no fill attribute, xmlns present, solid (not outlined — at 12px an
+     outline is unreadable), and the two shapes must be distinguishable from each
+     other (a pin with a wide flat head, a flange and a thin needle vs. a smooth
+     teardrop with a hole). The `d` data is hand-written here: no external source,
+     no licence, no supply-chain surface. No semicolon may appear inside the URI —
+     check-02's DECL_RE takes a declaration value with [^;]+ and one would truncate
+     it. */
+  --icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0.6 L8.8 2.2 L8.8 5.2 L10.6 7.4 L7.1 7.4 L7.1 10.6 L6 12 L4.9 10.6 L4.9 7.4 L1.4 7.4 L3.2 5.2 L3.2 2.2 Z'/%3E%3C/svg%3E");
+  --icon-location: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0 C3.5 0 1.6 1.9 1.6 4.3 C1.6 6.2 3.4 8.4 6 12 C8.6 8.4 10.4 6.2 10.4 4.3 C10.4 1.9 8.5 0 6 0 Z M6 2.6 C7.5 2.6 8.7 3.8 8.7 5.2 C8.7 6.6 7.5 7.8 6 7.8 C4.5 7.8 3.3 6.6 3.3 5.2 C3.3 3.8 4.5 2.6 6 2.6 Z'/%3E%3C/svg%3E");
+
   /* ---- Contrast pair manifest (CHECK-02) -----------------------------------
      Every entry below names two tokens declared in this fence. The checker
      scripts/check-02-contrast.py reads this manifest and fails loudly on a name
@@ -163,18 +412,60 @@
      apart. Thresholds: TEXT 4.5:1, NON-TEXT 3:1; an optional @<alpha> suffix on
      TEXT composites the foreground over the background before measuring. The
      single ordering entry asserts a strict ratio ordering on one shared ground.
-     Token names only — never hex. */
+     Token names only — never hex.
+     Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
+     combination that actually renders. Decorative separators are deliberately
+     absent — SC 1.4.11 does not apply to a border that identifies nothing.
+     Manifest size across six value layers (D-15): 24 / 34 / 43 / 47 / 50 / 53 — ROADMAP
+     Phase 4 wrote 24 pairs (20 text + 4 non-text); the disk state Phase 4
+     actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; the
+     04.1 rewrite re-enumerated 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry;
+     Phase 5 lands 47 pairs (35 TEXT + 12 NON-TEXT) + 1 ordering entry — the
+     three-step action ramp needs a white-on-fill TEXT pair and a non-text
+     boundary pair for each solid tier, and the active-panel marker needs one of
+     each on its ground. Phase 7 lands 50 pairs (35 TEXT + 15 NON-TEXT) + 1
+     ordering entry — the three focus-ring entries are all NON-TEXT: the ring is
+     a SC 1.4.11 state indicator, and its three verification surfaces are
+     --color-surface-page, --color-surface, and --color-surface at the archive
+     view's 0.75 composite (--color-surface-sunken is deliberately NOT among
+     them — it is only the ground of .markdown-body code and .badge-answered,
+     never adjacent to a focusable element).
+     Phase 7 lands 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry — D-10's
+     "one step deeper" hover boundary needs a new tier-2 token, and this file's
+     own discipline is to enumerate the combinations that ACTUALLY render: a token
+     drawn as a UI boundary must have its own NON-TEXT pair on each ground it is
+     drawn on. That is +3 on top of the three focus-ring entries (three grounds:
+     --color-surface-page, --color-surface, and --color-surface-warning-subtle —
+     the last one is .verdict-card, the ground app.js appends its dynamically
+     built .verdict-note-input to), and it is why the sixth value layer is 53
+     rather than the 50 a pattern map would project from the focus ring alone.
+     The six numbers are not drift: the contract is
+     "enumerate the combinations that actually render", and each successive value
+     layer changes which combinations occur. */
 
-  /* text — the four grounds --color-text-muted actually lands on (note N-1) */
-  /* PAIR --color-text-muted ON --gray-25 TEXT */
-  /* PAIR --color-text-muted ON --white TEXT */
-  /* PAIR --color-text-muted ON --gray-50 TEXT */
-  /* PAIR --color-text-muted ON --gray-100 TEXT */
+  /* body text on its four real grounds (page, panel, sunken, amber container) */
+  /* PAIR --color-text ON --color-surface-page TEXT */
+  /* PAIR --color-text ON --color-surface TEXT */
+  /* PAIR --color-text ON --color-surface-sunken TEXT */
+  /* PAIR --color-text ON --color-surface-user TEXT */
+  /* PAIR --color-text ON --color-surface-info TEXT */
+  /* PAIR --color-text ON --color-surface-danger TEXT */
+  /* PAIR --color-text ON --color-surface-streaming TEXT */
+  /* PAIR --color-text ON --color-surface-warning-subtle TEXT */
 
-  /* text — reading and structural text on their real grounds */
-  /* PAIR --color-text ON --gray-25 TEXT */
-  /* PAIR --color-text-secondary ON --gray-25 TEXT */
-  /* PAIR --color-text-secondary ON --amber-25 TEXT */
+  /* structural / attribution text */
+  /* PAIR --color-text-secondary ON --color-surface-page TEXT */
+  /* PAIR --color-text-secondary ON --color-surface TEXT */
+  /* PAIR --color-text-secondary ON --color-surface-warning-subtle TEXT */
+
+  /* the hint grey on its four real grounds (note 04.1-N-3) */
+  /* PAIR --color-text-muted ON --color-surface-page TEXT */
+  /* PAIR --color-text-muted ON --color-surface TEXT */
+  /* PAIR --color-text-muted ON --color-surface-sunken TEXT */
+  /* PAIR --color-text-muted ON --color-surface-warning-subtle TEXT */
+
+  /* the state badge foreground on its own filled ground */
+  /* PAIR --color-text-info ON --color-surface-info TEXT */
 
   /* event-kind chips: the shared foreground on all seven chip grounds */
   /* PAIR --color-kind-fg ON --color-kind-default TEXT */
@@ -185,41 +476,86 @@
   /* PAIR --color-kind-fg ON --color-kind-read TEXT */
   /* PAIR --color-kind-fg ON --color-kind-done TEXT */
 
-  /* pending badge, the six green buttons (three families, one Phase-4 value) */
+  /* amber text on its three real grounds, and the six green buttons across three
+     families with three distinct value pairs: routine = green-3 ground / green-12
+     text, commit = green-11 fill / white text, irreversible = green-12 fill / white text */
   /* PAIR --color-action-warning ON --color-surface-warning TEXT */
+  /* PAIR --color-action-warning ON --color-surface-warning-subtle TEXT */
+  /* PAIR --color-action-warning ON --color-surface-mark TEXT */
   /* PAIR --color-action-routine-fg ON --color-action-routine-surface TEXT */
   /* PAIR --color-action-commit-fg ON --color-action-commit-surface TEXT */
   /* PAIR --color-action-irreversible-fg ON --color-action-irreversible-surface TEXT */
 
-  /* primary action, filled informational surface, informational accent text */
+  /* filled primary and destructive buttons, and danger text on its grounds */
   /* PAIR --color-action-primary-fg ON --color-action-primary TEXT */
-  /* PAIR --color-text-inverse ON --color-surface-info-strong TEXT */
-  /* PAIR --color-text-info ON --color-surface-info TEXT */
+  /* PAIR --color-action-danger-fg ON --color-action-danger TEXT */
+  /* PAIR --color-action-danger ON --color-surface TEXT */
+  /* PAIR --color-action-danger ON --color-surface-danger TEXT */
 
-  /* amber and danger text on the grounds they actually land on */
-  /* PAIR --color-action-warning ON --amber-25 TEXT */
-  /* PAIR --color-action-warning ON --white TEXT */
-  /* PAIR --color-action-warning ON --gray-25 TEXT */
-  /* PAIR --color-action-danger ON --white TEXT */
-  /* PAIR --color-action-danger ON --gray-25 TEXT */
-  /* PAIR --color-action-danger ON --gray-100 TEXT */
+  /* the surviving whole-document dim — the archive view (A11Y-04b) */
+  /* PAIR --color-text ON --color-surface TEXT@0.75 */
 
-  /* the two surviving dims — covered, and both pass (A11Y-04b) */
-  /* PAIR --color-action-primary-fg ON --color-action-primary TEXT@0.9 */
-  /* PAIR --color-text ON --gray-25 TEXT@0.75 */
+  /* the focus ring (A11Y-01 / D-03 / D-15): a state indicator under SC 1.4.11,
+     with three verification surfaces — --color-surface-page, --color-surface,
+     and --color-surface at the archive view's 0.75 composite (that last one
+     reuses the same @<alpha> mechanism as the whole-document dim above).
+     --color-surface-sunken is deliberately NOT among them: it is only the
+     ground of .markdown-body code and .badge-answered, never adjacent to a
+     focusable element. */
+  /* PAIR --color-focus ON --color-surface NON-TEXT */
+  /* PAIR --color-focus ON --color-surface-page NON-TEXT */
+  /* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */
+
+  /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
+     heading switches to the marker colour (SC 1.4.5). All three panels live
+     inside #main-pane, and #main-pane and its ancestors declare no background
+     (html, body is what sets --color-surface-page), so the ground is
+     --color-surface-page. The non-text half — the 3px inset bar, a state
+     indicator under SC 1.4.11 — sits with the other NON-TEXT pairs below. */
+  /* PAIR --color-marker-active ON --color-surface-page TEXT */
 
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
-  /* PAIR --color-border-strong ON --white NON-TEXT */
-  /* PAIR --color-border-strong ON --gray-50 NON-TEXT */
-  /* PAIR --color-border-streaming ON --gray-50 NON-TEXT */
-  /* PAIR --color-border-success ON --white NON-TEXT */
+  /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
+  /* PAIR --color-border-strong ON --color-surface NON-TEXT */
+  /* the input controls' hover boundary (INTERACT-01 / D-10): a state indicator
+     under SC 1.4.11, drawn on three grounds — every input / select sits either on
+     --color-surface-page (the page itself) or on --color-surface (inside
+     #doc-panel / #checks-panel / a .overlay-card), and the eighth selector's
+     service object (the .verdict-note-input app.js builds dynamically) is appended
+     to .verdict-card, whose ground is --color-surface-warning-subtle. The resting
+     boundary just above is NOT enumerated on that third ground: same shape of
+     gap, pre-existing, left recorded here rather than silently absent.
+     Deliberately NOT enumerated either: the white UA field fill. No input in this
+     app declares a background, so Chrome paints the field fill white and the
+     border is drawn against it, not against the container surface; measured, the
+     hover boundary on white is 5.92 and the resting one 3.32, both above the 3:1
+     floor. The manifest measures only the grounds it names — this sentence is why
+     that limit is a recorded fact rather than a silent one. */
+  /* PAIR --color-border-hover ON --color-surface-page NON-TEXT */
+  /* PAIR --color-border-hover ON --color-surface NON-TEXT */
+  /* PAIR --color-border-hover ON --color-surface-warning-subtle NON-TEXT */
+  /* PAIR --color-border-streaming ON --color-surface-sunken NON-TEXT */
+  /* PAIR --color-border-success ON --color-surface NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface-warning NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface-mark NON-TEXT */
+  /* PAIR --color-action-warning ON --color-surface-warning-subtle NON-TEXT */
+  /* PAIR --color-action-routine ON --color-action-routine-surface NON-TEXT */
 
-  /* the frozen-round structural marker (S-4) must clear the 3:1 floor */
-  /* PAIR --color-action-warning ON --gray-25 NON-TEXT */
+  /* the two solid-fill steps are boundaries in their own right (SC 1.4.11). Each fill
+     sits on --color-surface: #approve-row / #writing-view / #authorize-row all live in
+     #doc-panel-body → #doc-panel, and #doc-panel declares background: var(--color-surface). */
+  /* PAIR --color-action-commit ON --color-surface NON-TEXT */
+  /* PAIR --color-action-irreversible ON --color-surface NON-TEXT */
+
+  /* the active sidebar panel marker, non-text half: the 3px inset bar is a state
+     indicator (SC 1.4.11), on the same --color-surface-page ground as its TEXT
+     half above. */
+  /* PAIR --color-marker-active ON --color-surface-page NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than
      body text on the same ground. Both operands above are TEXT pairs. */
-  /* ORDER --color-text-muted BEFORE --color-text ON --gray-25 */
+  /* ORDER --color-text-muted BEFORE --color-text ON --color-surface */
 }
 /* ===== DESIGN TOKENS: END ===== */
 
@@ -250,6 +586,12 @@ html, body {
   gap: var(--space-1-5);
   overflow-y: auto;
   align-items: center;
+  /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
+     min-width: auto 胜出,长不可断内容能把 #doc-panel 顶得比它的 clamp() 还宽。
+     上面的 anywhere 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖「六个目标
+     长期全覆盖」,将来新增一个未被 overflow-wrap 覆盖的渲染容器时仍能兜住,
+     不得当作冗余代码删除。 */
+  min-width: 0;
 }
 
 #main-pane > section {
@@ -265,6 +607,12 @@ html, body {
   overflow-y: auto;
   border-left: 1px solid var(--color-border-subtle);
   background: var(--color-surface);
+  /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
+     min-width: auto 胜出,长不可断内容能把 #doc-panel 顶得比它的 clamp() 还宽。
+     上面的 anywhere 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖「六个目标
+     长期全覆盖」,将来新增一个未被 overflow-wrap 覆盖的渲染容器时仍能兜住,
+     不得当作冗余代码删除。 */
+  min-width: 0;
 }
 
 #doc-panel.collapsed {
@@ -280,6 +628,21 @@ html, body {
 #doc-panel.collapsed #doc-panel-header {
   justify-content: center;
   padding-inline: 0;
+}
+
+/* D-03 / D-05:sticky 表头 —— 把「恒可见」补回来,不改 badge 的流内机制。
+   背景是必需的,不是可选:`.panel-header` 规则体内没有任何 background 声明,
+   sticky 之后正文会从标题行底下穿过去。`--color-surface` 与 `#doc-panel` 自身背景
+   同值且已被消费(`:474`)⇒ 零新增令牌。
+   不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测若有穿透再补,
+   届时须连带登记 `--z-*` 的序关系断言(badge 10 < banner 20 < overlay 100 < selection-menu 200)。
+   border-radius: 0:半径在本元素上是加背景之后才**首次可见**的新视觉物,而 10px 圆角
+   会让滚动正文从四角露出;全宽条带没有卡片边缘需要圆角。 */
+#doc-panel-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  border-radius: 0;
 }
 
 /* 文档面板标题行:安静的容器标签,不是全屏最大最重的文字 */
@@ -350,16 +713,42 @@ button {
   font-weight: var(--fw-medium);
   cursor: pointer;
 }
-button:hover { background: var(--color-surface-hover); }
+/* D-07 的 gate + D-09 的让位(INTERACT-01,就地改写这条既有选择器 —— 硬规则 3:不移动它的位置)。
+
+   为什么 gate 落在**这条既有选择器**上,而不是新增一条规则:把 D-07 的片段当作**新增
+   规则**追加会同时产生两个后果 ——
+   (1) **修不了缺陷** —— 那条不带 :where() 的通用 gate 写法不匹配禁用按钮,而本条仍然
+       匹配它;`.verdict-buttons button:disabled` 只设 opacity / cursor、不钉 background,
+       于是照样在悬停时被上色;
+   (2) **引入回归** —— 那条通用写法的类列是 2,大于 button.primary(0-1-1)与
+       .overlay-card button(0-1-1)的类列 1,于是这两族填充按钮悬停时会变成灰底,与
+       D-08「填充按钮用 rgba 叠层」的机制正面冲突。
+   故 gate 落在选择器上。:where() 贡献 0 特异性,改写后特异性**仍是 0-1-1,与改写前逐位
+   相同**;声明体那一行(background 一条)逐字节不变。
+
+   ⚠ **特异性相同不等于级联结果相同。** 新选择器收窄了**两处**匹配集:
+   (a) 禁用按钮不再匹配 —— 这就是 D-07 的缺陷修复,一次性、全局、面向未来:将来任何新增
+       的朴素按钮自动继承这条 gate;
+   (b) **按住不放中的按钮也不再匹配**(:where(:not(:active)))—— D-09 的朴素按下态需要
+       hover 在这一瞬让位。指针按住不放时 :hover 与 :active **同时**成立,而朴素 active
+       规则停在 0-1-0(低于本条的 0-1-1);不让位,--color-surface-active 对朴素族
+       **永远不可达**。这两半是一对:**改一必须改另一**(只把朴素 active 升到 0-1-1 会靠
+       源码顺序夺走 button.primary / .overlay-card button 的填充;只去掉本处的
+       :where(:not(:active)) 则朴素按下态不可达)。
+
+   这不是硬规则 1 禁止的 .hidden 用法:那条禁的是拿 :where() 给**隐藏机制**降特异性,本处
+   是给**交互态**加 gate 与让位,两件事。 */
+button:where(:not(:disabled)):hover:where(:not(:active)) { background: var(--color-surface-hover); }
 button.danger { color: var(--color-action-danger); border-color: var(--color-action-danger); }
 
 /* 事件列表与条目 */
+/* L-4 / D-11 的刻意收敛(行为变更,不是纯视觉):原地删掉限高与内滚动两条声明 ——
+   AI 面板不再内部滚动,条目随外层 #main-pane 滚动,滚到面板区底部时内容可达。
+   门:check-05 --item 9 的滚动者 DOM 普查 + 末条可达性断言;其余声明一字不动。 */
 .event-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-1-5);
-  max-height: 55vh;
-  overflow-y: auto;
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   padding: var(--space-2);
@@ -424,6 +813,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   padding: var(--space-6) var(--space-8);
   max-width: 420px;
   text-align: center;
+  box-shadow: var(--shadow-overlay);
 }
 .overlay-card h3 { margin-top: 0; font-size: var(--text-xl); }
 .overlay-card p { color: var(--color-text-secondary); font-size: var(--text-md); line-height: var(--lh-compact); }
@@ -467,6 +857,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   color: var(--color-text-info);
   font-size: var(--text-xs);
   font-weight: var(--fw-semibold);
+  z-index: var(--z-badge);
 }
 
 /* SSE 断流横幅(UI-6.2:琥珀=重连中,红色致命态见下;z-index 高于状态徽标防遮挡) */
@@ -486,8 +877,13 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
 }
 #stream-banner.fatal { background: var(--color-surface-danger); color: var(--color-action-danger); border-color: var(--color-border-danger-subtle); }
 
-/* 文档区子视图切换 */
-#draft-view h2, #rounds-placeholder h2 {
+/* 文档区子视图切换。两个选择器都必须保持「只够得到 chrome 标题」的形态:
+   `#draft-view > h2` 用子组合器 —— 后代形态 `#draft-view h2`(1-0-1)会伸进 `#draft-content` /
+   `#brainstorm-content` 内部,把 `.markdown-body h2`(0-1-1)无条件压回 chrome 字号(ID 列胜过类列,
+   与源码顺序无关),使文档 h2 拿不到 D-06 的 22px;
+   `#round-title` 用该元素自带的 id —— chrome 标题嵌在 `.round-view-header` 里,
+   `#rounds-placeholder > h2` 会匹配不到任何元素。 */
+#draft-view > h2, #round-title {
   margin-top: 0;
   font-size: var(--text-lg);
   color: var(--color-text-secondary);
@@ -497,12 +893,14 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   font-size: var(--text-md);
 }
 /* 标题字号显式化,作用域限定在 .markdown-body 内——不写全局 h1/h2/h3,
-   那会与四处 chrome 覆盖(.panel-header h2 / #draft-view h2 / #brainstorm-view h2 / .overlay-card h3)碰撞。
+   那会与四处 chrome 覆盖(.panel-header h2 / #draft-view > h2 / #brainstorm-view > h2 / .overlay-card h3)碰撞。
+   但只守住这一侧还不够:chrome 侧若用后代选择器(如 `#draft-view h2`,1-0-1),它会反过来伸进
+   .markdown-body 压掉下面三条规则。两侧的选择器形态都要守住。
    阅读列宽度由 #main-pane > section 的 max-width 承担,此处不再重复声明(面板内它本就不生效)。 */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin: var(--space-4) 0 var(--space-2); line-height: var(--lh-tight); font-weight: var(--fw-semibold); }
-.markdown-body h1 { font-size: var(--text-xl); }
-.markdown-body h2 { font-size: var(--text-lg); }
-.markdown-body h3 { font-size: var(--text-md); }
+.markdown-body h1 { font-size: var(--text-3xl); }
+.markdown-body h2 { font-size: var(--text-2xl); }
+.markdown-body h3 { font-size: var(--text-lg); }
 .markdown-body p { margin: var(--space-2) 0; }
 .markdown-body ul, .markdown-body ol { padding-left: var(--space-6); }
 .markdown-body blockquote {
@@ -530,7 +928,7 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   background: var(--color-action-commit-surface);
   border-color: var(--color-action-commit);
   color: var(--color-action-commit-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-approve-draft:disabled { opacity: 0.55; cursor: not-allowed; }
 #approve-row .hint { margin: var(--space-1-5) 0 0; }
@@ -555,7 +953,8 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   border-radius: var(--radius-md);
   background: var(--color-surface-warning-subtle);
 }
-#brainstorm-view h2 {
+/* `>` 与上面 #draft-view 同理:后代形态会伸进 #brainstorm-content 压掉 `.markdown-body h2`。 */
+#brainstorm-view > h2 {
   margin: 0 0 var(--space-2);
   font-size: var(--text-md);
   color: var(--color-action-warning);
@@ -693,12 +1092,13 @@ button.primary {
   border-radius: var(--radius-pill);
   padding: var(--space-half) var(--space-2-5);
 }
+/* L-4 / D-11 的刻意收敛(行为变更,不是纯视觉):原地删掉限高与内滚动两条声明 ——
+   批注面板不再内部滚动,条目随外层 #main-pane 滚动。
+   padding 是 L-5 普查的输入,必须保留;其余声明一字不动。门:check-05 --item 9。 */
 #annotation-list {
   display: flex;
   flex-direction: column;
   gap: var(--space-2-5);
-  max-height: 32vh;
-  overflow-y: auto;
   padding: var(--space-half);
 }
 
@@ -712,7 +1112,33 @@ button.primary {
 }
 #annotations-panel .annotation-item p { margin: var(--space-1) 0; }
 .annotation-quote { color: var(--color-text-secondary); }
-.annotation-quote::before { content: '📌 '; }
+/* VISUAL-05 / D-20 / D-21 / D-22:原地改写为 mask 盒模型(不在末尾追加重复选择器 ——
+   该选择器全文只出现一次、无竞争者,故原地改写在层叠上等价于追加,且不会在末尾留下
+   一条被覆盖的死 content 声明)。
+   三条实现细节缺一即错:
+   (1) margin-right 是必需的 —— 原来的 content 自带一个尾随空格,content: '' 的 12px
+       盒没有,不加间距图标会贴住文字;4px 是刻度内档,与 emoji 占位宽度相当。
+   (2) -webkit-mask-* 与 mask-* 都要写(本阶段唯一允许的冗余声明):无前缀是现代
+       Chrome 的写法,前缀是 WebKit 系的写法。
+   (3) mask-repeat 必须显式声明(默认值是 repeat),mask-size 也必须显式声明(SVG 有
+       viewBox 但无内在尺寸,auto 的落点依赖引擎)。 */
+.annotation-quote::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-1);
+  vertical-align: -2px;
+  background-color: var(--color-text-secondary);
+  -webkit-mask-image: var(--icon-pin);
+  mask-image: var(--icon-pin);
+  -webkit-mask-size: 12px 12px;
+  mask-size: 12px 12px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
 .annotation-note { color: var(--color-text); }
 .annotation-badge {
   display: inline-block;
@@ -745,11 +1171,28 @@ button.primary {
   font-style: italic;
   color: var(--color-text-muted);
 }
+/* A11Y-07(WCAG 2.5.8 目标尺寸)—— 命中区下限 24×24,按**可交互元素普查**施加(不是按点名)。
+   实测本控件的计算盒是 722 × 17:宽早已达标,高不足(12px 字号、无 padding、无 min-height),
+   它是全文件唯一一个实测不达标的可交互元素 —— 也正是「等紧凑控件」里那个「等」所指、
+   却未被需求点名的那个(按点名枚举会漏掉它,与 Phase 5 的 G-idi-05-1 同构)。
+   机制锁定为原地加两条**尺寸下限**声明(下方 min-height / min-width 各 24px):
+   - 为什么 24 是**裸字面量**而不是间距刻度令牌:24 是 WCAG 2.5.8 的目标尺寸常数,把它挂到
+     间距刻度上会让一次间距改动静默地把命中区压到下限之下 —— 「名必须说实话」的同一条方法论。
+     本文件已有同一族的未令牌化**尺寸**字面量(min-height 160 / 200 / 52、min-width 96、
+     height 36、width/height 12);间距刻度覆盖的是 padding / margin / gap,不覆盖尺寸。
+   - 为什么不动 padding、不用 ::after 撑开:抬 padding 改的是**外观**而非命中区,且连锁影响
+     行高与相邻间距观感;::after 撑开会让 .verdict-buttons(gap 8px)的相邻命中区互相重叠,
+     反而可能违反 2.5.8 的「不与他者相交」要求。
+   下方既有四条声明(cursor / color / font-size / margin-top)逐字保留,本项只加两条尺寸声明。
+   已登记的视觉变更:该控件从 ≈17px 抬到 ≥24px 会改变 .annotation-item 的高度
+   (每个带 AI 回复的批注条目 +7…10px)。 */
 .annotation-answer summary {
   cursor: pointer;
   color: var(--color-text-muted);
   font-size: var(--text-xs);
   margin-top: var(--space-1);
+  min-height: 24px;
+  min-width: 24px;
 }
 .annotation-answer-body { margin-top: var(--space-half); }
 
@@ -758,7 +1201,7 @@ button.primary {
   background: var(--color-action-routine-surface);
   border-color: var(--color-action-routine);
   color: var(--color-action-routine-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-process-round:disabled { opacity: 0.55; cursor: not-allowed; }
 
@@ -809,6 +1252,9 @@ button.primary {
   background: var(--color-action-irreversible-surface);
   border-color: var(--color-action-irreversible);
   color: var(--color-action-irreversible-fg);
+  /* D-13:字号步进(16px,现有档,零新增令牌)—— 不加 padding 步进。
+     D-12:字重保持 600,是 D-09「按钮统一 500」的唯一已登记例外;不要把它改成 500。 */
+  font-size: var(--text-md);
   font-weight: var(--fw-semibold);
 }
 #btn-authorize:disabled { opacity: 0.55; cursor: not-allowed; }
@@ -821,7 +1267,7 @@ button.primary {
   background: var(--color-action-commit-surface);
   border-color: var(--color-action-commit);
   color: var(--color-action-commit-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-start-writing:disabled { opacity: 0.55; cursor: not-allowed; }
 #writing-view .hint { margin: var(--space-1-5) 0 0; }
@@ -848,7 +1294,7 @@ button.primary {
   padding: var(--space-2-5) var(--space-4);
   text-align: center;
 }
-.tier-desc { font-size: var(--text-xs); font-weight: var(--fw-regular); opacity: 0.9; }
+.tier-desc { font-size: var(--text-xs); font-weight: var(--fw-regular); }
 
 /* 自检报告面板(阶段 5 侧栏;照 annotations-panel 形态) */
 #checks-panel {
@@ -879,7 +1325,7 @@ button.primary {
   background: var(--color-action-routine-surface);
   border-color: var(--color-action-routine);
   color: var(--color-action-routine-fg);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 #btn-continue-check:disabled, #btn-continue-repair:disabled {
   opacity: 0.55;
@@ -897,7 +1343,24 @@ button.primary {
 }
 .verdict-card p { margin: var(--space-1) 0; }
 .verdict-location { color: var(--color-text-secondary); }
-.verdict-location::before { content: '📍 '; }
+/* 同 .annotation-quote::before,只把 --icon-pin 换成 --icon-location(VISUAL-05 / D-22)。 */
+.verdict-location::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-1);
+  vertical-align: -2px;
+  background-color: var(--color-text-secondary);
+  -webkit-mask-image: var(--icon-location);
+  mask-image: var(--icon-location);
+  -webkit-mask-size: 12px 12px;
+  mask-size: 12px 12px;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
 .verdict-issue { color: var(--color-text); }
 .verdict-suggestion { color: var(--color-text-muted); font-style: italic; }
 .verdict-note-input {
@@ -931,3 +1394,304 @@ button.primary {
    元素选择器特异性 0-0-1,所以 button.danger(0-1-1)、#btn-*(1-0-0)、
    .overlay-card button(0-1-1)全部仍然取胜。视觉 delta 不可感知。 */
 button, input, select { color: var(--color-text); }
+
+/* 活动面板标记(VISUAL-04 / D-17,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   三个互斥面板里恰有一个可见,那一个就是「活动态」;下面两条规则靠 :not(.hidden)
+   **读取**既有的显隐机制,不修改它(.hidden 规则本身零改动,CHECK-03 / CHECK-04 守卫)。
+
+   四条承重决定:
+   (1) 用 box-shadow 的 inset 竖条而非 border-left —— box-shadow 不参与布局、零位移,
+       而 border-left 会给标题行加 3px 宽度,把行内的 #pending-count / #check-state
+       往右推。冻结轮(#round-doc.round-frozen)已是这个写法,有现成先例。
+   (2) 竖条落在 .panel-header 而非 <section> —— 三个 section 的子元素都带背景色
+       (.chat-bubble / .annotation-item / .event-list / .panel-body),inset shadow 画在
+       元素自身的背景层上,带背景的子元素会盖住左边缘的竖条;标题行没有带背景的左边缘
+       子元素,竖条因此可见。这是层叠事实,不是审美偏好。
+   (3) 标题只改 color,不改 font-weight —— D-09 已把 chrome 标题统一为 500;且 .panel-header
+       是 height: 36px + justify-content: space-between 的 flex 行,改字重会移动行内徽标。
+   (4) 3px 是 box-shadow 的偏移分量,**不是** --space-* 刻度值:04-UI-SPEC 的 L-1…L-5 从未
+       覆盖 box-shadow 的偏移/模糊/扩展,冻结轮的既有声明已是先例 —— 这不是新增刻度外字面量。
+
+   #doc-panel-header 虽是 .panel-header,但不被下面三条 ID 选择器匹配,故无意外覆盖。
+   特异性 1-2-0 / 1-2-1,靠 ID 分量取胜,与源码顺序无关;仍追加在末尾,以防日后有人给
+   .panel-header 补 box-shadow。 */
+#session-panel:not(.hidden) .panel-header,
+#annotations-panel:not(.hidden) .panel-header,
+#checks-panel:not(.hidden) .panel-header {
+  box-shadow: inset 3px 0 0 var(--color-marker-active);
+}
+#session-panel:not(.hidden) .panel-header h2,
+#annotations-panel:not(.hidden) .panel-header h2,
+#checks-panel:not(.hidden) .panel-header h2 {
+  color: var(--color-marker-active);
+}
+
+/* 嵌入渲染目标的标题刻度(G-idi-05-1 / P-20,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+
+   为什么需要这组规则:`renderMarkdown()`(app.js:112)的返回值被注入五个**不是**
+   `.markdown-body` 的容器 —— `.event-content` / `.chat-bubble` / `.say-chunk` /
+   `.annotation-note` / `.annotation-answer-body`。上面 `.markdown-body` 的标题字号规则够不到它们,
+   故在此之前这些容器里的一至三级标题全部回落 UA 默认值:`.chat-bubble` 上下文里一级标题是
+   32px / 700,`.event-content` 上下文里是 28px / 700 —— 既超过 `.markdown-body` 的二级标题(22px),
+   也与文档一级标题(28px)持平或反超,使「文档自己的标题是全屏最大最重的文字」这条声明为假;
+   字重 700 更是一个契约只声明三档(400 / 500 / 600)之外的**第四档**。
+
+   取值规则(可复算,不是逐容器手调):嵌入档 = 文档档沿契约的**数值**阶梯下移一档。
+   契约阶梯的数值序是 12 / 14 / 16 / 18 / 22 / 24 / 28,故 28 → 24(`--text-xl`)、
+   22 → 18(`--text-lg`)、18 → 16(`--text-md`)。**按数值序不按名字序** —— `--text-2xl`(22)
+   与 `--text-xl`(24)的名字序不单调(D-07 已登记),照名字降一档会撞上文档二级标题的档位。
+   文档刻度本身(D-06:28 / 22 / 18 / 本体 16)一字未改,这组规则是它的推论。
+   字重取 `--fw-semibold`(600):D-09 的分工里这五个容器渲染的是**内容**(AI 输出 / 用户批注),
+   不是 chrome 标题,故归内容标题档 —— 这也正是消除第四字重档 700 的方式。
+   嵌入最高档取 24 而非 28,是为了让 D-19 的层级链 28 > 24 > 22 > 14 在会话流里真有标题时
+   仍成立:文档一级标题**严格大于**每一个嵌入目标的一级标题(该不等式由 check-05 的 item7
+   先造容器再断言,不依赖 fixture 恰好有内容)。
+
+   为什么不写一条全局的裸类型选择器标题规则(三个类型选择器单独成条,或合并成一条):
+   它的特异性 0-0-1,对四处 chrome 覆盖与 `.markdown-body` 的标题规则都是**惰性的**,
+   于是恰好只命中这五个失控容器 —— 看起来更省事。但它无法表达三档各不相同(那要写成三条
+   全局规则),而三条全局规则会把**任何将来的标题**一并捕获,即把「哪些容器受影响」这件事
+   重新变成不可枚举 —— 那正是本缺陷的成因;而且全局规则无法把影响面逐条对照 `app.js`
+   的调用点,枚举可以(见 check-05 的 `MARKDOWN_TARGETS` 与它的调用点普查守卫)。
+
+   为什么不加 margin / line-height:本缺陷的判据只有字号与字重。给标题加边距或行高而同一容器里的
+   段落仍走 UA 边距,只会造成半套节奏 —— 那是一次没有契约锚点的视觉扩张(D-10:零新增行高令牌)。
+
+   特异性说明:五组选择器全部是 0-1-1,与既有规则无竞争 —— `.annotation-plain .annotation-note`
+   与 `.annotation-answered .annotation-note` 等 0-2-0 规则只声明 `font-style` / `color`,
+   不含 `font-size` / `font-weight`(已逐条核过)。 */
+.event-content h1, .chat-bubble h1, .say-chunk h1, .annotation-note h1, .annotation-answer-body h1 { font-size: var(--text-xl); font-weight: var(--fw-semibold); }
+.event-content h2, .chat-bubble h2, .say-chunk h2, .annotation-note h2, .annotation-answer-body h2 { font-size: var(--text-lg); font-weight: var(--fw-semibold); }
+.event-content h3, .chat-bubble h3, .say-chunk h3, .annotation-note h3, .annotation-answer-body h3 { font-size: var(--text-md); font-weight: var(--fw-semibold); }
+
+/* 六目标换行保护(L-3 / D-07,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   六目标枚举 —— 与 renderMarkdown() 的调用点一一对应(Phase 5 idi-05-04 已建立该枚举,
+   见 `:1229-1262` 的注释与 check-05 的 MARKDOWN_TARGETS)。
+   不写通配规则:那会波及已裁定的 `.event-content { word-break: break-all }`(L598-601),
+   并把「哪些容器受影响」重新变成不可枚举 —— 那正是 G-idi-05-1 的成因。
+   必须用 anywhere 而非 break-word:按 CSS Text 3,只有 anywhere 参与 min-content 内在尺寸计算,
+   break-word 不参与 —— 这是上面 min-width: 0 能生效的前提,注释必须写明。
+   `.event-content` 已在 `break-all` 之下(break-all 同样影响 min-content),故此处的 anywhere
+   对它渲染零影响 —— 仍列入六目标,因为枚举必须与渲染目标一一对应(部分枚举正是缺陷存活的原因)。 */
+.markdown-body, .event-content, .chat-bubble, .say-chunk, .annotation-note, .annotation-answer-body {
+  overflow-wrap: anywhere;
+}
+
+/* 全站焦点环(A11Y-01 / D-05,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+
+   为什么枚举而不是裸 `:focus-visible`:与本项目 Phase 5(G-idi-05-1)与 Phase 6
+   (overflow-wrap)建立的同一口径 —— 影响面必须**可枚举、可对照**。裸通配在这里
+   不是「更全」而是「不可审」:它回答不了「哪些元素被覆盖了」这个问题。
+
+   枚举集与门的普查集逐字同集:scripts/check-05-ui-uat.py 的可聚焦普查集是
+   `button, input, select, textarea, a[href], summary, [tabindex]`(顺序亦同)。
+   两者必须**同时**改 —— 新增一类可聚焦元素要改两处,只改一处会让「规则覆盖了谁」
+   与「门检查了谁」重新分叉,而那正是 G-idi-05-1 的成因。**门那一侧只有一处**:
+   两份普查脚本的 `document.querySelectorAll(...)` 参数都由该文件的
+   `FOCUSABLE_SELECTOR` 常量生成,故改那个常量就真的改了普查枚举到什么;本文件这一处
+   仍是字面量(CSS 消费不了 Python 常量),只能靠这句承诺与人工同步。
+
+   几何是双向绑定的:`2px` 与 `outline-offset: 2px` 的环外伸量恰为 4px,正是
+   check-05 的 CLEARANCE_MIN_PX = 4.0 与 idi-06-UI-SPEC.md §L-5 所假设的值。
+   改几何即改那个门的阈值,两者不是两件事。
+
+   `[tabindex]` 今天**无服务对象**:全站 `[tabindex]` 计数为 0。它是**防御性非冗余**
+   写法(照 06-CONTEXT D-09 的 min-width: 0 那条注释的形态):本规则的契约是
+   「凡可聚焦必有环」,而 Phase 8 会给 #round-doc 加 tabindex="0" —— 届时这一条会
+   自动把环套上去,无需再动本文件。本阶段不为 #round-doc 写任何焦点规则:它今天
+   不可聚焦,那条规则会是**死代码**,且无法被运行时验证;Phase 8 加 tabindex 时
+   连同它自己的内嵌处理一起落地(D-06)。
+
+   环的出现与消失是硬切:outline 相关属性不在过渡允许列表内,且过渡焦点环是已知的
+   无障碍反模式(延迟的焦点反馈),故不得为「让环更柔和」把它加进任何过渡。
+   规则体只用不参与布局的环属性,故零位移。 */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a[href]:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* 朴素(无底色)按钮的按下态(INTERACT-01 / D-09,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   选择器 :where(button:not(:disabled)):active,特异性 **0-1-0**。
+
+   四条承重说明:
+
+   (1) 0-1-0 是**刻意**的。它高于 button 基础规则(0-0-1),故朴素按钮的按下反馈成立;
+       又低于 button.primary 与 .overlay-card button(两者都是 0-1-1),故这两族填充按钮
+       的按压观感仍归 D-08 的 0.12 叠层所有。**改高即把填充按钮按住不放时刷成灰底** ——
+       这两族的填充声明都是 0-1-1,朴素规则一旦升到 0-1-1,**同特异性下源码顺序取胜**,
+       就会夺走它们的填充(白字落在灰底上)。后来者不得为「对齐」把它升到 0-1-1。
+
+   (2) 它能胜过上面那条 hover(0-1-1)**不是靠特异性**(0-1-0 < 0-1-1),而是靠那条 hover
+       在按住不放时不再匹配(它带 :where(:not(:active)))。**两者是一对选择器改写,改一
+       必须改另一**;缺了任一半,朴素按下态都不可达。
+
+   (3) 它与填充 active 组的**源码位置无关紧要**:填充 active 组最低 0-3-1,两者在三列上
+       都不可能同分,特异性严格可分 —— 源码顺序只在**同特异性**时才是判据。本规则追加在
+       文件末尾只是「追加,不重排」的默认落点,顺序不承担任何正确性。
+
+   (4) 本条**不承诺**浮层内批注/大白话按钮的按下态:那个控件有它自己 1-1-1 的 hover 规则,
+       不属本承诺面。 */
+:where(button:not(:disabled)):active {
+  background: var(--color-surface-active);
+}
+
+/* 填充按钮的 hover 压暗叠层(D-08 / INTERACT-01,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   九组既有填充规则体的选择器逐条列出,按「同族选择器列表」组织 —— 与文件既有的
+   #session-panel:not(.hidden) .panel-header, … 那组三行枚举同族。
+
+   ⚠ **必须逐 id / 按族枚举,不能写成那条不带 id/族前缀的通用 gate 写法。** 后者是 0-2-1、
+   ID 列为 0;而 #btn-* 是 1-0-0、#chat-input-row button 是 1-0-1、button.primary 与
+   .overlay-card button 是 0-1-1 且源码都在本规则之前。**1-0-0 > 0-2-1**(ID 列大于类列),
+   故那条写法对 #btn-authorize 完全无效 —— 这正是 D-02 第 7 条「今天所有有底色语义的按钮
+   hover 时零反馈」的成因,本规则必须正面跨过它。
+   逐条特异性:七条 #btn-*(1-2-0)压过各自的 1-0-0;#chat-input-row button(1-2-1)压过它的
+   1-0-1;button.primary 与 .overlay-card button(0-3-1)压过 0-1-1,后者也压过
+   .overlay-card button.danger 的 0-2-1。
+
+   为什么用 box-shadow 的 inset 而非 opacity:实测 opacity: 0.88 会把白字一起变浅,
+   primary 4.77 → 3.93、danger 5.21 → 4.42、commit 4.72 → 3.81,**三个色族跌破 AA 4.5:1**;
+   rgba 叠层把填充变深、文字不动,对比度反而上升(5.27 / 5.75 / 5.23),irreversible
+   12.32 → 12.97。这是 D-08 的 opacity 排除理由,不是审美偏好。
+
+   为什么是 999px 的整面铺满:本文件既有的 box-shadow: inset 只有 3px 偏移的竖条形态
+   (#round-doc.round-frozen、活动面板标记);999px 大于任何按钮的盒宽,故等价于整面覆盖。
+   box-shadow 不参与布局 ⇒ 零位移。
+
+   box-shadow **不在**过渡允许列表里 ⇒ 填充按钮的 hover 是**瞬变**,这是刻意的(D-14);
+   朴素按钮仍可过渡(D-12 的挂载规则,计划 03)。按下反馈只用 box-shadow,不用位移。
+
+   浮层内的批注/大白话按钮**不进这两组**:它是浮层内的透明底朴素控件,已有它自己 1-1-1 的
+   hover 规则;D-08 的 rgba 叠层针对的是**有底色语义**的填充按钮,叠层加到透明底上不可见。
+
+   #btn-authorize 的不可逆权重不变:叠层只改填充明度,不改它的深绿填充、白字与 --text-md
+   字号(D-07 末段)。 */
+#btn-authorize:not(:disabled):hover,
+#btn-approve-draft:not(:disabled):hover,
+#btn-divergence:not(:disabled):hover,
+#btn-process-round:not(:disabled):hover,
+#btn-start-writing:not(:disabled):hover,
+#btn-continue-check:not(:disabled):hover,
+#btn-continue-repair:not(:disabled):hover,
+#chat-input-row button:not(:disabled):hover,
+button.primary:not(:disabled):hover,
+.overlay-card button:not(:disabled):hover {
+  box-shadow: inset 0 0 0 999px var(--color-overlay-hover);
+}
+
+/* 填充按钮的按下态(D-09 / INTERACT-01,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   同一份选择器列表,把悬停伪类换成按下伪类;声明体是同一套 inset 叠层,只把 alpha 从
+   0.06 提到 0.12(两个 alpha 都是围栏内的令牌,规则体只写 var(),不写颜色字面量)。
+   两组特异性**逐条相同**,故按下时靠**源码顺序**取胜(本组在 hover 组之后)⇒ 0.12 覆盖 0.06。
+   朴素按钮的按下态**不在本组**:它是文件末尾那条 0-1-0 的规则,与本组的最低特异性 0-3-1
+   在三列上都不可能同分,源码顺序与它无关。 */
+#btn-authorize:not(:disabled):active,
+#btn-approve-draft:not(:disabled):active,
+#btn-divergence:not(:disabled):active,
+#btn-process-round:not(:disabled):active,
+#btn-start-writing:not(:disabled):active,
+#btn-continue-check:not(:disabled):active,
+#btn-continue-repair:not(:disabled):active,
+#chat-input-row button:not(:disabled):active,
+button.primary:not(:disabled):active,
+.overlay-card button:not(:disabled):active {
+  box-shadow: inset 0 0 0 999px var(--color-overlay-active);
+}
+
+/* 输入控件的 hover 边框加深(INTERACT-01 / D-10,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+
+   八条选择器按**既有 ID 级规则体逐条枚举** —— 这是本组的承重部分:通用的 input 元素选择器
+   是 0-1-1,会被所有 1-0-0 的 ID 规则盖掉,等于不生效。
+   逐条特异性:#ai-route-select / #project-path-input / #round-switcher / #check-switcher
+   各 1-1-0,压过各自的 1-0-0;#enter-form input[type="text"] 与
+   #confirmation-modal input[type="text"] 各 **1-2-1**(一个 ID + `[type="text"]` 这个
+   属性 + `:hover` 这个伪类),压过既有规则 `#enter-form input[type="text"]`(L838)与
+   `#confirmation-modal input[type="text"]`(L1276)的 1-1-1 —— 它们**靠特异性取胜,
+   不是靠源码顺序**:源码顺序只在**同特异性**时才是判据。加上
+   :where(:not(:disabled)) 不改变这个数(`:where()` 的贡献恒为 0)。
+   #chat-input-row input 是 1-1-1,压过它的 1-0-1;
+   .verdict-note-input 是 0-2-0,压过它的 0-1-0。
+
+   覆盖核对(index.html 的 4 个静态 input + 3 个 select,加上 app.js 动态建的
+   .verdict-note-input,**逐条都有服务对象**):#message-input / #project-path-input /
+   #enter-path-input / #confirm-word-input 四个 input 分别由 #chat-input-row input、
+   #project-path-input、#enter-form input[type="text"]、#confirmation-modal input[type="text"]
+   覆盖;#check-switcher / #ai-route-select / #round-switcher 三个 select 各有一条;
+   第八条 .verdict-note-input 的服务对象是 app.js 在裁决卡里动态建的那一个。
+
+   :not(:disabled) 在 input / select 上是**防御性写法**:全站 8 条 :disabled 规则**全部是
+   按钮**,今天没有被禁用的 input / select,这条 gate 今天看似冗余 —— 它不依赖「今天恰好
+   没有」,将来给输入框加禁用态时仍能兜住,**不得当作冗余代码删除**(与 06-CONTEXT D-09 的
+   min-width: 0 同型)。**八条选择器逐条都带这条 gate**,一个不漏 —— 漏掉的正是最可能
+   先被加上禁用态的那两个(#enter-path-input 把守着整条进入流程,#confirm-word-input
+   已被 app.js:530 程序化操作);今天它们恰好都不禁用,故漏掉不会显形,只会在将来那一
+   阶段以「禁用控件仍响应 hover」的形态出现。
+
+   border-color 在 INTERACT-02 的过渡允许列表内,可平滑过渡。
+   本组**不加 :active** —— 文本框的「按下」无意义。 */
+#ai-route-select:where(:not(:disabled)):hover,
+#project-path-input:where(:not(:disabled)):hover,
+#round-switcher:where(:not(:disabled)):hover,
+#check-switcher:where(:not(:disabled)):hover,
+#enter-form input[type="text"]:where(:not(:disabled)):hover,
+#chat-input-row input:where(:not(:disabled)):hover,
+#confirmation-modal input[type="text"]:where(:not(:disabled)):hover,
+.verdict-note-input:where(:not(:disabled)):hover {
+  border-color: var(--color-border-hover);
+}
+
+/* 控件过渡的挂载规则(INTERACT-02 / D-12,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   **纯追加**:不编辑 button 基础规则、#ai-route-select、#project-path-input 等任何既有
+   规则体。时长取 120ms(在 INTERACT-02 的「约 120–150ms」区间内),不显式声明缓动
+   (浏览器默认 ease)。
+
+   特异性 0-0-1(纯元素选择器),与上面那条控件前景色规则同一理由、同一形态:
+   button.danger(0-1-1)、#btn-*(1-0-0)、.overlay-card button(0-1-1)全部仍然取胜。
+   与 .event-list(0-1-0)**零竞争** —— 不同元素,且本规则的三元素不匹配 .event-list。
+
+   属性列表只有 background-color 与 border-color 两个。
+   **不含** opacity:禁用态是 G3 前提条件唯一的视觉信号,应当被立即感知;0.55 的淡入
+   容易被读成「加载中」而非「不可点」(D-14)。
+   **不含** outline-color / outline-width:过渡焦点环是已知的无障碍反模式(延迟的焦点
+   反馈),环的出现与消失必须是硬切(D-14 的派生结论)。
+
+   box-shadow **不在**本列表里 ⇒ 填充按钮的 hover 叠层是瞬变,这是刻意的(D-08 已登记的
+   代价 ②);朴素按钮的背景色反馈仍可过渡。
+
+   D-11 的具名例外:.event-list 的那条 300ms 声明(见上面 .event-list 规则体)保留
+   300ms,**一个字节不动**。它服务的是 .streaming / .aborted 两个**流式状态指示类**,
+   不是控件态过渡;INTERACT-02 的 120–150ms 规格针对的是控件反馈。**全站因此有两个
+   时长,300ms 那个不是控件态** —— 不得静默留下两个时长。本阶段的性质是纯追加,
+   编辑那条声明会打破该性质。
+
+   <textarea> **不进**本枚举(全站 <textarea> 计数为 0,与 D-12 的片段一致);而焦点环
+   的枚举含 textarea(D-05 要求它与 check-05 的可聚焦普查集逐字同集)。两处枚举的差异
+   是**有意的**,不是不一致。 */
+button, input, select { transition: background-color 120ms, border-color 120ms; }
+
+/* 减弱动效偏好:按选择器把过渡重写为 none(D-13,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   **本块与上面那条过渡挂载规则必须同一次提交落地** —— 减弱动效偏好必须与任何新增过渡
+   一起存在,否则偏好用户仍会看到新增的 120ms 反馈。
+
+   为什么不采用行业标准的减弱动效片段:通行写法是一个通配选择器加两个伪元素,把
+   transition-duration 压到 0.01ms,并**带两个 !important 声明**。本仓库的 !important
+   声明数**必须恒为 1**(硬规则 2/4;唯一一条是 .hidden 的 display:none,44 处 classList
+   依赖它),scripts/check-04-important-count.sh 会立刻从 1 变 3 而变红。
+   **本阶段不得采纳任何带 !important 的减弱动效写法** —— 那条行业惯例在本项目里根本
+   不存在。
+
+   为什么按选择器重写而不是改时长:transition 取 none 是**确定性的终态**,可被
+   getComputedStyle 直接断言;0.01ms 之类的「几乎为零」不是。
+
+   为什么枚举写死而不是用通配:与 Phase 5(G-idi-05-1)/ Phase 6(overflow-wrap)的同一
+   口径 —— 影响面必须可枚举、可对照;通配会把「哪些元素受影响」重新变成不可审。
+
+   枚举含 .event-list 是**刻意**的:否则减弱动效用户仍会看到流式状态的 0.3s 背景淡入。 */
+@media (prefers-reduced-motion: reduce) {
+  button, input, select, .event-list { transition: none; }
+}

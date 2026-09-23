@@ -34,8 +34,12 @@ fi
 
 # Hard invariant (TOKEN-02): tier-1 primitive names are private to the fence.
 # A selector reaching for one is a leak the bare-hex scan cannot see.
+# The alternation carries a `radix` branch as well: tier-1 names were renamed to
+# the --radix-<family>-<step> shape, which the old family-only list no longer
+# matched, so the guard went silently vacuous and kept printing PASS. The extra
+# branch is what makes this hard invariant mechanically checkable again.
 prim=$(printf '%s\n' "$outside" \
-  | grep -oE 'var\(--(white|black|gray|green|blue|amber|red|purple)(-[0-9]+)?' \
+  | grep -oE 'var\(--(white|black|gray|green|blue|amber|red|purple|radix)(-[0-9]+)?' \
   | wc -l | tr -d ' ' || true)
 if [ "$prim" != "0" ]; then
   echo "FAIL: $prim tier-1 primitive reference(s) outside the fence"

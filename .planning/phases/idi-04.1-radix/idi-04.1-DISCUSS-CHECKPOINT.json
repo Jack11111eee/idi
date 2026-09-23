@@ -1,0 +1,68 @@
+{
+  "phase": "04.1",
+  "phase_name": "Radix 颜色族重写",
+  "timestamp": "2026-09-19T00:00:00Z",
+  "areas_completed": ["Radix 交付方式", "令牌名与契约归属", "色族选型与 AA 步骤"],
+  "areas_remaining": ["UAT 3 项消解口径"],
+  "decisions": {
+    "Radix 交付方式": [
+      {
+        "question": "Radix 的色值怎么进仓库?",
+        "answer": "手工转抄 hex 进 :root —— 把每族用到的步的 hex 值直接写成围栏内的 tier-1 primitive。零新文件、vendor gate 不动、依赖为零,颜色值仍只有围栏一个事实源。",
+        "options_presented": ["手工转抄 hex 进 :root", "vendor Radix 的 CSS 文件", "只借刻度结构不借值"]
+      }
+    ],
+    "令牌名与契约归属": [
+      {
+        "question": "tier-2 的 49 个语义令牌名是否逐字冻结?",
+        "answer": "逐字冻结。全部选择器 / CHECK-02 按名配对清单 / Phase 5 的 VISUAL-01/02 都引用这些名;冻结后本阶段是真正的纯值替换(SC2)。名与 Radix 步数的映射靠围栏注释记录。",
+        "options_presented": ["逐字冻结(推荐)", "随 Radix 重命名"]
+      },
+      {
+        "question": "tier-1 的 26 个 primitive 名怎么处理?",
+        "answer": "换成 Radix 刻度名(--radix-<family>-<step>)。原 Tailwind 式名(--gray-600 指「中灰」)与 Radix 1-12 编号语义(--gray-6 指「细边框」)直接冲突。CHECK-02 清单里的 tier-1 背景名一并重算。",
+        "options_presented": ["换成 Radix 刻度名(推荐)", "保留原 26 名、只换值", "两套并存(旧名作别名)"]
+      },
+      {
+        "question": "每族声明完整 12 步,还是只声明本阶段真正消费到的步?",
+        "answer": "只声明消费到的步。遵守 Phase 4 已立的 Pitfall 1 / Hard Rule 5「绝不定义同一次提交不消费的令牌」。代价:刻度不完整,Phase 5 取新步时要改围栏。",
+        "options_presented": ["只声明消费到的步(推荐)", "每族完整 12 步"]
+      },
+      {
+        "question": "04.1 的 UI-SPEC 与 04-UI-SPEC.md 是什么关系?",
+        "answer": "04.1 只重写颜色两节。新建 04.1-UI-SPEC.md 只含 Color + Contrast Verification 两节的替换;其余节明确声明 04-UI-SPEC.md 仍为权威并在 canonical_refs 里指向它。零重复、零漂移。",
+        "options_presented": ["04.1 只重写颜色两节(推荐)", "04.1 完整重发一份", "就地改 04-UI-SPEC.md"]
+      }
+    ],
+    "色族选型与 AA 步骤": [
+      {
+        "question": "中性色族选 Radix 的哪一支?",
+        "answer": "Radix gray(纯中性无色偏)。现有 gray 值全是 r=g=b(#0d0d0d / #8f8f8f / #d9d9d9),选 gray 是字面对应,视觉变化最小。",
+        "options_presented": ["Radix gray(推荐)", "Radix slate", "Radix sand"]
+      },
+      {
+        "question": "强调色族的取法 —— 逼近现有色相,还是采用 Radix 规范色相?",
+        "answer": "逐族取最接近的现有色相(blue→blue / green→green / amber→amber / red→red / purple→violet)。关键理由:AA 保证来自步的选择而非族的归属,同一族内取 11/12 步即成立,不必为 AA 牺牲色相。",
+        "options_presented": ["逐族取最接近的现有色相(推荐)", "采用 Radix 规范色相"]
+      },
+      {
+        "question": "当 Radix 第 11 步在最深的那个底(≈ 步 3)上过不了 4.5:1 时怎么办?",
+        "answer": "换背景步,保住 muted = 11。把该背景提到更浅的步(如 gray-1/2),维持 muted = 11 / 正文 = 12 的同族层级结构。已记录的代价:--color-surface-hover 变浅会削弱 hover 的可见性,需在 UI-SPEC 中一并裁定。",
+        "options_presented": ["换背景步,保住 muted = 11", "muted 提到 12 步", "逐对交 CHECK-02 裁定"]
+      },
+      {
+        "question": "重映射的范围 —— 全部颜色角色,还是只动文字角色?",
+        "answer": "全部角色都重映射:底(1-2)/ 组件底(3-5)/ 边框(6-8)/ 实心填充(9-10)/ 文字(11-12)。即 goal 的字面。代价:边框与实心填充也换值,是本阶段最大视觉面。",
+        "options_presented": ["全部角色都重映射(推荐)", "只重映射文字角色"]
+      }
+    ]
+  },
+  "deferred_ideas": [],
+  "canonical_refs": [
+    ".planning/phases/idi-04-tokens-contract/04-UI-SPEC.md",
+    ".planning/phases/idi-04-tokens-contract/idi-04-UAT.md",
+    "scripts/check-02-contrast.py",
+    "frontend/style.css",
+    ".planning/ROADMAP.md"
+  ]
+}

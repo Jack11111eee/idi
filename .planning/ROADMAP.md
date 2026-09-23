@@ -47,10 +47,10 @@
 - 完整 ARIA / 焦点陷阱 / 其余 2-3 个非阻塞弹窗的 `role` —— 用户已裁定取窄切片。
 - 两处 `window.prompt` 替换、响应式/移动端断点系统、图标库、组件级令牌层、任何 lint 工具链 —— 见 REQUIREMENTS.md 的 Out of Scope 表。
 
-- [ ] **Phase 4: 设计契约、令牌层与契约校验** - 书面 UI-SPEC(含含义清单)+ 单一 `:root` 令牌块 + 全部字面量替换 + 四条契约校验命令
-- [ ] **Phase 5: 排版与视觉层级** - markdown 正文字号受控、不可逆动作权重、页面级层级、面板活动态、两处内联 SVG
-- [ ] **Phase 6: 布局稳健性** - 魔法数消除、窄窗口不破版、滚动容器收敛、24×24 命中区
-- [ ] **Phase 7: 交互状态与焦点样式** - hover/active/disabled/transition + 全站 `:focus-visible`
+- [x] **Phase 4: 设计契约、令牌层与契约校验** - 书面 UI-SPEC(含含义清单)+ 单一 `:root` 令牌块 + 全部字面量替换 + 四条契约校验命令 (completed 2026-09-20)
+- [x] **Phase 5: 排版与视觉层级** - markdown 正文字号受控、不可逆动作权重、页面级层级、面板活动态、两处内联 SVG (completed 2026-09-21)
+- [x] **Phase 6: 布局稳健性** - 魔法数消除、窄窗口不破版、滚动容器收敛、24×24 命中区 (completed 2026-09-22)
+- [x] **Phase 7: 交互状态与焦点样式** - hover/active/disabled/transition + 全站 `:focus-visible` (completed 2026-09-23)
 - [ ] **Phase 8: 可访问性语义与键盘** - 唯一触碰 `app.js`/`index.html` 的阶段:tabindex、划词焦点交接、Escape、dialog 语义、内联错误结构修复、五条修复回归复验
 
 ## Phase Details
@@ -111,6 +111,34 @@ Plans:
 
 **UI hint**: yes
 
+### Phase 04.1: Radix 颜色族重写 (INSERTED)
+
+**Goal:** 把颜色族从手调 hex 换成 Radix Colors 的 12 步语义刻度(1-2 底 / 3-5 组件底 / 6-8 边框 / 9-10 实心填充 / 11-12 文字),并据此重算 UI-SPEC 令牌清单与 CHECK-02 的 34 对对比度配对。
+**非紧急插入**:这是 Phase 4 **值层**的刻意重写(结构产出——围栏 `:root`、75 个令牌、四条守卫命令——不动),同时吸收 idi-04 UAT 的 3 项 FAIL 与 `--color-text-muted` 3.23:1 的 AA 倒退。
+**不含暗色模式**(与 v1.14 的已记录排除项一致);**不改** S-1 间距 12 档与 S-2 的 14px 一级字号档。
+**Requirements**: TOKEN-01, TOKEN-02, TOKEN-04, TOKEN-07, CHECK-01, CHECK-02, CHECK-03, CHECK-04, A11Y-04, A11Y-04b(全部是 Phase 4 已列需求 —— 04.1 是它们的**值层重写**,不新增需求。口径:本阶段**实质关闭** A11Y-04 / A11Y-04b / CHECK-02 / TOKEN-07 / CHECK-01(AA 倒退、`.tier-desc` 的 opacity 越轨、43 对清单重算、z-index 序断言重新有消费者、D-03 改名后空转的 tier-1 守卫);**沿用并复证** TOKEN-01 / TOKEN-02 / TOKEN-04 / CHECK-03 / CHECK-04。**不触碰** TOKEN-03 / TOKEN-05 / TOKEN-06 / TOKEN-08)
+**Depends on:** Phase 4
+**Plans:** 4/4 plans complete
+
+Plans:
+**Wave 1**
+
+- [x] idi-04.1-01-PLAN.md — 围栏值层与对比度清单的原子重写(tracer:25 个 Radix primitive / 47 个 `--color-*` / 43 对清单)+ 围栏注释 V-12 + 围栏外三处声明(R-1 / R-2 / R-3)与运行时接线证据
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] idi-04.1-02-PLAN.md — 守卫加固:CHECK-01 的 tier-1 交替式加宽到覆盖 `radix` 并做变异证明(含「旧交替式会空转」的对照证据);复证 `check-02-contrast.py` 的四条硬失败路径(依赖 01 —— 复证对象是重算后的 43 对清单)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] idi-04.1-03-PLAN.md — UAT 断言改令牌接线(D-14)+ D-13 选择器名 / D-12 期望值修正 + `idi-04-UAT.md` 更新 + C-1 下游门引用复核 + 全量门禁收口
+
+**Wave 4** *(gap closure — blocked on Wave 3 completion; closes VERIFICATION.md's only BLOCKER CR-01)*
+
+- [x] idi-04.1-04-PLAN.md — 关闭 CR-01:让 `check-05-ui-uat.py` 的 `resolve_color` 在令牌未声明时返回 `None`、`ok()` 把 `None` 期望值记 BLOCKED,并用变异证明钉死「修复前 PASS / 修复后 BLOCKED」的对照(新文件 `scripts/probe-05-resolve-color.py`)。范围外项 W-2…W-6 / CR-02 / IN-01…03 与两条人工项显式登记为 deferred,不修
+
+**UI hint**: yes
+
 ### Phase 5: 排版与视觉层级
 
 **Goal**: 渲染出的文档与界面 chrome 各有一套受控的排版刻度;产品最重要的一步(不可逆的 G3 授权)在视觉上不再与例行按钮混同;页面级层级正确。
@@ -145,8 +173,26 @@ Plans:
 - **Pitfall 9**——追加,不重排(`#brainstorm-view h2` 的 14px / `#8a6508` 是顺序决定的)。
 
 **Research flag**: 标准实践,无需研究阶段。项目特有的碰撞已在上方逐条枚举。
-**Gates**: markdown 标题不再解析为 UA 默认(浏览器计算样式实检);`#btn-authorize` 计算样式与 `#btn-continue-check` 不同;`#brainstorm-view h2` 仍计算为 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
-**Plans**: TBD
+**Gates**: markdown 标题不再解析为 UA 默认(浏览器计算样式实检);`#btn-authorize` 计算样式与 `#btn-continue-check` 不同;`#brainstorm-view h2` 仍解析为 `--text-md` 与 `--color-action-warning`(D-02:改写为令牌接线表述,与 04.1 的 D-14 同构);Phase 4 全部 gate 仍通过。
+**Plans**: 4/4 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] idi-05-01-PLAN.md — 排版刻度 7 档(`--text-2xl`/`--text-3xl` 与 `.markdown-body h1/h2/h3` 同提交)+ 行高比率配对注释 + 字重三档分工(按钮 600→500,`#btn-authorize` 保留 600)+ TYPE-02 复证
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] idi-05-02-PLAN.md — 三段坡道值层重写(commit green-11/white、irreversible green-12/white)+ `#btn-authorize` 字号步进 14→16px + D-04 断言反转(档内相同 / 档间两两不同)+ VISUAL-03 复证
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] idi-05-03-PLAN.md — 活动面板标记(`--color-marker-active` + 两处 `box-shadow: inset` 追加规则)+ 两处 emoji 改 `mask-image` 字形 + D-05 连带复验 idi-04.1
+
+**Wave 4** *(缺口闭合 —— 依赖 Wave 3 全部完成)*
+
+- [x] idi-05-04-PLAN.md — 关闭 `G-idi-05-1`(BLOCKER):把标题刻度作用域扩到 `renderMarkdown()` 的全部九个注入目标(五个非 `.markdown-body` 容器取 24 / 18 / 16px + `--fw-semibold`,消除 UA 默认值与第四字重档 700)+ check-05 的枚举改为按调用点并加普查守卫 + 契约补 P-19 / P-20 / A-9
+
 **UI hint**: yes
 
 ### Phase 6: 布局稳健性
@@ -186,7 +232,25 @@ Plans:
 
 **Research flag**: `calc()` vs `position: absolute` 是真实的行为取舍(fixed 且可能遮挡 vs 随内容滚走)。**本路线图按研究建议提交 `calc()`**——零行为变更的迁移步骤;但该取舍须在规划时与用户确认。A11Y-07 是否与 420px 侧栏冲突也需在规划时实测判定。
 **Gates**: 1440 → 1024 → 768 无横向溢出;badge 在每个宽度都在文档区右上角;1024/1280 下横幅不盖 badge;恰好一个侧栏滚动条 + `#chat-messages`;`#brainstorm-view h2` 仍 14px / `#8a6508`;Phase 4 全部 gate 仍通过。
-**Plans**: TBD
+**Plans**: 4 plans (3 executed + 1 gap-closure)
+
+Plans:
+**Wave 1**
+
+- [x] idi-06-01-PLAN.md — 徽标收口:`#doc-panel-header { position: sticky; top: 0; background: var(--color-surface); border-radius: 0 }` + check-05 item 8 三条断言(流内机制 / 768·1024·1280 三宽度 badge×banner 不相交 / 滚动到底后表头仍可见)+ 三项只读诊断(三宽度文档级溢出 / 焦点环 clearance 普查 / 命中区普查)落盘为波次 3 的判据基线
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] idi-06-02-PLAN.md — 换行与 flex 最小尺寸(六目标 `overflow-wrap: anywhere` + `#main-pane` / `#doc-panel` 各补 `min-width: 0`)+ 滚动容器收敛(删 `.event-list` 与 `#annotation-list` 的 `max-height` / `overflow-y`,保留 `#latest-check` 与 `#chat-messages`)+ check-05 item 9(滚动者 DOM 普查 / 末条可达性 / `max-height == none` / 保留项护栏)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] idi-06-03-PLAN.md — 窄窗口守卫决策(在 L-3/L-4 已落地的树上重测三宽度,按实测决定是否写唯一一条 `@media (max-width: 1023px)`)+ L-6 命中区与 L-5 焦点环解裁切(按元素普查施加 `min-height`/`min-width: 24px` 与条件 padding 抬升)+ item 8/item 9 两条普查门 + D-19 连带复验 `idi-04.1-radix` + 全量门禁收口
+
+**Wave 4** *(gap closure — blocked on Wave 3 completion)*
+
+- [x] idi-06-04-PLAN.md — LAYOUT-02 的 768px 承诺收窄登记(用户裁定 remediation (b)「Narrow the promise, fix the claim」):更正 check-05 item 8 的失效覆盖主张使其陈述实测真相 + UI-SPEC 新增 A-10 收窄行与 §L-2 判据表注解 + 填实 VERIFICATION 的 override 条目 + 就地更正 03-PLAN / 03-SUMMARY 里的同一主张。**零布局改动**
+
 **UI hint**: yes
 
 ### Phase 7: 交互状态与焦点样式
@@ -223,7 +287,21 @@ Plans:
 
 **Research flag**: 标准实践,无需研究阶段(`:focus-visible` + `outline-offset` 文档完备)。项目特有的工作(环色 vs 合成背景)研究阶段已算完。
 **Gates**: `grep -c ':focus-visible'` > 0;**没有任何焦点规则设置 `border` 或 `padding`**;每个环都对 0.55 与 0.75 合成背景验过;`prefers-reduced-motion` 与任何新 transition 同提交;Phase 4/6 全部 gate 仍通过。
-**Plans**: TBD
+**Plans**: 3/3 plans executed
+
+Plans:
+**Wave 1**
+
+- [x] idi-07-01-PLAN.md — 焦点环端到端(A11Y-01):`--color-focus` 令牌 + 7 选择器 `:focus-visible` 规则 + 三处验证面的 PAIR + `check-05` 第 10 项的元素普查 + 归档半场的一次性反事实探针
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] idi-07-02-PLAN.md — 交互态 hover / active / disabled(INTERACT-01):四个新 tier-2 令牌 + L587 选择器的 `:not(:disabled)` gate + 填充按钮 rgba 叠层 + input/select hover 加深
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] idi-07-03-PLAN.md — 过渡与减弱动效 + 契约计数门(INTERACT-02):过渡挂载规则 + `@media (prefers-reduced-motion: reduce)` 块 + `EXPECTED_MEDIA_QUERIES` 同步 + 静态契约守卫 + 整阶段收口与指纹披露
+
 **UI hint**: yes
 
 ### Phase 8: 可访问性语义与键盘
@@ -284,12 +362,99 @@ Plans:
 | 1. 行走骨架 | v1.13 | 4/4 | Complete | 2026-09-09 |
 | 2. 轮次收敛循环 | v1.13 | 4/4 | Complete | 2026-09-10 |
 | 3. 授权、自检与终点 | v1.13 | 5/5 | Complete | 2026-09-13 |
-| 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | In Progress|  |
-| 5. 排版与视觉层级 | v1.14 | 0/0 | Not started | - |
-| 6. 布局稳健性 | v1.14 | 0/0 | Not started | - |
-| 7. 交互状态与焦点样式 | v1.14 | 0/0 | Not started | - |
+| 4. 设计契约、令牌层与契约校验 | v1.14 | 3/3 | Complete    | 2026-09-20 |
+| 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
+| 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
+| 6. 布局稳健性 | v1.14 | 4/4 | Complete    | 2026-09-22 |
+| 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete    | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |
 
-**Execution Order:** Phases execute in numeric order: 4 → 5 → 6 → 7 → 8
+**Execution Order:** Phases execute in numeric order: 4 → 4.1 → 5 → 6 → 7 → 8
 
 Phase 5/6/7 相互独立,理论上可重排——但有两条不可动:**Phase 4 不得移动**(四个阶段消费它),**Phase 6 不得移到 Phase 7 之后**(焦点环依赖布局稳定)。
+
+## Backlog
+
+### Phase 999.1: Phase 4 残留的两条卫生项 (BACKLOG)
+
+**Goal:** 清掉 Phase 4 收口后遗留、已由用户裁定为 Phase 4 范围外的两条小项。二者都是「已记录但无人认领」的真项,不是延期项。
+
+1. **`.collapse-indicator` 的越轨字面量** —— `frontend/style.css:434` 为
+   `.collapse-indicator { font-size: 20px; line-height: 1; }`,围栏外两个裸字面量,属 Phase 4 已令牌化的
+   `--text-*` / `--lh-*` 族,且在 `04-UI-SPEC.md:841` 的封闭例外清单(L-1…L-5)之外。
+   由 quick 任务 `260918-qrq`(`3684353`,2026-09-18 20:01)在 Phase 4 收口(`0c658aa`)之后引入;
+   Phase 4 自己的提交区间干净。已在 `idi-04.1-UI-REVIEW.md` Pillar 4 记分(3/4,「undeclared 6th size」)。
+   **HEAD 字号刻度为 12 / 14 / 16 / 18 / 24 —— `20px` 不在刻度上,故修法是排版决策而非机械替换**:
+   加一档(改刻度,牵动 UI-SPEC 的「5 sizes」声明与 S-2 `--text-base = 14px` 的下游门)、重映射到 `18px`/`24px`
+   (改已出货的 ▾/▸ 视觉),或加一条 L-6 例外(不改 `style.css`,但 `20px` 永久留在出货 chrome 里)。
+   **注意:** 任何对 `frontend/style.css` 的编辑都会作废 `idi-04.1-radix` 的 `passed` 指纹(其 `covered_files`
+   含该文件,digest 为原始字节 sha256),需连带复验 04.1。另见 Phase 5 Pitfall 7:`app.js:1550` 用 `textContent`
+   赋值 `.collapse-indicator`,触碰它时不得引入内联 `<svg>`。
+2. **`scripts/check-05-ui-uat.py:588` 的陈旧诊断文案** —— 仍打印「`--color-text-muted` … 变为 #8f8f8f,
+   低于 AA 4.5:1」,而 HEAD 实为 `rgb(100,100,100)`、在 `--color-surface` 上 5.62 达标。周围断言正确,
+   仅该 INFO 行陈旧。**改它同样会作废 04.1 的指纹**(该脚本也在 04.1 的 `covered_files` 里),
+   故与第 1 项合并为同一批处理,一次性连带复验 04.1。
+
+**裁定记录:** `idi-04-VERIFICATION.md` frontmatter `overrides:`(`accepted_by: Jack11111eee`,2026-09-20)与
+其 Gaps Summary。未写进 Phase 5 的理由:Phase 5 的 Pitfall 7 把触碰 `.collapse-indicator` 的范围锁死为
+两处 `content:` emoji,其 SC1 只点名四处 chrome 覆盖 —— 插入新交付物等于改写已签核的门。
+
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.2: Phase 7 交互态契约暴露的三条既有 affordance 缺陷 (BACKLOG)
+
+**Goal:** 清掉 `idi-07-UI-REVIEW.md`(2026-09-23,19/24)在建立「每个交互控件对 hover / active / disabled
+有可辨反馈」这条契约时**暴露出来**的三条缺陷。三者都不是本阶段改动引入的(第 1、2 条是 Phase 7 之前就在的
+affordance 谎报;第 3 条虽属 Phase 7 自己那份 PAIR 清单,但补它要动 `style.css` ⇒ 作废刚过的指纹),
+但都只有在 Phase 7 的契约下才成为可判定的项。
+
+1. **`#session-panel .panel-header` 宣称了一个不存在的点击** —— `frontend/style.css:665-674` 的基类
+   `.panel-header` 规则体带 `cursor: pointer` + `user-select: none`,但只有 `#ai-panel-header` 与
+   `#doc-panel-header` 有监听(`frontend/app.js:1561` / `1567`)。文件自己的惯例是对不可点的两个面板显式复位:
+   `#annotations-panel .panel-header { cursor: default; }`(`style.css:1085`)与
+   `#checks-panel .panel-header { cursor: default; }`(`style.css:1304`)。
+   `#session-panel .panel-header`(`frontend/index.html:15`,该 header 无 id)两者皆无 ⇒ 鼠标移到「会话流」
+   标题上会得到可点的指针。**修法:** 按既有惯例补一条 `#session-panel .panel-header { cursor: default; }`
+   (一条声明,零重排)。
+2. **`.annotation-answer summary` 没有任何交互态,也没有运行时覆盖** —— `style.css:1189` 定义了它;它带
+   `cursor: pointer`、受 Phase 6 的 A11Y-07 门约束(24×24 命中区)、并被 Phase 7 的焦点环覆盖
+   (`style.css:1513` 的七选择器含 `summary`),但**没有任何 `:hover` / `:active` 规则**,也不在过渡挂载规则里
+   (`style.css:1675` 只覆盖 `button, input, select`)。更关键的是:**三个样本里没有任何 fixture 会渲染出
+   `<summary>`**,故 item 10 的焦点环普查(每样本 28 个元素)从未见过它 —— 它的「已覆盖」是名义上的。
+   **修法(两半,缺一不可):** 把 `summary` 并入朴素按钮的 hover 组;**并且**在 `p3` fixture 里加一个
+   `summary`,或按 D-18 对 `a[href]` 的先例把该缺口**显式登记**。只做前半场会让「已覆盖」继续是名义的。
+3. **焦点环的 PAIR 清单漏掉一处它真实渲染其上的底色** —— `style.css:498-507` 的清单列三处验证面
+   (`--color-surface` / `--color-surface-page` / `--color-surface@0.75`),并**显式论证**为何排除
+   `--color-surface-sunken`,却对 `--color-surface-warning-subtle`(amber-1)只字未提。而
+   `.verdict-card`(`style.css:1341`,底色即该令牌)正是 item 10 在 `checking` 样本里实测
+   `.verdict-note-input` 与两个 `.verdict-buttons button` 的宿主 —— 焦点环在这处底色上确实渲染。
+   这是**与本文件自订纪律的直接冲突**:`style.css:435-437` 逐字写明「a token drawn as a UI boundary must
+   have its own NON-TEXT pair on each ground it is drawn on」,而兄弟令牌 `--color-border-hover` 正是按这条
+   纪律补上了这一处底色(`7b4ae18`,+3 ⇒ 53 对);`--color-focus` 同为 UI 边界却漏了同一处。
+   实测环色在其上为 **5.77:1(达标)** ⇒ 这是**覆盖一致性缺陷,不是可辨性缺陷**。
+   **修法:** 补一条 `/* PAIR --color-focus ON --color-surface-warning-subtle NON-TEXT */`,与 `7b4ae18` 对齐。
+
+**指纹影响(执行前必读):** `frontend/style.css` 与 `scripts/check-05-ui-uat.py` **同时**在
+`idi-07-VERIFICATION.md` 的 `covered_files` 里(digest `v1:sha256:5964d53c…`)。第 1、2、3 条的修法都要动
+`frontend/style.css`,第 2 条的后半场还要动 `scripts/check-05-ui-uat.py` —— 故本项一旦执行,`idi-07` 的
+`passed` 指纹即失效,须**连带重新验证 idi-07**(与 999.1 对 `idi-04.1-radix` 的关系同型)。
+建议三条合并为同一批处理,一次性连带复验。
+
+**裁定记录:** `idi-07-UI-REVIEW.md`(19/24;Pillar 2 Visuals 2/4、Pillar 3 Color 3/4、Pillar 6 Experience
+Design 3/4 的扣分主因即此三条)与 `idi-07-VERIFICATION.md`。未写进 Phase 7 的理由:第 1、2 条是**既有**
+affordance —— Phase 7 只改了声明式 CSS 的交互态与焦点环,`frontend/app.js` / `frontend/index.html` 逐字节未改,
+按外科手术式改动纪律不在本阶段边界内;第 3 条虽属 Phase 7 自己的清单,但补它要动 `style.css` ⇒ 作废刚过的
+指纹,而 UAT 已 1/1 通过、阶段收口在即,故由用户裁定转为 backlog 而非当场展开。
+**用户裁定:`2026-09-23`(本 backlog 条目的建立即该裁定)。**
+
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (promote with /gsd-review-backlog when ready)

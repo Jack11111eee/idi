@@ -1,0 +1,5 @@
+# 开发期依赖(非运行期)——运行应用不需要本文件。
+# 用途:scripts/check-05-ui-uat.py(Playwright + 系统 Chrome 的 UI 验收 harness)。
+# 安装:.venv/bin/pip install -r requirements-dev.txt
+# 注意:本 harness 走系统 Chrome(channel="chrome"),**不需要**执行 `playwright install`。
+playwright==1.63.0

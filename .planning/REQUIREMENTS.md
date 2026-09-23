@@ -11,59 +11,59 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### TOKEN — 设计令牌体系
 
-- [ ] **TOKEN-01**: `style.css` 顶部含**单一** `:root` 令牌块,用原生 CSS 自定义属性;零构建步骤、零新增依赖
-- [ ] **TOKEN-02**: 令牌分类学——三份研究**真实分歧**,SUMMARY 已调和,UI-SPEC 拥有最终裁定权。**调和结论:颜色两层(primitive → semantic),间距/字号/圆角单层,无组件层。** 硬不变量:**primitive(tier-1)名绝不出现在 `:root` 块之外**(机械可查,与 CHECK-01 同源)。理由(STACK 与 ARCHITECTURE 各自独立得出):①有了 primitive,两个近乎相同的蓝 `#2c7be5` / `#2c5fb8` 会因相隔 30 行而**可见**,进而有一个被删掉——没有 primitive 层时这个重复是隐形的;②"不可逆授权"没有 `--green-500` 这类语义别名可被冒充,选择器**物理上无法**拿"绿"当"正向"的替身。FEATURES 的反对理由(无主题/品牌可重映射)被这两条**同一上下文内**的收益回答。**注意**:PITFALLS 的"语义命名而非字面命名"规则适用于**被消费**的令牌——调和方案与它不冲突
-- [ ] **TOKEN-03**: 先产出**含义清单**(每个颜色名对应哪一语义),再据此把四套竞争强调色收敛为主色 / 危险 / 中性三族
-- [ ] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
-- [ ] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
-- [ ] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
-- [ ] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200
-- [ ] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
+- [x] **TOKEN-01**: `style.css` 顶部含**单一** `:root` 令牌块,用原生 CSS 自定义属性;零构建步骤、零新增依赖
+- [x] **TOKEN-02**: 令牌分类学——三份研究**真实分歧**,SUMMARY 已调和,UI-SPEC 拥有最终裁定权。**调和结论:颜色两层(primitive → semantic),间距/字号/圆角单层,无组件层。** 硬不变量:**primitive(tier-1)名绝不出现在 `:root` 块之外**(机械可查,与 CHECK-01 同源)。理由(STACK 与 ARCHITECTURE 各自独立得出):①有了 primitive,两个近乎相同的蓝 `#2c7be5` / `#2c5fb8` 会因相隔 30 行而**可见**,进而有一个被删掉——没有 primitive 层时这个重复是隐形的;②"不可逆授权"没有 `--green-500` 这类语义别名可被冒充,选择器**物理上无法**拿"绿"当"正向"的替身。FEATURES 的反对理由(无主题/品牌可重映射)被这两条**同一上下文内**的收益回答。**注意**:PITFALLS 的"语义命名而非字面命名"规则适用于**被消费**的令牌——调和方案与它不冲突
+- [x] **TOKEN-03**: 先产出**含义清单**(每个颜色名对应哪一语义),再据此把四套竞争强调色收敛为主色 / 危险 / 中性三族
+- [x] **TOKEN-04**: 令牌块之外 `style.css` 含**零**裸 `#hex` 字面量(基线:34 个 / 120 次出现)
+- [x] **TOKEN-05**: 间距刻度,4px 基准:4 / 8 / 12 / 16 / 24 / 32 / 40(基线:14 个 padding、11 个 margin、5 个 gap 值,无刻度)
+- [x] **TOKEN-06**: 圆角刻度 3 值:`--radius-sm` 4px(控件)/ `--radius-md` 6–8px(卡片、菜单)/ `--radius-pill`(徽标)(基线:8 个圆角值)
+- [x] **TOKEN-07**: `z-index` 令牌化为 `--z-*` 并**断言序关系**:badge 10 < banner 20 < overlay 100 < selection-menu 200 —— **仅完成令牌化半场**。四个令牌的消费者接线已由 `check-05-ui-uat.py:771-776` 机械断言(断言"元素 `z-index` **等于**其令牌")。**序关系半场无机械断言**:该不变量只存在于 `frontend/style.css:229-231` 的散文注释(注释自称 `z-index ordering assertion`,但断言并不存在);把四个值重新排序后 `check-01`…`check-05` 全部仍会通过。用户已裁定本阶段不补断言,改列为人工验收项(见文末),不在本里程碑内机械覆盖 —— 详见 `.planning/phases/idi-04.1-radix/idi-04.1-VALIDATION.md`
+- [x] **TOKEN-08**: 字号刻度 5–6 档(11 / 12 / 13 / 15 / 18 / 22),删除 `12.5px`(3 处)与 `14px`(基线:7 个字号,13px 用了 15 次)
 
 ### VISUAL — 视觉层级
 
-- [ ] **VISUAL-01**: `#btn-authorize` 采用**不可逆动作**的独立视觉处理(实心填充,而非六个按钮共享的淡色底 `#e9f7ef`/`#2e8b57`),配一个保留令牌(如 `--color-irreversible-*`)
-- [ ] **VISUAL-02**: `#btn-approve-draft`(G1,同样不可逆)与 `#btn-start-writing` 为第二档;例行按钮(`#btn-process-round` / `#btn-continue-check` / `#btn-continue-repair`)保持中性
-- [ ] **VISUAL-03**: 页面级层级——`<h1>文档区</h1>` 降级为视觉标签,不再以 UA 默认约 32px 粗体成为全屏最大最重的文字
-- [ ] **VISUAL-04**: 侧栏四个面板(`会话流`/`本轮批注流`/`自检报告`/`AI 工作面板`)的活动/非活动态可区分
-- [ ] **VISUAL-05**: CSS `content` 里写死的两个 emoji(`📌` 批注引用、`📍` 裁决位置)替换为**内联 SVG**(定义一次、引用),不引入图标库 / 图标字体 / 任何第三方包
+- [x] **VISUAL-01**: `#btn-authorize` 采用**不可逆动作**的独立视觉处理(实心填充,而非六个按钮共享的淡色底 `#e9f7ef`/`#2e8b57`),配一个保留令牌(如 `--color-irreversible-*`)
+- [x] **VISUAL-02**: `#btn-approve-draft`(G1,同样不可逆)与 `#btn-start-writing` 为第二档;例行按钮(`#btn-process-round` / `#btn-continue-check` / `#btn-continue-repair`)保持中性
+- [x] **VISUAL-03**: 页面级层级——`<h1>文档区</h1>` 降级为视觉标签,不再以 UA 默认约 32px 粗体成为全屏最大最重的文字
+- [x] **VISUAL-04**: 侧栏四个面板(`会话流`/`本轮批注流`/`自检报告`/`AI 工作面板`)的活动/非活动态可区分
+- [x] **VISUAL-05**: CSS `content` 里写死的两个 emoji(`📌` 批注引用、`📍` 裁决位置)替换为**内联 SVG**(定义一次、引用),不引入图标库 / 图标字体 / 任何第三方包
 
 ### TYPE — 排版系统
 
-- [ ] **TYPE-01**: `.markdown-body h1/h2/h3` 获得**显式** `font-size`,且**作用域限定在 `.markdown-body` 内**——不得写成全局 `h1,h2,h3` 规则(会与四处 chrome 覆盖碰撞:`.panel-header h2` 14px、`#draft-view h2` 15px、`#brainstorm-view h2` 14px、`.overlay-card h3` 16px)
-- [ ] **TYPE-02**: markdown 内容排版一致:`table th/td`(现 13px vs 正文 14px)、`code`(现 12.5px 分数值)、`blockquote`(现 `#666`)归入刻度与令牌
-- [ ] **TYPE-03**: 字重层级(基线:仅 600 / 400 两档)
+- [x] **TYPE-01**: `.markdown-body h1/h2/h3` 获得**显式** `font-size`,且**作用域限定在 `.markdown-body` 内**——不得写成全局 `h1,h2,h3` 规则(会与四处 chrome 覆盖碰撞:`.panel-header h2` 14px、`#draft-view h2` 15px、`#brainstorm-view h2` 14px、`.overlay-card h3` 16px)
+- [x] **TYPE-02**: markdown 内容排版一致:`table th/td`(现 13px vs 正文 14px)、`code`(现 12.5px 分数值)、`blockquote`(现 `#666`)归入刻度与令牌
+- [x] **TYPE-03**: 字重层级(基线:仅 600 / 400 两档)
 
 ### A11Y — 可访问性
 
-- [ ] **A11Y-01**: 全站 `:focus-visible` 样式,覆盖 21 个按钮 / 8 个输入框 / 4 个下拉(基线:`:focus` 与 `outline` 规则均为 0)
+- [x] **A11Y-01**: 全站 `:focus-visible` 样式,覆盖 21 个按钮 / 8 个输入框 / 4 个下拉(基线:`:focus` 与 `outline` 规则均为 0)
 - [ ] **A11Y-02**: `#round-doc` 加 `tabindex="0"`,且 `tabindex` 与 `:focus` 样式落在**同一个提交**(只加 `tabindex` 会造出"可聚焦但焦点不可见"的元素,是拿一个 a11y 问题换另一个)
 - [ ] **A11Y-03**: 键盘用户能真实到达划词批注——`b9664e0` 装好的 `keyup` 监听器在 `tabindex` 落地后真正生效(基线:`tabindex` 计数 0,焦点永不进入该子树,监听器是死代码)
 - [x] **A11Y-04**: WCAG AA 文本对比度失败**全部**修复——**范围以研究调和结果为准(≥9 处),不是审计的 4 处**。审计的 4 处正确但**不完整**(抽样 vs 全量扫描,漏计方向系统性一致):`.hint` `#999`/`#fafafa` **2.73:1**(最高价值项,全站每处闸门说明都用它)、`#pending-count`/`.badge-pending` `#b8860b`/`#fdf6ec` **3.03:1**、`.event-kind` 白字/`#b8860b` **3.25:1**、`.chat-user` 白字/`#2c7be5` **4.14:1**
 - [x] **A11Y-04b**: **opacity 合成**导致的失败必须一并覆盖——全站 4 处非 `:disabled` 的 opacity 态:`style.css:454` `.annotation-answered { opacity: 0.65 }`、`style.css:508` `#round-doc.round-frozen { opacity: 0.55; filter: saturate(0.6) }`(**冻结轮整篇文档**)、`style.css:562` `.tier-desc { opacity: 0.8 }`、`style.css:628` `#rounds-placeholder.archive-mode #round-doc { opacity: 0.75 }`(**归档态整篇文档**)。其中 `round-frozen` 是**设计决策与 AA 的正面冲突**:灰化是 D-P2-21 的"这轮只读"信号,但冻结轮恰恰是要被阅读的内容——须在 UI-SPEC 中裁定(提高不透明度满足 AA,或保留灰化但改用别的方式表达冻结),**不得静默改动**。**例外**:8 处 `:disabled` 态上的 `opacity: 0.55/0.5` 不属 AA 范围(WCAG SC 1.4.3 豁免非活动组件),且不得为它们软化 `:disabled` 视觉(见 INTERACT-02)
 - [ ] **A11Y-05**: 两个阻塞式弹窗(G3 确认、授权)支持 **Escape 关闭**——G3 确认弹窗按设计是默认拒绝,按不了 Escape 的键盘用户会被卡住
 - [ ] **A11Y-06**: 上述两个弹窗加 `role="dialog"` + `aria-modal="true"`(两个属性、零风险)
-- [ ] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
+- [x] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
 - [ ] **A11Y-08**: 键盘可达性人工验收——tab 序到达每一个交互控件;键盘划词路径可用。**标注为人工检查**:本环境无法自动化键盘文本选区(连 `contenteditable` 都选不中),不得因自动测试 FAIL 判定功能缺陷
 
 ### LAYOUT — 布局稳健性
 
-- [ ] **LAYOUT-01**: `#state-badge { right: 448px }` 魔法数消除(改 `calc()` 或 `absolute`),与侧栏宽度决策作为**一个工作单元**处理,而非三件事
-- [ ] **LAYOUT-02**: 窄窗口不破版——≥1024px 无横向溢出,≥768px 无内容遮挡。范围是"不破版",**不是**"适配";一条 `@media` 守卫,不是断点系统
-- [ ] **LAYOUT-03**: `#state-badge` 不再遮挡滚动内容(该元素 `position: fixed` + 不透明背景,正文从其底下穿过被挡)
-- [ ] **LAYOUT-04**: 侧栏滚动容器套娃收敛(基线:420px 侧栏内最多 4 个独立滚动容器,40vh / 55vh / 32vh / 30vh)
+- [x] **LAYOUT-01**: `#state-badge { right: 448px }` 魔法数消除(改 `calc()` 或 `absolute`),与侧栏宽度决策作为**一个工作单元**处理,而非三件事
+- [x] **LAYOUT-02**: 窄窗口不破版——≥1024px 无横向溢出,≥768px 无内容遮挡。范围是"不破版",**不是**"适配";一条 `@media` 守卫,不是断点系统
+- [x] **LAYOUT-03**: `#state-badge` 不再遮挡滚动内容(该元素 `position: fixed` + 不透明背景,正文从其底下穿过被挡)
+- [x] **LAYOUT-04**: 侧栏滚动容器套娃收敛(基线:420px 侧栏内最多 4 个独立滚动容器,40vh / 55vh / 32vh / 30vh)
 
 ### INTERACT — 交互状态
 
-- [ ] **INTERACT-01**: `:hover` / `:active` / `:disabled` 覆盖交互控件(基线:2 / 0 / 8)
-- [ ] **INTERACT-02**: transition 限定在 `background-color` / `border-color` / `opacity`,约 120–150ms;不建动效系统。**不得软化 `:disabled`**——它是 G3 前提条件唯一的视觉信号
+- [x] **INTERACT-01**: `:hover` / `:active` / `:disabled` 覆盖交互控件(基线:2 / 0 / 8)
+- [x] **INTERACT-02**: transition 限定在 `background-color` / `border-color` / `opacity`,约 120–150ms;不建动效系统。**不得软化 `:disabled`**——它是 G3 前提条件唯一的视觉信号
 
 ### CHECK — 契约校验(让契约可执行,而非一次性清理)
 
-- [ ] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
+- [x] **CHECK-01**: 令牌合规校验脚本——`style.css` 的 `:root` 块之外出现裸 `#hex` 即失败(约 20 行,零依赖)
 - [x] **CHECK-02**: 对比度自动校验脚本——对所有声明的令牌配对计算 WCAG 对比度(约 15 行,零依赖)
-- [ ] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
-- [ ] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
+- [x] **CHECK-03**: `.hidden` 全局规则唯一性守卫——每个改动 `style.css` 的计划都必须跑 `grep -c '^\.hidden {' frontend/style.css` 且结果为 **1**
+- [x] **CHECK-04**: `!important` 总数保持 **1**(基线:1;唯一一条是 `.hidden { display: none !important }`,44 处 `classList` 调用依赖它)
 
 ### REG — 回归防护与继承缺陷
 
@@ -118,41 +118,41 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOKEN-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-02 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| VISUAL-01 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-02 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-03 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-04 | Phase 5: 排版与视觉层级 | Pending |
-| VISUAL-05 | Phase 5: 排版与视觉层级 | Pending |
-| TYPE-01 | Phase 5: 排版与视觉层级 | Pending |
-| TYPE-02 | Phase 5: 排版与视觉层级 | Pending |
-| TYPE-03 | Phase 5: 排版与视觉层级 | Pending |
-| A11Y-01 | Phase 7: 交互状态与焦点样式 | Pending |
+| TOKEN-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-03 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — 序关系半场 manual-only,见文末人工验收项) |
+| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — `.collapse-indicator` 的 `20px` / `line-height: 1` 越轨字面量经用户裁定为 Phase 4 范围外,见 `idi-04-VERIFICATION.md` 的 `overrides:` 与 backlog `999.1`) |
+| VISUAL-01 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-02 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-03 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-04 | Phase 5: 排版与视觉层级 | Complete |
+| VISUAL-05 | Phase 5: 排版与视觉层级 | Complete |
+| TYPE-01 | Phase 5: 排版与视觉层级 | Complete |
+| TYPE-02 | Phase 5: 排版与视觉层级 | Complete |
+| TYPE-03 | Phase 5: 排版与视觉层级 | Complete |
+| A11Y-01 | Phase 7: 交互状态与焦点样式 | Complete |
 | A11Y-02 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-03 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | A11Y-04b | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | A11Y-05 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-06 | Phase 8: 可访问性语义与键盘 | Pending |
-| A11Y-07 | Phase 6: 布局稳健性 | Pending |
+| A11Y-07 | Phase 6: 布局稳健性 | Complete |
 | A11Y-08 | Phase 8: 可访问性语义与键盘 | Pending |
-| LAYOUT-01 | Phase 6: 布局稳健性 | Pending |
-| LAYOUT-02 | Phase 6: 布局稳健性 | Pending |
-| LAYOUT-03 | Phase 6: 布局稳健性 | Pending |
-| LAYOUT-04 | Phase 6: 布局稳健性 | Pending |
-| INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |
-| INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
-| CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| LAYOUT-01 | Phase 6: 布局稳健性 | Complete |
+| LAYOUT-02 | Phase 6: 布局稳健性 | Complete |
+| LAYOUT-03 | Phase 6: 布局稳健性 | Complete |
+| LAYOUT-04 | Phase 6: 布局稳健性 | Complete |
+| INTERACT-01 | Phase 7: 交互状态与焦点样式 | Complete |
+| INTERACT-02 | Phase 7: 交互状态与焦点样式 | Complete |
+| CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
-| CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
-| CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Pending |
+| CHECK-03 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
+| CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | REG-01 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
 | REG-02 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
 | REG-03 | Phase 8: 可访问性语义与键盘 | Pending |
@@ -173,7 +173,8 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - **A11Y-08** — tab 序到达每一个交互控件;键盘划词路径可用
 - **A11Y-03 的键盘划词部分** — Shift+方向键选区 → 菜单出现 → 焦点入菜单 → Escape 关闭并交还焦点
 - **REG-03 中依赖键盘选区的项** — b9664e0 五条修复的人工验收项重跑
+- **TOKEN-07 的序关系半场** — `--z-badge (10) < --z-banner (20) < --z-overlay (100) < --z-selection-menu (200)` 且承重关系 `badge < banner` 不被反转。无机械断言(见 TOKEN-07 条目),本里程碑内按人工验收:读 `grep -nE '^\s*--z-' frontend/style.css` 核对序关系,并 `grep -n 'z-index: var(--z-' frontend/style.css` 确认四个令牌各有消费者(`:537` overlay / `:590` badge / `:606` banner / `:889` selection-menu)。裁定记录:`idi-04.1-VALIDATION.md`
 
 ---
 *Requirements defined: 2026-09-17*
-*Last updated: 2026-09-17 after quick 260917-fqh 收口 REG-01/REG-02(路线图前置完成 2 条,余 36 条映射 Phase 4-8)*
+*Last updated: 2026-09-20 — TOKEN-08 加注为 Complete (PARTIAL):`.collapse-indicator` 的越轨字面量经用户裁定为 Phase 4 范围外(backlog 999.1),不再与 `idi-04-VERIFICATION.md` 的 `overrides:` 表面不一致;TOKEN-03/05/06 随 Phase 4 收口由 `phase.complete` 翻为 Complete*

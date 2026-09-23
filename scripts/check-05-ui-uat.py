@@ -1635,12 +1635,19 @@ def _doc_panel_declared_width(viewport_width):
     return min(DOC_PANEL_W_MAX_PX, max(DOC_PANEL_W_MIN_PX, DOC_PANEL_W_VW * viewport_width))
 
 
-# L-2 的决策(本阶段实测结论,见 `idi-06-03-SUMMARY.md` 的「测量决策记录(最终态)」):
+# L-2 的决策(Phase 6 实测结论,见 `idi-06-03-SUMMARY.md` 的「测量决策记录(最终态)」):
 # 1440 / 1024 / 768 三处在波次 2 之后的树上均无破版 ⇒ 按 UI-SPEC §L-2 的决策规则第一支,
-# 守卫**不写**,该交付物登记为「被实测推翻」。故期望的 `@media` 出现次数是 **0**。
-# 若日后实测证成并写出守卫,把这里改成 1 并同步更新 SUMMARY 的决策记录与 UI-SPEC §L-2。
+# **L-2 的窄窗口守卫不写**,该交付物登记为「被实测推翻」。
+#
+# ⚠ 计数**现在是 1**,但它与上面那件事**不是同一件事**:Phase 7 落地了
+# `@media (prefers-reduced-motion: reduce)`(减弱动效偏好),那是本阶段 INTERACT-02 /
+# D-13 的交付物。**L-2 的窄窗口守卫仍未写出**(三宽度仍无破版,该结论未变)。把两者混为
+# 一谈会让后来者把「计数 == 1」读成「L-2 的守卫被写了」。
+#
+# 耦合(D-13 / T-idi-07-13):本常量与 frontend/style.css 里那个减弱动效媒体块的计数是
+# 一对同步量。**若日后有人删掉该媒体块,必须同时把这里改回 0**,否则本项静态守卫会误报。
 MEDIA_QUERY_DECL = "@media"
-EXPECTED_MEDIA_QUERIES = 0
+EXPECTED_MEDIA_QUERIES = 1
 
 
 def _l2_guard_shape(item):
@@ -1660,12 +1667,15 @@ def _l2_guard_shape(item):
     lines = [i for i, ln in enumerate(text.splitlines(), 1) if MEDIA_QUERY_DECL in ln]
     info("item8 [static] L-2 守卫形态",
          f"frontend/style.css 里 '{MEDIA_QUERY_DECL}' 计数={count} 命中行={lines};"
-         f"本次决策=「被实测推翻」(三宽度均无破版)⇒ 期望 {EXPECTED_MEDIA_QUERIES}")
+         f"Phase 7 的减弱动效媒体块 ⇒ 期望 {EXPECTED_MEDIA_QUERIES}"
+         f"(L-2 的窄窗口守卫仍走「被实测推翻」支、仍未写出 —— 两者不是同一件事)")
     ok_true(item,
-            "[static] frontend/style.css 的 @media 出现次数 == 决策(被实测推翻 ⇒ 0)",
+            "[static] frontend/style.css 的 @media 出现次数 == 决策"
+            "(Phase 7 的 prefers-reduced-motion 块 ⇒ 1;L-2 的窄窗口守卫仍未写出)",
             count == EXPECTED_MEDIA_QUERIES, EXPECTED_MEDIA_QUERIES, count,
-            "该断言读文件文本而非渲染结果,与几何断言互补。若实测证成并写出守卫,"
-            "须同步改本常量与 idi-06-03-SUMMARY.md 的决策记录")
+            "该断言读文件文本而非渲染结果,与几何断言互补。删掉那个减弱动效媒体块"
+            "必须把本常量改回 0;L-2 的窄窗口守卫若日后实测证成并写出,须同步改本常量"
+            "与 idi-06-03-SUMMARY.md 的决策记录")
 
 _IDI06_BADGE_BANNER_JS = """() => {
   const b = document.querySelector('#state-badge');

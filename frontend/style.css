@@ -1621,3 +1621,54 @@ button.primary:not(:disabled):active,
 .verdict-note-input:where(:not(:disabled)):hover {
   border-color: var(--color-border-hover);
 }
+
+/* 控件过渡的挂载规则(INTERACT-02 / D-12,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   **纯追加**:不编辑 button 基础规则、#ai-route-select、#project-path-input 等任何既有
+   规则体。时长取 120ms(在 INTERACT-02 的「约 120–150ms」区间内),不显式声明缓动
+   (浏览器默认 ease)。
+
+   特异性 0-0-1(纯元素选择器),与上面那条控件前景色规则同一理由、同一形态:
+   button.danger(0-1-1)、#btn-*(1-0-0)、.overlay-card button(0-1-1)全部仍然取胜。
+   与 .event-list(0-1-0)**零竞争** —— 不同元素,且本规则的三元素不匹配 .event-list。
+
+   属性列表只有 background-color 与 border-color 两个。
+   **不含** opacity:禁用态是 G3 前提条件唯一的视觉信号,应当被立即感知;0.55 的淡入
+   容易被读成「加载中」而非「不可点」(D-14)。
+   **不含** outline-color / outline-width:过渡焦点环是已知的无障碍反模式(延迟的焦点
+   反馈),环的出现与消失必须是硬切(D-14 的派生结论)。
+
+   box-shadow **不在**本列表里 ⇒ 填充按钮的 hover 叠层是瞬变,这是刻意的(D-08 已登记的
+   代价 ②);朴素按钮的背景色反馈仍可过渡。
+
+   D-11 的具名例外:.event-list 的那条 300ms 声明(见上面 .event-list 规则体)保留
+   300ms,**一个字节不动**。它服务的是 .streaming / .aborted 两个**流式状态指示类**,
+   不是控件态过渡;INTERACT-02 的 120–150ms 规格针对的是控件反馈。**全站因此有两个
+   时长,300ms 那个不是控件态** —— 不得静默留下两个时长。本阶段的性质是纯追加,
+   编辑那条声明会打破该性质。
+
+   <textarea> **不进**本枚举(全站 <textarea> 计数为 0,与 D-12 的片段一致);而焦点环
+   的枚举含 textarea(D-05 要求它与 check-05 的可聚焦普查集逐字同集)。两处枚举的差异
+   是**有意的**,不是不一致。 */
+button, input, select { transition: background-color 120ms, border-color 120ms; }
+
+/* 减弱动效偏好:按选择器把过渡重写为 none(D-13,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   **本块与上面那条过渡挂载规则必须同一次提交落地** —— 减弱动效偏好必须与任何新增过渡
+   一起存在,否则偏好用户仍会看到新增的 120ms 反馈。
+
+   为什么不采用行业标准的减弱动效片段:通行写法是一个通配选择器加两个伪元素,把
+   transition-duration 压到 0.01ms,并**带两个 !important 声明**。本仓库的 !important
+   声明数**必须恒为 1**(硬规则 2/4;唯一一条是 .hidden 的 display:none,44 处 classList
+   依赖它),scripts/check-04-important-count.sh 会立刻从 1 变 3 而变红。
+   **本阶段不得采纳任何带 !important 的减弱动效写法** —— 那条行业惯例在本项目里根本
+   不存在。
+
+   为什么按选择器重写而不是改时长:transition 取 none 是**确定性的终态**,可被
+   getComputedStyle 直接断言;0.01ms 之类的「几乎为零」不是。
+
+   为什么枚举写死而不是用通配:与 Phase 5(G-idi-05-1)/ Phase 6(overflow-wrap)的同一
+   口径 —— 影响面必须可枚举、可对照;通配会把「哪些元素受影响」重新变成不可审。
+
+   枚举含 .event-list 是**刻意**的:否则减弱动效用户仍会看到流式状态的 0.3s 背景淡入。 */
+@media (prefers-reduced-motion: reduce) {
+  button, input, select, .event-list { transition: none; }
+}

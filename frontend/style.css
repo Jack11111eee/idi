@@ -416,7 +416,7 @@
      Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
      combination that actually renders. Decorative separators are deliberately
      absent — SC 1.4.11 does not apply to a border that identifies nothing.
-     Manifest size across five value layers (D-15): 24 / 34 / 43 / 47 / 50 — ROADMAP
+     Manifest size across six value layers (D-15): 24 / 34 / 43 / 47 / 50 / 52 — ROADMAP
      Phase 4 wrote 24 pairs (20 text + 4 non-text); the disk state Phase 4
      actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; the
      04.1 rewrite re-enumerated 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry;
@@ -429,9 +429,16 @@
      --color-surface-page, --color-surface, and --color-surface at the archive
      view's 0.75 composite (--color-surface-sunken is deliberately NOT among
      them — it is only the ground of .markdown-body code and .badge-answered,
-     never adjacent to a focusable element). The five numbers are not drift: the
-     contract is "enumerate the combinations that actually render", and each
-     successive value layer changes which combinations occur. */
+     never adjacent to a focusable element).
+     Phase 7 lands 52 pairs (35 TEXT + 17 NON-TEXT) + 1 ordering entry — D-10's
+     "one step deeper" hover boundary needs a new tier-2 token, and this file's
+     own discipline is to enumerate the combinations that ACTUALLY render: a token
+     drawn as a UI boundary must have its own NON-TEXT pair on each ground it is
+     drawn on. That is +2 on top of the three focus-ring entries, and it is why
+     the sixth value layer is 52 rather than the 50 a pattern map would project
+     from the focus ring alone. The six numbers are not drift: the contract is
+     "enumerate the combinations that actually render", and each successive value
+     layer changes which combinations occur. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */
@@ -507,6 +514,13 @@
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
   /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
   /* PAIR --color-border-strong ON --color-surface NON-TEXT */
+  /* the input controls' hover boundary (INTERACT-01 / D-10): a state indicator
+     under SC 1.4.11, drawn on the same two grounds as the resting boundary just
+     above — every input / select sits either on --color-surface-page (the page
+     itself) or on --color-surface (inside #doc-panel / #checks-panel / a
+     .overlay-card). */
+  /* PAIR --color-border-hover ON --color-surface-page NON-TEXT */
+  /* PAIR --color-border-hover ON --color-surface NON-TEXT */
   /* PAIR --color-border-streaming ON --color-surface-sunken NON-TEXT */
   /* PAIR --color-border-success ON --color-surface NON-TEXT */
   /* PAIR --color-action-warning ON --color-surface NON-TEXT */
@@ -1571,4 +1585,39 @@ button.primary:not(:disabled):hover,
 button.primary:not(:disabled):active,
 .overlay-card button:not(:disabled):active {
   box-shadow: inset 0 0 0 999px var(--color-overlay-active);
+}
+
+/* 输入控件的 hover 边框加深(INTERACT-01 / D-10,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+
+   八条选择器按**既有 ID 级规则体逐条枚举** —— 这是本组的承重部分:通用的 input 元素选择器
+   是 0-1-1,会被所有 1-0-0 的 ID 规则盖掉,等于不生效。
+   逐条特异性:#ai-route-select / #project-path-input / #round-switcher / #check-switcher
+   各 1-1-0,压过各自的 1-0-0;#enter-form input[type="text"] 与
+   #confirmation-modal input[type="text"] 各 1-1-1,与既有规则**同特异性**,靠源码顺序
+   取胜(本规则在文件末尾);#chat-input-row input 是 1-1-1,压过它的 1-0-1;
+   .verdict-note-input 是 0-2-0,压过它的 0-1-0。
+
+   覆盖核对(index.html 的 4 个静态 input + 3 个 select,加上 app.js 动态建的
+   .verdict-note-input,**逐条都有服务对象**):#message-input / #project-path-input /
+   #enter-path-input / #confirm-word-input 四个 input 分别由 #chat-input-row input、
+   #project-path-input、#enter-form input[type="text"]、#confirmation-modal input[type="text"]
+   覆盖;#check-switcher / #ai-route-select / #round-switcher 三个 select 各有一条;
+   第八条 .verdict-note-input 的服务对象是 app.js 在裁决卡里动态建的那一个。
+
+   :not(:disabled) 在 input / select 上是**防御性写法**:全站 8 条 :disabled 规则**全部是
+   按钮**,今天没有被禁用的 input / select,这条 gate 今天看似冗余 —— 它不依赖「今天恰好
+   没有」,将来给输入框加禁用态时仍能兜住,**不得当作冗余代码删除**(与 06-CONTEXT D-09 的
+   min-width: 0 同型)。
+
+   border-color 在 INTERACT-02 的过渡允许列表内,可平滑过渡。
+   本组**不加 :active** —— 文本框的「按下」无意义。 */
+#ai-route-select:where(:not(:disabled)):hover,
+#project-path-input:where(:not(:disabled)):hover,
+#round-switcher:where(:not(:disabled)):hover,
+#check-switcher:where(:not(:disabled)):hover,
+#enter-form input[type="text"]:hover,
+#chat-input-row input:where(:not(:disabled)):hover,
+#confirmation-modal input[type="text"]:hover,
+.verdict-note-input:where(:not(:disabled)):hover {
+  border-color: var(--color-border-hover);
 }

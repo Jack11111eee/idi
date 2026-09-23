@@ -59,6 +59,26 @@
     反事实探针(`scripts/probe-07-focus-composite.py`,不进守卫契约)共同承担。
     不登记这个事实,读者会把「没有断言」误读成「没有风险」。
 
+第 10 项的交互态半场(INTERACT-01 / D-08 / D-09 / D-10,计划 02 追加)
+    SC5 / SC5-朴素按下 / SC5′ 三条运行时探针 + 输入控件的 hover 边界断言。
+    - **SC5**(p1):`#btn-send` hover 时 `background-color` **不变**、`box-shadow` 出现
+      `inset 0 0 0 999px <--color-overlay-hover>`,按住不放时叠层换成
+      `--color-overlay-active`(alpha 0.06 → 0.12);`#message-input` hover 时
+      `border-color` 加深到 `--color-border-hover`。
+    - **SC5-朴素按下**(checking):用应用自身的 `renderVerdictCard()` 造一张裁决卡,对它
+      的首个按钮读三次 `background-color` —— 静默 `--color-surface` → 悬停
+      `--color-surface-hover` → 按住不放 `--color-surface-active`,并断言**③ != ②**。
+      最后那半条是 D-09 的判据本体:没有 L587 的 `:where(:not(:active))` 让位时,③ 会读到
+      ② 的值,而「③ == surface-active」那条断言仍然成立 ⇒ 只断言相等时失效的实现不变红。
+    - **SC5′**(checking,复用同一张卡):把两个裁决按钮的 `.disabled` 置真
+      (app.js:718-719 的真实状态切换),断言 hover 时 `background-color` 与静默**相同**
+      (D-07 的 gate 生效证明),且计算 `opacity` 仍为 `0.5`(未被软化)。
+    - 三条探针读值前**都必须先断言目标存在、可见且未被禁用**:一个渲染出来的禁用按钮照样
+      有非零 rect,却永远不匹配 `:not(:disabled)` 的选择器 —— 「可见」不等于「可交互」,
+      拿它做断言会 FAIL 而非 BLOCKED(本计划最初的探针目标正是这样写错的)。
+      读完后**先把指针移开再抬手**(`page.mouse.move(0, 0)` 之后才 `page.mouse.up()`):
+      在裁决按钮或 `#btn-send` 上原地上抬会触发 click,真的发请求并改动样本状态。
+
 第 9 项(L-4 / D-14)
     面板区的滚动容器从「3 个嵌套 + 1 个外层」收敛为「1 个外层(`#main-pane`)+ 1 个被
     保留的内层(`#latest-check`)+ 1 个 SC#3 明文豁免的会话流滚动者(`#chat-messages`)」。
@@ -1761,6 +1781,63 @@ FOCUS_RING_WIDTH_CSS = "2px"
 # 元素后落回 BODY),故上限要留余量;12 远大于「一轮 Tab 序列里落到第一个控件」所需。
 _IDI07_TAB_LIMIT = 12
 
+# ---- SC5 / SC5′(INTERACT-01 / D-08 / D-09)的常量 ---------------------------
+# 叠层的「整面铺满」分量。`box-shadow: inset 0 0 0 999px <c>` 里的 999px 大于任何按钮的
+# 盒宽,故等价于整面覆盖;浏览器把它序列化成 `<c> 0px 0px 0px 999px inset` —— 判据因此取
+# 「含 inset 分量 + 含这个铺满分量 + 含该令牌解析出的颜色」的**合取**,而不是逐字比对整串:
+# 逐字比对会把 CSSOM 的序列化格式当成契约的一部分(那条契约是 CSS 的,不是 CSSOM 的)。
+_IDI07_OVERLAY_SPREAD = "999px"
+# 禁用态的 opacity。`.verdict-buttons button:disabled` 用的是 0.5(不是 0.55)—— 它只设
+# opacity / cursor、**不钉 background**,这正是 D-07 要修的缺陷现场。
+_IDI07_DISABLED_OPACITY = "0.5"
+# SC5-朴素按下 与 SC5′ 共用的那张探针裁决卡的 id(打在 `renderVerdictCard()` 的产物上,
+# 使后续选择器唯一命中它,而不是命中样本里可能已存在的其它裁决卡)。
+_IDI07_VERDICT_PROBE_ID = "idi07-verdict-probe"
+
+# 交互态探针的共用前提检查(D-17 / T-idi-07-10)。**读值前必须先断言目标存在、可见、未被
+# 禁用**,否则 `getComputedStyle` 对不存在的元素返回 null、对不可见元素照样返回解析值,
+# 断言会退化成**空转 PASS** —— 这正是本文件 docstring 点名的同型陷阱(第 7 项
+# `all(w != "700")` 对 None 恒真)。
+#
+# ⚠ **「可见」不等于「可交互」。** 一个渲染出来的**禁用**按钮照样有非零 rect,却永远不会
+# 匹配 `:not(:disabled)` 的选择器 —— 拿它去断言「hover 有反馈」会 **FAIL 而非 BLOCKED**。
+# 故本检查把 `disabled` 一并返回,由调用方按自己的断言对象决定要不要它。
+_IDI07_INTERACTIVE_JS = r"""([sel]) => {
+  const el = document.querySelector(sel);
+  if (!el) return {ok: false, why: 'not found'};
+  const r = el.getBoundingClientRect();
+  if (!(r.width > 0 && r.height > 0)) {
+    return {ok: false, why: 'rect is zero (hidden or not laid out)'};
+  }
+  return {ok: true, disabled: !!el.disabled, tag: el.tagName.toLowerCase(),
+          rect: [Math.round(r.width), Math.round(r.height)]};
+}"""
+
+# SC5-朴素按下 与 SC5′ 共用**同一张**裁决卡:由应用自身的 `renderVerdictCard()` 造出
+# (不手工拼 DOM —— 那是伪造被测状态;照 item9 用 renderEvent / renderAnnotations 的先例),
+# 挂到 `#verdict-cards` 下并打上探针 id。
+_IDI07_BUILD_VERDICT_CARD_JS = r"""() => {
+  const host = document.querySelector('#verdict-cards');
+  if (!host || typeof renderVerdictCard !== 'function') return null;
+  const card = renderVerdictCard(
+    {number: 9001, location: '(SC5 探针)', issue: 'SC5 交互态探针',
+     suggestion: '(无)'}, 'p2');
+  card.id = '__PROBE_ID__';
+  host.appendChild(card);
+  return {buttons: card.querySelectorAll('.verdict-buttons button').length,
+          notes: card.querySelectorAll('.verdict-note-input').length};
+}""".replace("__PROBE_ID__", _IDI07_VERDICT_PROBE_ID)
+
+# SC5′ 的 `.disabled` 切换。这是 app.js 在 `submit` 里做的**真实**状态切换
+# (frontend/app.js:718-719),不是伪造 DOM。
+_IDI07_DISABLE_VERDICT_BUTTONS_JS = r"""([sel]) => {
+  const card = document.querySelector(sel);
+  if (!card) return null;
+  const btns = [...card.querySelectorAll('.verdict-buttons button')];
+  btns.forEach((b) => { b.disabled = true; });
+  return btns.map((b) => b.disabled);
+}"""
+
 # 第 10 项的普查:按 **DOM 遍历**枚举 `FOCUSABLE_SELECTOR` 的**全部实例**,对每个实例
 # 返回清单项 `{tag, id, cls, label, visible, focusable}` —— **只出清单,不出环读数**。
 #
@@ -2832,6 +2909,260 @@ def _idi07_sc4_assert(page, item, state, focus_color):
             "那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」")
 
 
+def _idi07_hover_border_assert(page, item, state, sel, label):
+    """输入控件的 hover 边界断言(D-10):静默读 border-color → hover → 再读,断言变为令牌值。
+
+    期望侧来自 `resolve_color(page, "--color-border-hover")`,**不硬编码 rgb**(这是本文件
+    立下的纪律:值的仲裁者是 `scripts/check-02-contrast.py`)。
+
+    两条断言缺一不可:①hover 后 == 令牌值;②hover 后 != 静默值。只留 ① 时,若 hover 规则
+    完全没生效、而静默值恰好等于期望值,断言会静默通过 —— ② 是它的对照半场。
+
+    前提不成立(元素不存在 / rect 全零 / 被禁用)⇒ `blocked(...)`,**绝不记 PASS**。
+    """
+    pre = page.evaluate(_IDI07_INTERACTIVE_JS, [sel])
+    if pre is None or not pre.get("ok"):
+        blocked(item, f"[{state}] {label} hover 后 border-color == var(--color-border-hover)",
+                "元素存在、可见且未被禁用",
+                "<MISSING>" if pre is None else f"ok=False why={pre.get('why')}",
+                "目标不可交互 ⇒ 本断言失去证明力,不记 PASS")
+        return
+    expected = resolve_color(page, "--color-border-hover")
+    if expected is None:
+        blocked(item, f"[{state}] {label} hover 后 border-color == var(--color-border-hover)",
+                "非 None 的 computed rgb", "<MISSING>",
+                "令牌未声明 ⇒ 期望侧解析不出,本断言不记 PASS")
+        return
+    page.mouse.move(0, 0)
+    before = read_style(page, sel, "border-color")
+    page.hover(sel)
+    after = read_style(page, sel, "border-color")
+    info(f"item10 [{state}] {label} hover 边界读数",
+         f"sel={sel} 静默={before} hover={after} 期望={expected}")
+    ok_true(item,
+            f"[{state}] {label} hover 后 border-color == var(--color-border-hover)",
+            norm(after) == norm(expected), expected, after,
+            "D-10:静默是 --color-border-strong(gray-9),hover 加深一步到 "
+            "--color-border-hover(gray-11)。期望侧来自运行时解析的令牌,不硬编码 rgb")
+    ok_true(item,
+            f"[{state}] {label} hover 后 border-color != 静默值",
+            norm(after) != norm(before), f"!= {before}", after,
+            "对照半场:只断言「等于令牌值」时,若 hover 规则没生效而静默值恰好等于期望值,"
+            "那条断言会静默通过")
+
+
+def _idi07_sc5_filled_assert(page, item, state, sel, label):
+    """SC5 的填充半场(D-08):hover 时 `background-color` **不变**、`box-shadow` 出现 inset 叠层;
+    按住不放时叠层的 alpha 从 hover 的令牌值提到 active 的令牌值。
+
+    期望侧的 alpha 由 `resolve_color(page, "--color-overlay-hover" / "--color-overlay-active")`
+    解析,**不硬编码 rgba 字面量**。浏览器把 `inset 0 0 0 999px <c>` 序列化成
+    `<c> 0px 0px 0px 999px inset`,故判据是三者的合取(见 `_IDI07_OVERLAY_SPREAD` 的注释)。
+
+    前提检查里 `disabled` 是**承重的**:本探针的目标必须真的可交互 —— 一个渲染出来的禁用
+    按钮照样有非零 rect,却永远不匹配 `:not(:disabled)` 的选择器,断言会 FAIL 而不是
+    BLOCKED(这正是本任务最初的探针目标写错的地方)。
+
+    按下读完**先把指针移开再抬手**:`#btn-send` 的 click 会真的发一条消息,在按钮上原地
+    上抬会污染样本状态。
+    """
+    pre = page.evaluate(_IDI07_INTERACTIVE_JS, [sel])
+    if pre is None or not pre.get("ok"):
+        blocked(item, f"[{state}] SC5 {label} hover 出现 inset 叠层",
+                "元素存在、可见且未被禁用",
+                "<MISSING>" if pre is None else f"ok=False why={pre.get('why')}",
+                "目标不可交互 ⇒ 本断言失去证明力,不记 PASS")
+        return
+    if pre.get("disabled"):
+        blocked(item, f"[{state}] SC5 {label} hover 出现 inset 叠层",
+                "未被禁用(即 :not(:disabled) 的选择器能匹配到它)",
+                f"disabled=True rect={pre.get('rect')}",
+                "「可见」不等于「可交互」:禁用按钮的 rect 非零,却永远不匹配 "
+                ":not(:disabled) 的选择器,拿它做本断言会 FAIL 而非 BLOCKED。换一个样本内"
+                "真正可用的填充按钮")
+        return
+    hover_color = resolve_color(page, "--color-overlay-hover")
+    active_color = resolve_color(page, "--color-overlay-active")
+    if hover_color is None or active_color is None:
+        blocked(item, f"[{state}] SC5 {label} hover 出现 inset 叠层",
+                "两个叠层令牌都能被运行时解析", f"{hover_color} / {active_color}",
+                "令牌未声明 ⇒ 期望侧解析不出,本探针不记 PASS")
+        return
+
+    page.mouse.move(0, 0)
+    bg_before = read_style(page, sel, "background-color")
+    shadow_before = read_style(page, sel, "box-shadow")
+    page.hover(sel)
+    bg_after = read_style(page, sel, "background-color")
+    shadow_after = read_style(page, sel, "box-shadow")
+
+    page.mouse.down()
+    shadow_pressed = read_style(page, sel, "box-shadow")
+    # 先移开再抬手:原地上抬会触发 click 并发出一条消息。
+    page.mouse.move(0, 0)
+    page.mouse.up()
+
+    info(f"item10 [{state}] SC5 {label} 填充按钮读数",
+         f"sel={sel} rect={pre.get('rect')} "
+         f"bg[静默={bg_before} hover={bg_after}] "
+         f"shadow[静默={shadow_before} hover={shadow_after} 按下={shadow_pressed}] "
+         f"期望 hover={hover_color} active={active_color}")
+
+    ok_true(item,
+            f"[{state}] SC5 {label} hover 时 background-color 不变",
+            norm(bg_after) == norm(bg_before), bg_before, bg_after,
+            "D-08:叠层走 box-shadow 的 inset,填充色本身不动。改填充色(或加 opacity)会把"
+            "白字一起压暗,三个色族会跌破 AA 4.5:1")
+    ok_true(item,
+            f"[{state}] SC5 {label} hover 出现 inset 叠层(含 {_IDI07_OVERLAY_SPREAD} 铺满分量)",
+            "inset" in (shadow_after or "") and _IDI07_OVERLAY_SPREAD in (shadow_after or ""),
+            f"含 'inset' 与 '{_IDI07_OVERLAY_SPREAD}'",
+            f"静默={shadow_before} hover={shadow_after}",
+            "D-08:本文件既有的 box-shadow: inset 只有 3px 竖条形态;999px 大于任何按钮的"
+            "盒宽 ⇒ 等价于整面覆盖。box-shadow 不参与布局 ⇒ 零位移")
+    ok_true(item,
+            f"[{state}] SC5 {label} hover 叠层的颜色 == var(--color-overlay-hover)",
+            norm(hover_color) in norm(shadow_after or ""), f"含 {hover_color}",
+            shadow_after,
+            "期望侧来自运行时解析的令牌,不硬编码 rgba 字面量")
+    ok_true(item,
+            f"[{state}] SC5 {label} 按住不放时叠层的颜色 == var(--color-overlay-active)",
+            norm(active_color) in norm(shadow_pressed or ""), f"含 {active_color}",
+            shadow_pressed,
+            "D-09:alpha 从 0.06 提到 0.12。这一条与上一条合起来证明按下态真的换了一份叠层,"
+            "而不是 hover 读数的回声")
+    ok_true(item,
+            f"[{state}] SC5 {label} 按住不放时的叠层 != hover 时的叠层",
+            norm(shadow_pressed) != norm(shadow_after), f"!= {shadow_after}", shadow_pressed,
+            "对照半场:若 active 组没有落地(或 alpha 与 hover 相同),按下读数就是 hover 读数,"
+            "上面那条「含 active 颜色」的断言在有 active 组时必然成立、无 active 组时不会变红")
+
+
+def _idi07_sc5_naive_press_assert(page, item, state):
+    """SC5-朴素按下(D-09):朴素无底色按钮「静默 → 悬停 → 按住不放」三次读数递进,
+    且**按住不放的读数与悬停的读数不相等**。
+
+    为什么必须显式断言「不相等」:若 L587 的让位(`:where(:not(:active))`)没生效,第三次
+    读到的就是第二次的值 —— 而「③ == --color-surface-active」这条断言**仍然成立**(它只要求
+    等于期望值,不要求不等于 hover)。故「③ != ②」这半条是 D-09 的判据本体,不是补强。
+
+    目标取本探针用 `renderVerdictCard()` 造出的裁决卡的首个按钮 —— 它是本仓库里**在样本中
+    稳定可达的朴素无底色按钮**(`.modal-buttons button` / `.tier-buttons button` 虽然也叫
+    「模态按钮」,但它们都在 `.overlay-card` 内,已被 `.overlay-card button`(0-1-1)填成主色,
+    不是朴素族)。
+
+    读完**先把指针移开再抬手**:裁决按钮的 click 会触发 app.js 的 `submit('修')` 并发一次
+    `POST /api/checks/verdict`,在按钮上原地上抬会真的发请求并改动样本状态。
+    """
+    built = page.evaluate(_IDI07_BUILD_VERDICT_CARD_JS)
+    info(f"item10 [{state}] SC5-朴素按下 裁决卡构造",
+         f"renderVerdictCard(...) → {built}")
+    if built is None or built.get("buttons", 0) < 1:
+        blocked(item, f"[{state}] SC5-朴素按下 静默 → 悬停 → 按住不放 的三次读数递进",
+                "renderVerdictCard(...) 造出的卡里 >= 1 个 .verdict-buttons button",
+                "<MISSING>",
+                "造不出裁决卡 ⇒ 被测状态不存在,不记 PASS。绝不用「都不可用」换一条 PASS")
+        return
+    sel = f"#{_IDI07_VERDICT_PROBE_ID} .verdict-buttons button"
+    pre = page.evaluate(_IDI07_INTERACTIVE_JS, [sel])
+    if pre is None or not pre.get("ok") or pre.get("disabled"):
+        blocked(item, f"[{state}] SC5-朴素按下 静默 → 悬停 → 按住不放 的三次读数递进",
+                "该按钮存在、可见且未被禁用",
+                "<MISSING>" if pre is None else f"ok={pre.get('ok')} "
+                f"disabled={pre.get('disabled')} why={pre.get('why')}",
+                "裁决按钮造出来了却不可交互 ⇒ 本断言失去证明力,不记 PASS")
+        return
+    surface = resolve_color(page, "--color-surface")
+    hover = resolve_color(page, "--color-surface-hover")
+    active = resolve_color(page, "--color-surface-active")
+    if surface is None or hover is None or active is None:
+        blocked(item, f"[{state}] SC5-朴素按下 静默 → 悬停 → 按住不放 的三次读数递进",
+                "三个 surface 令牌都能被运行时解析", f"{surface} / {hover} / {active}",
+                "令牌未声明 ⇒ 期望侧解析不出,本探针不记 PASS")
+        return
+
+    page.mouse.move(0, 0)
+    silent = read_style(page, sel, "background-color")
+    page.hover(sel)
+    hovered = read_style(page, sel, "background-color")
+    page.mouse.down()
+    pressed = read_style(page, sel, "background-color")
+    # 先移开再抬手 —— 见 docstring。
+    page.mouse.move(0, 0)
+    page.mouse.up()
+    info(f"item10 [{state}] SC5-朴素按下 读数",
+         f"sel={sel} rect={pre.get('rect')} "
+         f"① 静默={silent} ② 悬停={hovered} ③ 按住不放={pressed} "
+         f"期望 {surface} / {hover} / {active}")
+
+    ok_true(item,
+            f"[{state}] SC5-朴素按下 ① 静默 background-color == var(--color-surface)",
+            norm(silent) == norm(surface), surface, silent,
+            "朴素按钮的底色来自 button 基础规则(0-0-1)的 --color-surface")
+    ok_true(item,
+            f"[{state}] SC5-朴素按下 ② 悬停 background-color == var(--color-surface-hover)",
+            norm(hovered) == norm(hover), hover, hovered,
+            "L587 的 hover 对朴素按钮仍然生效 —— D-07 的 gate 只排除禁用按钮,不排除朴素按钮")
+    ok_true(item,
+            f"[{state}] SC5-朴素按下 ③ 按住不放 background-color == var(--color-surface-active)",
+            norm(pressed) == norm(active), active, pressed,
+            "朴素 active 停在 0-1-0,高于 button 基础规则(0-0-1)⇒ 按下反馈成立")
+    ok_true(item,
+            f"[{state}] SC5-朴素按下 ③ 按住不放读数 != ② 悬停读数",
+            norm(pressed) != norm(hovered), f"!= {hovered}", pressed,
+            "**D-09 的判据本体。** 若 L587 的让位(:where(:not(:active)))没生效,③ 会读到 ② 的值,"
+            "而上面那条「③ == surface-active」**仍然成立**(它只要求等于期望值)⇒ 只断言相等时"
+            "让位失效的实现不会变红。实测相等 ⇒ 到 frontend/style.css 检查 L587 那条规则的选择器"
+            "是否还带着让位")
+
+
+def _idi07_sc5prime_disabled_assert(page, item, state):
+    """SC5′(D-07 的 gate 生效证明):禁用按钮 hover 时 `background-color` 与静默**相同**,
+    且计算 `opacity` 未被软化(仍为 0.5)。
+
+    **复用 SC5-朴素按下 已经造好的那张卡**,不重复造第二张。`.disabled` 由 `page.evaluate`
+    置真 —— 这正是 `frontend/app.js:718-719` 在 `submit` 里做的真实状态切换,不是伪造 DOM。
+
+    本条今天会 FAIL:未 gate 的 `button:hover`(0-1-1)会给 `.verdict-buttons button:disabled`
+    (它只设 opacity / cursor、不钉 background)上 --color-surface-hover。
+    """
+    sel = f"#{_IDI07_VERDICT_PROBE_ID} .verdict-buttons button"
+    pre = page.evaluate(_IDI07_INTERACTIVE_JS, [sel])
+    if pre is None or not pre.get("ok"):
+        blocked(item, f"[{state}] SC5′ 禁用按钮 hover 时 background-color == 静默值",
+                "SC5-朴素按下 造出的那张探针裁决卡仍在 DOM 里且按钮可见",
+                "<MISSING>" if pre is None else f"ok=False why={pre.get('why')}",
+                "探针卡不存在或不可见 ⇒ 本断言失去证明力,不记 PASS")
+        return
+    flipped = page.evaluate(_IDI07_DISABLE_VERDICT_BUTTONS_JS,
+                            [f"#{_IDI07_VERDICT_PROBE_ID}"])
+    if not flipped or not all(flipped):
+        blocked(item, f"[{state}] SC5′ 禁用按钮 hover 时 background-color == 静默值",
+                "两个裁决按钮的 .disabled 均为 True", f"{flipped}",
+                "禁用态切换失败 ⇒ 被测状态不存在,不记 PASS")
+        return
+
+    page.mouse.move(0, 0)
+    silent = read_style(page, sel, "background-color")
+    opacity = read_style(page, sel, "opacity")
+    page.hover(sel)
+    hovered = read_style(page, sel, "background-color")
+    page.mouse.move(0, 0)
+    info(f"item10 [{state}] SC5′ 禁用按钮读数",
+         f"sel={sel} 静默={silent} hover={hovered} opacity={opacity}")
+
+    ok_true(item,
+            f"[{state}] SC5′ 禁用按钮 hover 时 background-color == 静默值",
+            norm(hovered) == norm(silent), silent, hovered,
+            "D-07 的 gate 证明:L587 的选择器带 :where(:not(:disabled)),禁用按钮不再匹配它。"
+            "实测不等 ⇒ 到 frontend/style.css 检查那条 hover 规则的选择器是否还带着 gate")
+    ok_true(item,
+            f"[{state}] SC5′ 禁用按钮的计算 opacity 仍为 {_IDI07_DISABLED_OPACITY}(未被软化)",
+            opacity == _IDI07_DISABLED_OPACITY, _IDI07_DISABLED_OPACITY, opacity,
+            "禁用态是 G3 前提条件唯一的视觉信号,不得软化;.verdict-buttons button:disabled "
+            "用的是 0.5,不是 0.55")
+
+
 def item10(page, tmp_root):
     item = "10"
     print("\n=== UAT 10: A11Y-01 焦点环(D-05 / D-16 / D-17)===", flush=True)
@@ -2859,10 +3190,19 @@ def item10(page, tmp_root):
         return
     info("item10 令牌解析", f"--color-focus={focus_color}")
 
-    # ---- p1:普查 → SC1 → SC4 → SC2(SC2 必须最后)--------------------------
+    # ---- p1:普查 → SC1 → SC4 → SC5 → SC2(鼠标驱动的那条 click 必须最后)------
     _idi07_focus_census_assert(page, item, "p1", focus_color)
     _idi07_sc1_assert(page, item, "p1", focus_color)
     _idi07_sc4_assert(page, item, "p1", focus_color)
+    # SC5 的填充半场取 `#btn-send`,**不用** `#btn-process-round`:后者在 p1 的标记里带
+    # `disabled`(frontend/index.html:73),而 `#btn-process-round:not(:disabled):hover`
+    # 根本不匹配它 —— 断言会 **FAIL 而非 BLOCKED**(`applySessionGates()` 只
+    # `classList.remove('hidden')`、从不清 `disabled`;放开它的是阶段 3 路径上的
+    # `updateFrozenPresentation()`)。`#btn-send` 在 p1 可用:`applySessionGates()`
+    # 显式 `sendBtn.disabled = false`,全局唯一把它置真的是归档路径的
+    # `applyArchiveView()`(p1 不走)。
+    _idi07_sc5_filled_assert(page, item, "p1", "#btn-send", "#btn-send")
+    _idi07_hover_border_assert(page, item, "p1", "#message-input", "#message-input")
     _idi07_sc2_assert(page, item, "p1", focus_color)
 
     # ---- checking / p3:各跑一遍普查与 SC1 -----------------------------------
@@ -2874,6 +3214,21 @@ def item10(page, tmp_root):
         info("item10 样本", f"{state} → {proj}")
         _idi07_focus_census_assert(page, item, state, focus_color)
         _idi07_sc1_assert(page, item, state, focus_color)
+        # SC5-朴素按下 / SC5′ / 动态输入框的 hover 边界**只在 checking 跑**:裁决卡挂在
+        # `#verdict-cards` 下,而 `#checks-panel` 只在 checking 可见 —— p1 / p3 里造出来的卡
+        # rect 全零,前提检查会记 BLOCKED(而不是记一条假 PASS)。
+        #
+        # 顺序是承重的:两个探针**共用同一张卡**,而 SC5′ 会把两个按钮的 `.disabled` 置真 ——
+        # 故 SC5-朴素按下必须**先跑**(那时按钮还没被禁用)。
+        if state == "checking":
+            _idi07_sc5_naive_press_assert(page, item, state)
+            # 第八条输入规则的唯一服务对象是 app.js 在裁决卡里**动态**建的那个输入框;
+            # 静态样本里它不存在,不在这里断言就等于该选择器没有服务对象的证据。
+            _idi07_hover_border_assert(
+                page, item, state,
+                f"#{_IDI07_VERDICT_PROBE_ID} .verdict-note-input",
+                "动态 .verdict-note-input")
+            _idi07_sc5prime_disabled_assert(page, item, state)
 
     # ---- viewport 纪律 ------------------------------------------------------
     # 本项用 page.click() 可能改变滚动位置;此处兜底复位(与 item 8 / item 9 同一纪律:

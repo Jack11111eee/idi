@@ -1,9 +1,10 @@
 ---
 phase: idi-07-interaction-states-and-focus
-status: human_needed
+status: passed
 verified: 2026-09-23T09:18:28Z
 score: 8/9 truths machine-verified + 1 named human item (5″)
 covered_files:
+
   - .planning/phases/idi-07-interaction-states-and-focus/idi-07-01-PLAN.md
   - .planning/phases/idi-07-interaction-states-and-focus/idi-07-01-SUMMARY.md
   - .planning/phases/idi-07-interaction-states-and-focus/idi-07-02-PLAN.md
@@ -14,14 +15,17 @@ covered_files:
   - frontend/style.css
   - scripts/check-05-ui-uat.py
   - scripts/probe-07-focus-composite.py
+
 covered_digest: "v1:sha256:5964d53cc475ca2539dd68d78e0e08ace21fd18866d21096c075bb655ee6dcc0"
 behavior_unverified: 0
 overrides_applied: 0
 coincidental_reliance_items:
+
   - truth: "焦点环在归档态(0.75 合成)下仍可辨认(SC3 后半场)"
     reason: fixture-only
     harden: "探针在 #round-doc 里注入一个 <a href> 才让该断言有服务对象;生产路径今天没有等价物(五个样本的 #round-doc 内 a[href] 计数为 0,D-18 已登记)。常驻算术半场(check-02 的 @0.75 = 3.45)不依赖该 fixture,故本条只降级探针的可外推性,不降级结论。Phase 8 给 #round-doc 加 tabindex=\"0\" 后该场景变为活体,届时须复跑探针"
 human_verification:
+
   - test: "进入阶段 3(p3 样本)后把鼠标移到 #btn-authorize 上并停留/按下,观察它是否仍「一眼看出不可点」——是否被 hover / 按下点亮成可点的样子"
     expected: "禁用态一眼可辨,且悬停/按下时零视觉反馈(颜色不变亮、不变浅、无按压感);它作为 G3 前提条件唯一视觉信号的 0.55 淡化不被削弱"
     why_human: "这是关于感知的主张,不是关于数值的主张。机器半场(SC5′)覆盖的是另一条规则 .verdict-buttons button:disabled(opacity 0.5);#btn-authorize:disabled(opacity 0.55)今天没有任何机器断言读过它的 opacity,只被 L741 那条 gate 间接保护"
@@ -176,6 +180,7 @@ human_verification:
 | `idi-06` | `v1:sha256:c07e9994…` | `v1:sha256:04d8cfa7…` | **stale** |
 
 **完整重算值:**
+
 ```
 idi-04          v1:sha256:02a262698e508d732d37d2fec92f610df25d70aaac03b33fe93d3ebaae7fbbd8
 idi-04.1-radix  v1:sha256:927ca77c9f6837dd5ae10d2eebb87defef6129e9299276cd4c2d4c384cc1aa8a

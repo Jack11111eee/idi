@@ -1745,6 +1745,145 @@ _IDI06_CENSUS_JS = r"""() => {
 }"""
 
 
+# ---- UAT 第 10 项(A11Y-01 / D-05 / D-16 / D-17)的常量 ----------------------
+# 焦点规则的枚举集。**逐字**等于上面 `_IDI06_CENSUS_JS` 里 `document.querySelectorAll(...)`
+# 的那一串(顺序亦同)—— 这是 D-05 的枚举集,与 `frontend/style.css` 文件末尾的
+# `:focus-visible` 规则**逐字同集**;两者必须同时改(新增一类可聚焦元素要改两处,
+# 只改一处会让「规则覆盖了谁」与「门检查了谁」重新分叉)。
+FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"
+# 环的几何。外伸量 = 2px + 2px = 4px,正是 `CLEARANCE_MIN_PX = 4.0` ——
+# 改几何即改那个门的阈值,两者不是两件事。
+FOCUS_RING_WIDTH_PX = 2.0
+FOCUS_RING_OFFSET_PX = 2.0
+# 浏览器把 2px 序列化成 "2px";判据比的是这个字符串,不是浮点数。
+FOCUS_RING_WIDTH_CSS = "2px"
+# 单次 Tab 驱动的上限。Tab 序列里 `document.body` 也是一站(焦点走到最后一个可聚焦
+# 元素后落回 BODY),故上限要留余量;12 远大于「一轮 Tab 序列里落到第一个控件」所需。
+_IDI07_TAB_LIMIT = 12
+
+# 第 10 项的普查:按 **DOM 遍历**枚举 `FOCUSABLE_SELECTOR` 的**全部实例**,对每个实例
+# 返回清单项 `{tag, id, cls, label, visible, focusable}` —— **只出清单,不出环读数**。
+#
+# 清单项里**不得放 DOM 节点本身**:`page.evaluate` 跨边界序列化时节点会塌成字面串
+# `ref: <Node>`(实测),放进去既读不出信息、又与本项「只出清单,不出第二种说法」的
+# 纪律相悖。采样表的键由 `tag` / `id` / `cls` 拼出(`labelOf`),照 `_IDI06_CENSUS_JS`
+# 里 `labelOf` 的形态 —— 两个脚本必须用**同一个** labelOf,否则采样表与判定集对不上。
+#
+# `visible` 取 `el.getClientRects().length > 0`:被祖先藏住的元素 rect 全零,不得把它
+# 读成「未覆盖」。
+#
+# `focusable` 取 `!el.matches(':disabled') && el.getAttribute('tabindex') !== '-1'`。
+# 用 `:disabled` 而不是 `[disabled]`:前者覆盖「实际被禁用」的全部形态(含被外层
+# `<fieldset disabled>` 包裹的控件),后者只认写在元素自己身上的那个属性。
+#
+# **排除面是有意的,不是漏项。** 禁用控件与 `tabindex="-1"` 的元素 **rect 非零、确实
+# 渲染在树里,却不在顺序焦点序里** —— 拿它们去要求「被环覆盖」会造出一条**永远无法
+# 满足**的判据(禁用控件被浏览器移出顺序焦点序,永远不会成为 `document.activeElement`)。
+# 本仓库真实存在的实例(逐个点名 + 可复跑取证):
+#   - `frontend/index.html:126` 的 `#btn-approve-draft[disabled]`:p1 样本里 `#draft-view`
+#     被 `frontend/app.js` 取消隐藏,而该样本无 `docs/draft.md` ⇒ `app.js` 让它保持禁用;
+#   - `frontend/index.html:143` 的 `#btn-authorize[disabled]`:p3 样本里 `#authorize-row`
+#     被 `app.js` 取消隐藏;`_IDI06_CENSUS_JS` 的注释已实测记录它 clearance `-122.6px`,
+#     即确实渲染在树里。它的点亮与否由 `app.js` 消费的 `g3_available` 决定 —— 若某样本里
+#     它被点亮,`focusable` 自动为真、它自动回到判定集并被 Tab 覆盖,登记面无需改动;
+#   - 计划 02 在 `checking` 样本里新增的两个 `.verdict-buttons button:disabled`。
+# 结论:它们**有意**落在判定集之外 —— 禁用控件不参与顺序焦点序,不得用环去覆盖它们。
+# 本判据是 **Reachable**,不是 Exists。
+#
+# 已登记的两条边界(照 `_IDI06_CENSUS_JS` 里 `intersects` 那条「登记而非静默」的先例):
+#   ① Tab 序不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由;
+#   ② Tab 序也不覆盖不可聚焦的实例 —— 那正是 `focusable` 过滤存在的理由。
+# 两条过滤之后剩下的集合必须逐个被 Tab 覆盖。
+_IDI07_FOCUS_CENSUS_JS = r"""() => {
+  const labelOf = (el) => {
+    if (el.id) return '#' + el.id;
+    const cls = (typeof el.className === 'string' && el.className.trim())
+      ? '.' + el.className.trim().split(/\s+/).join('.') : '';
+    return el.tagName.toLowerCase() + cls;
+  };
+  const out = [];
+  document.querySelectorAll(
+    'button, input, select, textarea, a[href], summary, [tabindex]'
+  ).forEach((el) => {
+    out.push({
+      tag: el.tagName.toLowerCase(),
+      id: el.id,
+      cls: (typeof el.className === 'string') ? el.className.trim() : '',
+      label: labelOf(el),
+      visible: el.getClientRects().length > 0,
+      // 禁用控件与 tabindex="-1" 渲染在树里却不在顺序焦点序里 —— 见上方注释。
+      focusable: !el.matches(':disabled') && el.getAttribute('tabindex') !== '-1',
+    });
+  });
+  return out;
+}"""
+
+# 第 10 项的环读数**唯一来源**:读**当前焦点元素的那一瞬读数**。
+# 它返回 `{label, tag, outlineWidth, outlineColor, focusVisible}`;
+# `document.activeElement` 不是 `HTMLElement` 时返回 `null`。它与上面的清单常量**分开
+# 命名**:清单只出「有哪些元素」,环读数只出「此刻焦点元素读到什么」,两者不互相携带
+# 第二种说法。labelOf 与上面那份逐字相同。
+_IDI07_TAB_READ_JS = r"""() => {
+  const el = document.activeElement;
+  if (!(el instanceof HTMLElement)) return null;
+  const labelOf = (e) => {
+    if (e.id) return '#' + e.id;
+    const cls = (typeof e.className === 'string' && e.className.trim())
+      ? '.' + e.className.trim().split(/\s+/).join('.') : '';
+    return e.tagName.toLowerCase() + cls;
+  };
+  const s = getComputedStyle(el);
+  return {
+    label: labelOf(el),
+    tag: el.tagName.toLowerCase(),
+    outlineWidth: s.outlineWidth,
+    outlineColor: s.outlineColor,
+    focusVisible: el.matches(':focus-visible'),
+  };
+}"""
+
+# SC4 的 clearance 读数:对**当前焦点元素**套用 item 9 的 L-5 口径 —— 到最近裁剪祖先
+# padding 边的最小距离,取四边最小值。算法与 `_IDI06_CENSUS_JS` 逐字相同,只是取样对象
+# 换成 `document.activeElement`(item 9 是按选择器全量枚举,结构上读不到「此刻焦点在哪」)。
+# 没有裁剪祖先时 `clearance` 为 `null`(无定义,不是 0)。
+_IDI07_TAB_CLEARANCE_JS = r"""() => {
+  const px = (v) => parseFloat(v) || 0;
+  const labelOf = (el) => {
+    if (el.id) return '#' + el.id;
+    const cls = (typeof el.className === 'string' && el.className.trim())
+      ? '.' + el.className.trim().split(/\s+/).join('.') : '';
+    return el.tagName.toLowerCase() + cls;
+  };
+  const isClipping = (el) => {
+    const s = getComputedStyle(el);
+    return s.overflowX !== 'visible' || s.overflowY !== 'visible';
+  };
+  const el = document.activeElement;
+  if (!(el instanceof HTMLElement)) return null;
+  const r = el.getBoundingClientRect();
+  const visible = r.width > 0 && r.height > 0;
+  let anc = el.parentElement;
+  let nearest = null;
+  while (anc) {
+    if (isClipping(anc)) { nearest = anc; break; }
+    anc = anc.parentElement;
+  }
+  if (!nearest) {
+    return {label: labelOf(el), container: null, clearance: null, visible: visible};
+  }
+  const ar = nearest.getBoundingClientRect();
+  const s = getComputedStyle(nearest);
+  const padLeft = ar.left + px(s.borderLeftWidth);
+  const padTop = ar.top + px(s.borderTopWidth);
+  const padRight = ar.right - px(s.borderRightWidth);
+  const padBottom = ar.bottom - px(s.borderBottomWidth);
+  const gap = Math.min(r.left - padLeft, padRight - r.right,
+                       r.top - padTop, padBottom - r.bottom);
+  return {label: labelOf(el), container: labelOf(nearest), clearance: gap,
+          visible: visible};
+}"""
+
+
 def _rects_intersect(a, b):
     """两个 rect 是否相交(判据与 L-1 的门逐字一致)。"""
     return not (
@@ -2389,67 +2528,355 @@ def item9(page, tmp_root):
 # ---------------------------------------------------------------------------
 # UAT 第 10 项 — A11Y-01 焦点环(令牌 → 规则 → 算术门 → 浏览器里读到的环)
 # ---------------------------------------------------------------------------
+def _idi07_blur_reset(page):
+    """清空焦点复位:blur 把焦点交还 `document.body`,Tab 序列随即从头开始。
+
+    **这不是「聚焦某个元素」** —— 本文件对程序化聚焦调用的计数仍为 0(第 10 项的验收
+    判据)。不得改用显式聚焦调用:那在 Chrome 下不保证匹配 `:focus-visible`,用它替代
+    Tab 会让「键盘 Tab 到控件出环」这条断言失去意义。
+    """
+    page.evaluate(
+        "() => { const el = document.activeElement;"
+        " if (el instanceof HTMLElement) el.blur(); }"
+    )
+
+
+def _idi07_tab_drive(page, limit):
+    """Tab 驱动焦点,逐次读当前 `document.activeElement` 的环读数。
+
+    返回 `(order, samples)`:`order` 是每次 Tab 后的**全部原始载荷**(含落回 `body` 的
+    那些),`samples` 是「稳定标签 -> 最后一次采样到的读数」。
+
+    **环读数只在「该元素成为 `document.activeElement` 的那一刻」采**,唯一来源是
+    `_IDI07_TAB_READ_JS`。本项**不存在**「未聚焦时的 outline 读数」这个概念:未聚焦
+    元素在 `:focus-visible` 下计算 `outline-width` 为 `0px`、`outline-color` 回落到 UA
+    值,拿静态读数去判定会把**每一个**元素都判成 bad。
+    """
+    _idi07_blur_reset(page)
+    order, samples = [], {}
+    for _ in range(limit):
+        page.keyboard.press("Tab")
+        payload = page.evaluate(_IDI07_TAB_READ_JS)
+        order.append(payload)
+        if payload:
+            samples[payload["label"]] = payload
+    return order, samples
+
+
+def _idi07_focus_census_assert(page, item, state, focus_color):
+    """D-16 的焦点环元素普查断言:判定集非空,且其中「未被环覆盖的元素数」为 0。
+
+    **判定集** = `_IDI07_FOCUS_CENSUS_JS` 返回的实例中同时满足 `visible` 与 `focusable`
+    的那些(两个字段都由普查逐元素返回),即 Tab 可达的可聚焦元素。**`bad`** = 判定集里
+    「在其成为 `document.activeElement` 的时刻**从未读到过环**」的元素 —— 即采样表里没有
+    它的条目,或它采样到的读数不等于 `("2px", focus_color)`。
+
+    五条形态纪律(照 `_idi06_clearance_assert`):
+      1. `data is None` ⇒ `blocked(...)`,**绝不记 PASS**;
+      2. 先 `info()` 落**全部原始行**(每个元素的 tag/id/class + visible + focusable +
+         采样到的环读数,没采样到就写 None),再判定;
+      3. **判定集为空集 ⇒ `blocked(...)`,不是 `info()` + `return`** —— 这是对 item9
+         第 3 条的**有意收紧**。item9 的样本可能真的没有「落在可视滚动区内」的组合,而
+         本项三个样本各自都有**必然存在**的「可见 ∧ 可聚焦(即 Tab 可达)」实例
+         (p1:`#message-input` / `#btn-send` / `#ai-route-select` / `#project-path-input`;
+         checking:`#check-switcher` / `#btn-continue-check` / `#ai-route-select` /
+         `#project-path-input`;p3:`summary` / `#round-switcher` / `#ai-route-select` /
+         `#btn-enter`),已由执行前基线的 `check-05 --item 9` 普查 INFO 行逐样本实测为
+         `visible=True`。故**空集只可能是过滤式写错或样本没到位**,不是「样本恰好没有
+         可聚焦元素」。⚠ 判据的锚必须是「可见 ∧ 可聚焦」这个**合取**,不是「可见」单独
+         一项:`#btn-process-round` 在 p1 的标记里带 `disabled`(`frontend/index.html:73`),
+         `visible=True` 却被 `focusable` 排除在判定集之外,拿 item9 的可见性表当
+         「可聚焦」的证据正是同型混淆。空集若退化成 `info()` + `return`,整条普查会以
+         「0 条断言」静默通过 —— 这正是「假 PASS」的形态(`item_verdict` 只读行级裁决,
+         没有任何机制把「一行都没断言」读成非 PASS)。`len(judged) > 0` 必须是**真实
+         守卫**,不是散文承诺;
+      4. 判据是 `not bad` —— 即「判定集里未被环覆盖的元素数 == 0」;
+      5. 失败行的 note 给出**可执行的修复动作**。
+    """
+    data = page.evaluate(_IDI07_FOCUS_CENSUS_JS)
+    if data is None:
+        blocked(item,
+                f"[{state}] 焦点环覆盖全部 Tab 可达的可聚焦元素(判定集非空且未覆盖数为 0)",
+                "普查脚本返回数据", "<MISSING>", "普查无返回 ⇒ 不记 PASS")
+        return
+    order, samples = _idi07_tab_drive(page, len(data) + 8)
+    judged = [r for r in data if r["visible"] and r["focusable"]]
+    info(f"item10 [{state}] 焦点环普查(全部原始行:标签 / visible / focusable / "
+         f"采样到的 outline-width / outline-color)",
+         f"{len(data)} 个元素:"
+         f"{[(r['label'], r['visible'], r['focusable'],
+             (samples.get(r['label']) or {}).get('outlineWidth'),
+             (samples.get(r['label']) or {}).get('outlineColor')) for r in data]}")
+    info(f"item10 [{state}] Tab 序列(全部原始载荷)", f"{order}")
+    if not judged:
+        blocked(item,
+                f"[{state}] 焦点环覆盖全部 Tab 可达的可聚焦元素(判定集非空且未覆盖数为 0)",
+                "判定集(可见 ∧ 可聚焦)非空", f"共 {len(data)} 个实例,判定集为空",
+                "本项三个样本各自都有必然存在的可见 ∧ 可聚焦实例 ⇒ 空集只可能是过滤式"
+                "写错或样本没到位。空集不得退化成 info() + return —— item_verdict 只读"
+                "行级裁决,空转会以 PASS 现身,那正是假 PASS 的形态")
+        return
+    bad = [
+        r for r in judged
+        if r["label"] not in samples
+        or (
+            samples[r["label"]]["outlineWidth"],
+            norm(samples[r["label"]]["outlineColor"]),
+        ) != (FOCUS_RING_WIDTH_CSS, norm(focus_color))
+    ]
+    ok_true(item,
+            f"[{state}] 焦点环覆盖全部 Tab 可达的可聚焦元素(判定集非空且未覆盖数为 0)",
+            not bad, "未覆盖数 == 0",
+            f"判定集 {len(judged)} 个元素,未覆盖 "
+            f"{[(r['label'], r['tag'], r['id'], r['cls']) for r in bad]}",
+            "未覆盖者若确实是可聚焦元素 ⇒ 它不在 :focus-visible 的七选择器枚举里,"
+            "到 frontend/style.css 文件末尾补它的选择器,并同步本文件的 "
+            "FOCUSABLE_SELECTOR;若它其实是**不可聚焦**的(说明 focusable 漏了一类,"
+            "例如被 <fieldset disabled> 包裹的控件),则改 focusable 的判定式,"
+            "**不要**改 CSS")
+
+
+def _idi07_sc1_assert(page, item, state, focus_color):
+    """SC1(D-17):键盘 Tab 到控件后环可见 —— 读**当前焦点元素**的计算 outline。
+
+    载荷本身就是 `_IDI07_TAB_READ_JS` 返回的「当前 `document.activeElement` 的那一瞬
+    读数」,取其中的 `outlineWidth` 与 `outlineColor`。**不得写成
+    `read_style(page, sel, prop)`**:那个 helper 走 `document.querySelector(sel)`、按
+    选择器取值,结构上读不到「当前焦点元素」,本项的焦点读数只走 `_IDI07_TAB_READ_JS`。
+
+    为什么 Tab 若干次而不是恰好一次:`document.body` 是 Tab 循环里的一站(实测:焦点走到
+    最后一个可聚焦元素后,下一次 Tab 落回 BODY,那里 `:focus-visible` 为假、`outline-width`
+    是 UA 的 3px)。BODY 不是「控件」,故循环到第一个落在控件上的载荷为止;全部原始载荷
+    都经 `info()` 落盘,不隐藏任何一跳。载荷为 `null`(焦点不在元素上)或始终没落到控件上
+    ⇒ `blocked`。
+    """
+    _idi07_blur_reset(page)
+    order, hit = [], None
+    for _ in range(_IDI07_TAB_LIMIT):
+        page.keyboard.press("Tab")
+        payload = page.evaluate(_IDI07_TAB_READ_JS)
+        order.append(payload)
+        if payload and payload["tag"] not in ("body", "html"):
+            hit = payload
+            break
+    info(f"item10 [{state}] SC1 Tab 序列(全部原始载荷)", f"{order}")
+    if hit is None:
+        blocked(item, f"[{state}] SC1 键盘 Tab 到控件后环可见",
+                f'outline-width == "{FOCUS_RING_WIDTH_CSS}" 且 '
+                "outline-color == var(--color-focus)",
+                f"{order}",
+                "Tab 未落到任何控件上(或焦点不在元素上)⇒ 读不到环,不记 PASS")
+        return
+    ok(item,
+       f"[{state}] SC1 Tab 到 {hit['label']} 的 outline-width == {FOCUS_RING_WIDTH_CSS}",
+       FOCUS_RING_WIDTH_CSS, hit["outlineWidth"],
+       f"焦点伪类匹配={hit['focusVisible']};几何 {FOCUS_RING_WIDTH_PX:.0f}px + "
+       f"outline-offset {FOCUS_RING_OFFSET_PX:.0f}px 的外伸量 = CLEARANCE_MIN_PX "
+       f"= {CLEARANCE_MIN_PX:.0f}px")
+    ok(item,
+       f"[{state}] SC1 Tab 到 {hit['label']} 的 outline-color == var(--color-focus)",
+       focus_color, hit["outlineColor"],
+       "期望侧来自运行时解析的令牌,不硬编码 rgb")
+
+
+def _idi07_sc2_assert(page, item, state, focus_color):
+    """SC2(D-17,样本固定 p1):鼠标点击控件后**不**出现焦点环。
+
+    四步,缺一步这条断言就会空转:
+      1. **先断言目标元素存在、可见、且未被禁用**(`getBoundingClientRect()` 非全零
+         **且** `!el.disabled`);
+      2. `page.keyboard.press("Tab")` 让环先出现 —— 证明 `:focus-visible` 规则此刻是活的;
+      3. `page.click(sel)`,**并断言点击后 `document.activeElement` 就是这个元素** ——
+         少了它,「读到的 `outline-color` 不等于 `--color-focus`」在「环规则压根不存在」
+         时同样成立,而这一步把读数锁在「鼠标确实把焦点给了它」的那一瞬;
+      4. 读它的 `outline-color`,断言**不等于** `resolve_color(page, "--color-focus")`。
+         这直接证明「鼠标点击不出现环」,比断言 UA 基线字符串稳。`outline-style` /
+         `outline-width` 作为 `info()` 诊断落盘,不参与判定。
+
+    目标取 `#btn-send`(`frontend/index.html:23`,在 `#chat-input-row` 内、由
+    `#chat-input-row button` 以 1-0-1 填充):它在 p1 里**可见、可聚焦、未禁用** ——
+    `applySessionGates()` 显式 `sendBtn.disabled = false`,全局唯一把它置真的是
+    `applyArchiveView()`(`mission_complete` 归档路径,p1 不走);且 p1 的 `#message-input`
+    为空,`sendBtn` 的 click 处理器在 `if (!text) return;` 处**整体空转**,不产生 DOM
+    变更、不改状态。
+
+    **不得用 `#btn-process-round`**:它在标记里带 `disabled`(`frontend/index.html:73`),
+    p1 里对它 `page.click()` 会因 Playwright 的 actionability「enabled」检查抛
+    `TimeoutError`;而强行 `force=True` 的「弄绿」写法是假 PASS:禁用控件不在顺序焦点序
+    里、永远不会成为 `document.activeElement`,`outline-color != --color-focus` 无论 CSS
+    怎么写都成立。
+    """
+    sel = "#btn-send"
+    pre = page.evaluate(
+        """(sel) => {
+            const el = document.querySelector(sel);
+            if (!el) return null;
+            const r = el.getBoundingClientRect();
+            return {w: r.width, h: r.height, disabled: !!el.disabled,
+                    visible: el.getClientRects().length > 0};
+        }""",
+        sel,
+    )
+    if pre is None or not pre["visible"] or pre["w"] <= 0 or pre["h"] <= 0:
+        blocked(item, f"[{state}] SC2 {sel} 存在、可见、未被禁用",
+                "rect 非全零且 visible", f"{pre}",
+                "目标元素读不到/不可见 ⇒ 本断言失去证明力,不记 PASS")
+        return
+    if pre["disabled"]:
+        blocked(item, f"[{state}] SC2 {sel} 存在、可见、未被禁用",
+                "disabled == false", f"{pre}",
+                "目标被禁用:禁用控件不在顺序焦点序里,永远不会成为 document.activeElement,"
+                "「点击后不出环」无论 CSS 怎么写都成立 ⇒ 假 PASS 的形态,不记 PASS")
+        return
+    info(f"item10 [{state}] SC2 目标前提",
+         f"{sel} rect={pre['w']}x{pre['h']} disabled=False visible=True")
+
+    # 2. 先让环出现,证明 :focus-visible 规则此刻是活的。
+    page.keyboard.press("Tab")
+    info(f"item10 [{state}] SC2 点击前的环(证明规则此刻是活的)",
+         f"{page.evaluate(_IDI07_TAB_READ_JS)}")
+
+    # 3. 点击,并断言焦点真的落到目标上。
+    page.click(sel)
+    after = page.evaluate(
+        """(sel) => {
+            const el = document.activeElement;
+            if (!(el instanceof HTMLElement)) return null;
+            const s = getComputedStyle(el);
+            return {
+              matchesTarget: el === document.querySelector(sel),
+              label: el.id ? '#' + el.id : el.tagName.toLowerCase(),
+              outlineStyle: s.outlineStyle,
+              outlineWidth: s.outlineWidth,
+              outlineColor: s.outlineColor,
+              focusVisible: el.matches(':focus-visible'),
+            };
+        }""",
+        sel,
+    )
+    if after is None or not after["matchesTarget"]:
+        blocked(item, f"[{state}] SC2 点击后 document.activeElement 就是 {sel}",
+                f"activeElement == {sel}", f"{after}",
+                "鼠标没有把焦点交给目标 ⇒ 读数不在「点击」这一瞬,断言空转,不记 PASS")
+        return
+    info(f"item10 [{state}] SC2 点击后的诊断(outline-style / outline-width,不参与判定)",
+         f"style={after['outlineStyle']} width={after['outlineWidth']} "
+         f"focusVisible={after['focusVisible']}")
+    ok_true(item,
+            f"[{state}] SC2 鼠标点击 {sel} 后 outline-color != var(--color-focus)",
+            norm(after["outlineColor"]) != norm(focus_color),
+            f"!= {focus_color}", after["outlineColor"],
+            "点击后焦点伪类不匹配 ⇒ 不出环。这比断言 UA 基线字符串稳")
+
+
+def _idi07_sc4_assert(page, item, state, focus_color):
+    """SC4(D-17):侧栏滚到底再 Tab,环不被裁切 —— 复用 item 9 的 L-5 clearance 口径。
+
+    几何 `2px` + `outline-offset: 2px` 是本探针的**前提**:环的外伸量恰为 4px,故判据取
+    `CLEARANCE_MIN_PX`(= 4.0)。**改几何即改本判据**。
+
+    判据 = 滚到底之后**每个新 Tab 聚焦到的可见元素**的 clearance >= `CLEARANCE_MIN_PX`。
+    判定集为空(滚到底后没有任何新 Tab 聚焦到的可见元素)或元素不可见 ⇒ **`blocked(...)`,
+    不是 `info()` 声明「本样本无判定」、更不得记 PASS** —— 理由与上面普查第 3 条同源,在
+    这里更硬:`item_verdict` 只看**行级裁决**,一个「其余行全 PASS」的项会返回 `pass`,所以
+    一条未判定的探针会**以 `item 10: PASS (N 条断言,0 FAIL,0 BLOCKED)` 的形态现身**,这
+    正是本项要消灭的空转 PASS;而 SC4 的判定集比普查更窄(只限「滚到底之后新 Tab 覆盖到」
+    的那些元素),它的空集更不可能是「样本恰好没有裁切风险」,只可能是探针写错或样本没到位。
+    **确实没有裁剪祖先的元素**:clearance 无定义,写进 `info()` 的原始行记为 `None` 并从
+    判定集里剔除(剔除后判定集为空则仍走 `blocked`)。
+    """
+    scrolled = page.evaluate(
+        """() => {
+            const out = {};
+            for (const sel of ['#main-pane', '#chat-messages']) {
+              const el = document.querySelector(sel);
+              if (!el) continue;
+              el.scrollTop = el.scrollHeight;
+              out[sel] = [el.scrollTop, el.scrollHeight, el.clientHeight];
+            }
+            return out;
+        }"""
+    )
+    info(f"item10 [{state}] SC4 滚到底",
+         f"{scrolled}([scrollTop, scrollHeight, clientHeight];不可滚时是 no-op)")
+
+    _idi07_blur_reset(page)
+    rows = []
+    for _ in range(_IDI07_TAB_LIMIT):
+        page.keyboard.press("Tab")
+        row = page.evaluate(_IDI07_TAB_CLEARANCE_JS)
+        if row is not None:
+            rows.append(row)
+    info(f"item10 [{state}] SC4 clearance 普查(全部原始行)",
+         f"{len(rows)} 行:"
+         f"{[(r['label'], r['container'], r['clearance'], r['visible']) for r in rows]}")
+    judged = [r for r in rows if r["visible"] and r["clearance"] is not None]
+    if not judged:
+        blocked(item,
+                f"[{state}] SC4 滚到底后每个新 Tab 聚焦元素的 clearance >= "
+                f"{CLEARANCE_MIN_PX:.0f}px",
+                f">= {CLEARANCE_MIN_PX:.0f}px",
+                f"判定集为空(共 {len(rows)} 行原始读数)",
+                "滚到底后没有任何新 Tab 聚焦到的可见元素(或它们全部没有裁剪祖先)⇒ 本样本"
+                "无判定,不记 PASS。item_verdict 只读行级裁决,未判定的探针会以 PASS 现身")
+        return
+    bad = [r for r in judged if r["clearance"] < CLEARANCE_MIN_PX]
+    ok_true(item,
+            f"[{state}] SC4 滚到底后每个新 Tab 聚焦元素的 clearance >= "
+            f"{CLEARANCE_MIN_PX:.0f}px",
+            not bad, f"全部 >= {CLEARANCE_MIN_PX:.0f}px",
+            f"共 {len(judged)} 行,未达标 "
+            f"{[(r['label'], r['container'], round(r['clearance'], 1)) for r in bad]}",
+            f"{CLEARANCE_MIN_PX:.0f}px = 环的 outline {FOCUS_RING_WIDTH_PX:.0f}px + "
+            f"outline-offset {FOCUS_RING_OFFSET_PX:.0f}px 的外伸量。实测未达标时**只改"
+            "那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」")
+
+
 def item10(page, tmp_root):
     item = "10"
     print("\n=== UAT 10: A11Y-01 焦点环(D-05 / D-16 / D-17)===", flush=True)
 
-    # ---- (a) 最小端到端探针:Tab 出环,读**当前焦点元素**的计算读数 --------------
-    # 期望侧来自**运行时解析的令牌**(resolve_color),不硬编码 rgb(31, 99, 189) ——
-    # 这是本文件立下的纪律:期望侧来自运行时解析的令牌,值的仲裁者是
-    # scripts/check-02-contrast.py。
+    # 环色的期望侧来自**运行时解析的令牌**(resolve_color),**不得硬编码**
+    # rgb(31, 99, 189) —— 这是本文件立下的纪律:期望侧来自运行时解析的令牌,
+    # 值的仲裁者是 scripts/check-02-contrast.py。
     #
-    # 环读数的唯一来源是下面这段**内联** evaluate 里的 document.activeElement。
-    # 不得用 read_style(page, sel, prop):那个 helper 走 document.querySelector(sel)、
-    # 按选择器取值,结构上读不到「当前焦点元素」。本项共享的 _IDI07_TAB_READ_JS
-    # 常量在计划 03 落地时会**替换**这段内联读数,使环读数在全项内只有一个来源 ——
-    # 本函数是先行者,不是第二种说法。
+    # **单个样本内的探针执行顺序是承重的,必须写死:Tab 驱动的探针
+    # (普查 → SC1 → SC4)先全部跑完,`page.click()` 驱动的 SC2 最后跑。** 理由是实测的
+    # 浏览器行为:一次 `page.click()` 之后,紧随其后的 Tab 落点会变(实测 click 后第一次
+    # Tab 可能落回 BODY,那里 `:focus-visible` 为假、`outline-width` 是 UA 的 3px)。
+    # 故 SC2 若排在 SC1 之前,SC1 的读数会读到 BODY 的 UA 默认值而 FAIL —— 那不是探针
+    # 写错,是顺序写错。
     proj = make_fixture("p1", tmp_root)
     enter_project(page, proj)
     info("item10 样本", f"p1(会话流活动态)→ {proj}")
 
-    expected_color = resolve_color(page, "--color-focus")
-    if expected_color is None:
+    focus_color = resolve_color(page, "--color-focus")
+    if focus_color is None:
         blocked(item, "[p1] --color-focus 已声明且可被运行时解析",
                 "非 None 的 computed rgb", "<MISSING>",
-                "令牌未声明 ⇒ 期望侧解析不出,不记 PASS")
-    else:
-        info("item10 [p1] 令牌解析", f"--color-focus={expected_color}")
-        payload = None
-        for _ in range(16):
-            page.keyboard.press("Tab")
-            payload = page.evaluate("""() => {
-                const el = document.activeElement;
-                if (!(el instanceof HTMLElement)) return null;
-                const s = getComputedStyle(el);
-                const id = el.id ? '#' + el.id : '';
-                const cls = (typeof el.className === 'string' && el.className.trim())
-                  ? '.' + el.className.trim().split(/\\s+/).join('.') : '';
-                return {
-                    tag: el.tagName.toLowerCase(),
-                    label: el.tagName.toLowerCase() + id + cls,
-                    outlineWidth: s.outlineWidth,
-                    outlineColor: s.outlineColor,
-                };
-            }""")
-            if payload and payload["tag"] == "button":
-                break
-        info("item10 [p1] Tab 采样(最后一次读数)", f"{payload}")
-        if not payload or payload["tag"] != "button":
-            blocked(item, "[p1] Tab 到按钮后读当前焦点元素的计算环读数",
-                    "document.activeElement 是 button", f"{payload}",
-                    "Tab 未把焦点落到按钮上 ⇒ 读不到环,不记 PASS")
-        else:
-            ok(item,
-               f"[p1] Tab 到 {payload['label']} 的 outline-width == 2px",
-               "2px", payload["outlineWidth"],
-               "几何 = D-05 的 2px;外伸量 4px 与 check-05 的 CLEARANCE_MIN_PX = 4.0 双向绑定")
-            ok(item,
-               f"[p1] Tab 到 {payload['label']} 的 outline-color == var(--color-focus)",
-               expected_color, payload["outlineColor"],
-               "期望侧来自运行时解析的令牌,不硬编码 rgb")
+                "令牌未声明 ⇒ 期望侧解析不出,本项全部探针不记 PASS")
+        page.set_viewport_size(VIEWPORT_RESTORE)
+        return
+    info("item10 令牌解析", f"--color-focus={focus_color}")
 
-    # ---- (b) viewport 纪律 ---------------------------------------------------
-    # 本项不变更 viewport;此处是兜底复位(与 item 8 / item 9 同一纪律:
+    # ---- p1:普查 → SC1 → SC4 → SC2(SC2 必须最后)--------------------------
+    _idi07_focus_census_assert(page, item, "p1", focus_color)
+    _idi07_sc1_assert(page, item, "p1", focus_color)
+    _idi07_sc4_assert(page, item, "p1", focus_color)
+    _idi07_sc2_assert(page, item, "p1", focus_color)
+
+    # ---- checking / p3:各跑一遍普查与 SC1 -----------------------------------
+    # 三样本合起来才覆盖全部 Tab 可达的可聚焦元素组合(照 item9 的教训:单样本会把
+    # 「藏住」读成「不达标」)。`#checks-panel` 只在 checking 可见,批注面板只在 p3 可见。
+    for state in ("checking", "p3"):
+        proj = make_fixture(state, tmp_root)
+        enter_project(page, proj)
+        info("item10 样本", f"{state} → {proj}")
+        _idi07_focus_census_assert(page, item, state, focus_color)
+        _idi07_sc1_assert(page, item, state, focus_color)
+
+    # ---- viewport 纪律 ------------------------------------------------------
+    # 本项用 page.click() 可能改变滚动位置;此处兜底复位(与 item 8 / item 9 同一纪律:
     # VIEWPORT_RESTORE 是 harness 的基准视口,不复位会污染其后各项)。
     page.set_viewport_size(VIEWPORT_RESTORE)
 

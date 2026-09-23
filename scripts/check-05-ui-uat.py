@@ -2062,6 +2062,55 @@ _IDI07_TAB_CLEARANCE_JS = r"""() => {
           visible: visible};
 }"""
 
+# SC4 的前提:让**裁剪容器真的可滚**,否则「滚到底」是 no-op、本断言退化成普通
+# clearance 检查(WR-01)。p1 下三个容器实测都是 `scrollHeight == clientHeight`:
+# `#main-pane` 900/900、`#chat-messages` 8/8(空态,`:has(:empty)` 把它钉成
+# `flex: 0 0 auto`)、`#doc-panel` 900/900 —— 于是「侧栏滚到底再 Tab」里的「滚到底」
+# 从未发生,而这条断言恰恰是为此命名的。
+#
+# 撑高走**应用自己的渲染路径**,不手搓 DOM(与 item8 撑 `#doc-panel` 同一形态):
+#   · `#doc-panel`:`renderMarkdown()` 渲染进 `#draft-content` —— 逐字照 item8 的做法;
+#   · `#main-pane`:应用自己的 `renderEvent()`(它内部对 `kind: 'say'` 走
+#     `renderMarkdown()`)。`.event-list` 的限高与内滚动在 item 9 被刻意删除,故
+#     `#ai-events` 会随条目长高、把外层 `#main-pane` 顶到可滚 —— 这正是 item 9 的
+#     设计意图(「条目随外层 #main-pane 滚动」),本探针只是把它撑到能观测。
+# 两处都**只加不删**:不写死页面的既有内容,`#draft-content` 的清空是 item8 已确立的
+# 做法(该区域是 markdown 渲染区,内容由应用覆盖式写入)。
+#
+# `kind` 必须取 `'say'`:`renderEvent` 对 `done` / `error` 会解除「发起」按钮的禁用,
+# 那是**状态变更**,会污染本项后续探针(SC5 / hover / SC2)。
+#
+# 实测(1440×900,p1):`renderEvent` × 40 让 `#main-pane` 900/900 → 2640/900,
+# `#doc-panel` 经上面那条 → 5248/900;两者的可聚焦元素普查计数(28)**不变** ——
+# 撑高只加非可聚焦的正文节点,不改判定集、不改 Tab 序。
+#
+# ⚠ 正文**不得含链接**:`renderMarkdown` 会把 `[x](y)` 渲染成 `a[href]`,那是**新增
+# 可聚焦元素**,会改判定集与 Tab 序 —— 撑高必须对这两者零影响。
+_IDI07_SC4_GROW_MD = "\n\n".join(
+    f"第 {i} 段探针正文:用于把容器撑到可滚,使「滚到底后环不被裁切」不是空转断言。"
+    for i in range(1, 81)
+)
+# 每条事件的正文。**逐条编号**,重复文本会被 markdown 渲染成同一段,长高幅度不可控。
+_IDI07_SC4_EVENT_MD = "事件条目 {i}:用于把 #ai-events 撑高,进而把外层 #main-pane 顶到可滚。"
+_IDI07_SC4_EVENT_COUNT = 40
+_IDI07_SC4_GROW_JS = """([md, eventMd, count]) => {
+  const out = {};
+  const events = document.querySelector('#ai-events');
+  if (events && typeof renderEvent === 'function') {
+    for (let i = 1; i <= count; i++) {
+      renderEvent({kind: 'say', content: eventMd.replace('{i}', String(i))});
+    }
+    out['#ai-events'] = events.childElementCount;
+  }
+  const doc = document.querySelector('#draft-content');
+  if (doc && typeof renderMarkdown === 'function') {
+    doc.innerHTML = '';
+    doc.appendChild(renderMarkdown(md));
+    out['#draft-content'] = doc.childElementCount;
+  }
+  return out;
+}"""
+
 
 def _rects_intersect(a, b):
     """两个 rect 是否相交(判据与 L-1 的门逐字一致)。"""
@@ -2969,6 +3018,27 @@ def _idi07_sc4_assert(page, item, state, focus_color):
     运行时断言(`_IDI07_TAB_READ_JS` 的 `outlineWidth` / `outlineOffset`),不是只写在
     注释里。
 
+    **「滚到底」本身也是前提,必须先把它变成真的(WR-01)。** 三个裁剪容器
+    (`#main-pane` / `#chat-messages` / `#doc-panel`)在 p1 下默认都不可滚
+    (`scrollHeight == clientHeight`),那时 `scrollTop = scrollHeight` 是 no-op,本断言
+    就退化成一条普通 clearance 检查 —— 它再也回答不了它被命名来回答的问题(滚到底之后
+    环是否被裁),因为「滚到底」这一态从未到达。故本探针**先走应用自己的渲染路径撑高**
+    (`renderEvent` / `renderMarkdown`,见 `_IDI07_SC4_GROW_JS`),再回读三元组:
+
+      · 有容器真的可滚 ⇒ 继续判定(正常路径);
+      · 撑高之后仍无容器可滚 ⇒ **`blocked(...)`,不是 PASS** —— fail-closed 兜底,与
+        item8 对 sticky 表头用的判据同源。该分支在正常路径下不可达,留着是为了让
+        「撑高失效」以 BLOCKED 现身,而不是退化成一条绿的空转断言。
+
+    `#doc-panel` 必须在滚动列表里:它是 4 条判定行(`#enter-path-input` ×2、
+    `#btn-enter`、`#btn-divergence`)的最近裁剪祖先,不滚它等于「侧栏滚到底」对那几条
+    从未发生。
+
+    撑高对**本项其余探针**必须是零影响(它们在同一样本内排在 SC4 之后):正文不含链接
+    (链接会成为新的可聚焦元素,改判定集与 Tab 序),事件 `kind` 取 `'say'`(取
+    `done` / `error` 会解除「发起」按钮的禁用,是状态变更)。撑高前后 item 10 的断言集
+    已逐条比对,差异只在 SC4 那几条。
+
     判据 = 滚到底之后**每个新 Tab 聚焦到的可见元素**的 clearance >= `CLEARANCE_MIN_PX`。
     判定集为空(滚到底后没有任何新 Tab 聚焦到的可见元素)或元素不可见 ⇒ **`blocked(...)`,
     不是 `info()` 声明「本样本无判定」、更不得记 PASS** —— 理由与上面普查第 3 条同源,在
@@ -2979,10 +3049,21 @@ def _idi07_sc4_assert(page, item, state, focus_color):
     **确实没有裁剪祖先的元素**:clearance 无定义,写进 `info()` 的原始行记为 `None` 并从
     判定集里剔除(剔除后判定集为空则仍走 `blocked`)。
     """
+    # ---- 前提:先让裁剪容器真的可滚 -----------------------------------------
+    # p1 下三个容器默认都不可滚(见 `_IDI07_SC4_GROW_JS` 上的实测),「滚到底」会是
+    # no-op。走应用自己的渲染路径撑高(`renderEvent` / `renderMarkdown`),再回读三个
+    # 容器的三元组。
+    grown = page.evaluate(
+        _IDI07_SC4_GROW_JS,
+        [_IDI07_SC4_GROW_MD, _IDI07_SC4_EVENT_MD, _IDI07_SC4_EVENT_COUNT],
+    )
+    info(f"item10 [{state}] SC4 撑高裁剪容器(走应用自己的渲染路径)",
+         f"{grown}(#ai-events / #draft-content 的子节点数)")
+
     scrolled = page.evaluate(
         """() => {
             const out = {};
-            for (const sel of ['#main-pane', '#chat-messages']) {
+            for (const sel of ['#main-pane', '#chat-messages', '#doc-panel']) {
               const el = document.querySelector(sel);
               if (!el) continue;
               el.scrollTop = el.scrollHeight;
@@ -2991,8 +3072,21 @@ def _idi07_sc4_assert(page, item, state, focus_color):
             return out;
         }"""
     )
+    scrollable = [s for s, (_top, sh, ch) in scrolled.items() if sh > ch]
     info(f"item10 [{state}] SC4 滚到底",
-         f"{scrolled}([scrollTop, scrollHeight, clientHeight];不可滚时是 no-op)")
+         f"{scrolled}([scrollTop, scrollHeight, clientHeight]);"
+         f"真的可滚的容器={scrollable}")
+    if not scrollable:
+        blocked(item,
+                f"[{state}] SC4 滚到底后每个新 Tab 聚焦元素的 clearance >= "
+                f"{CLEARANCE_MIN_PX:.0f}px",
+                "至少一个裁剪容器真的可滚(scrollHeight > clientHeight)",
+                f"{scrolled}",
+                "撑高之后仍没有容器可滚 ⇒「滚到底」是 no-op,本断言退化成普通 clearance "
+                "检查,不记 PASS(item8 对 sticky 表头用的是同一条判据)。本条是 fail-closed "
+                "兜底:正常路径下撑高必然让 #main-pane / #doc-panel 可滚,走到这里说明"
+                "撑高失效(应用的渲染函数改名 / 样本结构变了),不是「样本恰好不可滚」")
+        return
 
     _idi07_blur_reset(page)
     rows = []

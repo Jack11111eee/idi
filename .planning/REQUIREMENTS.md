@@ -55,7 +55,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### INTERACT — 交互状态
 
-- [ ] **INTERACT-01**: `:hover` / `:active` / `:disabled` 覆盖交互控件(基线:2 / 0 / 8)
+- [x] **INTERACT-01**: `:hover` / `:active` / `:disabled` 覆盖交互控件(基线:2 / 0 / 8)
 - [ ] **INTERACT-02**: transition 限定在 `background-color` / `border-color` / `opacity`,约 120–150ms;不建动效系统。**不得软化 `:disabled`**——它是 G3 前提条件唯一的视觉信号
 
 ### CHECK — 契约校验(让契约可执行,而非一次性清理)
@@ -147,7 +147,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | LAYOUT-02 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-03 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-04 | Phase 6: 布局稳健性 | Complete |
-| INTERACT-01 | Phase 7: 交互状态与焦点样式 | Pending |
+| INTERACT-01 | Phase 7: 交互状态与焦点样式 | Complete |
 | INTERACT-02 | Phase 7: 交互状态与焦点样式 | Pending |
 | CHECK-01 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | CHECK-02 | Phase 4: 设计契约、令牌层与契约校验 | Complete |

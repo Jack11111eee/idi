@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: 07
 current_phase_name: 交互状态与焦点样式
 status: executing
-stopped_at: Completed idi-07-01-PLAN.md
-last_updated: "2026-09-23T06:02:56.300Z"
+stopped_at: Completed idi-07-02-PLAN.md
+last_updated: "2026-09-23T06:31:08.029Z"
 last_activity: 2026-09-23
 last_activity_desc: Phase idi-07 execution started
-state_head: 0243d6bf6f0566ee908b1b76dc9400279448a3c8
+state_head: aa7194b41d01e6a3d4d2f88d17efe7a9132425db
 progress:
   total_phases: 6
   completed_phases: 4
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 67
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 ## Current Position
 
 Phase: idi-07 (交互状态与焦点样式) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Executing Phase idi-07
 Last activity: 2026-09-23 — Phase idi-07 execution started
 
@@ -93,6 +93,7 @@ Progress: [███████░░░] 67%
 | Phase idi-06 P03 | 46 | 3 tasks | 2 files |
 | Phase idi-06 P04 | 16m | 3 tasks | 5 files |
 | Phase idi-07 P01 | 10 min | 3 tasks | 3 files |
+| Phase idi-07 P02 | 14 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -173,6 +174,14 @@ Recent decisions affecting current work:
 - [Phase idi-07]: 环色 --color-focus 取 #1f63bd,逐字遵从 04-UI-SPEC S-4 的签核算术(「删除 opacity 后环回到 5.62」);它是整个颜色层里唯一不在 Radix 刻度上的值,与 04.1「值必须来自 Radix 步」相冲 —— 这条冲突已写进围栏注释,否则会被后来者当成漂移「修掉」。实测代价面:--radix-blue-11 在 .archive-mode 的 0.75 合成下只剩 3.03:1(余量 0.03);--radix-blue-12 是高对比文字步,作为 2px 环视觉上接近边框。
 - [Phase idi-07]: item 10 的焦点环普查把「判定集为空集」判为 blocked 而不是 info() + return —— 这是对 item9 第 3 条的有意收紧。理由:item_verdict 只读行级裁决,一条未判定的探针会以 `item 10: PASS (N 条断言,0 FAIL,0 BLOCKED)` 的形态现身,「0 条断言静默通过」正是假 PASS 的形态。同一条根因也适用于 SC4(它的判定集更窄,空集更不可能是巧合)。
 - [Phase idi-07]: item 10 的环读数只在「该元素成为 document.activeElement 的那一刻」采,唯一来源是 _IDI07_TAB_READ_JS;本项不存在「未聚焦时的 outline 读数」这个概念(未聚焦元素计算 outline-width 为 0px、outline-color 回落到 UA 值,拿静态读数判定会把每一个元素都判成 bad)。配套结论:焦点读数不得用 read_style(page, sel, prop)(它按选择器取值,结构上读不到「当前焦点元素」)。
+- [Phase idi-07]: idi-07-02:D-07 的 gate 落在既有 L627 选择器上(`button:where(:not(:disabled)):hover:where(:not(:active))`),不落在新增规则上 —— 新增 `button:not(:disabled):hover`(0-2-1)既修不了缺陷(`:not(:disabled)` 不匹配禁用按钮,而旧规则仍匹配它,`.verdict-buttons button:disabled` 只设 opacity / cursor、不钉 background),又引入回归(类列 2 > `button.primary` / `.overlay-card button` 的类列 1,两族填充按钮 hover 时变灰底)。`:where()` 贡献 0 特异性 ⇒ 改写后特异性逐位不变(0-1-1),声明体逐字节不变。
+- [Phase idi-07]: idi-07-02:朴素按钮的 :active 停在 0-1-0,让位由 L627 的 :where(:not(:active)) 承担 —— 特异性死结(必须胜过 hover 要求 >= 0-1-1,必须让 0-1-1 的填充族保住填充要求 <= 0-1-0)不在特异性上解。两半是一对选择器改写,改一必须改另一;**后来者不得为「对齐」把朴素 active 升到 0-1-1**(同特异性下源码顺序会夺走 button.primary 与 .overlay-card button 的填充,白字落在灰底上)。
+- [Phase idi-07]: idi-07-02:D-08 的 rgba 落点选「围栏内令牌」支 —— --color-overlay-hover(0.06)/ --color-overlay-active(0.12)与消费者同提交,R-2 的「围栏外无裸 rgba()」不变量保住。check-01 不数裸 rgba()(这条纪律本无机械守卫),本计划把它落成围栏外 grep -c 为 0 的显式断言。两令牌不是对比度边界 ⇒ 不进 PAIR 清单(--shadow-* 同族也没有配对)。
+- [Phase idi-07]: idi-07-02:两处值碰撞显式登记 —— --color-surface-active 与 --color-surface-user 同值(gray-4,注释点名 04.1-N-4 并同步扩写既有「Three values that must NOT be helpfully changed back」第 3 条,否则同一份注释自相矛盾);--color-border-hover 与 --color-text-muted 同值(gray-11)。同值不同名、不共享消费者,不得当违规「修掉」。
+- [Phase idi-07]: idi-07-02:SC5 的填充半场取 #btn-send,不用 #btn-process-round —— 后者在 p1 标记里带 disabled(index.html:73),applySessionGates() 只 classList.remove(hidden)、从不清 disabled,故 #btn-process-round:not(:disabled):hover 根本不匹配,断言会 FAIL 而非 BLOCKED。SC5-朴素按下 的目标取 renderVerdictCard() 造出的裁决卡首个按钮(样本中稳定可达的朴素无底色按钮;.modal-buttons button 与 .tier-buttons button 都在 .overlay-card 内、已被填成主色,不是朴素族)。**「可见」不等于「可交互」**:前提检查必须是存在 ∧ 可见 ∧ 未被禁用三合一。
+- [Phase idi-07]: idi-07-02:两条承重断言经变异测试证明非空转 —— 去掉 L627 的 :where(:not(:active)) ⇒ SC5-朴素按下 的「③ 按住不放读数 != ② 悬停读数」FAIL、item 10 报 2 FAIL;去掉 :where(:not(:disabled)) ⇒ SC5′ 的「禁用态 hover 背景 == 静默背景」FAIL。变异在已提交的树上做、定向 git checkout -- frontend/style.css 复原(不用 git stash —— 它跨工作树共享,本项目明令禁止)。
+- [Phase idi-07]: idi-07-02:围栏内注释不能出现「令牌名 + 冒号」—— check-02 的 DECL_RE 扫围栏全文(含注释),写 --radix-gray-12: ... 会被当成一条值不可解析的声明而 FAIL;围栏外的机械判据是子串计数,连「规则体不写裸 rgba()」这样一句论证性散文都会把 grep -c 顶成 1。两条陷阱各付过一次 FAIL,修法都只是改写措辞。
+- [Phase idi-07]: idi-07-02:**state.update-progress 再次把派生进度往回改**(写完 0 / 0%),已按 ROADMAP 的 ## Progress 校正为 completed_phases: 4 / percent: 67 / [███████░░░] 67%;同一批写入还把 .planning/state.json 的 next.reason 从 Phase 7 of 6 · 67% · executing 改成 Phase 07 of 6 · 0% · executing,已改回。completed_plans 的 16 → 17 是正确的增量,保留。**下一份计划执行后请复跑同样的核盘判据,不要采信该 handler 的输出。**
 
 ### Pending Todos
 
@@ -221,8 +230,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-23T06:01:36.342Z
-Stopped at: Completed idi-07-01-PLAN.md
+Last session: 2026-09-23T06:31:07.943Z
+Stopped at: Completed idi-07-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

@@ -79,6 +79,29 @@
       读完后**先把指针移开再抬手**(`page.mouse.move(0, 0)` 之后才 `page.mouse.up()`):
       在裁决按钮或 `#btn-send` 上原地上抬会触发 click,真的发请求并改动样本状态。
 
+第 10 项的过渡与减弱动效半场(INTERACT-02 / D-11 / D-12 / D-13 / D-14,计划 03 追加)
+    两段,与上面那些探针互补:**静态契约计数**先跑(不依赖任何运行时状态),**运行时
+    过渡读数**在 p1 跑。
+    - **静态契约计数**(`_idi07_focus_contract_guards`)四条:①`:focus-visible` 计数
+      `>= EXPECTED_FOCUS_VISIBLE_MIN`(判据是 `>=`,不是 `==`);②**没有任何含
+      `:focus-visible` 的规则块设置 `border` / `padding`** —— 这条必须做**块提取**
+      (逐行跟踪注释状态,从选择器行切到第一个 `}`),全文件 grep 会数到满地的
+      `border` / `padding`,回答不了「焦点规则自己设了没有」;③`prefers-reduced-motion`
+      与新增过渡**同时存在**;④五个交互态令牌**围栏内声明恰好一次 ∧ 围栏外被消费**
+      (硬规则 5 的机械形态,用与 check-01 同一对围栏标记切分)。
+    - ⚠ **第 ③ 条不证明「同提交」。** 「同提交」是 **git 维度**的事实,文件文本断言在
+      结构上无法证明它 —— 该断言只退化为「两者同时存在」,局限在 `info()` 里逐字声明。
+      同提交只能落成计划 / 评审义务(见 `idi-07-03-PLAN.md` Task 1 的 `<verify>`/`<done>`)。
+    - **运行时过渡读数**(`_idi07_transition_motion_assert`,p1):button / input / select
+      的 `transition-property` 含 `background-color` 与 `border-color`、时长 0.12s;
+      `.event-list` 是 `background-color` 与 **0.3s**(D-11 的具名例外在运行时可见)。
+      随后 `page.emulate_media(reduced_motion="reduce")` 重读四个元素的
+      `transition-duration`,断言**全为 0s**;读毕**立即复位** `reduced_motion=
+      "no-preference"`(与 `VIEWPORT_RESTORE` 同级纪律,否则污染其后各项)。
+    - 时长判据先把 `transition-duration` 拆成列表再逐项比,**不用子串包含**:
+      两个属性序列化成 `"0.12s, 0.12s"`,而 `"0s"` 是它的子串 —— 子串判据会让
+      「reduce 下必须全为 0s」在**未生效**时假绿。
+
 第 9 项(L-4 / D-14)
     面板区的滚动容器从「3 个嵌套 + 1 个外层」收敛为「1 个外层(`#main-pane`)+ 1 个被
     保留的内层(`#latest-check`)+ 1 个 SC#3 明文豁免的会话流滚动者(`#chat-messages`)」。
@@ -1804,6 +1827,41 @@ _IDI07_DISABLED_OPACITY = "0.5"
 # 使后续选择器唯一命中它,而不是命中样本里可能已存在的其它裁决卡)。
 _IDI07_VERDICT_PROBE_ID = "idi07-verdict-probe"
 
+# ---- D-15 中段:契约计数的**静态**守卫(INTERACT-02 / D-11…D-14)的常量 ----------
+# `:focus-visible` 的出现次数下限。判据是 `>=` 而**不是** `==`:七选择器枚举天然大于 1,
+# 且日后按枚举纪律新增一类可聚焦元素会让它继续变大 —— 硬编码一个相等值会把「按纪律扩展」
+# 误判成回归。ROADMAP Phase 7 的 gate 原文就是「`:focus-visible` 计数 > 0」。
+EXPECTED_FOCUS_VISIBLE_MIN = 1
+# 围栏标记(与 check-01 / check-02 逐字同一对)。用它把 style.css 切成围栏内 / 围栏外
+# 两段,供「令牌在围栏内声明、在围栏外被消费」这条硬规则 5 的机械形态使用。
+FENCE_START_MARKER = "===== DESIGN TOKENS: START"
+FENCE_END_MARKER = "===== DESIGN TOKENS: END"
+# 硬规则 5「与消费者同提交」的机械形态:每个令牌在围栏内**声明恰好一次**,且在围栏外
+# **被消费至少一次**。声明侧抓「改名残留 / 声明了两次」,消费侧抓「死令牌」(声明了却
+# 没人用)。前一个抓的是假绿,后一个抓的是假绿的反面 —— 两条都要有。
+_IDI07_DECLARED_AND_CONSUMED = (
+    "--color-focus",
+    "--color-surface-active",
+    "--color-border-hover",
+    "--color-overlay-hover",
+    "--color-overlay-active",
+)
+# D-13 的运行时探针目标:button / input / select 各一个真实实例 + `.event-list`。
+# `.event-list` 是 `#ai-events`(frontend/index.html:76)的类,静态存在于每个样本;
+# 枚举含它是**刻意**的 —— 否则减弱动效用户仍会看到流式状态的 0.3s 背景淡入。
+_IDI07_MOTION_TARGETS = (
+    ("#btn-process-round", "button"),
+    ("#message-input", "input"),
+    ("#ai-route-select", "select"),
+    (".event-list", ".event-list"),
+)
+# D-12 的时长与 D-11 保留的既有例外。Chrome 把 120ms 序列化成 "0.12s",把两个属性的
+# 时长序列化成 "0.12s, 0.12s" —— 故判据先把该串拆成列表再逐项比,**不用子串包含**
+# (子串包含会让 "0.12s, 0.12s" 在「必须全为 0s」的断言里假绿:"0s" 是它的子串)。
+_IDI07_TRANSITION_DURATION = "0.12s"
+_IDI07_EVENT_LIST_DURATION = "0.3s"
+_IDI07_REDUCED_DURATION = "0s"
+
 # 交互态探针的共用前提检查(D-17 / T-idi-07-10)。**读值前必须先断言目标存在、可见、未被
 # 禁用**,否则 `getComputedStyle` 对不存在的元素返回 null、对不可见元素照样返回解析值,
 # 断言会退化成**空转 PASS** —— 这正是本文件 docstring 点名的同型陷阱(第 7 项
@@ -2919,6 +2977,32 @@ def _idi07_sc4_assert(page, item, state, focus_color):
             "那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」")
 
 
+# 过渡落地后,「交互后立刻读」不再等于「读到终态」。计划 03 的 Task 1 给 button / input /
+# select 挂了 120ms 的 background-color / border-color 过渡(D-12),于是 hover 或 mouse.down
+# 之后的一次性读数会读到**过渡中间值** —— 实测 #message-input 读到 rgb(112, 112, 112),
+# 而终态是 rgb(100, 100, 100);裁决按钮的悬停/按下读数同理。这不是 CSS 写错,是「读数时刻」
+# 早于「终态时刻」。本读取器先等两帧(确保过渡已被注册)再 `await` 该元素上所有动画
+# `finished`,然后才读数 —— 判据要的是**终态**,不是动画的任意一帧。
+_IDI07_SETTLED_READ_JS = r"""async ([sel, prop]) => {
+  const el = document.querySelector(sel);
+  if (!el) return null;
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const anims = el.getAnimations();
+  await Promise.all(anims.map((a) => a.finished.catch(() => {})));
+  return getComputedStyle(el)[prop];
+}"""
+
+
+def read_settled_style(page, selector, prop):
+    """读**过渡终态**的 computed style。
+
+    只用于「交互触发了过渡 ⇒ 立刻读会读到中间值」的那几处探针。其余探针仍用
+    `read_style`:它们读的量要么不参与过渡(`box-shadow` / `outline`),要么未被交互
+    改变,给它们加等待只会拖慢 harness 而不改变结论。
+    """
+    return page.evaluate(_IDI07_SETTLED_READ_JS, [selector, prop])
+
+
 def _idi07_hover_border_assert(page, item, state, sel, label):
     """输入控件的 hover 边界断言(D-10):静默读 border-color → hover → 再读,断言变为令牌值。
 
@@ -2944,9 +3028,9 @@ def _idi07_hover_border_assert(page, item, state, sel, label):
                 "令牌未声明 ⇒ 期望侧解析不出,本断言不记 PASS")
         return
     page.mouse.move(0, 0)
-    before = read_style(page, sel, "border-color")
+    before = read_settled_style(page, sel, "border-color")
     page.hover(sel)
-    after = read_style(page, sel, "border-color")
+    after = read_settled_style(page, sel, "border-color")
     info(f"item10 [{state}] {label} hover 边界读数",
          f"sel={sel} 静默={before} hover={after} 期望={expected}")
     ok_true(item,
@@ -3092,11 +3176,11 @@ def _idi07_sc5_naive_press_assert(page, item, state):
         return
 
     page.mouse.move(0, 0)
-    silent = read_style(page, sel, "background-color")
+    silent = read_settled_style(page, sel, "background-color")
     page.hover(sel)
-    hovered = read_style(page, sel, "background-color")
+    hovered = read_settled_style(page, sel, "background-color")
     page.mouse.down()
-    pressed = read_style(page, sel, "background-color")
+    pressed = read_settled_style(page, sel, "background-color")
     # 先移开再抬手 —— 见 docstring。
     page.mouse.move(0, 0)
     page.mouse.up()
@@ -3173,9 +3257,282 @@ def _idi07_sc5prime_disabled_assert(page, item, state):
             "用的是 0.5,不是 0.55")
 
 
+# ---------------------------------------------------------------------------
+# 第 10 项的**静态**契约计数守卫(D-15 中段,计划 03 追加)
+# ---------------------------------------------------------------------------
+def _idi07_code_only(line, in_comment):
+    """返回 (该行注释之外的代码片段, 行末是否仍在注释内)。
+
+    CSS 里没有嵌套注释,本文件也没有把 `/*` 写进字符串的先例(data-URI 是
+    `url("…")`,其中的 SVG 不含这两个字符序列),故逐字符扫描足够。
+    不做这一步,规则上方那段「为什么枚举而不是裸 `:focus-visible`」的论证散文会被
+    当成一条规则块,块内计数随即失去意义。
+    """
+    out, i = [], 0
+    while i < len(line):
+        if in_comment:
+            end = line.find("*/", i)
+            if end == -1:
+                i = len(line)
+            else:
+                in_comment = False
+                i = end + 2
+        else:
+            start = line.find("/*", i)
+            if start == -1:
+                out.append(line[i:])
+                i = len(line)
+            else:
+                out.append(line[i:start])
+                in_comment = True
+                i = start + 2
+    return "".join(out), in_comment
+
+
+def _idi07_focus_rule_blocks(text):
+    """切出所有含 `:focus-visible` 的**规则块**:[(起始行号, [(行号, 代码片段), …]), …]。
+
+    从选择器行到**第一个 `}`** —— 这正是「规则块」的形态。注释里的 `:focus-visible`
+    提及不算规则块(见 `_idi07_code_only`)。
+    """
+    lines = text.splitlines()
+    blocks, in_comment, i = [], False, 0
+    while i < len(lines):
+        code, in_comment = _idi07_code_only(lines[i], in_comment)
+        if ":focus-visible" in code:
+            start, buf = i, []
+            while i < len(lines):
+                code_i, in_comment = _idi07_code_only(lines[i], in_comment)
+                buf.append((i + 1, code_i))
+                if "}" in code_i:
+                    break
+                i += 1
+            blocks.append((start + 1, buf))
+        i += 1
+    return blocks
+
+
+_DECL_PROP_RE = re.compile(r"(?:^|[;{])\s*([-a-zA-Z]+)\s*:")
+
+
+def _idi07_block_declarations(buf):
+    """块内的 (行号, 声明属性名) 列表 —— 只看 `{` 之后的部分(选择器行不是声明)。"""
+    out, seen_brace = [], False
+    for lineno, code in buf:
+        if not seen_brace:
+            if "{" not in code:
+                continue
+            seen_brace = True
+            code = code.split("{", 1)[1]
+        out.extend((lineno, m.group(1)) for m in _DECL_PROP_RE.finditer(code))
+    return out
+
+
+def _idi07_fence_split(text):
+    """把 style.css 切成 (围栏内, 围栏外) 两段 —— awk 状态机(照 check-01 L27)。
+
+    围栏标记各出现一次是前提(围栏标记行自身不计入任何一段)。标记不成对时返回
+    `(None, None)`,由调用方记 BLOCKED —— 切分不可信时任何计数都不可信。
+    """
+    if text.count(FENCE_START_MARKER) != 1 or text.count(FENCE_END_MARKER) != 1:
+        return None, None
+    inside, outside, fenced = [], [], False
+    for line in text.splitlines():
+        if FENCE_START_MARKER in line:
+            fenced = True
+            continue
+        if FENCE_END_MARKER in line:
+            fenced = False
+            continue
+        (inside if fenced else outside).append(line)
+    return "\n".join(inside), "\n".join(outside)
+
+
+def _idi07_durations(raw):
+    """把 computed `transition-duration` 拆成规范化列表(Chrome 用 `, ` 连接多个值)。
+
+    **必须拆开再逐项比**,不能对整串做子串包含:两个属性的时长序列化成
+    `"0.12s, 0.12s"`,而 `"0s"` 是它的子串 —— 子串判据会让「reduce 下必须全为 0s」
+    这条断言在**未生效**时假绿。这正是本文件 docstring 点名的同型陷阱。
+    """
+    if raw is None:
+        return None
+    return [p.strip() for p in raw.split(",") if p.strip()]
+
+
+def _idi07_focus_contract_guards(item):
+    """D-15 中段的四条**契约计数静态断言**(INTERACT-02 / D-11…D-14)。
+
+    照 `_l2_guard_shape` 的三条共同纪律写:**`OSError` ⇒ `blocked()`**、
+    **打印命中行号**、**比的是「实测计数 vs 独立决策常量」不是自比**。读的是
+    **文件文本**而非渲染结果 —— 与 item10 的运行时普查互补:它抓「规则被悄悄删掉 /
+    悄悄多写一条」,运行时普查抓「规则实际覆盖了谁」。
+    """
+    try:
+        text = STYLE_CSS.read_text(encoding="utf-8")
+    except OSError as exc:
+        blocked(item, "[static] frontend/style.css 可读", "读得到文件文本", "<MISSING>",
+                f"{STYLE_CSS} 读不到:{exc}")
+        return
+
+    # ---- 断言 1:`:focus-visible` 计数 > 0(ROADMAP Phase 7 的 gate 原文)--------
+    fv_lines = [i for i, ln in enumerate(text.splitlines(), 1) if ":focus-visible" in ln]
+    fv_count = text.count(":focus-visible")
+    info("item10 [static] :focus-visible 计数",
+         f"计数={fv_count}(含注释提及)命中行={fv_lines};"
+         f"期望 >= {EXPECTED_FOCUS_VISIBLE_MIN}")
+    ok_true(item,
+            f"[static] frontend/style.css 的 :focus-visible 计数 >= {EXPECTED_FOCUS_VISIBLE_MIN}",
+            fv_count >= EXPECTED_FOCUS_VISIBLE_MIN,
+            f">= {EXPECTED_FOCUS_VISIBLE_MIN}", fv_count,
+            "判据是 `>=` 而不是 `==`:七选择器枚举天然大于 1,日后按枚举纪律新增一类"
+            "可聚焦元素会让它继续变大 —— 相等判据会把「按纪律扩展」误判成回归")
+
+    # ---- 断言 2:没有任何焦点规则设置 border 或 padding(块提取,非全文件 grep)----
+    blocks = _idi07_focus_rule_blocks(text)
+    if not blocks:
+        blocked(item, "[static] 没有任何含 :focus-visible 的规则块设置 border / padding",
+                ">= 1 个含 :focus-visible 的规则块", "<MISSING>",
+                "一条规则块都切不出来 ⇒ 本断言无判定对象,不记空转 PASS")
+        return
+    all_decls = [(n, p) for _, buf in blocks for n, p in _idi07_block_declarations(buf)]
+    bad_decls = [(n, p) for n, p in all_decls
+                 if p in ("border", "padding")
+                 or p.startswith("border-") or p.startswith("padding-")]
+    info("item10 [static] 焦点规则块",
+         f"块起始行={[b[0] for b in blocks]};块内全部声明={all_decls}")
+    ok_true(item,
+            "[static] 没有任何含 :focus-visible 的规则块设置 border / padding",
+            not bad_decls, "0 条 border / padding 声明",
+            f"{len(bad_decls)} 条:{bad_decls}",
+            "D-05:焦点规则只能用不参与布局的 outline —— border / padding 会 reflow "
+            "#probe-controls 并位移。必须用**块提取**而不是全文件 grep:全文件里 "
+            "border / padding 到处都是,只有块内计数能回答「焦点规则自己设了没有」。"
+            "失败时按上面行号定位到具体规则与属性")
+
+    # ---- 断言 3:减弱动效偏好与新增过渡同时存在(并逐字声明其局限)---------------
+    prm_count = text.count("prefers-reduced-motion")
+    tr_count = text.count("transition: background-color 120ms")
+    info("item10 [static] 减弱动效 × 新增过渡",
+         f"prefers-reduced-motion 计数={prm_count};"
+         f"transition: background-color 120ms 计数={tr_count};"
+         "**本断言不证明「同提交」** —— 「同提交」是 git 维度的事实,文件文本断言在结构上"
+         "无法证明它。本断言只退化为「两者同时存在」。同提交只能落成计划 / 评审义务:"
+         "本计划的 Task 1 已把它写进 <verify> 与 <done>,并由那一次提交的 diff 承载")
+    ok_true(item,
+            "[static] prefers-reduced-motion 与新增过渡同时存在",
+            prm_count >= 1 and tr_count >= 1, ">= 1 且 >= 1",
+            f"{prm_count} / {tr_count}",
+            "⚠ 本断言**不证明同提交**(见上面 INFO 行):它只证明两者同时存在。"
+            "「同提交」是 git 维度的事实,只能由计划 / 评审义务承担")
+
+    # ---- 断言 4:五个令牌「围栏内声明恰好一次 ∧ 围栏外被消费」(硬规则 5)-------
+    inside, outside = _idi07_fence_split(text)
+    if inside is None:
+        blocked(item, "[static] 每个交互态令牌「围栏内声明一次 ∧ 围栏外被消费」",
+                f"围栏标记各出现一次({FENCE_START_MARKER} / {FENCE_END_MARKER})",
+                f"start={text.count(FENCE_START_MARKER)} "
+                f"end={text.count(FENCE_END_MARKER)}",
+                "围栏标记不成对 ⇒ 切分不可信,本断言不记 PASS"
+                "(check-01 对同一对标记有独立断言)")
+        return
+    for token in _IDI07_DECLARED_AND_CONSUMED:
+        decl = inside.count(f"{token}:")
+        cons = outside.count(f"var({token})")
+        info("item10 [static] 令牌声明 / 消费",
+             f"{token}: 围栏内声明={decl} 围栏外消费={cons}")
+        ok_true(item,
+                f"[static] {token} 围栏内声明 == 1 且围栏外被消费 > 0",
+                decl == 1 and cons > 0, "声明 1 且消费 > 0", f"声明 {decl} / 消费 {cons}",
+                "硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),"
+                "消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— "
+                "裸令牌名不是消费")
+
+
+def _idi07_transition_motion_assert(page, item, state):
+    """过渡与减弱动效的**运行时**探针(D-12 / D-13 / D-11;硬规则 7)。
+
+    两段:
+    (a) 静默态:button / input / select 的 `transition-property` 含 `background-color`
+        与 `border-color`,`transition-duration` 为 0.12s;`.event-list` 是
+        `background-color` 与 0.3s —— **D-11 的具名例外在运行时可见**,不是一句只写在
+        注释里的说法。
+    (b) `page.emulate_media(reduced_motion="reduce")` 下重读四个元素的
+        `transition-duration`,断言**全部**为 0s(含 `.event-list`)。
+
+    ⚠ 读完**立即**复位 `reduced_motion="no-preference"`,与 `VIEWPORT_RESTORE` 同级纪律:
+    媒体模拟是页面级的,不复位会污染其后各项 UAT。
+    ⚠ 元素读不到 ⇒ `blocked(...)`,**绝不记 PASS**。
+    """
+    readings, missing = [], []
+    for sel, label in _IDI07_MOTION_TARGETS:
+        prop = read_style(page, sel, "transition-property")
+        dur = read_style(page, sel, "transition-duration")
+        if prop is None or dur is None:
+            missing.append((sel, label))
+            continue
+        readings.append({"sel": sel, "label": label, "prop": prop, "dur": dur})
+    if missing:
+        blocked(item, f"[{state}] 过渡挂载规则的四个目标元素都读得到 computed transition",
+                "button / input / select / .event-list 四个目标均可读", f"读不到:{missing}",
+                "元素不存在 ⇒ getComputedStyle 读不出值;本探针不记 PASS")
+        return
+
+    info(f"item10 [{state}] 过渡读数(全部原始值)",
+         f"{[(r['label'], r['prop'], r['dur']) for r in readings]}")
+    controls = [r for r in readings if r["label"] != ".event-list"]
+    bad_prop = [(r["label"], r["prop"]) for r in controls
+                if "background-color" not in r["prop"] or "border-color" not in r["prop"]]
+    bad_dur = [(r["label"], r["dur"]) for r in controls
+               if _idi07_durations(r["dur"]) != [_IDI07_TRANSITION_DURATION] * 2]
+    ok_true(item,
+            f"[{state}] button / input / select 的 transition-property 含 "
+            "background-color 与 border-color",
+            not bad_prop, "三个控件都含这两个属性", f"不符:{bad_prop}",
+            "D-12 的挂载规则只声明这两个属性;opacity 与 outline-* 刻意不在列表内(D-14)")
+    ok_true(item,
+            f"[{state}] button / input / select 的 transition-duration 两项均为 "
+            f"{_IDI07_TRANSITION_DURATION}",
+            not bad_dur, f"[{_IDI07_TRANSITION_DURATION}] * 2", f"不符:{bad_dur}",
+            "Chrome 把 120ms 序列化成 '0.12s',两个属性序列化成 '0.12s, 0.12s' —— "
+            "判据先拆成列表再逐项比,不用子串包含")
+
+    el_row = next(r for r in readings if r["label"] == ".event-list")
+    ok_true(item,
+            f"[{state}] .event-list 的 transition-duration == {_IDI07_EVENT_LIST_DURATION}"
+            "(D-11 的具名例外在运行时可见)",
+            _idi07_durations(el_row["dur"]) == [_IDI07_EVENT_LIST_DURATION]
+            and "background-color" in el_row["prop"],
+            f"background-color 且时长 {_IDI07_EVENT_LIST_DURATION}",
+            f"prop={el_row['prop']} dur={el_row['dur']}",
+            "D-11:300ms 那个时长**不是控件态**,它服务 .streaming / .aborted 两个流式状态"
+            "指示类。把「例外仍在」变成可观测事实,而不是只写在注释里")
+
+    page.emulate_media(reduced_motion="reduce")
+    try:
+        reduced = [(label, read_style(page, sel, "transition-duration"))
+                   for sel, label in _IDI07_MOTION_TARGETS]
+    finally:
+        # ⚠ 复位与 VIEWPORT_RESTORE 同级纪律:媒体模拟是页面级的,不复位会污染其后各项。
+        page.emulate_media(reduced_motion="no-preference")
+    info(f"item10 [{state}] reduce 下的 transition-duration(全部原始值)", f"{reduced}")
+    bad_reduced = [(lbl, raw) for lbl, raw in reduced
+                   if _idi07_durations(raw) != [_IDI07_REDUCED_DURATION]]
+    ok_true(item,
+            f"[{state}] reduced_motion='reduce' 下 button / input / select / .event-list 的 "
+            f"transition-duration 全为 {_IDI07_REDUCED_DURATION}",
+            not bad_reduced, f"四个目标全为 {_IDI07_REDUCED_DURATION}",
+            f"不符:{bad_reduced}",
+            "D-13:按选择器重写为 none,而不是把时长压到「几乎为零」。读完后已复位 "
+            "reduced_motion='no-preference',否则会污染其后各项")
+
+
 def item10(page, tmp_root):
     item = "10"
     print("\n=== UAT 10: A11Y-01 焦点环(D-05 / D-16 / D-17)===", flush=True)
+
+    # ---- (a) 静态契约计数守卫(D-15 中段)先跑,不依赖任何运行时状态 -------------
+    _idi07_focus_contract_guards(item)
 
     # 环色的期望侧来自**运行时解析的令牌**(resolve_color),**不得硬编码**
     # rgb(31, 99, 189) —— 这是本文件立下的纪律:期望侧来自运行时解析的令牌,
@@ -3204,6 +3561,10 @@ def item10(page, tmp_root):
     _idi07_focus_census_assert(page, item, "p1", focus_color)
     _idi07_sc1_assert(page, item, "p1", focus_color)
     _idi07_sc4_assert(page, item, "p1", focus_color)
+    # 过渡与减弱动效(D-12 / D-13 / D-11)的运行时探针。排在 Tab 驱动的三条之后、SC5 之前:
+    # 它只读 computed transition 并短暂模拟媒体偏好(读毕立即复位),不改焦点、不改滚动,
+    # 故不干扰 Tab 序列;排在 `page.click()` 驱动的 SC2 之前,符合「click 必须最后」那条顺序约束。
+    _idi07_transition_motion_assert(page, item, "p1")
     # SC5 的填充半场取 `#btn-send`,**不用** `#btn-process-round`:后者在 p1 的标记里带
     # `disabled`(frontend/index.html:73),而 `#btn-process-round:not(:disabled):hover`
     # 根本不匹配它 —— 断言会 **FAIL 而非 BLOCKED**(`applySessionGates()` 只

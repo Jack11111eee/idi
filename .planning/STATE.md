@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 7
+current_phase: 07
 current_phase_name: 交互状态与焦点样式
 status: executing
 stopped_at: Phase 7 context gathered
-last_updated: "2026-09-22T16:06:33.208Z"
-last_activity: 2026-09-22
-last_activity_desc: Phase idi-06 complete, transitioned to Phase 7
-state_head: bce96214bbf103c79cee0c83915f5b2137db2905
+last_updated: "2026-09-23T05:41:54.459Z"
+last_activity: 2026-09-23
+last_activity_desc: Phase idi-07 execution started
+state_head: 0f5ffd75cf52a2ddd9dc57de5faa4eeffb3d2dac
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 1
   total_plans: 18
   completed_plans: 15
-  percent: 67
+  percent: 17
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-21)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase 7 — 交互状态与焦点样式
+**Current focus:** Phase idi-07 — 交互状态与焦点样式
 
 ## Current Position
 
-Phase: 7 (交互状态与焦点样式) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-09-22 — Phase idi-06 complete, transitioned to Phase 7
+Phase: idi-07 (交互状态与焦点样式) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase idi-07
+Last activity: 2026-09-23 — Phase idi-07 execution started
 
-Progress: [███████░░░] 67%
+Progress: [██░░░░░░░░] 17%
 
 ## Performance Metrics
 
@@ -168,6 +168,7 @@ Recent decisions affecting current work:
 - [Phase 06]: L-5 走「被实测推翻」:三样本判定行最小 clearance 40px,远高于 4px 阈值 ⇒ 零 padding 改动,#main-pane / #doc-panel / #chat-messages / #latest-check 一个都没抬
 - [Phase 06]: clearance 断言的判定面收窄为「visible 且 intersects」:p3 的 #btn-authorize × #doc-panel = -122.6px 是滚出视口(与 padding 盒不相交)而非被裁切,不收窄会把正常状态记成缺陷
 - [Phase 06]: [Phase idi-06]: Plan 04(gap closure)按项目所有者的显式裁定 remediation (b)把 LAYOUT-02 的 768px 承诺收窄为「badge 不被横幅遮挡」,并把 check-05 的 768px 分支改写为显式「未覆盖」+ 实测数值(h1 439.0–481.0 × 8–28 vs banner 285.3–482.7 × 12–39,相交带 768–855px);收窄登记于 UI-SPEC §L-2 / A-10 与 VERIFICATION.md frontmatter 的 override(accepted_by=Jack11111eee,overrides_applied 保持 0 留给复验);frontend/ 与 REQUIREMENTS/ROADMAP 零 diff
+- [Phase idi-07]: **`ui.safety-gate` 的 halt 经项目所有者预授权为已知假阳性(2026-09-23,执行期)**。该门判据为 `block = frontend && hasUiFiles && !hasUiSpec`,只读**最后一次提交**的 `git diff HEAD~1..HEAD`。Phase 7 的 `frontend=true`(ROADMAP 带 `**UI hint**: yes`)、`hasUiSpec=false`(无 `idi-07-UI-SPEC.md`),故 `block` 退化为 `hasUiFiles`;wave 2 / wave 3 的末次提交都改 `frontend/style.css` ⇒ 该门会 halt。**判为假阳性的依据:** 同能力的确定性门 `ui.plan-gate` 对本阶段返回 `block: false`,因为它的判据多一个 `hasFrontendEvidence`(需要带 UI 框架依赖的 `package.json`)——本仓库是 Python + 原生 HTML/JS,该信号恒为 false;两个门用不同谓词,`ui.safety-gate` 不咨询该信号。本阶段的契约面是 `07-CONTEXT.md` 的 D-01…D-20 + `idi-07-PATTERNS.md`,且 `idi-07-03-PLAN.md:71` 的 D-11 明文**禁止**新建 UI-SPEC 文件(`不得为了凑齐三处而新建 UI-SPEC 文件`)。故执行期不生成 UI-SPEC、不修改本阶段任何计划,该 halt 记录在案后放行。**该门另有一处已知结构性缺陷同案登记:** 它只看 `HEAD~1..HEAD`,故 wave 1(Task 1/2 改 `style.css`、Task 3 只改 `check-05`)会因末次提交无 UI 文件而 `hasUiFiles=false` 静默放行 —— 门绿并不代表它看过本波的 UI 改动
 
 ### Pending Todos
 

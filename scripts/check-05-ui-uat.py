@@ -83,7 +83,8 @@
     两段,与上面那些探针互补:**静态契约计数**先跑(不依赖任何运行时状态),**运行时
     过渡读数**在 p1 跑。
     - **静态契约计数**(`_idi07_focus_contract_guards`)四条:①`:focus-visible` 计数
-      `>= EXPECTED_FOCUS_VISIBLE_MIN`(判据是 `>=`,不是 `==`);②**没有任何含
+      `>= EXPECTED_FOCUS_VISIBLE_MIN`(判据是 `>=`,不是 `==`;**只数代码** —— 注释
+      提及不计,否则整条规则删光后计数仍 >= 1,断言会与它守的东西脱钩);②**没有任何含
       `:focus-visible` 的规则块设置 `border` / `padding`** —— 这条必须做**块提取**
       (逐行跟踪注释状态,从选择器行切到第一个 `}`),全文件 grep 会数到满地的
       `border` / `padding`,回答不了「焦点规则自己设了没有」;③`prefers-reduced-motion`
@@ -1730,11 +1731,39 @@ _IDI06_SCROLL_JS = """() => {
   };
 }"""
 
+# 焦点规则的枚举集(D-05)。**逐字**等于 `frontend/style.css` 文件末尾那条
+# `:focus-visible` 规则的选择器列表(顺序亦同)。两侧必须同时改:新增一类可聚焦元素要
+# 改两处(CSS 那一处 + 本常量),只改一处会让「规则覆盖了谁」与「门检查了谁」重新分叉,
+# 而那正是 G-idi-05-1 的成因。
+#
+# **本文件这一侧只有这一处。** 下面两份普查脚本(item 9 的 `_IDI06_CENSUS_JS` 与第 10
+# 项的 `_IDI07_FOCUS_CENSUS_JS`)的 `document.querySelectorAll(...)` 参数都经
+# `_focusable_census_js()` 用本常量生成 —— 故改本常量就真的改了普查枚举到什么。
+# **不这么做的话本常量是「声明了却没人用」的第二说法**:照注释改它不会改变任何行为,
+# 门仍按旧集合普查,而维护者会以为两侧已同步。CSS 那一处只能是字面量(CSS 消费不了
+# Python 常量),那一侧的同步靠注释承诺承担。
+#
+# 本常量定义在两份脚本之前(而不是与其它第 10 项常量放在一起):两份脚本都要消费它,
+# 而脚本是在 import 期构造的。
+FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"
+
+
+def _focusable_census_js(js):
+    """把普查脚本里的 `__FOCUSABLE_SELECTOR__` 占位符填成 `FOCUSABLE_SELECTOR`。
+
+    用 `json.dumps` 而不是裸引号拼接:选择器里将来若出现引号(如
+    `input[type='text']`),它会转义成合法 JS 字面量,而不是把脚本拼成语法错误 ——
+    那种错误在 `page.evaluate` 侧表现为返回 `null`,会被读成「普查无返回」而不是
+    「脚本拼坏了」,诊断方向就错了。
+    """
+    return js.replace("__FOCUSABLE_SELECTOR__", json.dumps(FOCUSABLE_SELECTOR))
+
+
 # L-5 / L-6 的普查。**按元素枚举,不按容器名** —— 按点名枚举会漏掉没被点名的那个
 # (Phase 5 的 G-idi-05-1 与本阶段 A11Y-07 是同构教训)。
 # clearance = 可聚焦元素 rect 到其**最近裁剪祖先**的 padding 边的距离,取四边最小值。
 # `visible` 一栏是承重的:被祖先藏住的元素 rect 全零,不得把它读成「命中区不足 24×24」。
-_IDI06_CENSUS_JS = r"""() => {
+_IDI06_CENSUS_JS = _focusable_census_js(r"""() => {
   const px = (v) => parseFloat(v) || 0;
   const isClipping = (el) => {
     const s = getComputedStyle(el);
@@ -1754,7 +1783,7 @@ _IDI06_CENSUS_JS = r"""() => {
 
   const clearance = [];
   document.querySelectorAll(
-    'button, input, select, textarea, a[href], summary, [tabindex]'
+    __FOCUSABLE_SELECTOR__
   ).forEach((el) => {
     let anc = el.parentElement;
     let nearest = null;
@@ -1795,15 +1824,14 @@ _IDI06_CENSUS_JS = r"""() => {
   });
 
   return {clearance: clearance, hits: hits};
-}"""
+}""")
 
 
 # ---- UAT 第 10 项(A11Y-01 / D-05 / D-16 / D-17)的常量 ----------------------
-# 焦点规则的枚举集。**逐字**等于上面 `_IDI06_CENSUS_JS` 里 `document.querySelectorAll(...)`
-# 的那一串(顺序亦同)—— 这是 D-05 的枚举集,与 `frontend/style.css` 文件末尾的
-# `:focus-visible` 规则**逐字同集**;两者必须同时改(新增一类可聚焦元素要改两处,
-# 只改一处会让「规则覆盖了谁」与「门检查了谁」重新分叉)。
-FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"
+# 焦点规则的枚举集 `FOCUSABLE_SELECTOR` **不在这里**,在 `_IDI06_CENSUS_JS` 之上:
+# 它同时被 item 9 的普查(`_IDI06_CENSUS_JS`)与第 10 项的普查
+# (`_IDI07_FOCUS_CENSUS_JS`)消费,故必须定义在那两份脚本之前 —— 那是「本文件这一侧
+# 只有这一处」的前提。
 # 环的几何。外伸量 = 2px + 2px = 4px,正是 `CLEARANCE_MIN_PX = 4.0` ——
 # 改几何即改那个门的阈值,两者不是两件事。
 FOCUS_RING_WIDTH_PX = 2.0
@@ -1939,7 +1967,7 @@ _IDI07_DISABLE_VERDICT_BUTTONS_JS = r"""([sel]) => {
 #   ① Tab 序不覆盖被祖先藏住的元素 —— 那正是 `visible` 过滤存在的理由;
 #   ② Tab 序也不覆盖不可聚焦的实例 —— 那正是 `focusable` 过滤存在的理由。
 # 两条过滤之后剩下的集合必须逐个被 Tab 覆盖。
-_IDI07_FOCUS_CENSUS_JS = r"""() => {
+_IDI07_FOCUS_CENSUS_JS = _focusable_census_js(r"""() => {
   const labelOf = (el) => {
     if (el.id) return '#' + el.id;
     const cls = (typeof el.className === 'string' && el.className.trim())
@@ -1948,7 +1976,7 @@ _IDI07_FOCUS_CENSUS_JS = r"""() => {
   };
   const out = [];
   document.querySelectorAll(
-    'button, input, select, textarea, a[href], summary, [tabindex]'
+    __FOCUSABLE_SELECTOR__
   ).forEach((el) => {
     out.push({
       tag: el.tagName.toLowerCase(),
@@ -1961,13 +1989,18 @@ _IDI07_FOCUS_CENSUS_JS = r"""() => {
     });
   });
   return out;
-}"""
+}""")
 
 # 第 10 项的环读数**唯一来源**:读**当前焦点元素的那一瞬读数**。
-# 它返回 `{label, tag, outlineWidth, outlineColor, focusVisible}`;
+# 它返回 `{label, tag, outlineWidth, outlineColor, outlineOffset, focusVisible}`;
 # `document.activeElement` 不是 `HTMLElement` 时返回 `null`。它与上面的清单常量**分开
 # 命名**:清单只出「有哪些元素」,环读数只出「此刻焦点元素读到什么」,两者不互相携带
 # 第二种说法。labelOf 与上面那份逐字相同。
+#
+# `outlineOffset` 与 `outlineWidth` 是**同一件事的两半**:环的外伸量 = 两者之和,而
+# `CLEARANCE_MIN_PX` 编码的正是这个和。两半都在这里读,故 SC1 能同时断言它们 —— 只读
+# 宽度时,把 `outline-offset` 从 2px 改成 0 不会让任何一条断言变红(外伸量真值从 4px
+# 变成 2px,而门仍按 4px 判),「几何双向绑定」那条注释就没有机械守卫。
 _IDI07_TAB_READ_JS = r"""() => {
   const el = document.activeElement;
   if (!(el instanceof HTMLElement)) return null;
@@ -1983,6 +2016,7 @@ _IDI07_TAB_READ_JS = r"""() => {
     tag: el.tagName.toLowerCase(),
     outlineWidth: s.outlineWidth,
     outlineColor: s.outlineColor,
+    outlineOffset: s.outlineOffset,
     focusVisible: el.matches(':focus-visible'),
   };
 }"""
@@ -2785,9 +2819,11 @@ def _idi07_sc1_assert(page, item, state, focus_color):
     """SC1(D-17):键盘 Tab 到控件后环可见 —— 读**当前焦点元素**的计算 outline。
 
     载荷本身就是 `_IDI07_TAB_READ_JS` 返回的「当前 `document.activeElement` 的那一瞬
-    读数」,取其中的 `outlineWidth` 与 `outlineColor`。**不得写成
+    读数」,取其中的 `outlineWidth` / `outlineColor` / `outlineOffset`。**不得写成
     `read_style(page, sel, prop)`**:那个 helper 走 `document.querySelector(sel)`、按
     选择器取值,结构上读不到「当前焦点元素」,本项的焦点读数只走 `_IDI07_TAB_READ_JS`。
+    宽度与偏移量在这里**成对**断言:两者之和才是环的外伸量,而 `CLEARANCE_MIN_PX`
+    编码的就是那个和(见 `_IDI07_TAB_READ_JS` 上的注释)。
 
     为什么 Tab 若干次而不是恰好一次:`document.body` 是 Tab 循环里的一站(实测:焦点走到
     最后一个可聚焦元素后,下一次 Tab 落回 BODY,那里 `:focus-visible` 为假、`outline-width`
@@ -2818,6 +2854,17 @@ def _idi07_sc1_assert(page, item, state, focus_color):
        f"焦点伪类匹配={hit['focusVisible']};几何 {FOCUS_RING_WIDTH_PX:.0f}px + "
        f"outline-offset {FOCUS_RING_OFFSET_PX:.0f}px 的外伸量 = CLEARANCE_MIN_PX "
        f"= {CLEARANCE_MIN_PX:.0f}px")
+    # 外伸量的**另一半**。只断言宽度时,把 `outline-offset` 从 2px 改成 0 不会让本项
+    # 任何一条断言变红:宽度读数不变,SC4 实测的 clearance 是 40 / 130,2px 的真值变化
+    # 挪不动它 —— 于是环的真实外伸量变成 2px,而 CLEARANCE_MIN_PX 仍编码 4px,
+    # 「几何是双向绑定的」那条注释就没有机械守卫(它的反向变异「加宽环」由上面那条抓)。
+    # 期望侧由 FOCUS_RING_OFFSET_PX 算出(与宽度同源),不硬编码 "2px"。
+    ok(item,
+       f"[{state}] SC1 Tab 到 {hit['label']} 的 outline-offset == "
+       f"{FOCUS_RING_OFFSET_PX:.0f}px(= CLEARANCE_MIN_PX - 环宽)",
+       f"{FOCUS_RING_OFFSET_PX:.0f}px", hit["outlineOffset"],
+       "外伸量 = 上面那条的宽度 + 这一条,合起来才是 CLEARANCE_MIN_PX;"
+       "改几何即改那个门的阈值 —— 两者不是两件事")
     ok(item,
        f"[{state}] SC1 Tab 到 {hit['label']} 的 outline-color == var(--color-focus)",
        focus_color, hit["outlineColor"],
@@ -2918,7 +2965,9 @@ def _idi07_sc4_assert(page, item, state, focus_color):
     """SC4(D-17):侧栏滚到底再 Tab,环不被裁切 —— 复用 item 9 的 L-5 clearance 口径。
 
     几何 `2px` + `outline-offset: 2px` 是本探针的**前提**:环的外伸量恰为 4px,故判据取
-    `CLEARANCE_MIN_PX`(= 4.0)。**改几何即改本判据**。
+    `CLEARANCE_MIN_PX`(= 4.0)。**改几何即改本判据** —— 宽度与偏移量两半都由 SC1 在
+    运行时断言(`_IDI07_TAB_READ_JS` 的 `outlineWidth` / `outlineOffset`),不是只写在
+    注释里。
 
     判据 = 滚到底之后**每个新 Tab 聚焦到的可见元素**的 clearance >= `CLEARANCE_MIN_PX`。
     判定集为空(滚到底后没有任何新 Tab 聚焦到的可见元素)或元素不可见 ⇒ **`blocked(...)`,
@@ -3367,6 +3416,11 @@ def _idi07_focus_contract_guards(item):
     **打印命中行号**、**比的是「实测计数 vs 独立决策常量」不是自比**。读的是
     **文件文本**而非渲染结果 —— 与 item10 的运行时普查互补:它抓「规则被悄悄删掉 /
     悄悄多写一条」,运行时普查抓「规则实际覆盖了谁」。
+
+    第 ① 条**只数代码**:`text.count(":focus-visible")` 会把注释里的散文提及一并计入,
+    而本文件的注释大量讨论 `:focus-visible` —— 那种计数在规则被整条删掉之后仍然
+    >= 1,断言就与它守的东西脱钩了。用 `_idi07_focus_rule_blocks` 切出的**规则块数**
+    作计数(它逐行跟踪注释状态,注释里的提及不算规则块),与第 ② 条同源、同一次切分。
     """
     try:
         text = STYLE_CSS.read_text(encoding="utf-8")
@@ -3376,17 +3430,26 @@ def _idi07_focus_contract_guards(item):
         return
 
     # ---- 断言 1:`:focus-visible` 计数 > 0(ROADMAP Phase 7 的 gate 原文)--------
-    fv_lines = [i for i, ln in enumerate(text.splitlines(), 1) if ":focus-visible" in ln]
-    fv_count = text.count(":focus-visible")
+    # **只数代码,不数注释提及。** 直接 `text.count(":focus-visible")` 会把文件里的
+    # 散文提及一并计入 —— 实测本文件的 9 处命中里有 2 处是注释(L239 / L1482,两者都
+    # 在本文件里讨论这条规则),于是**整条规则被删掉之后计数仍是 2 >= 1,断言照样
+    # PASS**。这不是「阈值取宽」,是断言与它要守的东西脱钩。`_idi07_focus_rule_blocks`
+    # 已经把注释剔掉了(它逐行跟踪注释状态),用它计数即得「规则块数」(实测 1 块,
+    # 起始行 L1508),与下面断言 2 同源、同一次切分。
+    fv_blocks = _idi07_focus_rule_blocks(text)
+    fv_count = len(fv_blocks)
+    fv_lines = [ln for ln, _ in fv_blocks]
     info("item10 [static] :focus-visible 计数",
-         f"计数={fv_count}(含注释提及)命中行={fv_lines};"
+         f"计数={fv_count}(只数代码,注释提及不计;规则块起始行={fv_lines});"
          f"期望 >= {EXPECTED_FOCUS_VISIBLE_MIN}")
     ok_true(item,
             f"[static] frontend/style.css 的 :focus-visible 计数 >= {EXPECTED_FOCUS_VISIBLE_MIN}",
             fv_count >= EXPECTED_FOCUS_VISIBLE_MIN,
             f">= {EXPECTED_FOCUS_VISIBLE_MIN}", fv_count,
             "判据是 `>=` 而不是 `==`:七选择器枚举天然大于 1,日后按枚举纪律新增一类"
-            "可聚焦元素会让它继续变大 —— 相等判据会把「按纪律扩展」误判成回归")
+            "可聚焦元素会让它继续变大 —— 相等判据会把「按纪律扩展」误判成回归。"
+            "计的是**规则块数**(注释剔除后),不是全文件子串数:后者会把散文提及算进来,"
+            "规则删光也仍然 PASS")
 
     # ---- 断言 2:没有任何焦点规则设置 border 或 padding(块提取,非全文件 grep)----
     blocks = _idi07_focus_rule_blocks(text)

@@ -182,6 +182,29 @@
   /* Tier 2 — surface / border */
   --color-surface: var(--radix-gray-2);
   --color-surface-hover: var(--radix-gray-3);
+  /* Tier 2 — the plain (no-fill) button's pressed state (INTERACT-01 / D-09),
+     declared with its consumer: the :where(button:not(:disabled)):active rule at
+     the end of this file (Hard Rule 5).
+
+     Three load-bearing facts, so that a later reader does not "fix" this value.
+
+     1. gray-4 is the deliberate END of the 3 -> 4 progression. --color-surface-hover
+        is gray-3, and this token is its immediate next step on the same scale,
+        which is what makes "pressed" perceptibly deeper than "hovered". Do NOT
+        collapse it back onto gray-3.
+
+     2. It shares its value with --color-surface-user. That is a value collision,
+        not a misnomer: the two names say different things, have different
+        semantics and share no consumer (04.1 D-03 — "the name must tell the
+        truth"). The collision is registered here rather than removed.
+
+     3. It must name 04.1-N-4. The note below ("Three values that must NOT be
+        'helpfully' changed back", item 3) warns verbatim that "gray-4 would
+        double the hover delta and collide with --color-surface-user". Taking
+        gray-4 here is DELIBERATE — active is the end of the progression, not a
+        violation of 04.1-N-4. Without this paragraph that note reads as
+        self-contradictory and a later reader will "fix" this token away. */
+  --color-surface-active: var(--radix-gray-4);
   --color-surface-user: var(--radix-gray-4);
   --color-surface-info: var(--radix-blue-2);
   --color-surface-warning: var(--radix-amber-2);
@@ -190,6 +213,22 @@
   --color-surface-danger: var(--radix-red-2);
   --color-surface-streaming: var(--radix-blue-2);
   --color-border-strong: var(--radix-gray-9);
+  /* Tier 2 — the hover boundary of the input controls (INTERACT-01 / D-10),
+     declared with its consumer: the input / select hover group at the end of
+     this file (Hard Rule 5).
+
+     The resting border of every input / select is --color-border-strong
+     (gray-9, #8d8d8d). "One step deeper" takes the already-declared
+     --radix-gray-11 (#646464) — zero new tier-1 primitives. It deliberately does
+     NOT take the high-contrast TEXT step --radix-gray-12 either: that step reads
+     near-black (#202020) as a border and is far too heavy — the same reason D-04
+     rejected --radix-blue-12 for the focus ring.
+
+     It shares its value with --color-text-muted (also gray-11). That is a value
+     collision, not a misnomer (04.1 D-03): one is a text colour, the other is a
+     boundary, and they share no consumer. Registered here so that a later reader
+     does not "fix" it. */
+  --color-border-hover: var(--radix-gray-11);
   --color-border: var(--radix-gray-7);
   --color-border-subtle: var(--radix-gray-6);
   --color-border-warning-subtle: var(--radix-amber-6);
@@ -223,6 +262,25 @@
      overlay: the modal card's elevation, restored by R-2 so that no bare
      rgba() appears outside the fence). */
   --color-overlay-backdrop: rgba(0, 0, 0, 0.45);
+  /* Tier 2 — the interaction-state scrims for filled buttons (INTERACT-01 /
+     D-08 / D-09), declared with their consumers: the filled-button hover /
+     active groups at the end of this file (Hard Rule 5).
+
+     One of the reasons these live as tokens rather than as literals in the rule
+     bodies is the invariant the group comment above already states: R-2 restored
+     the shadow tokens so that no bare rgba() appears outside the fence. check-01
+     counts bare #hex and tier-1 var() references — it does NOT count bare
+     rgba() — so that discipline has no mechanical guard and is kept by comments
+     and review alone. Hoisting the two alpha values here also makes them a single
+     recomputable source of truth (0.06 for hover, 0.12 for active).
+
+     The consumers paint them as `box-shadow: inset ...`, which does not
+     participate in layout => zero displacement.
+
+     They are NOT contrast boundaries, so they do NOT enter the PAIR manifest
+     below — the --shadow-* family has no pair either. */
+  --color-overlay-hover: rgba(0, 0, 0, 0.06);
+  --color-overlay-active: rgba(0, 0, 0, 0.12);
   --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
   --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
 
@@ -317,7 +375,11 @@
         --radix-gray-3 (04.1-N-4). gray-3 is the canonical next step above the
         default component surface (gray-2), which is what makes button:hover
         perceptible; gray-4 would double the hover delta and collide with
-        --color-surface-user. */
+        --color-surface-user. (Phase 7 note: gray-4 is now ALSO consumed by
+        --color-surface-active — the deliberate end of the 3 -> 4 progression for
+        the plain button's pressed state. The two tokens share no consumer:
+        --color-surface-user means "the user message background". This note exists
+        so that the warning above is not read as self-contradictory.) */
 
   /* Inline glyphs (VISUAL-05 / D-20 / D-21 / D-22). Two hand-written SVG
      data-URIs, consumed by .annotation-quote::before and .verdict-location::before
@@ -624,7 +686,32 @@ button {
   font-weight: var(--fw-medium);
   cursor: pointer;
 }
-button:hover { background: var(--color-surface-hover); }
+/* D-07 的 gate + D-09 的让位(INTERACT-01,就地改写这条既有选择器 —— 硬规则 3:不移动它的位置)。
+
+   为什么 gate 落在**这条既有选择器**上,而不是新增一条规则:把 D-07 的片段当作**新增
+   规则**追加会同时产生两个后果 ——
+   (1) **修不了缺陷** —— 那条不带 :where() 的通用 gate 写法不匹配禁用按钮,而本条仍然
+       匹配它;`.verdict-buttons button:disabled` 只设 opacity / cursor、不钉 background,
+       于是照样在悬停时被上色;
+   (2) **引入回归** —— 那条通用写法的类列是 2,大于 button.primary(0-1-1)与
+       .overlay-card button(0-1-1)的类列 1,于是这两族填充按钮悬停时会变成灰底,与
+       D-08「填充按钮用 rgba 叠层」的机制正面冲突。
+   故 gate 落在选择器上。:where() 贡献 0 特异性,改写后特异性**仍是 0-1-1,与改写前逐位
+   相同**;声明体那一行(background 一条)逐字节不变。
+
+   ⚠ **特异性相同不等于级联结果相同。** 新选择器收窄了**两处**匹配集:
+   (a) 禁用按钮不再匹配 —— 这就是 D-07 的缺陷修复,一次性、全局、面向未来:将来任何新增
+       的朴素按钮自动继承这条 gate;
+   (b) **按住不放中的按钮也不再匹配**(:where(:not(:active)))—— D-09 的朴素按下态需要
+       hover 在这一瞬让位。指针按住不放时 :hover 与 :active **同时**成立,而朴素 active
+       规则停在 0-1-0(低于本条的 0-1-1);不让位,--color-surface-active 对朴素族
+       **永远不可达**。这两半是一对:**改一必须改另一**(只把朴素 active 升到 0-1-1 会靠
+       源码顺序夺走 button.primary / .overlay-card button 的填充;只去掉本处的
+       :where(:not(:active)) 则朴素按下态不可达)。
+
+   这不是硬规则 1 禁止的 .hidden 用法:那条禁的是拿 :where() 给**隐藏机制**降特异性,本处
+   是给**交互态**加 gate 与让位,两件事。 */
+button:where(:not(:disabled)):hover:where(:not(:active)) { background: var(--color-surface-hover); }
 button.danger { color: var(--color-action-danger); border-color: var(--color-action-danger); }
 
 /* 事件列表与条目 */
@@ -1397,4 +1484,29 @@ summary:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
+}
+
+/* 朴素(无底色)按钮的按下态(INTERACT-01 / D-09,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   选择器 :where(button:not(:disabled)):active,特异性 **0-1-0**。
+
+   四条承重说明:
+
+   (1) 0-1-0 是**刻意**的。它高于 button 基础规则(0-0-1),故朴素按钮的按下反馈成立;
+       又低于 button.primary 与 .overlay-card button(两者都是 0-1-1),故这两族填充按钮
+       的按压观感仍归 D-08 的 0.12 叠层所有。**改高即把填充按钮按住不放时刷成灰底** ——
+       这两族的填充声明都是 0-1-1,朴素规则一旦升到 0-1-1,**同特异性下源码顺序取胜**,
+       就会夺走它们的填充(白字落在灰底上)。后来者不得为「对齐」把它升到 0-1-1。
+
+   (2) 它能胜过上面那条 hover(0-1-1)**不是靠特异性**(0-1-0 < 0-1-1),而是靠那条 hover
+       在按住不放时不再匹配(它带 :where(:not(:active)))。**两者是一对选择器改写,改一
+       必须改另一**;缺了任一半,朴素按下态都不可达。
+
+   (3) 它与填充 active 组的**源码位置无关紧要**:填充 active 组最低 0-3-1,两者在三列上
+       都不可能同分,特异性严格可分 —— 源码顺序只在**同特异性**时才是判据。本规则追加在
+       文件末尾只是「追加,不重排」的默认落点,顺序不承担任何正确性。
+
+   (4) 本条**不承诺**浮层内批注/大白话按钮的按下态:那个控件有它自己 1-1-1 的 hover 规则,
+       不属本承诺面。 */
+:where(button:not(:disabled)):active {
+  background: var(--color-surface-active);
 }

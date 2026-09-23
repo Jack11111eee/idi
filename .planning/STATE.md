@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 07
-current_phase_name: 交互状态与焦点样式
-status: executing
-stopped_at: Completed idi-07-03-PLAN.md
-last_updated: "2026-09-23T07:21:26.635Z"
+current_phase: 8
+current_phase_name: 可访问性语义与键盘
+status: planning
+stopped_at: Phase idi-07 complete, ready to plan Phase 8
+last_updated: "2026-09-23T11:33:53.303Z"
 last_activity: 2026-09-23
-last_activity_desc: Phase idi-07 execution started
-state_head: ce189c8b1e403fbfb37b9e37034492ec0cc5b1b1
+last_activity_desc: Phase idi-07 complete, transitioned to Phase 8
+state_head: e673fb70ff3cb87e3fa10fa26b3b4a5f8c079ea9
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
   completed_plans: 18
-  percent: 67
+  percent: 83
 ---
 
 # Project State
@@ -25,22 +25,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-21)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-07 — 交互状态与焦点样式
+**Current focus:** Phase 8 — 可访问性语义与键盘
 
 ## Current Position
 
-Phase: idi-07 (交互状态与焦点样式) — EXECUTING
-Plan: 3 of 3
-Status: Executing Phase idi-07
-Last activity: 2026-09-23 — Phase idi-07 execution started
+Phase: 8 — 可访问性语义与键盘
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-09-23 — Phase idi-07 complete, transitioned to Phase 8
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 28
+- Total plans completed: 31
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -55,6 +55,7 @@ Progress: [███████░░░] 67%
 | idi-04 | 3 | - | - |
 | idi-05 | 4 | - | - |
 | idi-06 | 4 | - | - |
+| idi-07 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -207,6 +208,9 @@ None yet.
   - **UAT 里「本环境无法自动化」的三条理由,两条被证伪**:screenshots 可用(`channel` 与 headless 策略见 `scripts/check-05-ui-uat.py` 头部注释),DevTools computed-style 有等价物(`getComputedStyle`)。**「键盘文本选区无法自动化」仍成立**,保留
 - [v1.14 P4] ~~**对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**~~ **已结构性解决(2026-09-20,Phase 04.1)** — Radix 重写后 `--color-text-muted: var(--radix-gray-11)`,实测 `check-02-contrast.py`:`5.62 --color-text-muted on --color-surface` / `5.77 … on --color-surface-page` / `5.19 … on --color-surface-sunken` / `5.82 … on --color-surface-warning-subtle`,脚本 exit 0。与 260918-qrq 的 check-02 14 条失败同源,一并消解
 - [v1.14 P4] ~~**阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**~~ **已修复(2026-09-19,`1d849b1`)** — 根因与 D1/D2 同源:`app.js` **从未引用过** `#session-panel`(grep 零匹配;`git log -S` 证明是长期 bug,非 260918-qrq 引入),而 `style.css:566` 的 `flex: 1 1 auto` 让它吃掉主区全部剩余高度。修复 = 在 `applySessionGates`(`app.js:343`,唯一必经派发点)加一行 `classList.toggle('hidden', !isSessionPhase)`。**实测五个样本:`p1=flex` / `p12=flex` / `p3=none` / `checking=none` / `archive=none`**。`.hidden` 靠 `style.css:238` 的 `!important` 压过 `display:flex`,**无需改 CSS**;`style.css`/`index.html` 零改动。守卫经 RED→GREEN 实证非空转(修前 3 条 `FAIL expected=none actual=flex`)
+- [v1.14 P7] **UI 审计(19/24)的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):①`#session-panel .panel-header` 有 `cursor: pointer` 却无点击行为(文件自己的惯例对另两个面板显式复位);②`.annotation-answer summary` 无 `:hover`/`:active` 且不在过渡挂载规则里,更关键的是**三个样本都没有 fixture 渲染 `<summary>`**,故 item 10 的普查从未见过它——「已覆盖」是名义的;③焦点环的 PAIR 清单漏 `--color-surface-warning-subtle`(`.verdict-card` 的底色,环在其上实测 5.77:1 达标),与本文件自订纪律「a token drawn as a UI boundary must have its own NON-TEXT pair on each ground it is drawn on」直接冲突,而兄弟令牌 `--color-border-hover` 正是按该纪律补上了这处底色。**修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证。
+- [v1.14 P7] **`phase.complete` 的 STATE.md 字段异常第三次复现**(`completed_phases` 4→1、`percent` 67→17,进度条同步退化)。已注册的 `tech-debt`,不会自愈;判据一律取 ROADMAP 的 `## Milestones` + `## Progress`。**注意 `state.json` 的 `phases` 数组本次是正确的**(1-7 全 complete、8 pending),错的只有 STATE.md 的派生计数——不要把 `state.json` 当判据来源。
+- [v1.14 P7] **归档半场的焦点环断言仍无服务对象**(五个样本 `#round-doc` 内 `a[href]` 计数为 0)。已按 `accept` 登记于 `idi-07-SECURITY.md` 的 Accepted Risks Log;一次性反事实探针 `scripts/probe-07-focus-composite.py` 承担可外推性。**Phase 8 给 `#round-doc` 加 `tabindex="0"` 后该场景变为活体,届时须复跑该探针**。
 
 ### Quick Tasks Completed
 
@@ -238,12 +242,16 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-23T07:21:25.992Z
-Stopped at: Completed idi-07-03-PLAN.md
+Last session: 2026-09-23T11:33:53.303Z
+Stopped at: Phase idi-07 complete, ready to plan Phase 8
 Resume file: None
 
 ## Operator Next Steps
 
+- **当前待办(一条):** **`/gsd-plan-phase 8`** —— `idi-07`(交互状态与焦点样式)已收口:UAT 1/1 pass(唯一人工项 D-17 的 5″ 经用户确认)、`idi-07-VERIFICATION.md` `status: passed`(8/9 机器 + 1 具名人工)、`threats_open: 0`、Nyquist 0 缺口、UI 审计 19/24。
+  - **本阶段收口时的两条登记(不阻断 Phase 8):**
+    1. **`phase.complete` 的 STATE.md 字段异常第三次复现。** 本次把 `progress.completed_phases` 从 **4 改回 1**、`percent` **67 → 17**(进度条同步退化)。成因与 idi-05 那次逐字相同(见本文件 `## Deferred Items` 的 `tech-debt` 行与下方第 1 条的注),已按 ROADMAP 的 `## Progress` 校正为 **5 / 83%**。`total_plans` / `completed_plans`(18/18)与 `Total plans completed`(31)本次**正确**,未越权翻需求(`requirements_updated: false`)。**判据一律取 ROADMAP 的 `## Milestones` + `## Progress`,不从 `state.json` 的 `phases` 推。**
+    2. **UI 审计的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):`#session-panel .panel-header` 的假 `cursor: pointer`、`.annotation-answer summary` 无交互态且普查从未见过它、焦点环 PAIR 清单漏 `--color-surface-warning-subtle` 底色。**注意:修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证 idi-07。
 - ~~**当前待办:规划 Phase 5**~~ **已完成** —— `idi-05` 的 3 个计划(`idi-05-01` / `idi-05-02` / `idi-05-03`)全部执行完毕,各有 SUMMARY。
 - **当前待办(一条):**
   1. ~~**`/gsd-verify-work idi-05`**~~ **已收口(2026-09-21,`/gsd-execute-phase idi-05 --gaps-only`)** —— 计划 04 关闭 BLOCKER `G-idi-05-1`,verifier 独立复核报 9/9 must-haves `passed`;`phase.complete` 已执行(ROADMAP Phase 5 → `Complete 2026-09-21`,REQUIREMENTS 的 8 条阶段行已翻)。收口后两条门(`check-05 --item 7` / `check-06`)已在 post-complete 树上复跑,仍绿。**注:本次 `phase.complete` 未越权翻需求(`requirements_updated: false`),但把 `progress.completed_phases` 从 2 改回 1、`percent` 33 → 17 —— 已按 ROADMAP 的 `## Progress` 校正为 3 / 50%。**

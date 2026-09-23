@@ -301,3 +301,5 @@ None - no external service configuration required.
 - **`actuals.tokens` 口径**:`git diff 346ab0f..HEAD -- frontend/style.css scripts/check-05-ui-uat.py | wc -c` = **31584** 字符,`/4` = **7896** —— 与计划 `estimate.tokens: 66000` 同一尺度(chars/4 over the realized diff),照实记录不向估算靠拢。
 - **阶段性质的两处限定已机械复核**:`grep -c 'L587'` 在 `idi-07-03-SUMMARY.md` 与 `idi-07-VERIFICATION.md` 两份产物里各 >= 1;`grep -c '0.55'` 与 `grep -c 'saturate'` 同样两份各 >= 1。
 - **VERIFICATION 的人工项计数**:`grep -c '^### 1\.'` = **1**(恰一条人工项 5″),且它逐字含「禁用态仍一眼看出不可点」与「门绿不等于视觉上真的没被软化」。
+- **`gsd-tools verify-summary`**:`{"passed": true, "checks": {"summary_exists": true, "files_created": {"checked": 2, "found": 2, "missing": []}, "commits_exist": true, "self_check": "passed"}, "errors": []}`。
+- **写 SUMMARY 时的实测提交数**:`git rev-list --count 346ab0f76c0adba358cbdbdd96a6819e830bf27e..HEAD` = **2**(两条任务提交);本计划的 docs 元数据提交(`67e2ab3`)落地后该计数为 3 —— 与 `idi-07-01` / `idi-07-02` 同一口径(元数据提交另计一条)。

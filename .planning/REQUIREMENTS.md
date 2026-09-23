@@ -36,7 +36,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 ### A11Y — 可访问性
 
-- [ ] **A11Y-01**: 全站 `:focus-visible` 样式,覆盖 21 个按钮 / 8 个输入框 / 4 个下拉(基线:`:focus` 与 `outline` 规则均为 0)
+- [x] **A11Y-01**: 全站 `:focus-visible` 样式,覆盖 21 个按钮 / 8 个输入框 / 4 个下拉(基线:`:focus` 与 `outline` 规则均为 0)
 - [ ] **A11Y-02**: `#round-doc` 加 `tabindex="0"`,且 `tabindex` 与 `:focus` 样式落在**同一个提交**(只加 `tabindex` 会造出"可聚焦但焦点不可见"的元素,是拿一个 a11y 问题换另一个)
 - [ ] **A11Y-03**: 键盘用户能真实到达划词批注——`b9664e0` 装好的 `keyup` 监听器在 `tabindex` 落地后真正生效(基线:`tabindex` 计数 0,焦点永不进入该子树,监听器是死代码)
 - [x] **A11Y-04**: WCAG AA 文本对比度失败**全部**修复——**范围以研究调和结果为准(≥9 处),不是审计的 4 处**。审计的 4 处正确但**不完整**(抽样 vs 全量扫描,漏计方向系统性一致):`.hint` `#999`/`#fafafa` **2.73:1**(最高价值项,全站每处闸门说明都用它)、`#pending-count`/`.badge-pending` `#b8860b`/`#fdf6ec` **3.03:1**、`.event-kind` 白字/`#b8860b` **3.25:1**、`.chat-user` 白字/`#2c7be5` **4.14:1**
@@ -134,7 +134,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | TYPE-01 | Phase 5: 排版与视觉层级 | Complete |
 | TYPE-02 | Phase 5: 排版与视觉层级 | Complete |
 | TYPE-03 | Phase 5: 排版与视觉层级 | Complete |
-| A11Y-01 | Phase 7: 交互状态与焦点样式 | Pending |
+| A11Y-01 | Phase 7: 交互状态与焦点样式 | Complete |
 | A11Y-02 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-03 | Phase 8: 可访问性语义与键盘 | Pending |
 | A11Y-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |

@@ -5,17 +5,17 @@ milestone_name: 前端视觉与可访问性
 current_phase: 07
 current_phase_name: 交互状态与焦点样式
 status: executing
-stopped_at: Phase 7 context gathered
-last_updated: "2026-09-23T05:41:54.459Z"
+stopped_at: Completed idi-07-01-PLAN.md
+last_updated: "2026-09-23T06:02:56.300Z"
 last_activity: 2026-09-23
 last_activity_desc: Phase idi-07 execution started
-state_head: 0f5ffd75cf52a2ddd9dc57de5faa4eeffb3d2dac
+state_head: 0243d6bf6f0566ee908b1b76dc9400279448a3c8
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 4
   total_plans: 18
-  completed_plans: 15
-  percent: 17
+  completed_plans: 16
+  percent: 67
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 ## Current Position
 
 Phase: idi-07 (交互状态与焦点样式) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 Status: Executing Phase idi-07
 Last activity: 2026-09-23 — Phase idi-07 execution started
 
-Progress: [██░░░░░░░░] 17%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
@@ -92,6 +92,7 @@ Progress: [██░░░░░░░░] 17%
 | Phase idi-06 P02 | 24min | 3 tasks | 2 files |
 | Phase idi-06 P03 | 46 | 3 tasks | 2 files |
 | Phase idi-06 P04 | 16m | 3 tasks | 5 files |
+| Phase idi-07 P01 | 10 min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -169,6 +170,9 @@ Recent decisions affecting current work:
 - [Phase 06]: clearance 断言的判定面收窄为「visible 且 intersects」:p3 的 #btn-authorize × #doc-panel = -122.6px 是滚出视口(与 padding 盒不相交)而非被裁切,不收窄会把正常状态记成缺陷
 - [Phase 06]: [Phase idi-06]: Plan 04(gap closure)按项目所有者的显式裁定 remediation (b)把 LAYOUT-02 的 768px 承诺收窄为「badge 不被横幅遮挡」,并把 check-05 的 768px 分支改写为显式「未覆盖」+ 实测数值(h1 439.0–481.0 × 8–28 vs banner 285.3–482.7 × 12–39,相交带 768–855px);收窄登记于 UI-SPEC §L-2 / A-10 与 VERIFICATION.md frontmatter 的 override(accepted_by=Jack11111eee,overrides_applied 保持 0 留给复验);frontend/ 与 REQUIREMENTS/ROADMAP 零 diff
 - [Phase idi-07]: **`ui.safety-gate` 的 halt 经项目所有者预授权为已知假阳性(2026-09-23,执行期)**。该门判据为 `block = frontend && hasUiFiles && !hasUiSpec`,只读**最后一次提交**的 `git diff HEAD~1..HEAD`。Phase 7 的 `frontend=true`(ROADMAP 带 `**UI hint**: yes`)、`hasUiSpec=false`(无 `idi-07-UI-SPEC.md`),故 `block` 退化为 `hasUiFiles`;wave 2 / wave 3 的末次提交都改 `frontend/style.css` ⇒ 该门会 halt。**判为假阳性的依据:** 同能力的确定性门 `ui.plan-gate` 对本阶段返回 `block: false`,因为它的判据多一个 `hasFrontendEvidence`(需要带 UI 框架依赖的 `package.json`)——本仓库是 Python + 原生 HTML/JS,该信号恒为 false;两个门用不同谓词,`ui.safety-gate` 不咨询该信号。本阶段的契约面是 `07-CONTEXT.md` 的 D-01…D-20 + `idi-07-PATTERNS.md`,且 `idi-07-03-PLAN.md:71` 的 D-11 明文**禁止**新建 UI-SPEC 文件(`不得为了凑齐三处而新建 UI-SPEC 文件`)。故执行期不生成 UI-SPEC、不修改本阶段任何计划,该 halt 记录在案后放行。**该门另有一处已知结构性缺陷同案登记:** 它只看 `HEAD~1..HEAD`,故 wave 1(Task 1/2 改 `style.css`、Task 3 只改 `check-05`)会因末次提交无 UI 文件而 `hasUiFiles=false` 静默放行 —— 门绿并不代表它看过本波的 UI 改动
+- [Phase idi-07]: 环色 --color-focus 取 #1f63bd,逐字遵从 04-UI-SPEC S-4 的签核算术(「删除 opacity 后环回到 5.62」);它是整个颜色层里唯一不在 Radix 刻度上的值,与 04.1「值必须来自 Radix 步」相冲 —— 这条冲突已写进围栏注释,否则会被后来者当成漂移「修掉」。实测代价面:--radix-blue-11 在 .archive-mode 的 0.75 合成下只剩 3.03:1(余量 0.03);--radix-blue-12 是高对比文字步,作为 2px 环视觉上接近边框。
+- [Phase idi-07]: item 10 的焦点环普查把「判定集为空集」判为 blocked 而不是 info() + return —— 这是对 item9 第 3 条的有意收紧。理由:item_verdict 只读行级裁决,一条未判定的探针会以 `item 10: PASS (N 条断言,0 FAIL,0 BLOCKED)` 的形态现身,「0 条断言静默通过」正是假 PASS 的形态。同一条根因也适用于 SC4(它的判定集更窄,空集更不可能是巧合)。
+- [Phase idi-07]: item 10 的环读数只在「该元素成为 document.activeElement 的那一刻」采,唯一来源是 _IDI07_TAB_READ_JS;本项不存在「未聚焦时的 outline 读数」这个概念(未聚焦元素计算 outline-width 为 0px、outline-color 回落到 UA 值,拿静态读数判定会把每一个元素都判成 bad)。配套结论:焦点读数不得用 read_style(page, sel, prop)(它按选择器取值,结构上读不到「当前焦点元素」)。
 
 ### Pending Todos
 
@@ -217,9 +221,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-22T11:32:29.741Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/idi-07-interaction-states-and-focus/07-CONTEXT.md
+Last session: 2026-09-23T06:01:36.342Z
+Stopped at: Completed idi-07-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

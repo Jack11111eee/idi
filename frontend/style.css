@@ -1510,3 +1510,65 @@ summary:focus-visible,
 :where(button:not(:disabled)):active {
   background: var(--color-surface-active);
 }
+
+/* 填充按钮的 hover 压暗叠层(D-08 / INTERACT-01,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   九组既有填充规则体的选择器逐条列出,按「同族选择器列表」组织 —— 与文件既有的
+   #session-panel:not(.hidden) .panel-header, … 那组三行枚举同族。
+
+   ⚠ **必须逐 id / 按族枚举,不能写成那条不带 id/族前缀的通用 gate 写法。** 后者是 0-2-1、
+   ID 列为 0;而 #btn-* 是 1-0-0、#chat-input-row button 是 1-0-1、button.primary 与
+   .overlay-card button 是 0-1-1 且源码都在本规则之前。**1-0-0 > 0-2-1**(ID 列大于类列),
+   故那条写法对 #btn-authorize 完全无效 —— 这正是 D-02 第 7 条「今天所有有底色语义的按钮
+   hover 时零反馈」的成因,本规则必须正面跨过它。
+   逐条特异性:七条 #btn-*(1-2-0)压过各自的 1-0-0;#chat-input-row button(1-2-1)压过它的
+   1-0-1;button.primary 与 .overlay-card button(0-3-1)压过 0-1-1,后者也压过
+   .overlay-card button.danger 的 0-2-1。
+
+   为什么用 box-shadow 的 inset 而非 opacity:实测 opacity: 0.88 会把白字一起变浅,
+   primary 4.77 → 3.93、danger 5.21 → 4.42、commit 4.72 → 3.81,**三个色族跌破 AA 4.5:1**;
+   rgba 叠层把填充变深、文字不动,对比度反而上升(5.27 / 5.75 / 5.23),irreversible
+   12.32 → 12.97。这是 D-08 的 opacity 排除理由,不是审美偏好。
+
+   为什么是 999px 的整面铺满:本文件既有的 box-shadow: inset 只有 3px 偏移的竖条形态
+   (#round-doc.round-frozen、活动面板标记);999px 大于任何按钮的盒宽,故等价于整面覆盖。
+   box-shadow 不参与布局 ⇒ 零位移。
+
+   box-shadow **不在**过渡允许列表里 ⇒ 填充按钮的 hover 是**瞬变**,这是刻意的(D-14);
+   朴素按钮仍可过渡(D-12 的挂载规则,计划 03)。按下反馈只用 box-shadow,不用位移。
+
+   浮层内的批注/大白话按钮**不进这两组**:它是浮层内的透明底朴素控件,已有它自己 1-1-1 的
+   hover 规则;D-08 的 rgba 叠层针对的是**有底色语义**的填充按钮,叠层加到透明底上不可见。
+
+   #btn-authorize 的不可逆权重不变:叠层只改填充明度,不改它的深绿填充、白字与 --text-md
+   字号(D-07 末段)。 */
+#btn-authorize:not(:disabled):hover,
+#btn-approve-draft:not(:disabled):hover,
+#btn-divergence:not(:disabled):hover,
+#btn-process-round:not(:disabled):hover,
+#btn-start-writing:not(:disabled):hover,
+#btn-continue-check:not(:disabled):hover,
+#btn-continue-repair:not(:disabled):hover,
+#chat-input-row button:not(:disabled):hover,
+button.primary:not(:disabled):hover,
+.overlay-card button:not(:disabled):hover {
+  box-shadow: inset 0 0 0 999px var(--color-overlay-hover);
+}
+
+/* 填充按钮的按下态(D-09 / INTERACT-01,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+   同一份选择器列表,把悬停伪类换成按下伪类;声明体是同一套 inset 叠层,只把 alpha 从
+   0.06 提到 0.12(两个 alpha 都是围栏内的令牌,规则体只写 var(),不写颜色字面量)。
+   两组特异性**逐条相同**,故按下时靠**源码顺序**取胜(本组在 hover 组之后)⇒ 0.12 覆盖 0.06。
+   朴素按钮的按下态**不在本组**:它是文件末尾那条 0-1-0 的规则,与本组的最低特异性 0-3-1
+   在三列上都不可能同分,源码顺序与它无关。 */
+#btn-authorize:not(:disabled):active,
+#btn-approve-draft:not(:disabled):active,
+#btn-divergence:not(:disabled):active,
+#btn-process-round:not(:disabled):active,
+#btn-start-writing:not(:disabled):active,
+#btn-continue-check:not(:disabled):active,
+#btn-continue-repair:not(:disabled):active,
+#chat-input-row button:not(:disabled):active,
+button.primary:not(:disabled):active,
+.overlay-card button:not(:disabled):active {
+  box-shadow: inset 0 0 0 999px var(--color-overlay-active);
+}

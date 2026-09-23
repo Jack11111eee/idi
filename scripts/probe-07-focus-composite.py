@@ -235,6 +235,12 @@ def main():
 
         ctx.close()
     except SystemExit as e:
+        # **非 `require` 的失败也必须写到 stderr。** 上面那段 docstring 承诺
+        # 「哪一条写到 stderr」,而 `require()` 是唯一自己打印的抛出点:本块里其余
+        # `SystemExit`(最典型的是 `h5.make_fixture()` 对缺失样本抛的
+        # `ERROR: 状态样本不存在: …`)原先只被 append 进 `failures`,`str(e)` 从不打印
+        # ⇒ 退出码 1 配一个**空的 stderr**,操作者分不清「断言失败」与「样本没到位」。
+        print(f"PROBE FAILED: {e}", file=sys.stderr, flush=True)
         failures.append(str(e))
     finally:
         if browser is not None:

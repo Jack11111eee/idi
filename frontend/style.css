@@ -416,7 +416,7 @@
      Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
      combination that actually renders. Decorative separators are deliberately
      absent — SC 1.4.11 does not apply to a border that identifies nothing.
-     Manifest size across six value layers (D-15): 24 / 34 / 43 / 47 / 50 / 52 — ROADMAP
+     Manifest size across six value layers (D-15): 24 / 34 / 43 / 47 / 50 / 53 — ROADMAP
      Phase 4 wrote 24 pairs (20 text + 4 non-text); the disk state Phase 4
      actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; the
      04.1 rewrite re-enumerated 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry;
@@ -430,13 +430,16 @@
      view's 0.75 composite (--color-surface-sunken is deliberately NOT among
      them — it is only the ground of .markdown-body code and .badge-answered,
      never adjacent to a focusable element).
-     Phase 7 lands 52 pairs (35 TEXT + 17 NON-TEXT) + 1 ordering entry — D-10's
+     Phase 7 lands 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry — D-10's
      "one step deeper" hover boundary needs a new tier-2 token, and this file's
      own discipline is to enumerate the combinations that ACTUALLY render: a token
      drawn as a UI boundary must have its own NON-TEXT pair on each ground it is
-     drawn on. That is +2 on top of the three focus-ring entries, and it is why
-     the sixth value layer is 52 rather than the 50 a pattern map would project
-     from the focus ring alone. The six numbers are not drift: the contract is
+     drawn on. That is +3 on top of the three focus-ring entries (three grounds:
+     --color-surface-page, --color-surface, and --color-surface-warning-subtle —
+     the last one is .verdict-card, the ground app.js appends its dynamically
+     built .verdict-note-input to), and it is why the sixth value layer is 53
+     rather than the 50 a pattern map would project from the focus ring alone.
+     The six numbers are not drift: the contract is
      "enumerate the combinations that actually render", and each successive value
      layer changes which combinations occur. */
 
@@ -515,12 +518,22 @@
   /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
   /* PAIR --color-border-strong ON --color-surface NON-TEXT */
   /* the input controls' hover boundary (INTERACT-01 / D-10): a state indicator
-     under SC 1.4.11, drawn on the same two grounds as the resting boundary just
-     above — every input / select sits either on --color-surface-page (the page
-     itself) or on --color-surface (inside #doc-panel / #checks-panel / a
-     .overlay-card). */
+     under SC 1.4.11, drawn on three grounds — every input / select sits either on
+     --color-surface-page (the page itself) or on --color-surface (inside
+     #doc-panel / #checks-panel / a .overlay-card), and the eighth selector's
+     service object (the .verdict-note-input app.js builds dynamically) is appended
+     to .verdict-card, whose ground is --color-surface-warning-subtle. The resting
+     boundary just above is NOT enumerated on that third ground: same shape of
+     gap, pre-existing, left recorded here rather than silently absent.
+     Deliberately NOT enumerated either: the white UA field fill. No input in this
+     app declares a background, so Chrome paints the field fill white and the
+     border is drawn against it, not against the container surface; measured, the
+     hover boundary on white is 5.92 and the resting one 3.32, both above the 3:1
+     floor. The manifest measures only the grounds it names — this sentence is why
+     that limit is a recorded fact rather than a silent one. */
   /* PAIR --color-border-hover ON --color-surface-page NON-TEXT */
   /* PAIR --color-border-hover ON --color-surface NON-TEXT */
+  /* PAIR --color-border-hover ON --color-surface-warning-subtle NON-TEXT */
   /* PAIR --color-border-streaming ON --color-surface-sunken NON-TEXT */
   /* PAIR --color-border-success ON --color-surface NON-TEXT */
   /* PAIR --color-action-warning ON --color-surface NON-TEXT */
@@ -1473,7 +1486,10 @@ button, input, select { color: var(--color-text); }
    枚举集与门的普查集逐字同集:scripts/check-05-ui-uat.py 的可聚焦普查集是
    `button, input, select, textarea, a[href], summary, [tabindex]`(顺序亦同)。
    两者必须**同时**改 —— 新增一类可聚焦元素要改两处,只改一处会让「规则覆盖了谁」
-   与「门检查了谁」重新分叉,而那正是 G-idi-05-1 的成因。
+   与「门检查了谁」重新分叉,而那正是 G-idi-05-1 的成因。**门那一侧只有一处**:
+   两份普查脚本的 `document.querySelectorAll(...)` 参数都由该文件的
+   `FOCUSABLE_SELECTOR` 常量生成,故改那个常量就真的改了普查枚举到什么;本文件这一处
+   仍是字面量(CSS 消费不了 Python 常量),只能靠这句承诺与人工同步。
 
    几何是双向绑定的:`2px` 与 `outline-offset: 2px` 的环外伸量恰为 4px,正是
    check-05 的 CLEARANCE_MIN_PX = 4.0 与 idi-06-UI-SPEC.md §L-5 所假设的值。
@@ -1593,8 +1609,12 @@ button.primary:not(:disabled):active,
    是 0-1-1,会被所有 1-0-0 的 ID 规则盖掉,等于不生效。
    逐条特异性:#ai-route-select / #project-path-input / #round-switcher / #check-switcher
    各 1-1-0,压过各自的 1-0-0;#enter-form input[type="text"] 与
-   #confirmation-modal input[type="text"] 各 1-1-1,与既有规则**同特异性**,靠源码顺序
-   取胜(本规则在文件末尾);#chat-input-row input 是 1-1-1,压过它的 1-0-1;
+   #confirmation-modal input[type="text"] 各 **1-2-1**(一个 ID + `[type="text"]` 这个
+   属性 + `:hover` 这个伪类),压过既有规则 `#enter-form input[type="text"]`(L838)与
+   `#confirmation-modal input[type="text"]`(L1276)的 1-1-1 —— 它们**靠特异性取胜,
+   不是靠源码顺序**:源码顺序只在**同特异性**时才是判据。加上
+   :where(:not(:disabled)) 不改变这个数(`:where()` 的贡献恒为 0)。
+   #chat-input-row input 是 1-1-1,压过它的 1-0-1;
    .verdict-note-input 是 0-2-0,压过它的 0-1-0。
 
    覆盖核对(index.html 的 4 个静态 input + 3 个 select,加上 app.js 动态建的
@@ -1607,7 +1627,10 @@ button.primary:not(:disabled):active,
    :not(:disabled) 在 input / select 上是**防御性写法**:全站 8 条 :disabled 规则**全部是
    按钮**,今天没有被禁用的 input / select,这条 gate 今天看似冗余 —— 它不依赖「今天恰好
    没有」,将来给输入框加禁用态时仍能兜住,**不得当作冗余代码删除**(与 06-CONTEXT D-09 的
-   min-width: 0 同型)。
+   min-width: 0 同型)。**八条选择器逐条都带这条 gate**,一个不漏 —— 漏掉的正是最可能
+   先被加上禁用态的那两个(#enter-path-input 把守着整条进入流程,#confirm-word-input
+   已被 app.js:530 程序化操作);今天它们恰好都不禁用,故漏掉不会显形,只会在将来那一
+   阶段以「禁用控件仍响应 hover」的形态出现。
 
    border-color 在 INTERACT-02 的过渡允许列表内,可平滑过渡。
    本组**不加 :active** —— 文本框的「按下」无意义。 */
@@ -1615,9 +1638,9 @@ button.primary:not(:disabled):active,
 #project-path-input:where(:not(:disabled)):hover,
 #round-switcher:where(:not(:disabled)):hover,
 #check-switcher:where(:not(:disabled)):hover,
-#enter-form input[type="text"]:hover,
+#enter-form input[type="text"]:where(:not(:disabled)):hover,
 #chat-input-row input:where(:not(:disabled)):hover,
-#confirmation-modal input[type="text"]:hover,
+#confirmation-modal input[type="text"]:where(:not(:disabled)):hover,
 .verdict-note-input:where(:not(:disabled)):hover {
   border-color: var(--color-border-hover);
 }

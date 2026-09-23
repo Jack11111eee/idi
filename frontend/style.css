@@ -354,16 +354,22 @@
      Re-enumerated for the Radix rewrite (Phase 04.1 D-15): every entry below is a
      combination that actually renders. Decorative separators are deliberately
      absent — SC 1.4.11 does not apply to a border that identifies nothing.
-     Manifest size across four value layers (D-15): 24 / 34 / 43 / 47 — ROADMAP
+     Manifest size across five value layers (D-15): 24 / 34 / 43 / 47 / 50 — ROADMAP
      Phase 4 wrote 24 pairs (20 text + 4 non-text); the disk state Phase 4
      actually landed was 34 pairs (29 TEXT + 5 NON-TEXT) + 1 ordering entry; the
      04.1 rewrite re-enumerated 43 pairs (34 TEXT + 9 NON-TEXT) + 1 ordering entry;
      Phase 5 lands 47 pairs (35 TEXT + 12 NON-TEXT) + 1 ordering entry — the
      three-step action ramp needs a white-on-fill TEXT pair and a non-text
      boundary pair for each solid tier, and the active-panel marker needs one of
-     each on its ground. The four numbers are not drift: the contract is
-     "enumerate the combinations that actually render", and each successive value
-     layer changes which combinations occur. */
+     each on its ground. Phase 7 lands 50 pairs (35 TEXT + 15 NON-TEXT) + 1
+     ordering entry — the three focus-ring entries are all NON-TEXT: the ring is
+     a SC 1.4.11 state indicator, and its three verification surfaces are
+     --color-surface-page, --color-surface, and --color-surface at the archive
+     view's 0.75 composite (--color-surface-sunken is deliberately NOT among
+     them — it is only the ground of .markdown-body code and .badge-answered,
+     never adjacent to a focusable element). The five numbers are not drift: the
+     contract is "enumerate the combinations that actually render", and each
+     successive value layer changes which combinations occur. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */
@@ -425,6 +431,8 @@
      ground of .markdown-body code and .badge-answered, never adjacent to a
      focusable element. */
   /* PAIR --color-focus ON --color-surface NON-TEXT */
+  /* PAIR --color-focus ON --color-surface-page NON-TEXT */
+  /* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */
 
   /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
      heading switches to the marker colour (SC 1.4.5). All three panels live

@@ -216,3 +216,10 @@ None - no external service configuration required.
 ---
 *Phase: idi-07-interaction-states-and-focus*
 *Completed: 2026-09-23*
+
+## Self-Check: PASSED
+
+- **Created files exist**: `scripts/probe-07-focus-composite.py` FOUND;`.planning/phases/idi-07-interaction-states-and-focus/idi-07-01-SUMMARY.md` FOUND。
+- **Commits exist**: `ee47beb`(Task 1 FOUND)/ `0e5820a`(Task 2 FOUND)/ `0243d6b`(Task 3 FOUND)/ `ba11a4f`(本计划 docs 元数据 FOUND)。
+- **`gsd-tools verify-summary`**:`{"passed": true, "checks": {"summary_exists": true, "files_created": {"checked": 2, "found": 2, "missing": []}, "commits_exist": true}, "errors": []}`。
+- **commits 计数口径**:`git rev-list --count 69dea49..HEAD` 在写 SUMMARY 时为 **3**(三条任务提交);本计划的 docs 元数据提交另计一条(见「Task Commits」节),与 `idi-06-03-SUMMARY.md` 同一口径。

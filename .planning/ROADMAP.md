@@ -287,7 +287,7 @@ Plans:
 
 **Research flag**: 标准实践,无需研究阶段(`:focus-visible` + `outline-offset` 文档完备)。项目特有的工作(环色 vs 合成背景)研究阶段已算完。
 **Gates**: `grep -c ':focus-visible'` > 0;**没有任何焦点规则设置 `border` 或 `padding`**;每个环都对 0.55 与 0.75 合成背景验过;`prefers-reduced-motion` 与任何新 transition 同提交;Phase 4/6 全部 gate 仍通过。
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -300,7 +300,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] idi-07-03-PLAN.md — 过渡与减弱动效 + 契约计数门(INTERACT-02):过渡挂载规则 + `@media (prefers-reduced-motion: reduce)` 块 + `EXPECTED_MEDIA_QUERIES` 同步 + 静态契约守卫 + 整阶段收口与指纹披露
+- [x] idi-07-03-PLAN.md — 过渡与减弱动效 + 契约计数门(INTERACT-02):过渡挂载规则 + `@media (prefers-reduced-motion: reduce)` 块 + `EXPECTED_MEDIA_QUERIES` 同步 + 静态契约守卫 + 整阶段收口与指纹披露
 
 **UI hint**: yes
 
@@ -366,7 +366,7 @@ Plans:
 | 4.1. Radix 颜色族重写 | v1.14 | 4/4 | Complete    | 2026-09-20 |
 | 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete    | 2026-09-22 |
-| 7. 交互状态与焦点样式 | v1.14 | 2/3 | In Progress|  |
+| 7. 交互状态与焦点样式 | v1.14 | 3/3 | In Progress|  |
 | 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |
 
 **Execution Order:** Phases execute in numeric order: 4 → 4.1 → 5 → 6 → 7 → 8

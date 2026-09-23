@@ -29,15 +29,35 @@
     故:`--browser chrome` 仍保留,但它强制有头(headless=False),不能无人值守。
 
 运行方式
-    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..9 项
+    .venv/bin/python scripts/check-05-ui-uat.py                 # 跑 UAT 第 1..10 项
     .venv/bin/python scripts/check-05-ui-uat.py --item smoke    # 只跑 harness 自检切片
     .venv/bin/python scripts/check-05-ui-uat.py --item 7        # 只跑渲染目标的标题刻度
     .venv/bin/python scripts/check-05-ui-uat.py --item 8        # 只跑 sticky 表头 / 流内 badge
     .venv/bin/python scripts/check-05-ui-uat.py --item 9        # 只跑面板区滚动容器收敛
+    .venv/bin/python scripts/check-05-ui-uat.py --item 10       # 只跑焦点环覆盖与交互态
     .venv/bin/python scripts/check-05-ui-uat.py --item 1 --item 2
     .venv/bin/python scripts/check-05-ui-uat.py --ai-smoke      # 额外真跑两次 AI 交互冒烟
     .venv/bin/python scripts/check-05-ui-uat.py --keep          # 保留临时工作目录供排查
     .venv/bin/python scripts/check-05-ui-uat.py --browser chrome  # 改用系统 Chrome(有头)
+
+第 10 项(A11Y-01 / INTERACT-01 / INTERACT-02)
+    全站焦点环的**元素普查** + SC1 / SC2 / SC4 三条运行时探针。断言分两段:
+    「静态契约计数」(令牌声明与消费的计数)与「运行时元素普查」(真实 Chrome 里的
+    环读数)。普查口径**不是**「规则被写下了」,而是「**判定集(可见 ∧ 可聚焦,即
+    Tab 可达)里未被环覆盖的元素数为 0,且判定集非空**」—— 按选择器计数只证明规则
+    存在,而「枚举会漏项」正是焦点规则选择枚举路线的已知代价,门必须正面回答它。
+    判定集有两条过滤(`visible` / `focusable`)。`focusable` 排除禁用控件与
+    `tabindex="-1"`:它们 rect 非零、确实渲染在树里,却不在顺序焦点序里,**永远无法
+    被 Tab 覆盖** —— 拿它们去要求「被环覆盖」会造出一条永远无法满足的判据。
+    `#btn-approve-draft` / `#btn-authorize` 是这类真实实例(标记里带 `disabled`)。
+    本判据是 **Reachable**,不是 Exists。
+
+    已显式登记的事实:**五个状态样本(`scripts/ui-states/` 的 p1 / p12 / p3 /
+    checking / archive)的 `#round-doc` 内 `a[href]` 计数为 0** ⇒ 归档半场
+    (`.archive-mode` 的 0.75 合成)的**运行时**断言今天没有服务对象。它由常驻算术门
+    (`check-02` 的 `--color-focus ON --color-surface NON-TEXT@0.75` 条目)+ 一次性
+    反事实探针(`scripts/probe-07-focus-composite.py`,不进守卫契约)共同承担。
+    不登记这个事实,读者会把「没有断言」误读成「没有风险」。
 
 第 9 项(L-4 / D-14)
     面板区的滚动容器从「3 个嵌套 + 1 个外层」收敛为「1 个外层(`#main-pane`)+ 1 个被
@@ -2367,6 +2387,74 @@ def item9(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# UAT 第 10 项 — A11Y-01 焦点环(令牌 → 规则 → 算术门 → 浏览器里读到的环)
+# ---------------------------------------------------------------------------
+def item10(page, tmp_root):
+    item = "10"
+    print("\n=== UAT 10: A11Y-01 焦点环(D-05 / D-16 / D-17)===", flush=True)
+
+    # ---- (a) 最小端到端探针:Tab 出环,读**当前焦点元素**的计算读数 --------------
+    # 期望侧来自**运行时解析的令牌**(resolve_color),不硬编码 rgb(31, 99, 189) ——
+    # 这是本文件立下的纪律:期望侧来自运行时解析的令牌,值的仲裁者是
+    # scripts/check-02-contrast.py。
+    #
+    # 环读数的唯一来源是下面这段**内联** evaluate 里的 document.activeElement。
+    # 不得用 read_style(page, sel, prop):那个 helper 走 document.querySelector(sel)、
+    # 按选择器取值,结构上读不到「当前焦点元素」。本项共享的 _IDI07_TAB_READ_JS
+    # 常量在计划 03 落地时会**替换**这段内联读数,使环读数在全项内只有一个来源 ——
+    # 本函数是先行者,不是第二种说法。
+    proj = make_fixture("p1", tmp_root)
+    enter_project(page, proj)
+    info("item10 样本", f"p1(会话流活动态)→ {proj}")
+
+    expected_color = resolve_color(page, "--color-focus")
+    if expected_color is None:
+        blocked(item, "[p1] --color-focus 已声明且可被运行时解析",
+                "非 None 的 computed rgb", "<MISSING>",
+                "令牌未声明 ⇒ 期望侧解析不出,不记 PASS")
+    else:
+        info("item10 [p1] 令牌解析", f"--color-focus={expected_color}")
+        payload = None
+        for _ in range(16):
+            page.keyboard.press("Tab")
+            payload = page.evaluate("""() => {
+                const el = document.activeElement;
+                if (!(el instanceof HTMLElement)) return null;
+                const s = getComputedStyle(el);
+                const id = el.id ? '#' + el.id : '';
+                const cls = (typeof el.className === 'string' && el.className.trim())
+                  ? '.' + el.className.trim().split(/\\s+/).join('.') : '';
+                return {
+                    tag: el.tagName.toLowerCase(),
+                    label: el.tagName.toLowerCase() + id + cls,
+                    outlineWidth: s.outlineWidth,
+                    outlineColor: s.outlineColor,
+                };
+            }""")
+            if payload and payload["tag"] == "button":
+                break
+        info("item10 [p1] Tab 采样(最后一次读数)", f"{payload}")
+        if not payload or payload["tag"] != "button":
+            blocked(item, "[p1] Tab 到按钮后读当前焦点元素的计算环读数",
+                    "document.activeElement 是 button", f"{payload}",
+                    "Tab 未把焦点落到按钮上 ⇒ 读不到环,不记 PASS")
+        else:
+            ok(item,
+               f"[p1] Tab 到 {payload['label']} 的 outline-width == 2px",
+               "2px", payload["outlineWidth"],
+               "几何 = D-05 的 2px;外伸量 4px 与 check-05 的 CLEARANCE_MIN_PX = 4.0 双向绑定")
+            ok(item,
+               f"[p1] Tab 到 {payload['label']} 的 outline-color == var(--color-focus)",
+               expected_color, payload["outlineColor"],
+               "期望侧来自运行时解析的令牌,不硬编码 rgb")
+
+    # ---- (b) viewport 纪律 ---------------------------------------------------
+    # 本项不变更 viewport;此处是兜底复位(与 item 8 / item 9 同一纪律:
+    # VIEWPORT_RESTORE 是 harness 的基准视口,不复位会污染其后各项)。
+    page.set_viewport_size(VIEWPORT_RESTORE)
+
+
+# ---------------------------------------------------------------------------
 # harness 自检切片(--item smoke)
 # ---------------------------------------------------------------------------
 def item_smoke(page, tmp_root):
@@ -2425,7 +2513,7 @@ def item_smoke(page, tmp_root):
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="idi-04 UAT browser harness")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9(可重复,或逗号分隔)")
+                    help="只跑指定项:smoke / 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9 / 10(可重复,或逗号分隔)")
     ap.add_argument("--ai-smoke", action="store_true",
                     help="第 5 项额外真跑两次 AI 交互冒烟(会产生真实 AI 调用与计费)")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
@@ -2438,7 +2526,7 @@ def parse_args():
 
 def normalize_items(raw):
     if not raw:
-        return ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+        return ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
     out = []
     for chunk in raw:
         for piece in chunk.split(","):
@@ -2451,7 +2539,7 @@ def normalize_items(raw):
 def main():
     args = parse_args()
     items = normalize_items(args.item)
-    known = {"smoke", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+    known = {"smoke", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
     bad = [i for i in items if i not in known]
     if bad:
         raise SystemExit(f"ERROR: 未知项 {bad}(可用:{sorted(known)})")
@@ -2496,6 +2584,8 @@ def main():
             item8(page, tmp_root)
         if "9" in items:
             item9(page, tmp_root)
+        if "10" in items:
+            item10(page, tmp_root)
     finally:
         if browser is not None:
             browser.close()

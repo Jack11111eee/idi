@@ -196,6 +196,29 @@
   --color-border-streaming: var(--radix-blue-11);
   --color-text-info: var(--radix-blue-11);
 
+  /* Tier 2 — focus ring (A11Y-01 / D-04, declared with its consumer: the
+     :focus-visible rule at the end of this file — Hard Rule 5).
+
+     Three load-bearing facts, so that a later reader does not "fix" this value.
+
+     1. This is the ONLY value in the whole colour layer that is not a Radix
+        step. The other exceptions are --white and the two rgba() literals in
+        the shadow / backdrop group. It therefore conflicts on its face with
+        04.1's "every value must come from a Radix step" discipline.
+
+     2. That conflict is deliberate. This is LITERAL COMPLIANCE with an
+        already-signed contract, not an oversight: S-4's sign-off arithmetic
+        (04-UI-SPEC.md, Sign-Off Items S-4 — "delete the opacity and the ring
+        returns to 5.62") was computed with this exact value. Do NOT "fix" it
+        to --radix-blue-11.
+
+     3. Why not the neighbouring steps. --radix-blue-11 is rejected because
+        under .archive-mode's 0.75 composite it measures 3.03:1 — a margin of
+        0.03, which any later nudge would push back over the line. --radix-blue-12
+        is rejected because it is the high-contrast TEXT step: as a 2px ring it
+        reads as a border rather than as a focus indicator. */
+  --color-focus: #1f63bd;
+
   /* Tier 2 — overlay backdrop and the shadow tokens (composer: three layers;
      overlay: the modal card's elevation, restored by R-2 so that no bare
      rgba() appears outside the fence). */
@@ -393,6 +416,15 @@
 
   /* the surviving whole-document dim — the archive view (A11Y-04b) */
   /* PAIR --color-text ON --color-surface TEXT@0.75 */
+
+  /* the focus ring (A11Y-01 / D-03 / D-15): a state indicator under SC 1.4.11,
+     with three verification surfaces — --color-surface-page, --color-surface,
+     and --color-surface at the archive view's 0.75 composite (that last one
+     reuses the same @<alpha> mechanism as the whole-document dim above).
+     --color-surface-sunken is deliberately NOT among them: it is only the
+     ground of .markdown-body code and .badge-answered, never adjacent to a
+     focusable element. */
+  /* PAIR --color-focus ON --color-surface NON-TEXT */
 
   /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
      heading switches to the marker colour (SC 1.4.5). All three panels live
@@ -1321,4 +1353,40 @@ button, input, select { color: var(--color-text); }
    对它渲染零影响 —— 仍列入六目标,因为枚举必须与渲染目标一一对应(部分枚举正是缺陷存活的原因)。 */
 .markdown-body, .event-content, .chat-bubble, .say-chunk, .annotation-note, .annotation-answer-body {
   overflow-wrap: anywhere;
+}
+
+/* 全站焦点环(A11Y-01 / D-05,追加在文件末尾 —— 硬规则 3:追加,不重排)。
+
+   为什么枚举而不是裸 `:focus-visible`:与本项目 Phase 5(G-idi-05-1)与 Phase 6
+   (overflow-wrap)建立的同一口径 —— 影响面必须**可枚举、可对照**。裸通配在这里
+   不是「更全」而是「不可审」:它回答不了「哪些元素被覆盖了」这个问题。
+
+   枚举集与门的普查集逐字同集:scripts/check-05-ui-uat.py 的可聚焦普查集是
+   `button, input, select, textarea, a[href], summary, [tabindex]`(顺序亦同)。
+   两者必须**同时**改 —— 新增一类可聚焦元素要改两处,只改一处会让「规则覆盖了谁」
+   与「门检查了谁」重新分叉,而那正是 G-idi-05-1 的成因。
+
+   几何是双向绑定的:`2px` 与 `outline-offset: 2px` 的环外伸量恰为 4px,正是
+   check-05 的 CLEARANCE_MIN_PX = 4.0 与 idi-06-UI-SPEC.md §L-5 所假设的值。
+   改几何即改那个门的阈值,两者不是两件事。
+
+   `[tabindex]` 今天**无服务对象**:全站 `[tabindex]` 计数为 0。它是**防御性非冗余**
+   写法(照 06-CONTEXT D-09 的 min-width: 0 那条注释的形态):本规则的契约是
+   「凡可聚焦必有环」,而 Phase 8 会给 #round-doc 加 tabindex="0" —— 届时这一条会
+   自动把环套上去,无需再动本文件。本阶段不为 #round-doc 写任何焦点规则:它今天
+   不可聚焦,那条规则会是**死代码**,且无法被运行时验证;Phase 8 加 tabindex 时
+   连同它自己的内嵌处理一起落地(D-06)。
+
+   环的出现与消失是硬切:outline 相关属性不在过渡允许列表内,且过渡焦点环是已知的
+   无障碍反模式(延迟的焦点反馈),故不得为「让环更柔和」把它加进任何过渡。
+   规则体只用不参与布局的环属性,故零位移。 */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a[href]:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }

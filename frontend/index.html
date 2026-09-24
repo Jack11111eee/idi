@@ -136,7 +136,24 @@
             <select id="round-switcher" title="切换轮次(历史轮只读)"></select>
           </div>
           <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
-          <div id="round-doc" class="markdown-body"><!-- 当前轮文档 markdown 渲染区 --></div>
+          <!-- 键盘 Tab 停靠点(D-01 / A11Y-02):这里加一个布尔属性,整盒焦点环零 CSS 自动生效。
+               ① 环的来源不是本文件、也不是 style.css 里新写的规则,而是 frontend/style.css:1514 的
+                  Phase 7 焦点环枚举规则 —— Phase 7 D-05 刻意把「带这个属性的元素」写进枚举,
+                  就是为了让本阶段零 CSS 履约。故不得新增任何 :focus 专用规则(硬规则 10:
+                  新增会让「规则覆盖了谁」与「门检查了谁」分叉,正是 G-idi-05-1 的成因)。
+               ② 环的几何:父级 #doc-panel-body 有 32px 40px 内边距,环外伸 2–4px 落在父级
+                  40px 水平内边距里 ⇒ 不被裁切;盒高数千像素 ⇒ 视口里看到的是左右两条贯穿
+                  全高的竖线。这条实测推翻了上游研究「只有上下边缘可见」的论断 ——
+                  本项目纪律是「实测驱动,不采信上游文档的论断」。
+               ③ #draft-content(L113)同为 .markdown-body 却刻意不加这个属性,不是漏项:
+                  handleSelectionTrigger 的第一条实质守卫是 currentState !== 'phase3',阶段 1-2
+                  没有批注功能 ⇒ 给它加停靠点是死代码,无法被运行时验证(D-20)。不要顺手补上。
+               ④ 计数 0 → 1 而 :focus-visible 计数 9 → 9,看似「独立移动」实则不然:Phase 7 已把
+                  环的承载面先落地。机械证据不是计数,是 check-05 --item 10 的运行时读数
+                  (#round-doc 成为 document.activeElement 那一刻读到 2px / 运行时解析的 --color-focus)。
+               代价:裸 <div> 的停靠点,辅助技术只报「通用容器」—— 这是知情接受,不是疏漏:
+               role 与焦点陷阱一起归 v2 A11Y-V2-02(D-18,用户裁定「都不加」)。 -->
+          <div id="round-doc" class="markdown-body" tabindex="0"><!-- 当前轮文档 markdown 渲染区 --></div>
 
           <!-- G3 授权入口(FLOW-05 §4.4:仅阶段 3 呈现;按钮三态由 g3_available 驱动) -->
           <div id="authorize-row" class="hidden">

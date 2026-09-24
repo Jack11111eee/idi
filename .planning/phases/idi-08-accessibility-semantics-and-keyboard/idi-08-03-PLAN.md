@@ -167,6 +167,10 @@ Output: `frontend/app.js` 的一处文案修正;两份人工验收记录(REG-03 
   <action>
     **第一处:S8-1 文案修正(一个词)。** `frontend/app.js:1121` 的空态赋值串 `本轮暂无批注——在左侧文档划词即可批注。` 改为 `本轮暂无批注——在右侧文档划词即可批注。` —— **只把「左」改成「右」**,标点、破折号、其余字词逐字不动。**这是本阶段唯一一处用户可见文案变更**(Delta Ledger D8-11),**不是新增字符串**。判据:改后与 `DESIGN.md` §4.1 的 v1.14 信息架构一致(文档面板在右)。
 
+    **⚠ 这处编辑落在硬规则 5 的「不得触碰」符号内部 —— 授权来源必须登记。** `frontend/app.js:1121` 位于 `renderAnnotations`(`app.js:1115-1172`)的函数体内,而 `renderAnnotations` 被 **ROADMAP §全局硬规则 5**、**`idi-08-UI-SPEC.md` §Do-Not-Touch List(继承段)** 与 **`08-CONTEXT.md` §明确不含** 三处同时列为**不得触碰**(理由:已验收路径)。**本次编辑是用户裁定的授权例外,不是违反硬规则 5**,两条授权来源都必须在 SUMMARY 里逐字登记:①用户 **2026-09-23 裁定「改」** —— 原文见 `idi-08-UI-SPEC.md` §Sign-Off Items 的 **S8-1** 行「用户裁定(2026-09-23)」列(「`本轮暂无批注——在左侧文档划词即可批注。` → `本轮暂无批注——在右侧文档划词即可批注。`(`app.js:1121`,仅此一个词)」);②`idi-08-UI-SPEC.md` §本阶段的改动面(唯一事实)有一行逐字授权该处(`frontend/app.js` | `app.js:1121` 的一处用户可见字符串:`在左侧文档` → `在右侧文档` | **S8-1(用户 2026-09-23 裁定)**)。**授权面只覆盖 L1121 这一个词**:不得触碰同一函数内任何其他行,也不得把这条例外扩大成「`renderAnnotations` 可改」—— 硬规则 5 的不得触碰清单**未被推翻**,例外仅限这一词。
+
+    **SUMMARY 的登记要求(否则读者按硬规则 5 逐字核 diff 时会把这一行读成违例):** 在记录 S8-1 的同时写明「本次编辑在 `renderAnnotations`(`app.js:1115-1172`)内部,由用户 2026-09-23 的 S8-1 裁定(`idi-08-UI-SPEC.md` §Sign-Off Items)与 §改动面 授权;例外仅限 `app.js:1121` 的一个词,硬规则 5 的不得触碰清单未被推翻、也未扩大」。
+
     **不得顺手改的相邻串:** `frontend/app.js:1123` 的 `该轮暂无批注。`(历史轮的另一处空态,与左右无关)**一字不动**;该函数里的 `document.createElement` / `className` / `textContent` 三行**一字不动** —— 尤其 `textContent`:**该函数所在路径的 `textContent`-only 规则是 XSS 缓解(T-260916-01),不是风格选择**(硬规则 5),**不得引入任何 HTML 解析式的写入**。
 
     **第二处:跑两条 REG-02 门并把基线写进 SUMMARY。**
@@ -203,6 +207,7 @@ Output: `frontend/app.js` 的一处文案修正;两份人工验收记录(REG-03 
   </verify>
   <acceptance_criteria>
     - `frontend/app.js:1121` 的空态串逐字为 `本轮暂无批注——在右侧文档划词即可批注。`;`frontend/app.js:1123` 的历史轮空态串一字未改。
+    - SUMMARY 里登记了「`app.js:1121` 的编辑落在硬规则 5 的不得触碰符号 `renderAnnotations`(`app.js:1115-1172`)内部,由用户 2026-09-23 的 S8-1 裁定(`idi-08-UI-SPEC.md` §Sign-Off Items)与 §本阶段的改动面 授权;例外仅限该一个词,不得触碰清单未被推翻、也未扩大」。
     - 该函数的写入方式仍只经 `textContent`(零新增 HTML 解析式写入;`showInlineError` 的 `textContent`-only 规则未被触碰)。
     - `grep -c 'inline-error' frontend/style.css` == 1;`grep -c 'clearInlineError();' frontend/app.js` >= 9,且 SUMMARY 里写明该基线的实测值、并显式登记「不是 08-CONTEXT.md D-21 的 6」。
     - SUMMARY 里逐字记录了 pytest 的四个数字(219 passed / 6 skipped / 225 collected),并说明 219 与 225 的区别;命令是 `.venv/bin/python -m pytest -q -m "not slow"`。
@@ -307,6 +312,8 @@ Output: `frontend/app.js` 的一处文案修正;两份人工验收记录(REG-03 
     <fails_when>第一条输出不是恰好 `1`,或第二条输出不是恰好 `9`(本阶段的 D-01 路径签名:属性 +1、CSS 规则计数不变)</fails_when>
     <automated>ls -1 frontend/vendor/ | wc -l</automated>
     <fails_when>输出不是恰好 `1`(硬规则 6:vendor 目录仍只有 marked.min.js;多于 1 说明引入了 vendored 依赖)</fails_when>
+    <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 1; .venv/bin/python scripts/check-05-ui-uat.py --item 4</automated>
+    <fails_when>任一条退出码非 0(0 = 全 PASS;1 = 有 FAIL;2 = 有 BLOCKED),或输出里出现任何 `FAIL` / `BLOCKED` 开头的行。这两条与上面的 `check-01/03/04` 同属 `idi-08-UI-SPEC.md` §契约校验命令 的「必须保留的既有门」清单(`--item 1` = 五态显隐的 `.hidden` 层叠证据;`--item 4` = SC5 令牌接线 + `#state-badge` z-index);它们是收口树上的最终复跑,**判红时先判「真缺陷 vs 普查集变化」,不得改门**(D-21)</fails_when>
     <human-check>
       <test>在阶段 3 与阶段 5 两个状态里各走一遍完整 Tab 序,逐控件记录;并专门记录 #round-doc 在 Tab 序里的位置(应在 #round-switcher 之后、#authorize-row 的按钮可见时之前)</test>
       <expected>每一个交互控件都可 Tab 到达;#round-doc 的停靠点位置与 §K-1.7 一致(逐项记录,不得只记「Tab 能到」);#round-doc 被 Tab 到达时整盒环画出;键盘划词路径可用</expected>
@@ -320,9 +327,9 @@ Output: `frontend/app.js` 的一处文案修正;两份人工验收记录(REG-03 
     - SUMMARY 里登记了两条已知缺口/局限(D-17 的 `#permission-modal`、D-19 的键盘划词可发现性),各自写明归属与本阶段不修的理由。
     - SUMMARY 里登记了 STATE.md `[v1.14 P8]` Deferred Item 与本阶段的对应关系,并明确它**不因本阶段而关闭**。
     - SUMMARY 里对 A-1 / A-2 / A-3 三条已签核偏离做了指针式登记(不复制正文)。
-    - `git status --porcelain -- frontend/ scripts/` 为空(本任务零源代码改动);三条守卫仍全绿;`tabindex` == 1 且 `:focus-visible` == 9;`frontend/vendor/` 恰好一个文件。
+    - `git status --porcelain -- frontend/ scripts/` 为空(本任务零源代码改动);三条守卫与 `check-05 --item 1 / --item 4` 仍全绿;`tabindex` == 1 且 `:focus-visible` == 9;`frontend/vendor/` 恰好一个文件。
   </acceptance_criteria>
-  <done>A11Y-08 的全量 Tab 序普查在两个状态里完成且 `#round-doc` 的位置被逐项记录;三份收口登记(指纹义务、既有待办、已知缺口/局限)全部落盘;`[v1.14 P8]` 的 Deferred Item 与本阶段的关系被写明(不因本阶段关闭);本任务零源代码改动,收口树上三条守卫仍全绿、`tabindex` == 1、`:focus-visible` == 9、vendor 恰好一个文件。</done>
+  <done>A11Y-08 的全量 Tab 序普查在两个状态里完成且 `#round-doc` 的位置被逐项记录;三份收口登记(指纹义务、既有待办、已知缺口/局限)全部落盘;`[v1.14 P8]` 的 Deferred Item 与本阶段的关系被写明(不因本阶段关闭);本任务零源代码改动,收口树上三条守卫与 `check-05 --item 1 / --item 4` 仍全绿、`tabindex` == 1、`:focus-visible` == 9、vendor 恰好一个文件。</done>
 </task>
 
 </tasks>
@@ -359,6 +366,8 @@ bash scripts/check-01-token-conformance.sh              # PASS
 .venv/bin/python scripts/check-02-contrast.py | tail -1  # PASS: 0 failures
 bash scripts/check-03-hidden-uniqueness.sh              # PASS(^\.hidden { == 1)
 bash scripts/check-04-important-count.sh                # PASS(!important 声明数 == 1)
+.venv/bin/python scripts/check-05-ui-uat.py --item 1    # PASS(Task 3;契约点名的「必须保留的既有门」)
+.venv/bin/python scripts/check-05-ui-uat.py --item 4    # PASS(Task 3;同上)
 grep -c 'tabindex' frontend/index.html                  # == 1
 grep -v '^#' frontend/style.css | grep -c ':focus-visible'  # == 9
 git status --porcelain -- frontend/style.css scripts/check-05-ui-uat.py  # 空

@@ -280,6 +280,8 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
     <fails_when>任何非空输出或非零退出(语法错误)</fails_when>
     <automated>grep -c 'id="app"' frontend/index.html</automated>
     <fails_when>输出不是恰好 `1`(背景惰性的挂载点依赖 `#app` 存在且其边界未变;`frontend/index.html` 本任务不改,这一步只证明挂载点仍在)</fails_when>
+    <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 1</automated>
+    <fails_when>退出码非 0(0 = 全 PASS;1 = 有 FAIL 断言;2 = 有 BLOCKED 断言),或输出里出现任何 `FAIL` / `BLOCKED` 开头的行。**本任务是全阶段唯一改动两个弹窗 `.hidden` 开闭点的任务**(`openConfirmModal` / `closeConfirmModal` / `#tier-modal` 的打开分支 / `chooseTier()` 成功路径),而 `--item 1` 就是五态显隐(`.hidden` 的层叠证据,六元素 × 五样本)的运行时门 —— 它是本阶段契约 `idi-08-UI-SPEC.md` §契约校验命令 逐字点名「必须仍绿」的门之一,本任务必须实跑它而不是把它留给收口。判红时先读 `scripts/check-05-ui-uat.py` 的 `HIDDEN_MATRIX` / `COMPETITORS` 两段判「真缺陷 vs 普查集变化」,**不得直接改门**(D-21:该文件在 5 份 live 报告的 `covered_files` 里)</fails_when>
     <human-check>
       <test>打开 p3 之外的一个 phase5_awaiting_tier 场景(或直接触发 #tier-modal),观察三件事:①弹窗打开时焦点是否落在 #btn-tier-loose 上(第一下 Tab 是否在弹窗内部移动);②弹窗打开期间按 Tab 是否能进入背景区(应当**不能**);③用鼠标点击背景区(应当**无反应**)</test>
       <expected>①焦点在 #btn-tier-loose 上;②Tab 不进入背景(背景惰性生效);③鼠标点击背景无反应。若 ② 或 ③ 不成立,说明属性没有生效或挂错了节点 —— 停下上报,不要静默登记</expected>
@@ -343,17 +345,19 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
     <automated>grep -c "key !== 'Escape'" frontend/app.js</automated>
     <fails_when>输出不是恰好 `1`(分派器是单点 —— 出现两次说明落了第二个 Escape 监听器,「谁先响应」就变成了源码顺序事实)</fails_when>
     <automated>grep -c 'tierModalShown' frontend/app.js</automated>
-    <fails_when>输出小于 `3`(1 个声明 + 打开分支里的置真 + 新增的复位;少于 3 说明 D-13 的复位没落,「档位未定且入口消失」的死状态仍在)</fails_when>
+    <fails_when>输出不是恰好 `4`。**HEAD 实测 3**,逐行是:L94 的声明 `let tierModalShown = false;`、L638 的**读取**(`if (!selfcheck.tier && !tierModalShown) {`)、L639 的置真 `tierModalShown = true;` —— 注意 **L638 是读不是写**,把它当成「打开分支里的置真」会数错(HEAD 上真实的「写」只有 L639 一处)。本任务在 Escape 分派器的档位分支新增 D-13 的复位一行 ⇒ 改动后恰为 `4`。**输出 `3` 说明复位没落,「档位未定且入口消失」的死状态仍在**(这是本门存在的唯一理由);输出 >4 说明写了第二处复位或落了第二个分支</fails_when>
     <automated>grep -c 'authorizeBtn.focus()' frontend/app.js; grep -c 'continueCheckBtn.focus()' frontend/app.js</automated>
     <fails_when>任一条输出不是恰好 `1`(两条 F1-d 交还各应出现一次;出现两次说明交还被同时写进了 `closeConfirmModal()`,违反「成功路径不交还」)</fails_when>
     <automated>grep -c 'closeConfirmModal()' frontend/app.js</automated>
-    <fails_when>输出小于 `3`(1 个定义 + 既有的调用点 + Escape 分派器的新调用点;少于 3 说明分派器没有复用既有函数、而是自己写了关闭逻辑)</fails_when>
+    <fails_when>输出不是恰好 `4`。**HEAD 实测 3**,逐行是:L491 的函数定义 `function closeConfirmModal() {`、L547 与 L557 两处**既有**调用点。本任务的分派器**复用既有函数**(调一次 `closeConfirmModal()`)⇒ 改动后恰为 `4`。**输出 `3` 说明分派器没有复用 `closeConfirmModal()`、而是自己写了关闭逻辑**(HEAD 的 3 已经满足任何 `>= 3` 的写法,所以本门必须写成绝对等值,否则它在复用与不复用之间恒定通过);输出 >4 说明新增了第二处关闭路径</fails_when>
     <automated>cd frontend && node --check app.js</automated>
     <fails_when>任何非空输出或非零退出(语法错误)</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
     <fails_when>任一条不是恰好一行 `PASS`(本阶段零 CSS 改动,三条守卫必须逐字不变)</fails_when>
     <automated>git status --porcelain -- frontend/style.css</automated>
     <fails_when>输出非空(硬规则 9:零 frontend/style.css 改动)</fails_when>
+    <automated>.venv/bin/python scripts/check-05-ui-uat.py --item 4</automated>
+    <fails_when>退出码非 0(0 = 全 PASS;1 = 有 FAIL;2 = 有 BLOCKED),或输出里出现任何 `FAIL` / `BLOCKED` 开头的行。`--item 4` = SC5 的两条令牌接线 + `#state-badge` z-index 的 computed-style 抽查,是 `idi-08-UI-SPEC.md` §契约校验命令 逐字点名「必须仍绿」的另一条门;本阶段**零 CSS 改动**,它必须逐字保持绿。判红说明改动波及了 CSS 面 ⇒ 先停下判因,**不得改门**(D-21)</fails_when>
     <human-check>
       <test>按 Task 3 的七条具名步骤逐条执行:确认弹窗的 Escape(且零决定)、确认弹窗的背景惰性、档位弹窗的移焦与 Escape 与重弹、档位弹窗的背景惰性、背景惰性生效瞬间的焦点落点、两条 F1-d 交还、其余三个弹窗不响应 Escape</test>
       <expected>第 1 条:Escape 后焦点在 #btn-authorize 且无任何决定(不弹原生 prompt、不新增批注);第 3 条:Escape 后焦点在 #btn-continue-check,且下一个自检事件能让弹窗重弹;第 5 条:如实记录焦点落点(不得写「预期成立」);第 6 条:关闭后按 Tab 从触发者处继续,不是从 &lt;body&gt; 重新开始;第 7 条:三个弹窗按 Escape 无任何变化(范围锁的预期,不是缺陷)</expected>
@@ -413,11 +417,13 @@ grep -c 'continueCheckBtn.focus()' frontend/app.js          # == 1
 bash scripts/check-01-token-conformance.sh                  # PASS
 bash scripts/check-03-hidden-uniqueness.sh                  # PASS
 bash scripts/check-04-important-count.sh                    # PASS
+.venv/bin/python scripts/check-05-ui-uat.py --item 1         # PASS(Task 2;.hidden 五态显隐的层叠证据)
+.venv/bin/python scripts/check-05-ui-uat.py --item 4         # PASS(Task 3;SC5 令牌接线 + #state-badge z-index)
 git status --porcelain -- frontend/style.css                       # 空(硬规则 9)
 ls frontend/vendor/                                          # 恰好 marked.min.js 一个文件
 ```
 
-**本计划不打破任何既有门。** `check-05 --item 10` 的判定集变化是计划 01 引入的(D-03);本计划只改 `index.html` 的两个 `.overlay` 与 `app.js` 的三个区域,**不新增任何可聚焦元素**(新增的 2 个 id 挂在 `<h3>` 上,`<h3>` 不可聚焦;属性不改变 Tab 序)。
+**本计划不打破任何既有门。** `check-05 --item 10` 的判定集变化是计划 01 引入的(D-03);本计划只改 `index.html` 的两个 `.overlay` 与 `app.js` 的三个区域,**不新增任何可聚焦元素**(新增的 2 个 id 挂在 `<h3>` 上,`<h3>` 不可聚焦;属性不改变 Tab 序)。**`check-05 --item 1` 与 `--item 4` 是本阶段契约 `idi-08-UI-SPEC.md` §契约校验命令 逐字点名「必须仍绿」的门,本计划实跑它们**(`--item 1` 落在 Task 2 —— 全阶段唯一改动两个弹窗 `.hidden` 开闭点的任务;`--item 4` 落在 Task 3),不留到收口才第一次跑。
 </verification>
 
 <success_criteria>

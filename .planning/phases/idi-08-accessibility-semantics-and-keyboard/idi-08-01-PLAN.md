@@ -188,14 +188,14 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     **`#round-doc` 除了这个属性之外一个属性都不加(D-18,用户裁定「都不加」,保持窄切片)。** 不加 `role`(不加 `role="region"`),不加 `aria-label`。加了 `tabindex="0"` 之后它是一个**裸 `<div>` 的 Tab 停靠点**,辅助技术只会报「通用容器」—— 这是**知情接受的代价,不是疏漏**。理由取自用户自己立的立场:`REQUIREMENTS.md` 的 Out of Scope 表把「完整 ARIA」排除的原话是「ARIA 服务于不带上下文到达、且看不见屏幕的用户;本工具恰好一个用户,既是作者也看得见屏幕」。`role` 与焦点陷阱等一起归 v2 `A11Y-V2-02`。**这条必须写进围栏注释**,否则会被读者当成漏项补上。
 
     **围栏注释(加在 `#round-doc` 上方,照本文件既有的 `<!-- … -->` 形态;注释一律中文,写「为什么」而不是「是什么」):** 必须写明四条事实 ——
-    ① **零 CSS 履约的机制**:环来自 `frontend/style.css:1514` 的 `[tabindex]:focus-visible`(Phase 7 D-05 刻意把 `[tabindex]` 写进枚举,就是为了让本阶段零 CSS 交付),**不是**本文件或 `style.css` 里新写的规则;
+    ① **零 CSS 履约的机制**:环来自 `frontend/style.css:1514` 的 Phase 7 焦点环枚举规则(Phase 7 D-05 刻意把「带本任务新加的这个属性的元素」写进 `:focus-visible` 枚举,就是为了让本阶段零 CSS 交付),**不是**本文件或 `style.css` 里新写的规则;⚠ **点名该出处时不得写出选择器字面量**(`[tabindex]:focus-visible`)—— 那一行本身会引入第二个命中行,直接打破本任务 `grep -c 'tabindex' frontend/index.html` == 1 的门;用「`frontend/style.css:1514` 的 Phase 7 焦点环枚举规则」这样的措辞指代即可(验收面只要求规则出处,不要求字面量);
     ② **整盒环的几何**:`#doc-panel-body` 有 `32px 40px` 的内边距 ⇒ `outline-offset: 2px` 的环外伸 2–4px 落在父级 40px 水平 padding 里、**不被裁切**;盒高数千像素 ⇒ 视口里是**左右两条贯穿全高的竖线**。点名这条推翻了上游研究里「只有上下边缘可见」的论断,本项目纪律是「实测驱动,不采信上游文档的论断」;
     ③ **`#draft-content` 的刻意不对称**(上面那段 D-20 的理由);
     ④ **Pitfall 6 的门为什么由构造满足**:`tabindex` 计数 0 → 1 而 `:focus-visible` 计数 9 → 9,看似「独立移动」,实则不然 —— Phase 7 已把环的承载面先落地;**机械证据不是计数,是 `check-05 --item 10` 的运行时读数**(`#round-doc` 成为 `document.activeElement` 的那一刻读到 `2px` / 运行时解析的 `--color-focus`)。
 
     ⚠ **注释散文同样计入按子串计数的判据**:本任务**不得**在注释里写出任何 `tabindex` 之外的新属性字面量形态;`grep -c tabindex frontend/index.html` 的期望值恰为 **1**,所以注释里**不要**出现第二个 `tabindex` 字样 —— 讲「为什么加」时用「这个属性」「焦点停靠点」等措辞,不要复述属性名。
 
-    最后,把**执行前基线**跑一遍并逐条登记到 SUMMARY 的「基线对账」节:`grep -c 'inline-error' frontend/style.css`(期望 1)、`grep -c 'clearInlineError();' frontend/app.js`(期望 **9**,不是 6 —— `08-CONTEXT.md` D-21 的「6」来自 `b9664e0` 时代的旧 gate,照抄会造出永远不会失败的假门)、`grep -c ':focus-visible' frontend/style.css`(期望 9)、`grep -c '^\.hidden {' frontend/style.css`(期望 1)、`grep -c 'role=' frontend/index.html`(期望 0)、`grep -c inert frontend/app.js`(期望 0)。**先建立基线,再登记本任务打破的项(只有 `tabindex` 一项:0 → 1)。**
+    最后,把**执行前基线**跑一遍并逐条登记到 SUMMARY 的「基线对账」节:`grep -c 'inline-error' frontend/style.css`(期望 1)、`grep -c 'clearInlineError();' frontend/app.js`(期望 **9**,不是 6 —— `08-CONTEXT.md` D-21 的「6」来自 `b9664e0` 时代的旧 gate,照抄会造出永远不会失败的假门)、`grep -c ':focus-visible' frontend/style.css`(期望 9)、`grep -c '^\.hidden {' frontend/style.css`(期望 1)、`grep -c 'role=' frontend/index.html`(期望 0)、`grep -c inert frontend/app.js`(期望 0)、`grep -c 'hideSelectionMenu' frontend/app.js`(期望 **7** —— Task 3 的绝对判据)、`grep -c 'window.getSelection' frontend/app.js`(期望 **1** —— Task 3 的绝对判据,Task 3 之后应为 **2**)。**先建立基线,再登记本任务打破的项(只有 `tabindex` 一项:0 → 1)。**
   </action>
   <verify>
     <automated>grep -c 'tabindex' frontend/index.html</automated>
@@ -329,9 +329,9 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     <automated>cd frontend && node --check app.js</automated>
     <fails_when>任何非空输出或非零退出(语法错误)</fails_when>
     <automated>grep -c 'hideSelectionMenu' frontend/app.js</automated>
-    <fails_when>输出小于或等于改动前的计数(`grep -c` 数**行**:该符号出现在 L1296 的定义行、L1331/L1335 的两条守卫、L1356/L1358 的两个关闭器、L1363/L1393 的两个菜单项调用点 —— 交还是写在函数**体内**,不新增调用点,故该计数**必须与改动前逐字相同**;变了说明交还被散落到了调用点,违反 D-08 的单点要求)</fails_when>
+    <fails_when>输出不是恰好 `7`(`grep -c` 数**行**;**HEAD 实测 7**,逐行是 L1296 的定义行、L1331/L1335 的两条守卫、L1356/L1358 的两个关闭器、L1363/L1393 的两个菜单项调用点 —— 交还是写在函数**体内**,不新增调用点,故该计数**必须仍为 7**;变了说明交还被散落到了调用点,违反 D-08 的单点要求)</fails_when>
     <automated>grep -c 'window.getSelection' frontend/app.js</automated>
-    <fails_when>输出小于改动前的计数(减少说明误删了 `window.getSelection()` 的读取 —— 交还判据不得清空选区,也不得替掉既有的读取)</fails_when>
+    <fails_when>输出不是恰好 `2`(**HEAD 实测 1**(L1329 的既有读取);本任务新增的 Shift 监听器按 `<action>` 复用 `window.getSelection()` 的判据形态 ⇒ +1,改动后恰为 **2**)。输出 `1` 说明新监听器没有按 `<action>` 指定的形态读选区状态(或误删了既有读取);输出 >2 说明多写了读取,或把交还判据写成了清空选区的写法(D-08 禁清空)</fails_when>
     <automated>grep -c 'role=' frontend/index.html</automated>
     <fails_when>输出不是恰好 `0`(本任务不该给 `#selection-menu` 加任何 ARIA;两个弹窗的 `role` 是计划 02 的事)</fails_when>
     <human-check>

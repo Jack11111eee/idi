@@ -2,8 +2,8 @@
 phase: idi-08-accessibility-semantics-and-keyboard
 status: passed
 verified: 2026-09-24T15:52:00Z
-reverified: 2026-09-24T13:23:27Z
-score: 34/39 truths verified (4 human, 1 present-but-behavior-unverified, 0 FAILED); 2 of the 34 are self-verified, not independent
+reverified: 2026-09-24T15:31:21Z
+score: 35/40 truths verified (4 human, 1 present-but-behavior-unverified, 0 FAILED); 3 of the 35 are self-verified, not independent
 covered_files:
 
   - .planning/REQUIREMENTS.md
@@ -16,8 +16,9 @@ covered_files:
   - frontend/app.js
   - frontend/index.html
   - scripts/check-05-ui-uat.py
+  - scripts/check-07-idi08-validation.py
 
-covered_digest: "v1:sha256:fc0890605b05386a712e1851d18180aa658e32da05654eebf5b33f5a780b0a91"
+covered_digest: "v1:sha256:f2c2e3e55e3452c814405ecc33e7c48a63aa5c9cdbc9f9a1f65f4d657a467bde"
 behavior_unverified: 1
 overrides_applied: 0
 resolved_gaps:
@@ -149,9 +150,10 @@ disagreement is registered under §SUMMARY ↔ HEAD Disagreements — not treate
 | 37 | ROADMAP Phase 8 Gate: all Phase 4/6/7 gates still pass | ✓ VERIFIED (resolved) | `check-05 --item 9` → `PASS (16 条断言, 0 FAIL, 0 BLOCKED)` after `63fba08`'s L-5 content-region declaration set. Was FAIL at `a640f39`. **Resolution is self-verified, not independent** — see §Gap Resolution |
 | 38 | The L-5 declaration set does not let a real control violation through | ✓ VERIFIED (self) | Mutation: a 30px control injected flush at `#doc-panel`'s bottom edge (clearance 0) lands in the ASSERTED set and the assertion FAILS. See §Gap Resolution |
 | 39 | The L-5 declaration set cannot produce a vacuous pass | ✓ VERIFIED (self) | Mutation: ratio forced to 0.0 ⇒ `item 9: BLOCKED (16 条断言, 0 FAIL, 3 BLOCKED)`, not PASS. Reverted and diff-verified. See §Gap Resolution |
+| 40 | 选档成功后焦点交还 `#btn-continue-check`(F1-d 的成功路径) | ✓ VERIFIED (self) | RED before the fix: `check-07 --item g4` exit 1, `FAIL g4 选档成功后焦点交还 … expected=btn-continue-check actual=BODY`. GREEN after: same command exit 0, `actual=btn-continue-check`. Discriminating control (the focus call neutralized): `actual=BODY` ⇒ the green is not vacuous. Placement **measured, not assumed**: at hand-back time the button is `disabled=false` with `getClientRects().length=1`, and the call sits **after** `await refreshChecksAfterStream()` — that refresh is what clears `disabled`, and `.focus()` on a disabled button is a silent no-op. Full `check-07` exit 0 over 14 consecutive runs. See §Post-Close-Out Re-verification |
 
-**Score:** 34/39 truths verified — 31 by the independent pass, 1 (row 37) resolving the gap, and
-**2 (rows 38, 39) self-verified by the fix's author, not independently confirmed**. Remaining:
+**Score:** 35/40 truths verified — 31 by the independent pass, 1 (row 37) resolving the gap, and
+**3 (rows 38, 39, 40) self-verified by the fix's author, not independently confirmed**. Remaining:
 4 HUMAN (rows 32, 33, 34, 36), 1 present-but-behavior-unverified (row 35), **0 FAILED**.
 
 *(The previous pass's score line read "31/37 … 5 human" — its counts summed to 38 against a 37-row
@@ -344,6 +346,75 @@ it would break the pipeline's own inline `node -e` calls). Registered, not a gap
 
 ---
 
+### Post-Close-Out Re-verification (2026-09-24T15:31:21Z, HEAD `ad43f64`)
+
+**Why this section exists.** After the UAT pass and the three `verify:post` steps, the UI review's
+priority finding 1 was adjudicated by the owner and fixed in quick task `260924-vb7`
+(commits `5fcc7dd` test, `40e8de9` fix, `f483eef` docs, `cf60e4e` harness corrections). That fix
+changed `frontend/app.js` — a `covered_files` member — so this report went **`stale` by content
+change**, not by a bookkeeping omission. Refreshing the digest without re-establishing the
+conclusions would assert "nothing changed since verification", which is false. The report is
+therefore re-established here against HEAD.
+
+**SELF-VERIFIED — NOT INDEPENDENT.** `gsd-verifier` was not re-run: it stalled twice (600s watchdog)
+on this phase during the previous round and produced nothing, and the owner explicitly authorized
+the orchestrator to re-verify first-party again rather than repeat that. Treat rows 38–40 and this
+section as *asserted by the author of the change* rather than *confirmed by a third party*. Rows 1–37
+are carried forward unchanged from the independent pass; the fix does not touch any of their subject
+matter, and every gate they rest on was re-run (below).
+
+**What changed, and what it means for the report.**
+
+| Item | Before | After |
+|------|--------|-------|
+| `frontend/app.js` | pre-fix | `chooseTier()` now hands focus back to `#btn-continue-check` |
+| `scripts/check-07-idi08-validation.py` | not in `covered_files` | **added** — it is now the primary evidence for the A11Y-05 / A11Y-06 / A11Y-03-Escape / tier-focus truths, exactly as `check-05` is for A11Y-01/02/08 |
+| `idi-08-UI-SPEC.md` | not in `covered_files` | **still not** — the original report did not cover spec docs, and that scope is not silently widened here; its D8-10 amendment is recorded in the quick task's SUMMARY instead |
+| `covered_digest` | `v1:sha256:fc089060…b0a91` | `v1:sha256:f2c2e3e5…67bde` |
+| Score | 34/39 (2 self) | **35/40 (3 self)** |
+
+**Gates re-run on HEAD `ad43f64`** (all green; these are the same instruments the independent pass used):
+
+| Gate | Result |
+|------|--------|
+| `.venv/bin/python -m pytest -q` | **219 passed, 6 skipped** (baseline unchanged) |
+| `scripts/check-01-token-conformance.sh` | PASS |
+| `scripts/check-02-contrast.py` | PASS, 0 failures (ORDER 0.363) |
+| `scripts/check-03-hidden-uniqueness.sh` | PASS |
+| `scripts/check-04-important-count.sh` | PASS |
+| `scripts/check-05-ui-uat.py --browser bundled` | 9/10 PASS; item 5 BLOCKED (2 AI-smoke legs, opt-in) — exit 2 by design |
+| `scripts/check-06-idi05-validation.py` | g1–g6 PASS, exit 0 |
+| `scripts/check-07-idi08-validation.py` | g1 21 / g2 39 / g3 10 / g4 3, exit 0 — **14 consecutive green runs** |
+| `scripts/probe-07-focus-composite.py` | ring composite ratio **3.45** ≥ 3.0 |
+| `node --check frontend/app.js` | OK |
+
+**The new truth (row 40), and why its evidence is adequate.** The defect was reproduced before the
+fix (`FAIL g4 … actual=BODY`), the fix turns it green (`actual=btn-continue-check`), and a
+discriminating control proves the green is not vacuous — with the focus call neutralized the same
+real path yields `actual=BODY` again. The placement is **measured rather than assumed**: the call
+sits after `await refreshChecksAfterStream()` because that refresh is what clears
+`continueCheckBtn.disabled`, and `.focus()` on a disabled button is a silent no-op — the failure mode
+that would have made the diff look correct while leaving the defect live. The harness records
+`BLOCKED` (never `PASS`) if the button is not focusable at hand-back time, so a no-op cannot ship
+looking green.
+
+**Two harness defects found and fixed while re-establishing this** (registered, not hidden):
+`g4`'s "已隐藏" assertion logged the **inverse** of its own meaning (a PASS printing
+`expected=hidden=true actual=hidden=False`), and `_settle_cli_check()` did not actually close the
+`/api/cli-check` race it was written for — it waited for one response plus ~150ms of stability, which
+a **second** in-flight round trip can outlive. That is the source of the intermittent red the executor
+hit on `g1 [#cli-check-overlay] Escape 后仍可见`. Both are fixed in `cf60e4e`; the helper now gates on
+zero in-flight round trips **and** a 600ms stable window.
+
+**Residual, stated plainly.** Four truths remain HUMAN and one remains
+present-but-behavior-unverified — unchanged by this re-verification, and unchanged in character:
+the keyboard-origin selection legs cannot be automated in this environment, and the ROADMAP
+§Manual checks explicitly forbids reading an automated non-result there as a defect. The
+`Bash(node -e ' *)` grant remains a registered owner-accepted trust-boundary decision.
+
+---
+
 _Verified: 2026-09-24T15:52:00Z (independent; see the timestamp note — this stamp is mislabelled local time)_
 _Re-verified: 2026-09-24T13:23:27Z (gap-closure portion self-verified by the orchestrator, under explicit user authorization)_
-_Verifier: [CL] (gsd-verifier, first pass) · [CL] orchestrator (gap resolution)_
+_Re-verified: 2026-09-24T15:31:21Z (post-close-out re-verification at HEAD `ad43f64`; rows 38–40 and §Post-Close-Out Re-verification self-verified, under explicit user authorization)_
+_Verifier: [CL] (gsd-verifier, first pass) · [CL] orchestrator (gap resolution + post-close-out re-verification)_

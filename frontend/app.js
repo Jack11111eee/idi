@@ -82,6 +82,13 @@ const missionCloseBtn = document.getElementById('btn-mission-close');
 const docPanel = document.getElementById('doc-panel');
 const docPanelHeader = document.getElementById('doc-panel-header');
 
+// 背景惰性挂载点(D-14 / A11Y-06):下面那个背景惰性同步函数**只**往这一个节点挂原生属性。
+// 边界已核实:frontend/index.html 的 #app 自 L10 起、L179 闭合,五个 .overlay 与
+// #selection-menu 都是它的**兄弟** ⇒ 挂在这里天然只作用于背景、不波及任何弹窗自身。
+// 新增句柄是安全的;改名或删除既有句柄才是 G-idi01-8 的失效形态(硬规则 5)——
+// 上面 app.js:4-83 的既有句柄一个都没动。
+const appEl = document.getElementById('app');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
@@ -485,11 +492,37 @@ function openConfirmModal() {
   confirmAuthorizeBtn.disabled = true; // 初始 disabled(未输入即不可放行)
   confirmError.classList.add('hidden');
   confirmationModal.classList.remove('hidden');
+  syncBackgroundInert(); // D-14:顺序锁定 —— 先让背景惰性,再把焦点送进弹窗
   confirmWordInput.focus();
 }
 
 function closeConfirmModal() {
   confirmationModal.classList.add('hidden');
+  syncBackgroundInert(); // D-14:两个弹窗都关闭后摘掉背景惰性
+  // 刻意不在这里交还焦点(A-8 / F1-d):「放行」成功后整个视图即将切换
+  // (refreshRoundsAfterStream),把焦点钉回触发者那一刻它就会随 #authorize-row 一起隐藏,
+  // 交还反而把焦点丢给 <body>。故交还只写在 Escape 分支里。
+}
+
+// ---------------------------------------------------------------------------
+// 背景惰性同步(A11Y-06 / D-14):让两个弹窗的模态宣告成真
+// ---------------------------------------------------------------------------
+
+// D-14:弹窗打开期间,背景对辅助技术与指针都惰性。
+// 原生 HTML 属性,零依赖零构建(硬规则 6);焦点陷阱是已裁定 Out of Scope —— **这不是陷阱**,
+// 它只拿到陷阱的主要效果(背景不可聚焦、不可点)。
+// 从两个弹窗的 .hidden 现状**派生**,不靠 open/close 成对记账:成对记账会在任何一条早退路径上
+// 漏去属性(与 STATE.md 反复出现的派生计数缺陷同型),而派生式在结构上不可能失配,且天然幂等。
+// 硬规则 12:它与 .hidden 是两个正交机制(前者管「背景对辅助技术与指针惰性」,后者管显隐),
+// 不得互相替代。
+// 只挂 appEl(#app):五个 .overlay 与 #selection-menu 都是 #app 的兄弟 ⇒ 天然只作用于背景。
+// 绝不挂 document.body 或任何共享祖先 —— 那会让当前打开的弹窗自身变惰性,键盘与指针双路锁死
+// (T-idi08-05,本计划最重的一条禁令)。
+function syncBackgroundInert() {
+  const anyDialogOpen = !confirmationModal.classList.contains('hidden')
+    || !tierModal.classList.contains('hidden');
+  if (anyDialogOpen) appEl.setAttribute('inert', '');
+  else appEl.removeAttribute('inert');
 }
 
 // 拒绝路径(D-P3-5):不 POST 授权,把拒绝原因作为一条普通批注转给下一轮
@@ -638,6 +671,13 @@ async function loadChecksView(sessionData) {
     if (!selfcheck.tier && !tierModalShown) {
       tierModalShown = true;
       tierModal.classList.remove('hidden');
+      syncBackgroundInert(); // D-14:顺序锁定 —— 先让背景惰性,再把焦点送进弹窗
+      // D-16:补打开时移焦。这是 D-11 判定的「卡死」的实质修复 —— #tier-modal 的陷阱不是
+      // 「没有 Escape」而是「焦点不在里面」;背景惰性落地后背景不可聚焦,焦点若不在弹窗内会掉到
+      // <body>,下一次 Tab 会绕开整个背景、落到弹窗外围,比不惰性化更糟。
+      // 目标取首个可操作控件(与 openConfirmModal() 的既有形态对称);不取弹窗容器是因为那需要
+      // 给它一个程序化聚焦用的负值停靠点,会被 check-05 --item 10 的普查排除,又是一个需要解释的例外。
+      tierLooseBtn.focus();
     }
     return;
   }
@@ -797,6 +837,7 @@ async function chooseTier(tier) {
       return;
     }
     tierModal.classList.add('hidden');
+    syncBackgroundInert(); // D-14:选档成功即摘掉背景惰性(两个弹窗都已关闭)
     renderEvent({ kind: 'say', content: `已选择「${tier}」档,点「开始自检」启动核查。`, raw: null });
     await refreshChecksAfterStream();
   } catch {

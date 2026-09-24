@@ -1307,6 +1307,11 @@ roundSwitcher.addEventListener('change', () => {
 // mouseup 时捕获的选区快照(菜单动作延迟读取会因选择被清除而丢)
 let menuSelection = null;
 
+// 「已被显式关掉」的那一份选区(配合下面的守卫函数;D-08 的配套,不是 D-08 的替代)。
+// 菜单被 Escape / 滚轮 / 点外部关掉时记下当时**仍然存活**的那份选区;只要选区还是这一份,
+// 就不允许 keyup 把菜单重新弹开。null = 没有关闭态要维持。
+let dismissedSelectionRange = null;
+
 // before 计算(D-P2-3):选区真正起点(方向无关)在其文本节点中的前文取末 40 字。
 // 用 getRangeAt(0).startContainer/startOffset,不用 anchorNode——反向拖拽时
 // anchor 是选区终点,locate_quote 的 before 二次定位会被反向起点败掉;
@@ -1339,15 +1344,54 @@ function hideSelectionMenu() {
   // 键盘用户要重新 Tab 穿过整个侧栏才能回到文档区 —— 交还 #round-doc。
   // 覆盖三个落点:F1-a 菜单被隐藏时、F1-b **两个菜单项执行后**(两者都会先调本函数,
   // 而焦点当时停在一个**已隐藏的按钮**上 —— 这条腿 ROADMAP 未提)、F1-c Escape 关菜单。
-  // 写在这**一个**函数里而不是它的四个调用点(两个关闭器 + handleSelectionTrigger 的两条
+  // 写在这**一个**函数里而不是散到各调用点(两个关闭器 + handleSelectionTrigger 的两条
   // 守卫 + 两个菜单项):调用点散落必然漏掉一个,单点才不会。
+  // (此处刻意不写调用点**个数**:本阶段它随新监听器增长过一次,数字会腐坏;要核数用 grep 现算。)
   // 判据必须在 classList.add('hidden') **之前**取:焦点元素一旦变成 display:none,
   // document.activeElement 立刻回落到 body,之后再判就永远为假。
   // 刻意不在这里清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
   const hadFocus = selectionMenu.contains(document.activeElement);
+  // 关闭态登记(见 dismissedSelectionRange 的注释):取 menuSelection —— 它正是这次被关掉时
+  // 展示的那份选区,故不必再向浏览器读一次当前选区。菜单从未展示过时它为 null,登记即失效,
+  // 正好对应「没有关闭态要维持」。
+  // ⚠ 只在「可见 → 隐藏」这一次登记,不要在每次调用都登记。本函数被**每一个 scroll 事件**
+  // 调用(见初始化函数里的 scroll 监听),而它自己的 roundDoc.focus() 就可能引发一次滚动 ⇒
+  // 紧接着会有第二次调用;第二次调用时 menuSelection 已被置 null,若照样登记就会把刚记下的
+  // 关闭态**覆写成「无」**,于是紧随的 keyup 又把菜单弹回来。实测确认:这正是「单次 Escape
+  // 有效、连按两次或先松 Shift 就失效」的成因 —— 失败只在焦点移回 #round-doc 真的滚动了
+  // 页面时出现,所以单独跑一个场景复现不出来。
+  const wasVisible = !selectionMenu.classList.contains('hidden');
+  if (wasVisible) {
+    dismissedSelectionRange = (menuSelection && !menuSelection.isCollapsed && menuSelection.rangeCount > 0)
+      ? menuSelection.getRangeAt(0).cloneRange()
+      : null;
+  }
   selectionMenu.classList.add('hidden');
   menuSelection = null;
   if (hadFocus) roundDoc.focus(); // round-doc 不可聚焦时(非 phase3 / 被祖先藏住)静默降级
+}
+
+// 当前选区是否仍是「刚被显式关掉」的那一份?是 ⇒ 调用方不得把菜单重新弹开。
+// 为什么需要它(实测,非推断):只读容器里方向键**不改变**选区,而 #round-doc 的 keyup 处理器
+// 只要看到「选区非折叠且落在 #round-doc 内」就弹菜单 ⇒ 没有本守卫时,Escape 之后的**任何**一次
+// keyup 都会把菜单原样弹回来:再按一次 Escape、按一下方向键、滚轮关掉菜单后再按键,全部如此。
+// 判据刻意是**选区身份**而不是「按了哪个键」:后者就是按键白名单,而本阶段已裁定白名单只允许
+// 存在于 Shift 监听器里,不得进入划词触发路径(见该函数上方的围栏注释)。
+// 选区一旦真的变了(用户又划了一次),本守卫立即自清并放行 —— 无需订阅事件,也就没有时序假设。
+function isDismissedSelectionLive() {
+  if (!dismissedSelectionRange) return false;
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
+    dismissedSelectionRange = null;
+    return false;
+  }
+  const r = sel.getRangeAt(0);
+  const same = r.startContainer === dismissedSelectionRange.startContainer
+    && r.startOffset === dismissedSelectionRange.startOffset
+    && r.endContainer === dismissedSelectionRange.endContainer
+    && r.endOffset === dismissedSelectionRange.endOffset;
+  if (!same) dismissedSelectionRange = null;
+  return same;
 }
 
 // 显示菜单在选区附近(向右下偏移,不越视口——简单 clamp)
@@ -1399,7 +1443,14 @@ function initSelectionMenu() {
 
   // 仅 round-doc 容器内触发(D-P2-2:draft-view / chat 区绝不绑此菜单)
   roundDoc.addEventListener('mouseup', handleSelectionTrigger);
-  roundDoc.addEventListener('keyup', handleSelectionTrigger);
+  // keyup 这一路包一层关闭态守卫。**handleSelectionTrigger 的函数体一字不改**(D-06 把它列为
+  // 不得触碰;上面那段围栏注释也说明了为什么白名单不能进它)—— 守卫在**它之前**返回,它本身
+  // 完全不知道守卫存在。mouseup 一路刻意不包:单击会折叠选区,折叠后那个处理器自己就会走
+  // 「隐藏菜单」分支,不存在被误弹回来的路径;只有键盘这一路能(方向键不改选区)。
+  roundDoc.addEventListener('keyup', (e) => {
+    if (isDismissedSelectionLive()) return;
+    handleSelectionTrigger(e);
+  });
 
   // 键盘划词的提交手势(D-05):按住 Shift 扩选时焦点**不动**,松开 Shift 才把焦点送入
   // 菜单首按钮。为什么不能写进 handleSelectionTrigger:那个函数挂在**每一次** keyup 上,
@@ -1421,6 +1472,11 @@ function initSelectionMenu() {
   document.addEventListener('keyup', (e) => {
     if (e.key !== 'Shift') return;
     if (selectionMenu.classList.contains('hidden')) return;
+    // 焦点必须仍在文档区:扩选手势期间焦点**不动**,所以「焦点不在 #round-doc」就意味着
+    // 这次 Shift 抬起与扩选无关 —— 典型是 Shift+Tab 反向移焦:焦点已落到别的控件上,此时
+    // 再夺焦会把用户从刚导航到的控件里拽走,而 #selection-menu 在文档序末尾,他要重新
+    // 穿过整个侧栏才回得来(实测复现)。松开 Shift 这个习惯动作同理。
+    if (document.activeElement !== roundDoc) return;
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed) return;
     annotateBtn.focus();
@@ -1512,26 +1568,20 @@ function initSelectionMenu() {
 // 三个响应对象今天**互斥**(菜单只在 currentState === 'phase3' 显示,档位弹窗只在
 // phase5_awaiting_tier 弹出),但优先级表使行为与「谁先打开」无关 —— 源码顺序不参与判定。
 document.addEventListener('keydown', (e) => {
+  // 输入法组字期间的 Escape 是「取消候选窗」,不是「关弹窗」—— 而 D-12 的对象是弹窗本身。
+  // #confirm-word-input 收中文,组字是常态,故这一步必须放过;否则用户取消候选词会顺手把
+  // 授权弹窗关掉。isComposing 在非组字时恒为 false,此判据不改变其余任何路径的行为。
+  if (e.isComposing) return;
   if (e.key !== 'Escape') return;
   // 1. 划词菜单(关闭函数已含计划 01 落的 F1-a 焦点交还)。
   //    刻意不清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
+  //    本分支**不需要**再抑制紧随其后的 Escape keyup:关闭函数会登记关闭态,keyup 那一路的
+  //    守卫据此拦截(见 isDismissedSelectionLive)。这里原先用一个 once 监听器只抑制「紧接着的
+  //    那一次」Escape keyup —— 那个写法挡不住第二次 Escape、也挡不住任意其它按键,更挡不住
+  //    「先松 Shift 再松 Escape」的抬手顺序,三种都会把菜单原样弹回来(均实测复现);
+  //    关闭态登记取代了它,不再存在「只覆盖一次」的窗口。
   if (!selectionMenu.classList.contains('hidden')) {
     hideSelectionMenu();
-    // ⚠ 承重的四行:抑制紧随其后的 Escape keyup,否则上面这次关闭会被**当场撤销**。
-    // 机制(实测,非推断):上面那次关闭的 F1-a 单点焦点交还会把焦点送回 #round-doc,
-    // 而 #round-doc 上绑着既有的 handleSelectionTrigger(keyup)—— 选区非折叠时它会**重开菜单**。于是:
-    //   keydown Escape → target=#btn-annotate → 菜单隐藏 ✓、焦点交还 ✓
-    //   keyup   Escape → target=#round-doc    → handleSelectionTrigger 重开菜单 ✗
-    // 净效果 = 「按 Escape 什么也没发生」,直接打破 D-08、UI-SPEC §K-2.6 第 6 步与
-    // ROADMAP Phase 8 §Manual checks 里 A11Y-03 的「Escape 关闭并交还焦点」。
-    // 为什么是 capture 阶段:document 的捕获阶段先于目标元素上的监听器 ⇒ 在捕获期
-    // stopPropagation() 能让事件根本到不了 #round-doc,handleSelectionTrigger 不会触发。
-    // 为什么不用「清空选区」绕开:那是 D-08 明文禁止的(会毁掉 Escape 后续选这条路径)。
-    // 为什么不改 handleSelectionTrigger:它的函数体在 Do-Not-Touch 名单上(硬规则 5);
-    // 本修法一行都不碰它。once:true 让监听器在首个 keyup 后自动摘除,无需记账、不会泄漏。
-    document.addEventListener('keyup', (ev) => {
-      if (ev.key === 'Escape') ev.stopPropagation();
-    }, { capture: true, once: true });
     e.preventDefault();
     return;
   }
@@ -1556,6 +1606,7 @@ document.addEventListener('keydown', (e) => {
     syncBackgroundInert();
     continueCheckBtn.focus();
     e.preventDefault();
+    return; // 与分支 1/2 对称:下面那段是「刻意不响应」的说明,不是本分支的后续步骤
   }
   // 4. 其余三个弹窗(权限确认 / 使命完成 / 启动前自检浮层)**刻意不响应 Escape** —— 范围锁死为
   //    D-11 的两个对象(D-17 的已知缺口归 v2 A11Y-V2-02)。这是刻意的,不是漏项:不要因为

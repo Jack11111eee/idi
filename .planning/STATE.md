@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 8
+current_phase: 08
 current_phase_name: 可访问性语义与键盘
 status: executing
-stopped_at: Phase 8 UI-SPEC approved
-last_updated: "2026-09-24T02:28:40.463Z"
-last_activity: 2026-09-24 -- Phase 8 planning complete
-state_head: dbe76913e5b50ed3c5a224f6e0f42cd20b2844d1
+stopped_at: Completed idi-08-01-PLAN.md
+last_updated: "2026-09-24T03:16:55.532Z"
+last_activity: 2026-09-24
+last_activity_desc: Phase idi-08 execution started
+state_head: b1351d231a9f19fc9999938758012ddf5a80b0a0
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 18
+  completed_plans: 19
   percent: 83
-last_activity_desc: Phase 8 planning complete (3 plans, waves 1-3) — ready to execute
 ---
 
 # Project State
@@ -25,14 +25,14 @@ last_activity_desc: Phase 8 planning complete (3 plans, waves 1-3) — ready to 
 See: .planning/PROJECT.md (updated 2026-09-21)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase 8 — 可访问性语义与键盘
+**Current focus:** Phase idi-08 — 可访问性语义与键盘
 
 ## Current Position
 
-Phase: 8 — 可访问性语义与键盘
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-09-24 -- Phase 8 planning complete
+Phase: idi-08 (可访问性语义与键盘) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase idi-08
+Last activity: 2026-09-24 — Phase idi-08 execution started
 
 Progress: [████████░░] 83%
 
@@ -96,6 +96,7 @@ Progress: [████████░░] 83%
 | Phase idi-07 P01 | 10 min | 3 tasks | 3 files |
 | Phase idi-07 P02 | 14 min | 3 tasks | 2 files |
 | Phase idi-07 P03 | 33 min | 3 tasks | 2 files |
+| Phase idi-08 P01 | 8 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -191,6 +192,9 @@ Recent decisions affecting current work:
 - [Phase idi-07]: idi-07-03:时长判据**先按逗号拆成列表再逐项比**,不用子串包含 —— transition-duration 对两个属性序列化成 0.12s, 0.12s,而 0s 是它的子串,用 0s in raw 判「reduce 下全为 0s」会在**未生效**时假绿(与本项目已记录的 all(w != 700) 对 None 恒真是同型陷阱)。
 - [Phase idi-07]: idi-07-03:收口记录 idi-07-VERIFICATION.md 刻意声明 status: human_needed 且**不声明** covered_files / covered_digest。前者因为本阶段有一条具名人工项(5″:禁用态仍一眼看出不可点);后者因为 #4155 的指纹对是 fail-closed 的(声明其一而缺另一直接判 stale),且指纹必须在**全部 PLAN/SUMMARY 都在盘之后**才能算(allCurrentArtifactsCovered 会扫活目录)。指纹写回与独立复核留给 /gsd-verify-work idi-07。
 - [Phase idi-07]: idi-07-03:D-19 的四份报告(idi-04 / idi-04.1-radix / idi-05 / idi-06)**全部判为「内容真变 ⇒ 重新验证」**而非「重算 + 披露」—— 四份的 covered_files 都含 frontend/style.css(三份另含 scripts/check-05-ui-uat.py),两个文件在本阶段三个计划里都**真的变了字节**。**不得**用 gsd-tools query verification status 判定(这些相位目录一律返回 missing);判据只能是逐份比对 covered_files + 以 HEAD 内容重算 digest。四份各自的自身门已在 HEAD 上复跑全绿(证据见 SUMMARY),报告文件本身零改动。
+- [Phase idi-08]: 键盘划词的提交手势 = **松开 Shift**(D-05),落成 initSelectionMenu() 内的独立 Shift 专用监听器;handleSelectionTrigger **一字不改**。原因:该函数挂在**每一次** keyup 上,在里面移焦会让键盘用户永远只能选中一个字符,而 A11Y-03 的验收项「Shift+方向键选区 → 菜单出现 → 焦点已入菜单」**仍会照常通过**(它测状态,不测可用性)—— 这就是「按路线图字面实现会假绿」的机制事实。
+- [Phase idi-08]: 焦点交还写在 hideSelectionMenu() **这一个**函数里(四个调用点散落必然漏),且判据 selectionMenu.contains(document.activeElement) 必须在 classList.add 隐藏类 **之前**取 —— 焦点元素一旦 display:none,document.activeElement 立刻回落到 body,之后再判永远为假。实测已用反控钉死:焦点在菜单内 ⇒ 交还 round-doc;焦点在 #round-switcher ⇒ 不动。
+- [Phase idi-08]: idi-08-01 实测推翻三条计划前提(登记,不改门不改样式表):①check-05 --item 10 的样本集是 p1/checking/p3(**不含 archive,也从不跑 p12**),CLI 无 --state 开关 ⇒ 「p3/checking/archive 三样本」与「p12 里 #round-doc 被 visible 过滤」两条验收面各自有一半无法用该门测;②D-01 的几何前提「盒高数千像素 ⇒ 左右两条贯穿全高的竖线」在 p3 样本不成立(实测盒高 778.64px < 视口 900px,环画成**完整矩形**),因为该样本的轮次文档只有 883 字节;新增实测:应用自身滚动位置下环**下边缘**越出 #doc-panel 滚动裁切界 3.64px,滚动 4px 即可四边全入(横向余量 36px);③Task 3 的 Escape 断言与九步脚本第 6/7 步归**计划 02**(本计划不装 Escape 处理器)。另:item 10 在改动前后均 PASS(41 条断言),判定集 p1 9→9 / checking 8→9 / p3 9→10,_idi07_tab_drive 上限 36→37 与 Tab 序 +1 相抵,无需改门 —— 是普查集变化,不是缺陷修复。
 
 ### Pending Todos
 
@@ -215,6 +219,7 @@ None yet.
 - [v1.14 P8] **第五次复现,触发者是 `state.planned-phase`,且破坏面比前四次宽。** 前四次的症状都是 `completed_phases` 被改回 1(连同 `percent`);**本次 `completed_phases` 反而是对的(5),错的是 `total_phases`** —— 它写 **8**(数的是阶段**编号** 1..8,把 v1.13 的三个阶段并进了 v1.14 作用域的分母),而 `completed_phases: 5` 只数 v1.14 的五个 ⇒ 两者不同源,`percent` 被算成 **63**(5/8),ROADMAP 真值 83%(5/6)。**同一批写入里 `total_plans` 的 18 → 21 是正确的**(纯增量,作用域一致)—— **⇒ 该 handler 的增量型字段可信、比值型字段不可信,判据仍取 ROADMAP。** 本次还**删除了四个已声明的 schema 字段**:`current_phase` / `current_phase_name` / `last_activity_desc`(`state-md-schema.cjs:102/106/198`)与 `state_head`(`:205`,契约是 `preservation: derive`、注释明写「**Never preserved**: a stale stamp would claim STATE.md was written against a commit it wasn't」——即每次写入都应**重算**,不是删除),并把 `gsd_state_version: "1.0"` 的引号去掉(把 `type: 'string'` 的字段变成 YAML 浮点 1.0),另在正文两处列表中间插入空行。**均已手工修复并复跑核盘**(`git show 41a2f52`)。**方法论结论:`state.*` 的写入没有一个是可信的,动词清单又长了(`planned-phase`),且失败模式会随动词变化(改值 / 改分母 / 删字段),所以核盘不能只比对 `percent` 一个数——须逐字段对照写入前的快照。**
 - [v1.14 P8] **`gsd-tools gap-analysis` 对本项目结构性地看不见 CONTEXT 裁定**(与 `[Phase idi-07]` 的 `ui.safety-gate` 失明同族,必须留档)。它按字面文件名找 `${PHASE_DIR}/CONTEXT.md`,而本项目全阶段的命名是 `NN-CONTEXT.md`(实测 `08-CONTEXT.md` / `07-CONTEXT.md` 皆是),故走「CONTEXT.md missing → REQUIREMENTS-only report」的降级分支:输出里 **0 条 D-ID 行**,却不报错、不提示 —— 一份「26 条裁定全部未覆盖」的报告和一份「裁定根本未被检查」的报告长得一模一样,后者还会以 `✓` 的形态误导。另:它的 REQUIREMENTS 匹配是**全里程碑、按子串**的,不分阶段也不看覆盖语义 —— 本次它把 `REG-02` 记成 `✓ Covered`(只因 `idi-08-03-PLAN.md` 提到该 id 作为回归门引用,而 REG-02 早在 `260917-fqh` 就已完成,根本不在 Phase 8 范围内),同时把其余 30 条已完结阶段的需求列为 `✗ Not covered`。**⇒ 该步非阻塞,但它的输出不可作为判据;决策覆盖率须自跑阶段级核盘**(本次用 `grep -ho 'D-[0-9][0-9]' *-PLAN.md | sort -u` 逐 id 对照 `08-CONTEXT.md` 的 D-01…D-26,得 26/26)。
 - [v1.14 P8] **Phase 8 的 CONTEXT 已落盘**(`idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md`,D-01…D-26)。三条会改变下游行为的裁定:①**两个阻塞弹窗按实测换成 `#confirmation-modal` + `#tier-modal`**(路线图点名的 `#permission-modal` 可 Tab 出去、不卡;真正卡死的是无取消按钮且不移焦的 `#tier-modal`);②**键盘划词的提交手势 = 抬起 Shift**(路线图字面「keyup 分支移焦」会让键盘用户只能选中一个字符,而验收项仍会假绿);③**焦点环沿用整盒环、`style.css` 零改动** ⇒ Phase 8 在 D-01 路径下**不欠任何验证指纹**(`frontend/app.js` / `index.html` 不在任何 live 报告的 `covered_files` 里)。
+- [v1.14 P8] **同一派生计数缺陷第六次复现,本次是「三动词连击」,且 `update-progress` 是传播者而不是修正者。** `idi-08-01` 收口序列逐段实测:`state.advance-plan` 把 `completed_phases` **5 → 1**、`percent` **83 → 17**(与第 1-4 次同症状);紧接着 `state.update-progress` **没有**从磁盘重算,而是拿那个已被污染的 `completed_phases` 算 `percent = 1/6 = 17` 并回写 —— **它把错值固化了**(前四次只记录了它「把进度往回改」,没记它「不回算」);最后 `state.record-session` 再把它压到 **`completed_phases: 0` / `percent: 0` / 进度条 `[░░░░░░░░░░] 0%`** ⇒ **该字段不是被写成某个固定错值,而是被逐步推向 0,即 `record-session` 的破坏是累加式的**(第 4 次记录的是 5→1,本次同一次会话内 1→0)。**同批写入中正确的部分(照第 5 次的方法论结论:增量型可信、比值型不可信):** `completed_plans` 18 → 19 ✅、`total_plans: 21` 未动 ✅、`state.record-metric` 正确追加 `Phase idi-08 P01 | 8 min | 3 tasks | 2 files` ✅、`roadmap.update-plan-progress idi-08` 正确写 `1/3 | In Progress` ✅、`requirements.mark-complete A11Y-02 A11Y-03` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete)。**⇒ 收口序列里唯一可信的判据仍是 ROADMAP;`state.*` 的四个动词(`advance-plan` / `update-progress` / `record-session` / `planned-phase`)在这一条上全部不可信,且 `update-progress` 不可作为修正手段 —— 它会用坏值重算。**
 
 ### Quick Tasks Completed
 
@@ -246,9 +251,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T01:51:42.160Z
-Stopped at: Phase 8 UI-SPEC approved
-Resume file: .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-UI-SPEC.md
+Last session: 2026-09-24T03:16:07.619Z
+Stopped at: Completed idi-08-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

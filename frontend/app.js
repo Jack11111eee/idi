@@ -1294,8 +1294,19 @@ function selectionInRoundDoc(selection) {
 
 // 隐藏菜单并清空选区快照
 function hideSelectionMenu() {
+  // D-07 / D-08(F1-a / F1-b / F1-c):焦点此刻若停在菜单内,隐藏后它会回落到 <body>,
+  // 键盘用户要重新 Tab 穿过整个侧栏才能回到文档区 —— 交还 #round-doc。
+  // 覆盖三个落点:F1-a 菜单被隐藏时、F1-b **两个菜单项执行后**(两者都会先调本函数,
+  // 而焦点当时停在一个**已隐藏的按钮**上 —— 这条腿 ROADMAP 未提)、F1-c Escape 关菜单。
+  // 写在这**一个**函数里而不是它的四个调用点(两个关闭器 + handleSelectionTrigger 的两条
+  // 守卫 + 两个菜单项):调用点散落必然漏掉一个,单点才不会。
+  // 判据必须在 classList.add('hidden') **之前**取:焦点元素一旦变成 display:none,
+  // document.activeElement 立刻回落到 body,之后再判就永远为假。
+  // 刻意不在这里清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
+  const hadFocus = selectionMenu.contains(document.activeElement);
   selectionMenu.classList.add('hidden');
   menuSelection = null;
+  if (hadFocus) roundDoc.focus(); // round-doc 不可聚焦时(非 phase3 / 被祖先藏住)静默降级
 }
 
 // 显示菜单在选区附近(向右下偏移,不越视口——简单 clamp)
@@ -1348,6 +1359,31 @@ function initSelectionMenu() {
   // 仅 round-doc 容器内触发(D-P2-2:draft-view / chat 区绝不绑此菜单)
   roundDoc.addEventListener('mouseup', handleSelectionTrigger);
   roundDoc.addEventListener('keyup', handleSelectionTrigger);
+
+  // 键盘划词的提交手势(D-05):按住 Shift 扩选时焦点**不动**,松开 Shift 才把焦点送入
+  // 菜单首按钮。为什么不能写进 handleSelectionTrigger:那个函数挂在**每一次** keyup 上,
+  // 在里面移焦会让键盘用户**永远只能选中一个字符** —— Shift+→ 选中 1 个字符即触发 keyup ⇒
+  // 焦点跳到 #btn-annotate ⇒ 再按 Shift+→ 时事件目标已是菜单按钮,roundDoc 的 keyup 不再
+  // 触发,浏览器也不会给按钮内的文本扩选。而 A11Y-03 的验收项「Shift+方向键选区 → 菜单出现
+  // → 焦点已入菜单」**仍会照常通过**(它测状态,不测可用性)—— 这就是「按路线图字面实现会
+  // 假绿」的机制事实,故这条手势是承重的,不是风格选择。
+  // 白名单边界(D-06):handleSelectionTrigger **一字不改**;t8g 的既有决定(L1321-1322
+  // 「不对 keyup 做按键白名单 —— 折叠/空白选区即关闭菜单已让非选择类按键成为安全 no-op」)
+  // **继续对它生效**。按键白名单只存在于下面这个新增的 Shift 专用监听器里 —— 这是对那条
+  // 决定实质的偏离,不是推翻它。
+  // 三条合取判据同时成立才移焦,任一条不成立即 no-op;空选区 / 折叠选区 / 菜单已隐藏三种
+  // 情形都不在这里处理,handleSelectionTrigger 的既有守卫已经覆盖。
+  // 绑 document 而不是 roundDoc:Shift 的 keyup 只在焦点位于 #round-doc 子树内时才在扩选
+  // 语境下发生 —— 那恰好是「扩选结束」的时刻,绑 document 才能在该时刻稳定捕获。
+  // 已登记的代价:①「松开 Shift 即提交」是自造惯例(非平台约定);②它引入了一个按键白名单
+  // 事实;③鼠标路径的副作用见 UI-SPEC §K-1.5(鼠标 Shift+点击扩选后松开 Shift 也会移焦)。
+  document.addEventListener('keyup', (e) => {
+    if (e.key !== 'Shift') return;
+    if (selectionMenu.classList.contains('hidden')) return;
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    annotateBtn.focus();
+  });
 
   // 点文档其他位置/滚动 → 菜单消失(菜单自身点击不冒泡关闭)
   document.addEventListener('mousedown', (e) => {

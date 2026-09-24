@@ -908,9 +908,10 @@ grep -c 'clearInlineError();' frontend/app.js          # >= 9(基线实测 9,只
 > 由 plan-phase 的 `## UI Considerations` lift 规则提升。**整节替换,不追加**(幂等)。
 > 空态 / 错误态 / 加载态的**文案**不在本节重复 —— 见 `## Copywriting Contract`(去重)。
 >
-> **本节的当前状态:probe 尚未运行(Step 9.5 在 checker APPROVED 之后执行)。**
-> 下面给出的是**供 probe 使用的元素面(作者已按 kind 预分类)** —— 它同时是 probe 的输入,
-> 也是本阶段影响面的可枚举清单(本项目「影响面必须可枚举」的口径)。
+> **本节的当前状态:probe 已运行(Step 9.5,2026-09-23,checker APPROVED 之后)。**
+> 结果:`applicable 26 / resolved 26 / unresolved 0`(`explicit 5` / `backstop 21`)。
+> 下面第一张表是**供 probe 使用的元素面(作者按 kind 预分类的 override)**,它同时是本阶段
+> 影响面的可枚举清单(本项目「影响面必须可枚举」的口径);其后两张表是 **probe 的输出**。
 
 **元素面(6 个,作者预分类的 kind):**
 
@@ -923,21 +924,89 @@ grep -c 'clearInlineError();' frontend/app.js          # >= 9(基线实测 9,只
 | E5 | `#app`(背景区) | **新增 `inert` 的挂载点**(M-1.3) | `static-content` |
 | E6 | `#permission-modal` / `#mission-complete-modal` / `#cli-check-overlay` | **本阶段零改动**(范围锁,D-11 / D-17) | `form`, `interactive-control`, `nav` |
 
-**两条必须先读的 probe 事实(沿用 `idi-06-UI-SPEC.md` 已登记的记录,防止把分类失真读成覆盖率):**
+**probe 运行记录(2026-09-23,checker APPROVED 之后):**
 
-1. **probe 的 cue 是英文匹配,中文散文会被大量判为 `unclassified`。** 上一阶段的实测:
-   首跑 10 个元素里 **8 个 unclassified**,而该阶段的核心类别(`overflow` / `long-text`)
-   **全部漏检(0 条)**;作者逐条裁定 kind 覆盖后重跑才得到 `applicable 43 / unresolved 0`。
-   ⇒ **首跑的数字不是覆盖率,是分类失真**;两行必须一起读,否则会把**作者裁定的成分**
-   误读成**引擎的认同**。
-2. **元素面必须由作者喂 override,不能只靠启发式。** 本节的 kind 列就是那份 override。
+| 项 | 值 |
+|---|---|
+| 引擎 | `.claude/gsd-core/bin/lib/ui-consideration-probe.cjs` |
+| 元素 | 6(E1–E6,见下表) |
+| 覆盖(重跑,喂 override) | `applicable 26 / resolved 26 / unresolved 0` |
+| 验证档 | `explicit 5 / backstop 21` |
+| 首跑(裸中文散文,无 override) | `applicable 16`;6 个元素中 **3 个完全 `unclassified`(E4 / E5 / E6)** |
+| 重跑(作者逐条裁定 kind 覆盖) | `applicable 26`;`unclassified 0` |
+| 差异 | 首跑少 10 对,全部由作者裁定补回 |
 
-**适用类别(probe 结果未出前**不得**预先填写的部分):** 本阶段的核心状态维度是
-`loading`(弹窗与菜单的中间态)与 `error`(两个弹窗的失败路径与内联错误),它们**全部继承既有实现**,
-本阶段零改动;`long-text` / `overflow` 与本阶段的关系是**零**(本阶段不引入任何新容器、不改变任何换行行为)。
-**具体行数(covered / backstop / unresolved)以 Step 9.5 的 probe 输出为准,由该步整节替换本表下方的空白。**
+> **首跑的数字不是覆盖率,是分类失真。** 引擎的 cue 是**英文匹配**,而本节的元素面是中文散文 ——
+> 中文词(按钮 / 弹窗 / 文本 / 菜单)**一律不命中**。首跑之所以还能得到 16 对,靠的是散文里**偶然
+> 夹带的英文标识符**,而且**其中一条是假阳性**:
 
-<!-- probe 输出在此下方插入(Step 9.5)。probe 未运行前本节不写任何"已覆盖"的结论。 -->
+| 元素 | 首跑检测到的 kind | 成因 | 判定 |
+|---|---|---|---|
+| E1 | `nav` | 字面词 **`Tab`** 命中了 `tabs?` 这条 nav cue | **假阳性** —— `#round-doc` 与导航无关 |
+| E2 | `nav` | `#selection-menu` 里的 **`menu`** 命中 `menus?` | 偶然正确(它确实是浮层菜单) |
+| E3 | `form` | `#confirm-word-input` 里的 **`input`** 命中 `inputs?` | 偶然正确 |
+| E4 / E5 / E6 | (无) | 散文里**没有任何英文 token** | **完全漏检** |
+
+⇒ 两行必须一起读:只引「`applicable 26`」会把**作者裁定的成分**误读成**引擎的认同**(沿用 Phase 5 /
+`idi-06` 的记录)。**本阶段首跑不只是欠覆盖,还错覆盖了一条** —— 这比单纯漏检更值得登记。
+
+**元素面(6 个)与作者裁定的 kind:**
+
+| id | 界面面 | 本阶段与它的关系 | 作者裁定的 kind |
+|---|---|---|---|
+| E1 | `#round-doc`(轮次文档渲染区) | **新增 Tab 停靠点 + 整盒焦点环**(K-1) | `static-content`, `interactive-control` |
+| E2 | `#selection-menu` + `#btn-annotate` / `#btn-plain-ask` | **键盘路径的焦点目标**(K-2) | `interactive-control`, `nav` |
+| E3 | `#confirmation-modal`(含 `#confirm-word-input` / `#confirm-error` / 两个按钮) | **新增 dialog 语义 + Escape + 移焦 + 背景 inert**(M-1 / M-2) | `form`, `interactive-control` |
+| E4 | `#tier-modal`(两个档位按钮,**无取消按钮**) | **新增 dialog 语义 + Escape + 移焦 + 标志复位 + 背景 inert**(M-1 / M-2) | `form`, `interactive-control` |
+| E5 | `#app`(背景区) | **新增 `inert` 的挂载点**(M-1.3) | `static-content` |
+| E6 | `#permission-modal` / `#mission-complete-modal` / `#cli-check-overlay` | **本阶段零改动**(范围锁,D-11 / D-17) | `form`, `interactive-control`, `nav` |
+
+### explicit(5)—— 可直接提升为验收判据
+
+这 5 条落在**本阶段自身的改动面或其紧邻爆炸半径**上,判据可机械核验。
+
+| id | 界面面 | 类别 | 判据(truth) |
+|---|---|---|---|
+| E1 | `#round-doc` | `overflow` | `#round-doc` 在内容超出容器时仍走既有滚动/换行路径 —— `.markdown-body` 的 `overflow-wrap: anywhere`(Phase 6 落地)与 `#doc-panel-body { padding: 32px 40px }` 均未改动,本阶段不新增任何容器、不新增任何裁剪规则 |
+| E1 | `#round-doc` | `long-text` | `#round-doc` 的计算 `overflow-wrap` 仍为 `anywhere`,且加 `tabindex="0"` 与整盒焦点环之后其换行行为与 HEAD 逐字一致(长不可断串仍折行、不撑破视口) |
+| E2 | `#selection-menu` | `long-text` | `#selection-menu` 的两个按钮文案逐字保持 `批注` / `用大白话讲这段`,不因新增的焦点交接而改动;长文案在既有宽度下不截断 |
+| E3 | `#confirmation-modal` | `empty` | `#confirm-word-input` 为空时 `#btn-confirm-authorize.disabled === true`(G3 前提条件的唯一视觉信号),且本阶段新增的 focus-on-open 与 `inert` 不改变该态 |
+| E3 | `#confirmation-modal` | `error` | 输入非 `确认授权` 时 `#confirm-error` 可见且 `#btn-confirm-authorize` 仍为 disabled;错误文案仍只经 `textContent` 写入(无 `innerHTML`) |
+
+### backstop(21)—— 本阶段未改动该状态维度
+
+每行是一个扁平标量 `{ statement, verification: backstop }`。**本阶段对空态 / 加载 / 错误 / 正常 /
+局部 / 溢出 / 长文本这七类状态的既有实现零改动** —— 除上表 5 条 explicit 外,其余状态的文案与显隐
+机制一字不动,已由上游契约签核(见 `## Copywriting Contract`)。verify 时若无 wired 证据,这些行按
+`insufficient_spec → human_needed` 上报,**不是静默通过**(#1154)。
+
+| id | 界面面 | 类别 | statement | verification |
+|---|---|---|---|---|
+| E1 | `#round-doc` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E1 | `#round-doc` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E2 | `#selection-menu` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E2 | `#selection-menu` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E2 | `#selection-menu` | `overflow` | What happens when content exceeds its container — scroll, clip, wrap, or truncate? | `backstop` |
+| E3 | `#confirmation-modal` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E3 | `#confirmation-modal` | `partial` | What is shown for partial or incomplete data — some fields or rows present, others missing? | `backstop` |
+| E3 | `#confirmation-modal` | `long-text` | What happens with unusually long text — truncation, wrapping, ellipsis, or reflow? | `backstop` |
+| E4 | `#tier-modal` | `empty` | What is shown when there is no data — zero items, an unfilled form, or absent media? | `backstop` |
+| E4 | `#tier-modal` | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E4 | `#tier-modal` | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E4 | `#tier-modal` | `partial` | What is shown for partial or incomplete data — some fields or rows present, others missing? | `backstop` |
+| E4 | `#tier-modal` | `long-text` | What happens with unusually long text — truncation, wrapping, ellipsis, or reflow? | `backstop` |
+| E5 | `#app` | `overflow` | What happens when content exceeds its container — scroll, clip, wrap, or truncate? | `backstop` |
+| E5 | `#app` | `long-text` | What happens with unusually long text — truncation, wrapping, ellipsis, or reflow? | `backstop` |
+| E6 | `#permission-modal` 等三个弹窗 | `empty` | What is shown when there is no data — zero items, an unfilled form, or absent media? | `backstop` |
+| E6 | `#permission-modal` 等三个弹窗 | `loading` | What is shown while data or content is still loading (skeleton, spinner, progressive reveal)? | `backstop` |
+| E6 | `#permission-modal` 等三个弹窗 | `error` | What is shown when the load or submit fails (message, retry affordance, partial fallback)? | `backstop` |
+| E6 | `#permission-modal` 等三个弹窗 | `partial` | What is shown for partial or incomplete data — some fields or rows present, others missing? | `backstop` |
+| E6 | `#permission-modal` 等三个弹窗 | `overflow` | What happens when content exceeds its container — scroll, clip, wrap, or truncate? | `backstop` |
+| E6 | `#permission-modal` 等三个弹窗 | `long-text` | What happens with unusually long text — truncation, wrapping, ellipsis, or reflow? | `backstop` |
+
+**无 `unresolved` 行。** 本阶段没有 `unclassified` 元素(重跑后),故不产生需要规划期当假设处理的项。
+**元素面必须由作者喂 override,不能只靠启发式** —— 上表的 kind 列就是那份 override,它的权威性来自
+作者对中文散文的逐条裁定,不是引擎的判定。
 
 ---
 

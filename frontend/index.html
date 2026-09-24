@@ -191,9 +191,22 @@
   </div>
 
   <!-- G3 确认词模态(FLOW-05 / D-P3-3:输入「确认授权」strip 全等才放行;默认拒绝) -->
-  <div id="confirmation-modal" class="overlay hidden">
+  <!-- A11Y-06 / D-14 / D-15:本卡片的**外层** .overlay 承载 dialog 语义三件套 ——
+       对话框角色、模态宣告、以及指向卡片内既有 <h3> 的无障碍名称。
+       ① 落点选 .overlay 而不是内层 .overlay-card:.overlay 正是 classList.toggle('hidden')
+          的作用对象 ⇒「被告白的节点」与「被切换的节点」是同一个,「宣告与实现一致」因此是
+          结构性可查的,而不是两处需要同步的记账;内层 .overlay-card 没有 id、五个弹窗共用
+          同一个类名,把语义挂在它上面会让声明与状态分居两个节点、必然漂移。
+       ② 无障碍名称用「指向既有标题元素」的方式而不是新写字面串:文案只存一处(随 <h3> 走),
+          不会变成第二处真相来源(「名必须说实话」)。
+       ③ 模态宣告的**兑现**在 frontend/app.js 的 syncBackgroundInert():本弹窗打开期间背景
+          #app 带原生惰性属性、两个弹窗都关闭后移除。只加宣告不加惰性,就是「宣告一个实现
+          并不兑现的契约」—— 那比不加宣告更糟,故两者在同一次改动里落地。
+       ④ 范围锁(D-11):只改本弹窗与 #tier-modal 两个(判据是「键盘用户今天真的会卡住」);
+          其余三个弹窗的 dialog 语义归 v2 A11Y-V2-02,是刻意的,不是漏项。 -->
+  <div id="confirmation-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title">
     <div class="overlay-card">
-      <h3>授权确认</h3>
+      <h3 id="confirmation-modal-title">授权确认</h3>
       <p>授权后 AI 将撰写总设计文档并进入收尾流程。<strong>默认拒绝</strong>:不输入确认词或不点放行,即视为拒绝——拒绝会作为一条普通批注转给下一轮,本轮仍可继续讨论。</p>
       <input type="text" id="confirm-word-input" placeholder="请输入确认词:确认授权" autocomplete="off">
       <p id="confirm-error" class="hint hidden"></p>
@@ -205,9 +218,14 @@
   </div>
 
   <!-- 档位选择模态(§8.2 / D-P3-11:两选项各一句话说明;不自动起检) -->
-  <div id="tier-modal" class="overlay hidden">
+  <!-- dialog 语义三件套与上面 #confirmation-modal 同一形态、同一落点理由(A11Y-06 / D-14 /
+       D-15):外层 .overlay 承载宣告,无障碍名称指向卡片内既有的那个 <h3>。
+       D-16:本弹窗打开时焦点送入首个可操作控件(宽松档按钮)—— 背景惰性落地后背景不可聚焦,
+       焦点若不在弹窗内会掉到 <body>,下一次 Tab 会绕开整个背景,比不惰性更糟。
+       D-13:本弹窗**没有取消按钮**,故 Escape 关闭时还要复位 tierModalShown(见 app.js)。 -->
+  <div id="tier-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tier-modal-title">
     <div class="overlay-card">
-      <h3>选择自检档位</h3>
+      <h3 id="tier-modal-title">选择自检档位</h3>
       <p>总设计文档初稿已写完。请选择自检档位(记录在每份核查报告头部):</p>
       <div class="modal-buttons tier-buttons">
         <button id="btn-tier-loose">宽松<span class="tier-desc">一次核查 + 修复 + 追加 PASS 即止</span></button>

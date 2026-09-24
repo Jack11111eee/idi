@@ -44,7 +44,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 - [x] **A11Y-05**: 两个阻塞式弹窗(G3 确认、授权)支持 **Escape 关闭**——G3 确认弹窗按设计是默认拒绝,按不了 Escape 的键盘用户会被卡住
 - [x] **A11Y-06**: 上述两个弹窗加 `role="dialog"` + `aria-modal="true"`(两个属性、零风险)
 - [x] **A11Y-07**: WCAG 2.5.8 目标尺寸——裁决按钮(实测约 21–22px 高)等紧凑控件达到 24×24。**边界:若与布局冲突,不得为此重构侧栏**(裁决按钮是为在 420px 侧栏塞下 3 个而故意紧凑的)
-- [ ] **A11Y-08**: 键盘可达性人工验收——tab 序到达每一个交互控件;键盘划词路径可用。**标注为人工检查**:本环境无法自动化键盘文本选区(连 `contenteditable` 都选不中),不得因自动测试 FAIL 判定功能缺陷
+- [x] **A11Y-08**: 键盘可达性人工验收——tab 序到达每一个交互控件;键盘划词路径可用。**标注为人工检查**:本环境无法自动化键盘文本选区(连 `contenteditable` 都选不中),不得因自动测试 FAIL 判定功能缺陷
 
 ### LAYOUT — 布局稳健性
 
@@ -69,7 +69,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 
 - [x] **REG-01**: 修正 `style.css` 中 `.hidden` 注释的**错误理由**——现称 `.overlay` / `.doc-subview` 为 0-1-0 竞争者;实际 `.doc-subview` 根本没有 `display` 声明,而决定性的三个竞争者 `#selection-menu` / `#annotations-panel` / `#checks-panel` 均为 **1-0-0**(ID 特异性,无论源码顺序都压过 `.hidden`)全部未被提及。`!important` 的结论正确,理由在两个方向上都不对 —— ✅ **已完成于 quick `260917-fqh`(`fac268d`)**
 - [x] **REG-02**: `showInlineError(processRoundBtn, …)` 的**结构性修复**——`#btn-process-round` 位于 `#probe-controls { display: flex; gap: 8px }` 内、是 5 个横向 flex 项的第 4 个,错误 `<p>` 经 `insertAdjacentElement('afterend')` 插入后成为**第 6 个 flex 项**并被挤成窄列。**锚点改为 `#probe-controls` 本身**(块级流容器,错误落在整行下方全宽),不给 flex 行打 CSS 补丁。顺带:视图切换时未调 `clearInlineError()`(陈旧错误残留在屏上)。其余四个调用点位于块级流容器,无此问题。**已裁定排除**:`inlineErrorEl` 单例"两个并发错误只显示一个"**不是缺陷**——单错误显示是既定的"下次动作即清除"设计,不修 —— ✅ **已完成于 quick `260917-fqh`(`46e8ea3` + `793071e`);UAT 12/12,错误宽度 388px = 探针行宽度(100%)**
-- [ ] **REG-03**: `b9664e0` 五条修复的**全部人工验收项重跑**——这五条无任何自动化覆盖,一个重写其 CSS 的里程碑若不重跑,就没有"未破坏它们"的证据。含 `node --check app.js`、pytest 219 基线不变、以及在归档切换器**切轮之后**确认「处理本轮批注」不可点(走 `updateFrozenPresentation` 复位路径)
+- [x] **REG-03**: `b9664e0` 五条修复的**全部人工验收项重跑**——这五条无任何自动化覆盖,一个重写其 CSS 的里程碑若不重跑,就没有"未破坏它们"的证据。含 `node --check app.js`、pytest 219 基线不变、以及在归档切换器**切轮之后**确认「处理本轮批注」不可点(走 `updateFrozenPresentation` 复位路径)
 
 ## v2 Requirements
 
@@ -142,7 +142,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | A11Y-05 | Phase 8: 可访问性语义与键盘 | Complete |
 | A11Y-06 | Phase 8: 可访问性语义与键盘 | Complete |
 | A11Y-07 | Phase 6: 布局稳健性 | Complete |
-| A11Y-08 | Phase 8: 可访问性语义与键盘 | Pending |
+| A11Y-08 | Phase 8: 可访问性语义与键盘 | Complete |
 | LAYOUT-01 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-02 | Phase 6: 布局稳健性 | Complete |
 | LAYOUT-03 | Phase 6: 布局稳健性 | Complete |
@@ -155,7 +155,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | CHECK-04 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | REG-01 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
 | REG-02 | ✅ 已完成 — quick 260917-fqh(2026-09-17) | Complete |
-| REG-03 | Phase 8: 可访问性语义与键盘 | Pending |
+| REG-03 | Phase 8: 可访问性语义与键盘 | Complete |
 
 **Coverage:**
 

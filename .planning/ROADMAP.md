@@ -352,7 +352,7 @@ Plans:
 - Playwright 若用于其余运行时验证,**必须** `chromium.launch({ channel: 'chrome' })`;本环境**截图不可用**(headless 渲染被挡,且常驻 `/api/events` SSE 流使采集处理器无法终止)——按计算样式检查 + 具名人工步骤规划,不要规划视觉 diff。
 
 **Gates**: 键盘路径人工验收通过;`node --check app.js`;pytest 219 基线不变;归档路径在切轮后无可点「处理本轮批注」;`grep -c 'inline-error' style.css` 仍为 1;`clearInlineError` 调用点计数只增不减;Phase 4/6/7 全部 gate 仍通过。
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -365,7 +365,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] idi-08-03-PLAN.md — 验收与回归收口(A11Y-08 + REG-03):S8-1 一个词的文案修正 + 两条 REG-02 门 + pytest 基线 + REG-03 六条人工项全量重跑(第 4 条按 D-05 重写)+ 归档切轮专项 + Tab 序全量普查 + 指纹义务登记
+- [x] idi-08-03-PLAN.md — 验收与回归收口(A11Y-08 + REG-03):S8-1 一个词的文案修正 + 两条 REG-02 门 + pytest 基线 + REG-03 六条人工项全量重跑(第 4 条按 D-05 重写)+ 归档切轮专项 + Tab 序全量普查 + 指纹义务登记
 
 **UI hint**: yes
 
@@ -381,7 +381,7 @@ Plans:
 | 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete    | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete    | 2026-09-23 |
-| 8. 可访问性语义与键盘 | v1.14 | 2/3 | In Progress|  |
+| 8. 可访问性语义与键盘 | v1.14 | 3/3 | In Progress|  |
 
 **Execution Order:** Phases execute in numeric order: 4 → 4.1 → 5 → 6 → 7 → 8
 

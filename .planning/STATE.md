@@ -4,17 +4,17 @@ milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: 08
 current_phase_name: 可访问性语义与键盘
-status: executing
-stopped_at: Completed idi-08-02-PLAN.md
-last_updated: "2026-09-24T05:43:11.192Z"
+status: ready_for_verification
+stopped_at: Completed idi-08-03-PLAN.md
+last_updated: "2026-09-24T06:16:27.476Z"
 last_activity: 2026-09-24
-last_activity_desc: Phase idi-08 execution started
-state_head: 2a75ba1d719c36ae7cf756e4817d18197bbbe83d
+last_activity_desc: Completed idi-08-03-PLAN.md — all 3 plans done, awaiting phase verification
+state_head: fa7813a12b6b002a896805dfb4d7d0a989e84a6a
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 20
+  completed_plans: 21
   percent: 83
 ---
 
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 
 Phase: idi-08 (可访问性语义与键盘) — EXECUTING
 Plan: 3 of 3
-Status: Executing Phase idi-08
-Last activity: 2026-09-24 — Phase idi-08 execution started
+Status: Phase complete — ready for verification
+Last activity: 2026-09-24 — Completed idi-08-03-PLAN.md
 
 Progress: [████████░░] 83%
 
@@ -98,6 +98,7 @@ Progress: [████████░░] 83%
 | Phase idi-07 P03 | 33 min | 3 tasks | 2 files |
 | Phase idi-08 P01 | 8 min | 3 tasks | 2 files |
 | Phase idi-08 P02 | 12min | 3 tasks | 2 files |
+| Phase idi-08 P03 | 16min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -201,6 +202,12 @@ Recent decisions affecting current work:
 - [Phase 08]: idi-08-02: Escape 取「单点监听器 + 显式优先级表」(划词菜单 → #confirmation-modal → #tier-modal),不取各弹窗各自的监听器 —— 后者会把「谁先响应」变成源码顺序事实;确认弹窗分支仅关闭、零决定(D-12,不代替「拒绝」以免把用户推进原生 window.prompt);档位分支复位 tierModalShown 但不复位 selfcheck.tier、不发任何请求(D-13)
 - [Phase 08]: idi-08-02: D-16 实测(非「预期成立」)—— 用 Element.prototype.setAttribute 钩子捕获,setAttribute('inert') 执行的**那一瞬间** document.activeElement 仍是背景触发者(btn-enter)、不在弹窗内 ⇒ 显式 tierLooseBtn.focus() 是承重的,不是装饰;顺序锁定 remove('hidden') → syncBackgroundInert() → .focus()
 - [Phase 08]: idi-08-02: 「背景在指针层面惰性」在本应用**不是判别性证据** —— .overlay 是 position:fixed; inset:0(style.css:800),背景点击本就被覆盖层吞掉,elementFromPoint 在背景元素中心返回的是覆盖层。故该断言改由「反射属性 + 判别性对照(惰性下 enter-path-input.focus() 为 no-op,摘掉属性后同一调用生效)」承担,指针半场按 human_judgment:true 交人眼收口
+- [Phase 08]: [Phase idi-08]: idi-08-03: S8-1 是硬规则 5 的**授权例外**,不是违例 —— 编辑落在 renderAnnotations(app.js:1156-1212)内部,该函数被 ROADMAP §全局硬规则 5 / UI-SPEC §Do-Not-Touch List / 08-CONTEXT §明确不含 三处同时列为不得触碰。两条授权来源已逐字登记(UI-SPEC §Sign-Off Items 的 S8-1 行「用户裁定(2026-09-23)」列 + §本阶段的改动面 那一行)。**例外仅限 app.js:1162 的一个词**,清单未被推翻也未扩大;同函数的 L1164 历史轮串与 textContent-only 写入路径逐字未动。⚠ UI-SPEC 表里仍写 app.js:1121 是 wave 1 之前的旧锚点,HEAD 实测为 1162。
+- [Phase 08]: [Phase idi-08]: idi-08-03: REG-02 门②的基线取**实测 9**,不是 08-CONTEXT D-21 的 6 —— 照抄 6 会造出一条永远不会失败的假门(A-5 已登记)。pytest 判据逐字记录为「219 passed / 6 deselected / 225 collected」:219 是**通过数**、225 是**收集数**;`-m "not slow"` 下 pytest 对那 6 条 slow 标记的端到端测试的官方标签是 **deselected**,本项目散文一直称 skipped —— 同一批 6 条,两个标签都记以免被读成漂移。两条 REG-02 门按 D-21/A-4 落为计划级 grep,**不写进 check-05**(它在 5 份 live 报告的 covered_files 里);代价已登记:它们不是常驻守卫。
+- [Phase 08]: [Phase idi-08]: idi-08-03: **发现一条本阶段引入的功能缺陷,登记而非修复 —— Escape 无法关闭划词菜单**(菜单在 Escape 的 keyup 上重新弹出)。机制已用事件日志钉死:keydown 的目标是 #btn-annotate ⇒ 分派器关闭菜单并把焦点交还 #round-doc(F1-a)⇒ **keyup 到达时目标已变成 #round-doc**,命中既有的 roundDoc keyup 绑定 ⇒ handleSelectionTrigger 守卫全过 ⇒ showSelectionMenu()。三条判别性对照:T2 焦点在菜单外 ⇒ 保持关闭;T3 选区已折叠 ⇒ 保持关闭;T4 完全不按 Escape、只按任意键 ⇒ 菜单重现。**不修的两个理由**:①计划级 <verification> 明写「本计划只改一处文案」,修它就证伪计划级验证;②正确修法是至少三种形态的设计选择(抑制后续 keyup / 推迟交还 / 把交还搬出共享挂点),而 keyup 落入的 handleSelectionTrigger 函数体本身在不得触碰清单上 ⇒ Rule 4,用户的设计决定不由执行器自裁。它打破的契约:D-08、§K-2.6 第 6 步、REQUIREMENTS 的 A11Y-03 键盘半场人工验收项。
+- [Phase 08]: [Phase idi-08]: idi-08-03: **D-23 的机制描述不成立(实测更正)** —— 归档切轮**不经过** updateFrozenPresentation。该函数全文件只有一个调用点(app.js:1082,在 loadRoundView 内);归档切换器的 change 处理器按 currentState === 'mission_complete' 分支走 **loadArchiveRoundDoc**(app.js:1295 → 915-924),既不碰 class 也不碰 disabled ⇒ applyArchiveView 在 L871 设的 disabled = true **在这条路上根本不会被复位**。**实测结果比计划预测更强**:切轮之后按钮同时保持 hidden **与** disabled,Pitfall 3 UI-6.3 那个场景在这条路上不可能发生。
+- [Phase 08]: [Phase idi-08]: idi-08-03: **A11Y-08 的 Tab 序普查实测(两个状态)** —— 阶段 3:判定集 10 个元素、全部 Tab 可达、**#round-doc 位于第 2 位**,紧接 #round-switcher 之后、#btn-authorize(该状态下可见的 #authorize-row 按钮)之前,与 §K-1.7 逐字相符,环读数 2px / rgb(31, 99, 189) / offset 2px / :focus-visible=true;自检视图(checking):判定集 8 个、全部可达,#round-switcher 正确地不在判定集里(display:none)。**新登记**:自检视图里 #round-doc 是**零高度**(351×0,因 applyPhase5View 在 app.js:629 把它清空)却仍是第 1 个 Tab 停靠点、环仍画出 —— 这是计划 01 无条件 tabindex 的后果,首次在此实测,登记不修(计划 03 是零源码改动任务)。
+- [Phase 08]: [Phase idi-08]: idi-08-03: 收口登记四份 —— (a) **指纹义务:D-01 路径下零债务实测成立**(frontend/app.js 与 index.html 不在任何 live 报告的 covered_files 里,style.css 逐字节未改,D-02 未触发故无报告需重算);**不得用 gsd-tools query verification status <phase> 判定 stale**(这些相位目录一律返回 missing),若日后真改 CSS 须以 HEAD 内容重算、不要看 mtime。(b) D-26 的 /gsd-verify-work idi-04.1-radix 登记为**既有、非本阶段引入**,本阶段既不加深也不清除。(c) D-17(#permission-modal 弹了键盘用户不知道)与 D-19(键盘划词无可发现性提示,唯一视觉信号是焦点环)**两条都不修**,归属 v2 A11Y-V2-02 与已登记已知局限。(d) STATE.md 的 [v1.14 P8] Deferred Item **不因本阶段关闭** —— 它被履行了一次(六条人工重跑 + check-03),但两者都不是常驻守卫。
 
 ### Pending Todos
 
@@ -209,7 +216,7 @@ None yet.
 ### Blockers/Concerns
 
 - [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
-- [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: none !important }` 是 5 路单点故障
+- [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
 - [v1.14 P4] ~~idi-04-01 的人工 DevTools Computed 检查与冻结轮 backstop 真值尚未执行~~ **已执行(2026-09-19,`cc11e9f`)** — `scripts/check-05-ui-uat.py` 把 6 项全部自动化并实跑。**已闭合(2026-09-20):6/6 pass** —— 当时的 3 fail 是 260918-qrq 令牌值漂移造成的**假 FAIL**,已由 04.1 的 D-14(断言改令牌接线)+ D-10(值层重写)结构性消解;本阶段实跑 item 1/2/3/4/6 全 PASS(0 FAIL / 0 BLOCKED),item 5 的 2 BLOCKED 是需真实 AI 调用的冒烟(已用 `--ai-smoke` 补齐并 PASS)。**结果 3 pass / 3 fail** 为历史记录:
   - **PASS**:① SC4 `.hidden` 实检(38 断言,含 3 个 1-0-0 竞争者);② 冻结轮 backstop(`inset 3px 0 0 rgb(138,101,8)` / `opacity 1` / `filter saturate(0.6)` / 正文对比度 19.44:1);⑥ CR-06(两侧均为运行时 `--color-text-muted`)
@@ -217,7 +224,7 @@ None yet.
   - **S-2 依赖 PASS**:`--text-base` = 14px 存活(Phase 5 SC5 / Phase 6 SC5 的下游门仍可满足)
   - **UAT 里「本环境无法自动化」的三条理由,两条被证伪**:screenshots 可用(`channel` 与 headless 策略见 `scripts/check-05-ui-uat.py` 头部注释),DevTools computed-style 有等价物(`getComputedStyle`)。**「键盘文本选区无法自动化」仍成立**,保留
 - [v1.14 P4] ~~**对比度 AA 倒退(真实,新发现)**:`--color-text-muted` = `#8f8f8f` 在 `#ffffff` 上 **3.23:1**~~ **已结构性解决(2026-09-20,Phase 04.1)** — Radix 重写后 `--color-text-muted: var(--radix-gray-11)`,实测 `check-02-contrast.py`:`5.62 --color-text-muted on --color-surface` / `5.77 … on --color-surface-page` / `5.19 … on --color-surface-sunken` / `5.82 … on --color-surface-warning-subtle`,脚本 exit 0。与 260918-qrq 的 check-02 14 条失败同源,一并消解
-- [v1.14 P4] ~~**阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**~~ **已修复(2026-09-19,`1d849b1`)** — 根因与 D1/D2 同源:`app.js` **从未引用过** `#session-panel`(grep 零匹配;`git log -S` 证明是长期 bug,非 260918-qrq 引入),而 `style.css:566` 的 `flex: 1 1 auto` 让它吃掉主区全部剩余高度。修复 = 在 `applySessionGates`(`app.js:343`,唯一必经派发点)加一行 `classList.toggle('hidden', !isSessionPhase)`。**实测五个样本:`p1=flex` / `p12=flex` / `p3=none` / `checking=none` / `archive=none`**。`.hidden` 靠 `style.css:238` 的 `!important` 压过 `display:flex`,**无需改 CSS**;`style.css`/`index.html` 零改动。守卫经 RED→GREEN 实证非空转(修前 3 条 `FAIL expected=none actual=flex`)
+- [v1.14 P4] ~~**阶段 3 的「发送」按钮不可点(功能缺陷,新发现)**~~ **已修复(2026-09-19,`1d849b1`)** — 根因与 D1/D2 同源:`app.js` **从未引用过** `#session-panel`(grep 零匹配;`git log -S` 证明是长期 bug,非 260918-qrq 引入),而 `style.css:566` 的 `flex: 1 1 auto` 让它吃掉主区全部剩余高度。修复 = 在 `applySessionGates`(`app.js:343`,唯一必经派发点)加一行 `classList.toggle('hidden', !isSessionPhase)`。**实测五个样本:`p1=flex` / `p12=flex` / `p3=` / `checking=` / `archive=`**。`.hidden` 靠 `style.css:238` 的 `!important` 压过 `display:flex`,**无需改 CSS**;`style.css`/`index.html` 零改动。守卫经 RED→GREEN 实证非空转(修前 3 条 `FAIL expected=actual=flex`)
 - [v1.14 P7] **UI 审计(19/24)的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):①`#session-panel .panel-header` 有 `cursor: pointer` 却无点击行为(文件自己的惯例对另两个面板显式复位);②`.annotation-answer summary` 无 `:hover`/`:active` 且不在过渡挂载规则里,更关键的是**三个样本都没有 fixture 渲染 `<summary>`**,故 item 10 的普查从未见过它——「已覆盖」是名义的;③焦点环的 PAIR 清单漏 `--color-surface-warning-subtle`(`.verdict-card` 的底色,环在其上实测 5.77:1 达标),与本文件自订纪律「a token drawn as a UI boundary must have its own NON-TEXT pair on each ground it is drawn on」直接冲突,而兄弟令牌 `--color-border-hover` 正是按该纪律补上了这处底色。**修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证。
 - [v1.14 P7] **`phase.complete` 的 STATE.md 字段异常第三次复现**(`completed_phases` 4→1、`percent` 67→17,进度条同步退化)。已注册的 `tech-debt`,不会自愈;判据一律取 ROADMAP 的 `## Milestones` + `## Progress`。**注意 `state.json` 的 `phases` 数组本次是正确的**(1-7 全 complete、8 pending),错的只有 STATE.md 的派生计数——不要把 `state.json` 当判据来源。
 - [v1.14 P7] **归档半场的焦点环断言仍无服务对象**(五个样本 `#round-doc` 内 `a[href]` 计数为 0)。已按 `accept` 登记于 `idi-07-SECURITY.md` 的 Accepted Risks Log;一次性反事实探针 `scripts/probe-07-focus-composite.py` 承担可外推性。**Phase 8 给 `#round-doc` 加 `tabindex="0"` 后该场景变为活体,届时须复跑该探针**。
@@ -228,6 +235,8 @@ None yet.
 - [v1.14 P8] **同一派生计数缺陷第六次复现,本次是「三动词连击」,且 `update-progress` 是传播者而不是修正者。** `idi-08-01` 收口序列逐段实测:`state.advance-plan` 把 `completed_phases` **5 → 1**、`percent` **83 → 17**(与第 1-4 次同症状);紧接着 `state.update-progress` **没有**从磁盘重算,而是拿那个已被污染的 `completed_phases` 算 `percent = 1/6 = 17` 并回写 —— **它把错值固化了**(前四次只记录了它「把进度往回改」,没记它「不回算」);最后 `state.record-session` 再把它压到 **`completed_phases: 0` / `percent: 0` / 进度条 `[░░░░░░░░░░] 0%`** ⇒ **该字段不是被写成某个固定错值,而是被逐步推向 0,即 `record-session` 的破坏是累加式的**(第 4 次记录的是 5→1,本次同一次会话内 1→0)。**同批写入中正确的部分(照第 5 次的方法论结论:增量型可信、比值型不可信):** `completed_plans` 18 → 19 ✅、`total_plans: 21` 未动 ✅、`state.record-metric` 正确追加 `Phase idi-08 P01 | 8 min | 3 tasks | 2 files` ✅、`roadmap.update-plan-progress idi-08` 正确写 `1/3 | In Progress` ✅、`requirements.mark-complete A11Y-02 A11Y-03` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete)。**⇒ 收口序列里唯一可信的判据仍是 ROADMAP;`state.*` 的四个动词(`advance-plan` / `update-progress` / `record-session` / `planned-phase`)在这一条上全部不可信,且 `update-progress` 不可作为修正手段 —— 它会用坏值重算。**
 
 - [v1.14 P8] **第七次复现(2026-09-24,`idi-08-02` 收口)。** 本次序列:`state.advance-plan` 把 `completed_phases` **5 → 0**、`percent` **83 → 0**(首次一步到 0;前六次是先到 1 再被压到 0);`state.update-progress` 随后回显 `{"percent": 0, "completed": 20, "total": 21, "bar": "[░░░░░░░░░░] 0%"}` —— **它仍然不重算**,直接用被污染的 `completed_phases` 算出 0 并回写(与第六次逐字同症状);`state.record-session` 把进度条固化为 `[░░░░░░░░░░] 0%`。**同批写入中正确的部分:** `completed_plans` 19 → 20 ✅、`total_plans: 21` 未动 ✅、`state_head` 正确重算为 `2a75ba1`(preservation: derive 的契约被遵守,未像第五次那样删除字段)✅、`Plan: 2 of 3 → 3 of 3` ✅、`state.record-metric` 正确追加 `Phase idi-08 P02 | 12min | 3 tasks | 2 files` ✅、五条 `state.add-decision` 全部落盘且不越权 ✅、`roadmap.update-plan-progress idi-08` 正确写 `2/3 | In Progress` ✅、`requirements.mark-complete A11Y-05 A11Y-06` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅、`state.json` 的 `phases[8].status: pending → in_progress` 正确 ✅。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete),并把 `state.json` 的 `next.reason` 从 `0%` 改回 `83%`。**⇒ 与第六次的方法论结论逐条一致,无需新增结论;本条的增量事实只有一条:「一步到 0」的形态也存在,故核盘判据不能写成「期望看到 1」。**
+- [v1.14 P8] **Escape 无法关闭划词菜单 —— 本阶段引入的功能缺陷,已登记、未修复,待用户裁定。** 症状:菜单打开、焦点在 `#btn-annotate`、轮次文档内有非折叠选区时,按 Escape 后菜单**重新弹出**。机制已用 capture 阶段事件日志钉死:`keydown` 的目标是 `btn-annotate` ⇒ 分派器关闭菜单并把焦点交还 `#round-doc`(F1-a)⇒ **`keyup` 到达时目标已变成 `round-doc`**,命中既有的 `roundDoc` keyup 绑定 ⇒ `handleSelectionTrigger` 守卫全过 ⇒ `showSelectionMenu()`。三条判别性对照:T2 焦点在菜单外 ⇒ 保持关闭;T3 选区已折叠 ⇒ 保持关闭;T4 完全不按 Escape、只按任意键 ⇒ 菜单重现。两条腿都是本阶段新增(计划 02 的分派器 + 计划 01 的交还),故为本阶段引入。打破的契约:D-08、`idi-08-UI-SPEC.md` §K-2.6 第 6 步、REQUIREMENTS 的「A11Y-03 键盘划词部分」人工验收项(「Escape 关闭并交还焦点」的后半不成立)。**未修的两个理由**:①计划 03 的计划级 `<verification>` 明写「本计划只改一处文案」,修它就证伪计划级验证;②正确修法是至少三种形态的设计选择(新监听器抑制后续 keyup / 推迟 F1-a 交还 / 把交还搬出共享挂点),而 keyup 落入的 `handleSelectionTrigger` 函数体本身在不得触碰清单上 ⇒ Rule 4。完整证据见 `idi-08-03-SUMMARY.md` §Newly discovered finding。
+- [v1.14 P8] **同一派生计数缺陷第八次复现,但本次的失效形态是新的:不是改错值,而是「静默什么都不做」。** `idi-08-03` 收口序列:`state.advance-plan` 走 `last_plan` 分支返回 `{"advanced": false, "reason": "last_plan", "current_plan": 3, "total_plans": 3, "status": "ready_for_verification", "updated": []}` —— **`updated: []`,它一个字都没写**。根因已定位(`state-transition.cjs:1328-1337`):该分支用 `stateReplaceFieldIfTemplate` 写 `Status: Phase complete — ready for verification`,而该 helper **只在当前值等于模板默认值时才替换**;本项目的 `## Current Position` 早已把 `Status:` 定制成 `Executing Phase idi-08`,于是两次替换都是 no-op,而函数仍返回 `status: ready_for_verification` 让人以为写成功了。⇒ **前七次是「改错值」,本次是「假报成功 + 零写入」;核盘判据必须同时覆盖「值对不对」与「到底写没写」。** 同批写入中正确的部分:`completed_plans` 20 → 21 ✅、`total_plans: 21` 未动 ✅、`state_head` 正确重算为 `fa7813a` ✅、`state.record-metric` 正确追加 `Phase idi-08 P03 | 16min | 3 tasks | 1 files` ✅、六条 `state.add-decision` 全部落盘 ✅、`state.record-session` 正确写 `Stopped at: Completed idi-08-03-PLAN.md` ✅、`roadmap.update-plan-progress idi-08` 正确写 `3/3 | In Progress` ✅、`requirements.mark-complete A11Y-08 REG-03` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅。**错误的部分:`state.update-progress` 把 `completed_phases` 5 → 0、`percent` 83 → 0、进度条 → `[░░░░░░░░░░] 0%`**(它仍然不重算,直接用被污染的 `completed_phases` 算 0 并回写)。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete;Phase 8 在 `roadmap.update-plan-progress` 后是 `3/3 | In Progress`,尚未 Complete),并把 `## Current Position` 的 `Status:` 按该分支的意图手工写成 `Phase complete — ready for verification`。**附:`gsd-tools windows append` 本次被拒**(`Ledger table … disagrees with the fenced JSON entries … for row id(s): 17`,与派发说明预警的既有不一致一致),三条应入账的条目(Escape 缺陷 / 自检视图零高度 Tab 停靠点 / 两条 REG-02 门与六条人工项都不是常驻守卫)已改记于 `idi-08-03-SUMMARY.md` 与 STATE.md,未与该文件相争。
 
 ### Quick Tasks Completed
 
@@ -259,8 +268,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T05:43:11.143Z
-Stopped at: Completed idi-08-02-PLAN.md
+Last session: 2026-09-24T06:15:08.951Z
+Stopped at: Completed idi-08-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

@@ -3,7 +3,7 @@ phase: idi-08-accessibility-semantics-and-keyboard
 status: human_needed
 verified: 2026-09-24T15:52:00Z
 reverified: 2026-09-24T13:23:27Z
-score: 32/37 must-haves verified (1 present-but-behavior-unverified, 5 human, 0 FAILED)
+score: 34/39 truths verified (4 human, 1 present-but-behavior-unverified, 0 FAILED); 2 of the 34 are self-verified, not independent
 covered_files:
 
   - .planning/REQUIREMENTS.md
@@ -150,7 +150,13 @@ disagreement is registered under §SUMMARY ↔ HEAD Disagreements — not treate
 | 38 | The L-5 declaration set does not let a real control violation through | ✓ VERIFIED (self) | Mutation: a 30px control injected flush at `#doc-panel`'s bottom edge (clearance 0) lands in the ASSERTED set and the assertion FAILS. See §Gap Resolution |
 | 39 | The L-5 declaration set cannot produce a vacuous pass | ✓ VERIFIED (self) | Mutation: ratio forced to 0.0 ⇒ `item 9: BLOCKED (16 条断言, 0 FAIL, 3 BLOCKED)`, not PASS. Reverted and diff-verified. See §Gap Resolution |
 
-**Score:** 32/37 must-haves verified (1 present, behavior-unverified; 5 human; 0 FAILED) — plus 2 self-verified resolution truths (38, 39)
+**Score:** 34/39 truths verified — 31 by the independent pass, 1 (row 37) resolving the gap, and
+**2 (rows 38, 39) self-verified by the fix's author, not independently confirmed**. Remaining:
+4 HUMAN (rows 32, 33, 34, 36), 1 present-but-behavior-unverified (row 35), **0 FAILED**.
+
+*(The previous pass's score line read "31/37 … 5 human" — its counts summed to 38 against a 37-row
+table, and "5 human" counted the frontmatter's `human_verification` entries rather than the table's
+HUMAN rows. Recounted here by status cell so the arithmetic actually closes.)*
 
 ### Required Artifacts
 

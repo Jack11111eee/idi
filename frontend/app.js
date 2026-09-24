@@ -1499,6 +1499,54 @@ function initSelectionMenu() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Escape 单点分派(A11Y-05 / D-08 / D-12 / D-13):关闭三个可关对象,其余弹窗刻意不响应
+// ---------------------------------------------------------------------------
+
+// 为什么取「单点 + 显式优先级表」而不是「各弹窗各自的监听器」(裁定,理由):
+// ① 三个响应对象里有一个是划词菜单(它已经在上面那一段初始化函数里),分派器与它相邻使
+//    「Escape 的完整语义在一个屏幕内可读完」;② 分散到各弹窗会把「谁先响应」变成**源码顺序事实**
+//    (硬规则 3 的同型风险);③ 单点可解释、可枚举(本项目「影响面必须可枚举」的既定口径)。
+// 绑定在顶层 ⇒ 一次性、与菜单的初始化路径解耦,不需要一次性绑定守卫。
+// 优先级按 z 序:--z-selection-menu(200)> --z-overlay(100)。
+// 三个响应对象今天**互斥**(菜单只在 currentState === 'phase3' 显示,档位弹窗只在
+// phase5_awaiting_tier 弹出),但优先级表使行为与「谁先打开」无关 —— 源码顺序不参与判定。
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  // 1. 划词菜单(关闭函数已含计划 01 落的 F1-a 焦点交还)。
+  //    刻意不清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
+  if (!selectionMenu.classList.contains('hidden')) {
+    hideSelectionMenu();
+    e.preventDefault();
+    return;
+  }
+  // 2. G3 授权确认(D-12:仅关闭、**零决定**)。不代替「拒绝」——那会走拒绝路径把用户直接推进一个
+  //    原生 window.prompt,而替换 window.prompt 是 v2 FLOW-V2-01;也不新增「拒绝但不弹 prompt」的
+  //    写批注路径,那要引入第二处真相来源。键盘用户本来就能 Tab 到「拒绝」:打开该弹窗时已把焦点
+  //    送进确认词输入框,Tab 跳过 disabled 的「放行」直达「拒绝」,故 Escape 不需要代替它。
+  //    F1-d:关闭后把焦点交还触发者(授权按钮);背景惰性的去除已在关闭函数内完成,这里不重复。
+  if (!confirmationModal.classList.contains('hidden')) {
+    closeConfirmModal();
+    authorizeBtn.focus();
+    e.preventDefault();
+    return;
+  }
+  // 3. 自检档位(D-13)。复位本会话的已弹标记,让下一个自检事件(refreshChecksAfterStream)能重新
+  //    弹出 —— 否则该弹窗「打开即置真、只有选档成功才隐藏」会让「关掉而没选」落进
+  //    「档位未定且入口消失」的死状态。**不复位 selfcheck.tier;不发任何请求。**
+  //    F1-d:关闭后把焦点交还下一个动作(继续自检按钮)。
+  if (!tierModal.classList.contains('hidden')) {
+    tierModal.classList.add('hidden');
+    tierModalShown = false;
+    syncBackgroundInert();
+    continueCheckBtn.focus();
+    e.preventDefault();
+  }
+  // 4. 其余三个弹窗(权限确认 / 使命完成 / 启动前自检浮层)**刻意不响应 Escape** —— 范围锁死为
+  //    D-11 的两个对象(D-17 的已知缺口归 v2 A11Y-V2-02)。这是刻意的,不是漏项:不要因为
+  //    「顺手」而扩张 A11Y-05/06 的对象集。
+});
+
 // 拉新未处理数(建批注后 / done 后共用)
 async function refreshPendingCount() {
   if (currentProject == null) return;

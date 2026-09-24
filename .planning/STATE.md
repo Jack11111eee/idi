@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 Phase: idi-08 (可访问性语义与键盘) — EXECUTING
 Plan: 3 of 3
 Status: Phase complete — ready for verification
-Last activity: 2026-09-24 — Completed idi-08-03-PLAN.md
+Last activity: 2026-09-24 - Completed quick task 260924-vb7: Fix the tier-success-path focus loss (chooseTier() now hands focus back to #btn-continue-check)
 
 Progress: [████████░░] 83%
 
@@ -262,6 +262,7 @@ None yet.
 | 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
 | 260919-0h3 | 建立前端验证 harness(`scripts/check-05-ui-uat.py` + `scripts/ui-states/` 5 个磁盘状态样本 + `requirements-dev.txt`),跑掉 idi-04 UAT 6 项。**结果 3 pass / 3 fail**——FAIL 全部是 260918-qrq 令牌值漂移(UAT 期望值定稿于 `0c658aa`,其后 `448686b` 换了令牌值层),非新缺陷;已按 YAML 写入 UAT `## Gaps` | 2026-09-19 | cc11e9f | [260919-0h3-harness-idi-04-uat-6](./quick/260919-0h3-harness-idi-04-uat-6/) |
 | 260919-1w1 | **P6 前置修正**:`#session-panel` 在阶段 3+ 该隐藏却从未隐藏(DESIGN.md §4.1/§4.2 明文「切换」非「叠加」)。一次修掉 D1(主区 90% 空白)/ D2(归档态与阶段5 仍渲染输入框)/ 发送按钮被批注流覆盖不可点 三个症状。harness 加五态显隐守卫,经 RED→GREEN 实证非空转 | 2026-09-19 | 1d849b1 | [260919-1w1-session-panel-3-d1-d2](./quick/260919-1w1-session-panel-3-d1-d2/) |
+| 260924-vb7 | 修复选档成功路径的焦点丢失(UI-REVIEW 优先级 1,用户裁定「先修焦点再收口」):`chooseTier()` 隐藏 `#tier-modal` 后不交还焦点,`document.activeElement` 回落到 `<body>`。加一行 `continueCheckBtn.focus()`,置于 `await refreshChecksAfterStream()` **之后** —— 是那次刷新才复位按钮的 `disabled`,而 `.focus()` 对禁用按钮是 no-op,提前放会静默失效。check-07 新增 item g4(先看它红再修,含判别控制)+ 收窄 D8-10 豁免为只覆盖 `#confirmation-modal`。**遗留**:`idi-08-VERIFICATION.md` 因 `frontend/app.js` 内容变更而 stale,须重跑 `/gsd-verify-work idi-08` | 2026-09-24 | 40e8de9 | [260924-vb7-fix-the-tier-success-path-focus-loss-cho](./quick/260924-vb7-fix-the-tier-success-path-focus-loss-cho/) |
 
 ### Roadmap Evolution
 

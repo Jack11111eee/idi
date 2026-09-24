@@ -105,6 +105,32 @@ def _menu_state(page):
     }""")
 
 
+def _settle_cli_check(page, timeout_ms=5000):
+    """等 runCliCheck() 的在途往返彻底落地(响应到达 **且** 随后的 add/remove('hidden') 执行完)。
+
+    app.js:1849 在页面加载时异步跑一次;它返回后按自检结果切换浮层可见性。若不等它落地就
+    注入可见态,它随后的 add('hidden')(本机自检通过)会把注入**当场撤销** —— 实测竞态:
+    同一命令连跑两次,一次绿一次红。注入前先让这一次往返落地,注入才是确定的。
+    """
+    try:
+        # 程序化点击而非 page.click:浮层此刻可能仍是 hidden,不可见元素点不动。
+        with page.expect_response(lambda r: "/api/cli-check" in r.url, timeout=timeout_ms):
+            page.evaluate("document.getElementById('cli-recheck-btn').click()")
+    except Exception:  # noqa: BLE001 — 端点不可达不挡本项,下面的稳定性轮询仍会给出结论
+        pass
+    # 响应到达 ≠ 处理完毕(resp.json() 之后才 add/remove('hidden'))⇒ 再等状态稳定下来。
+    last, stable = None, 0
+    for _ in range(40):  # 最多约 2s
+        cur = page.evaluate(
+            "document.getElementById('cli-check-overlay').classList.contains('hidden')")
+        stable = stable + 1 if cur == last else 0
+        if stable >= 3:
+            return cur
+        last = cur
+        page.wait_for_timeout(50)
+    return last
+
+
 def _drag_select(page, node_index):
     """真实鼠标拖拽产生一段非折叠选区(不是伪造 Range)。
 
@@ -395,6 +421,7 @@ def g1(page, tmp_root):
     cli_hidden = page.evaluate(
         "document.getElementById('cli-check-overlay').classList.contains('hidden')")
     info("g1 [#cli-check-overlay] 开机后的默认态", f"hidden={cli_hidden}")
+    _settle_cli_check(page)  # 必须先让在途的 runCliCheck() 落地,否则注入会被它撤销(见函数注释)
     page.evaluate("document.getElementById('cli-check-overlay').classList.remove('hidden')")
     page.wait_for_timeout(150)
     visible = not page.evaluate(

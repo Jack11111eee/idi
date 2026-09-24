@@ -63,6 +63,7 @@ import importlib.util
 import shutil
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -111,30 +112,58 @@ def _menu_state(page):
     }""")
 
 
-def _settle_cli_check(page, timeout_ms=5000):
+def _settle_cli_check(page, timeout_ms=5000, settle_ms=600):
     """等 runCliCheck() 的在途往返彻底落地(响应到达 **且** 随后的 add/remove('hidden') 执行完)。
 
     app.js:1849 在页面加载时异步跑一次;它返回后按自检结果切换浮层可见性。若不等它落地就
     注入可见态,它随后的 add('hidden')(本机自检通过)会把注入**当场撤销** —— 实测竞态:
     同一命令连跑两次,一次绿一次红。注入前先让这一次往返落地,注入才是确定的。
+
+    **两个条件都要满足,只满足一个仍会偶发假红**(实测:本函数早先只等「首个响应 + 3 个稳定
+    采样(约 150ms)」时,仍偶发 `[#cli-check-overlay] Escape 后仍可见` 变红 —— 因为可能有
+    **第二个**往返在途,它在我们退出**之后**才落地并撤销注入):
+
+      ① 没有在途的 `/api/cli-check` 往返(用 Playwright 的 request/response 事件计数);
+      ② 可见态在 `settle_ms` 内不再变化。
+
+    只等「响应到达」不够 —— resp.json() 之后的 add/remove('hidden') 还没跑完;
+    只等状态稳定也不够 —— 在途的第二个往返会在稳定窗口**之外**落地。
     """
+    inflight = {"n": 0}
+
+    def _on_request(req):
+        if "/api/cli-check" in req.url:
+            inflight["n"] += 1
+
+    def _on_response(resp):
+        if "/api/cli-check" in resp.url:
+            inflight["n"] = max(0, inflight["n"] - 1)
+
+    page.on("request", _on_request)
+    page.on("response", _on_response)
     try:
-        # 程序化点击而非 page.click:浮层此刻可能仍是 hidden,不可见元素点不动。
-        with page.expect_response(lambda r: "/api/cli-check" in r.url, timeout=timeout_ms):
-            page.evaluate("document.getElementById('cli-recheck-btn').click()")
-    except Exception:  # noqa: BLE001 — 端点不可达不挡本项,下面的稳定性轮询仍会给出结论
-        pass
-    # 响应到达 ≠ 处理完毕(resp.json() 之后才 add/remove('hidden'))⇒ 再等状态稳定下来。
-    last, stable = None, 0
-    for _ in range(40):  # 最多约 2s
-        cur = page.evaluate(
-            "document.getElementById('cli-check-overlay').classList.contains('hidden')")
-        stable = stable + 1 if cur == last else 0
-        if stable >= 3:
-            return cur
-        last = cur
-        page.wait_for_timeout(50)
-    return last
+        try:
+            # 程序化点击而非 page.click:浮层此刻可能仍是 hidden,不可见元素点不动。
+            with page.expect_response(lambda r: "/api/cli-check" in r.url, timeout=timeout_ms):
+                page.evaluate("document.getElementById('cli-recheck-btn').click()")
+        except Exception:  # noqa: BLE001 — 端点不可达不挡本项,下面的轮询仍会给出结论
+            pass
+        deadline = time.monotonic() + (timeout_ms / 1000.0)
+        last, stable_since = None, None
+        while time.monotonic() < deadline:
+            cur = page.evaluate(
+                "document.getElementById('cli-check-overlay').classList.contains('hidden')")
+            now = time.monotonic()
+            if cur != last:
+                last, stable_since = cur, now
+            if (inflight["n"] == 0 and stable_since is not None
+                    and (now - stable_since) * 1000 >= settle_ms):
+                return cur
+            page.wait_for_timeout(50)
+        return last
+    finally:
+        page.remove_listener("request", _on_request)
+        page.remove_listener("response", _on_response)
 
 
 def _drag_select(page, node_index):
@@ -773,7 +802,7 @@ def g4(page, tmp_root):
                     "焦点不在档位按钮上 ⇒ 本项要断言的「丢失」不在现场,不可记 PASS")
         ok_true(item, "g4 实例 1/2 选档后 #tier-modal 已隐藏",
                 r1["after"]["modalHidden"] is True, "hidden=true",
-                f"hidden={not r1['after']['modalHidden']}")
+                f"hidden={r1['after']['modalHidden']}")
         if r1["after"]["disabled"] or r1["after"]["rects"] <= 0:
             # 禁用按钮上的 .focus() 是 no-op:此时记 PASS 会交付一个静默失效的修复
             blocked(item, "g4 实例 1/2 交还时 #btn-continue-check 可聚焦(断言前提,防 no-op 假绿)",

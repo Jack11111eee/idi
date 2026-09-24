@@ -22,6 +22,8 @@
 
 **Source:** 六支柱 UI 审计 13/24、7 个 BLOCKER(`.planning/milestones/v1.13-phases/idi-03-g3/03-UI-REVIEW.md`)。其中 5 条功能性 BLOCKER 已于 2026-09-16 修复并合入 main(`b9664e0`);本里程碑收的是被显式延后的部分——延后理由一致:修法本身就是设计决策,必须先定契约再落地。
 
+**Status: ✅ 完成 (2026-09-24)** — 6 个阶段全部交付:Phase 4(设计契约与令牌层)、4.1(Radix 颜色族重写)、5(排版与视觉层级)、6(布局稳健性)、7(交互状态与焦点样式)、8(可访问性语义与键盘)。21/21 计划完成。收口终审见 `.planning/REQUIREMENTS.md`(20/20 需求)。待 `/gsd-complete-milestone v1.14` 归档。
+
 ## Requirements
 
 ### Validated
@@ -35,11 +37,13 @@
 
 **全部 20 条需求(DESIGN.md v1.13 全范围)已交付并验证。**
 
+- ✓ **v1.14 前端视觉与可访问性**(6 阶段 / 21 计划)— Phase 4 ~ Phase 8,2026-09-24 收口。范围:设计契约与令牌层(P4)、Radix 颜色族值层重写(P4.1)、排版与视觉层级(P5)、布局稳健性(P6)、交互状态与焦点样式(P7)、可访问性语义与键盘(P8)。需求清单与逐条状态见 `.planning/REQUIREMENTS.md`。
+
 ### Active
 
-**v1.14 前端视觉与可访问性** — 需求清单见 `.planning/REQUIREMENTS.md`(由 `/gsd-new-milestone` 定义)。范围来源为 UI 审计的延后项,不含新功能。
+**无。** v1.13 与 v1.14 两个里程碑的范围均已交付完毕,当前没有进行中的需求。
 
-v1.13 范围内工作已全部交付(旧的 v1.13 需求清单已归档至 `.planning/milestones/v1.13-REQUIREMENTS.md`)。
+下一个里程碑由 `/gsd-new-milestone` 定义。候选(尚未裁定,来自本里程碑执行期登记的 backlog):`999.1`(Phase 4 残留卫生项)、`999.2`(Phase 7 交互态契约暴露的三条既有 affordance 缺陷),以及各阶段登记为 v2 的延后项(`A11Y-V2-01/02` 焦点陷阱与其余弹窗语义、`FLOW-V2-01` 替换 `window.prompt`)。
 
 ### Out of Scope
 
@@ -98,6 +102,9 @@ v1.13 范围内工作已全部交付(旧的 v1.13 需求清单已归档至 `.pla
 | Phase 7:焦点环环色取字面值 `#1f63bd`,**不**采纳同族的 `--radix-blue-11` | 这是对已签核契约 S-4 的**字面遵从**,不是疏漏:S-4 的签核算术(`04-UI-SPEC.md`)就是用这个值算的。`blue-11` 在归档态 0.75 合成下实测 **3.03:1** —— 余量仅 0.03,任何后续微调都会把它推回线下;`blue-12` 是高对比**文本**档,作 2px 环会被读成边框而非焦点指示。环色因此进围栏并带「不得修正」注释 | ✓ Good(三条 PAIR 实测 5.72 / 5.57 / 3.45 全达标;围栏注释逐字禁止「顺手修正」) |
 | Phase 7:禁用态的 hover 闸门**落在既有 `button:hover` 规则的选择器上**(就地改写为 `:where(:not(:disabled))`),而非给每个禁用控件补一条反向规则 | 就地改写让特异性**逐位不变**(`:where()` 计 0),从而不会与九组既有填充规则发生层叠竞速;补反向规则则会新增一个需要与既有规则比特异性的竞争者。同样的推理让朴素 `:active` **刻意停在 0-1-0** —— 升到 0-1-1 就会靠源码顺序夺走 `button.primary` / `.overlay-card button` 的填充底色 | ✓ Good(SC5′ 用真实 `renderVerdictCard` + 真实 `.disabled` 断言「hover 背景 == 静默背景」;变异测试证明去掉 gate 或让位即变红) |
 | Phase 7:`phase.complete` 的 STATE.md 字段异常**第三次**复现(本次 `completed_phases` 4→1、`percent` 67→17),收口后由编排器按 ROADMAP `## Progress` 校正为 5 / 83% | 与 Phase 5 那次逐字同型(`total_plans` / `completed_plans` 与未越权翻需求这两点本次均正确,只有进度计数器错)。**已注册的 `tech-debt`,不是新缺陷**;但三次复现说明该缺陷不会自愈,编排器每次收口后必须自己核盘 | ⚠️ Revisit(判据一律取 ROADMAP 的 `## Milestones` + `## Progress`) |
+| Phase 8:`phase.complete` 的进度计数器**第四次**复现(`completed_phases` 6→1、`percent` 100→17),收口后由编排器按 `progress.bar` 校正为 6/6 / 100% | 与 Phase 5 / Phase 7 两次逐字同型:进度计数器错,而 `requirements_updated: false`(未越权翻需求)与 `total_plans/completed_plans` 均正确。**本次新增一条判据**:权威值可直接取 `gsd_run query progress.bar --raw`,它返回 `21/21 plans (100%)` —— 比手工从 ROADMAP 数更快且同样可靠 | ⚠️ Revisit(已第四次复现,`tech-debt` 确认不自愈) |
+| Phase 8:选档成功后的焦点交还必须放在 `await refreshChecksAfterStream()` **之后**,不能紧跟 `syncBackgroundInert()` | `continueCheckBtn.disabled` 在检查在途时为 `true`,而 Chrome 的 `.focus()` 对**禁用按钮是 no-op**;`disabled` 的复位恰在 `refreshChecksAfterStream()` 内。提前放会静默失效——diff 看起来是对的、缺陷却仍然存活,比原缺陷更糟(读起来像已修)。UI 审计把它列为优先级 1,用户裁定「先修焦点,再收口」 | ✓ Good(先写出守卫看它红 `expected=btn-continue-check actual=BODY`,再修至绿;判别控制证明绿非恒绿) |
+| Phase 8:`chooseTier()` 的成功路径**交还焦点**,而 `#confirmation-modal` 的「放行」路径**不交还** —— D8-10 的豁免收窄为只覆盖后者 | 豁免援引的「F1 不覆盖情形①」(整个视图即将切换)是为确认弹窗写的:放行后视图确实切换、触发者随之隐藏,钉回焦点是错的。选档成功**不切换视图**,反而让 `#btn-continue-check`(「继续自检」)变得可见 —— 正是 D8-10 自己所说的「可继续自检流程」那个位置,故豁免不适用 | ✓ Good(D8-10 + §焦点契约情形① 同步收窄;check-07 item g4 钉死该行为) |
 
 ---
-*Last updated: 2026-09-23 after Phase 7 (交互状态与焦点样式) — UAT 1/1 pass(唯一人工项 D-17 的 5″ 经用户确认)、verifier 独立复核 `8/9 机器 + 1 具名人工`、`threats_open: 0`、Nyquist 零缺口、UI 审计 19/24;UI 审计的三条既有缺陷转 backlog `999.2`(用户裁定);下一阶段为 Phase 8(可访问性语义与键盘)*
+*Last updated: 2026-09-24 after Phase 8 (可访问性语义与键盘) — 里程碑 v1.14 收口:UAT 5/5 pass(含用户裁定的 D-17 与零高度 Tab 停靠点两项设计裁定)、Nyquist 补齐 3 处零覆盖需求(A11Y-05/06/03 的 Escape 半场,新增 `scripts/check-07-idi08-validation.py`)、`threats_open: 0`、UI 审计 21/24;收口后追加 quick `260924-vb7` 修复选档成功路径的焦点丢失(UI 审计优先级 1,用户裁定「先修焦点,再收口」)。下一里程碑待 `/gsd-new-milestone` 定义*

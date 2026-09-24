@@ -3,44 +3,43 @@ gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
 current_phase: 08
-current_phase_name: 可访问性语义与键盘
-status: ready_for_verification
-stopped_at: Completed idi-08-03-PLAN.md
-last_updated: "2026-09-24T06:16:27.476Z"
+status: completed
+stopped_at: Phase idi-08 complete — all phases complete
+last_updated: "2026-09-24T15:33:24.969Z"
 last_activity: 2026-09-24
-last_activity_desc: Completed idi-08-03-PLAN.md — all 3 plans done, awaiting phase verification
-state_head: fa7813a12b6b002a896805dfb4d7d0a989e84a6a
+last_activity_desc: Phase idi-08 complete
+state_head: 5a9100c9a989dae4441efcdb1eb95955976a0f02
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 21
   completed_plans: 21
-  percent: 83
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-21)
+See: .planning/PROJECT.md (updated 2026-09-24)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-08 — 可访问性语义与键盘
+**Current focus:** 里程碑 v1.14 已全部收口,待 `/gsd-complete-milestone v1.14` 归档;下一里程碑待 `/gsd-new-milestone` 定义
 
 ## Current Position
 
-Phase: idi-08 (可访问性语义与键盘) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-09-24 - Completed quick task 260924-vb7: Fix the tier-success-path focus loss (chooseTier() now hands focus back to #btn-continue-check)
+Phase: idi-08
+Plan: Not started
+Status: All phases complete
+Last activity: 2026-09-24 — Phase idi-08 complete
 
-Progress: [████████░░] 83%
+Progress: [████████████████████] 21/21 plans (100%)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 31
+- Total plans completed: 34
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -56,6 +55,7 @@ Progress: [████████░░] 83%
 | idi-05 | 4 | - | - |
 | idi-06 | 4 | - | - |
 | idi-07 | 3 | - | - |
+| idi-08 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -283,16 +283,19 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T06:15:08.951Z
-Stopped at: Completed idi-08-03-PLAN.md
+Last session: 2026-09-24T15:40:00Z
+Stopped at: Phase idi-08 complete — milestone v1.14 all phases complete, ready for `/gsd-complete-milestone v1.14`
 Resume file: None
 
 ## Operator Next Steps
 
-- **当前待办(一条):** **`/gsd-plan-phase 8`** —— `idi-07`(交互状态与焦点样式)已收口:UAT 1/1 pass(唯一人工项 D-17 的 5″ 经用户确认)、`idi-07-VERIFICATION.md` `status: passed`(8/9 机器 + 1 具名人工)、`threats_open: 0`、Nyquist 0 缺口、UI 审计 19/24。
-  - **本阶段收口时的两条登记(不阻断 Phase 8):**
-    1. **`phase.complete` 的 STATE.md 字段异常第三次复现。** 本次把 `progress.completed_phases` 从 **4 改回 1**、`percent` **67 → 17**(进度条同步退化)。成因与 idi-05 那次逐字相同(见本文件 `## Deferred Items` 的 `tech-debt` 行与下方第 1 条的注),已按 ROADMAP 的 `## Progress` 校正为 **5 / 83%**。`total_plans` / `completed_plans`(18/18)与 `Total plans completed`(31)本次**正确**,未越权翻需求(`requirements_updated: false`)。**判据一律取 ROADMAP 的 `## Milestones` + `## Progress`,不从 `state.json` 的 `phases` 推。**
-    2. **UI 审计的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):`#session-panel .panel-header` 的假 `cursor: pointer`、`.annotation-answer summary` 无交互态且普查从未见过它、焦点环 PAIR 清单漏 `--color-surface-warning-subtle` 底色。**注意:修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证 idi-07。
+- **当前待办(一条):** **`/gsd-complete-milestone v1.14`** —— 里程碑 v1.14(前端视觉与可访问性)6 个阶段全部收口:Phase 4 / 4.1 / 5 / 6 / 7 / 8,21/21 计划,ROADMAP `## Progress` 全 `Complete`。Phase 8 的收口记录:UAT **5/5 pass**(含用户裁定的两项设计决策 —— D-17 的 5″ 与 phase-5 视图下 351×0 的 `#round-doc` Tab 停靠点)、Nyquist 补齐 **3 处零覆盖需求**(A11Y-05 / A11Y-06 / A11Y-03 的 Escape 半场 —— 此前 `Escape` 一词在 `scripts/` 与 `backend/tests/` 里出现次数为 **0**;新增 `scripts/check-07-idi08-validation.py`,70 条断言)、`threats_open: 0`(14 条威胁,3 条 high 全部实测关闭)、UI 审计 **21/24**。
+  - **收口后追加了 quick `260924-vb7`(用户裁定「先修焦点,再收口」):** UI 审计优先级 1 —— `chooseTier()` 隐藏 `#tier-modal` 后不交还焦点,`document.activeElement` 回落到 `<body>`。修复置于 `await refreshChecksAfterStream()` **之后**(该刷新才复位按钮的 `disabled`,而 `.focus()` 对禁用按钮是 no-op —— 提前放会静默失效)。因 `frontend/app.js` 内容真变,`idi-08-VERIFICATION.md` 已按「内容真变 → 重新验证」重做(非重算指纹),现 `status: passed`,35/40(3 条自验)。
+  - **本阶段收口时的三条登记(不阻断里程碑归档):**
+    1. **`phase.complete` 的进度计数器第四次复现。** 本次把 `progress.completed_phases` 从 **6 改回 1**、`percent` **100 → 17**。与 Phase 5 / Phase 7 两次逐字同型;`requirements_updated: false`(未越权翻需求)、`total_plans`/`completed_plans`(21/21)均正确。已按 **`gsd_run query progress.bar --raw`**(返回 `21/21 plans (100%)`)校正为 **6/6 / 100%**。**新判据:`progress.bar` 可直接作权威值,不必手工从 ROADMAP 数。**
+    2. **T-idi08-11 的缓解措施被证伪,已登记为 AR-01。** 计划声称 `scripts/check-05-ui-uat.py` 本阶段**零改动**,实际被 `63fba08`(用户裁定的 L-5 收口)改动 +46/−2。实测归因:该改动使 **`idi-07` 的 VERIFICATION 由 fresh 转 `stale`**;`idi-04 / 04.1 / 05 / 06` 的 `stale` 在 Phase 8 开始**之前**就已存在(其 `frontend/style.css` / `REQUIREMENTS.md` 在 Phase 5/6/7 就变过),**不归因于本阶段**。补救是重跑那 5 个阶段的验证,不是改指纹。
+    3. **UI 审计另外两条优先级项的处置:** 优先级 2(`#selection-menu` 逃过 `inert` 且 z-index 高于弹窗)**经实测证伪** —— `openConfirmModal()` 全文件只有一个调用点(在 `#btn-authorize` 的 click 里),而 `app.js:1489` 的 document 级 `mousedown` 已在弹窗打开前关掉菜单;证据保留在 `scripts/probe-menu-modal-reachability.py` 与 `idi-08-UI-REVIEW.md` 的编排器复核附节。优先级 3(UI-SPEC 基线漂移)**成立但未修** —— 属文档债,待后续补登记。
+- ~~**当前待办:规划 Phase 8**~~ **已收口** —— `idi-07`(交互状态与焦点样式)收口:UAT 1/1 pass(唯一人工项 D-17 的 5″ 经用户确认)、`idi-07-VERIFICATION.md` `status: passed`(8/9 机器 + 1 具名人工)、`threats_open: 0`、Nyquist 0 缺口、UI 审计 19/24。
 - ~~**当前待办:规划 Phase 5**~~ **已完成** —— `idi-05` 的 3 个计划(`idi-05-01` / `idi-05-02` / `idi-05-03`)全部执行完毕,各有 SUMMARY。
 - **当前待办(一条):**
   1. ~~**`/gsd-verify-work idi-05`**~~ **已收口(2026-09-21,`/gsd-execute-phase idi-05 --gaps-only`)** —— 计划 04 关闭 BLOCKER `G-idi-05-1`,verifier 独立复核报 9/9 must-haves `passed`;`phase.complete` 已执行(ROADMAP Phase 5 → `Complete 2026-09-21`,REQUIREMENTS 的 8 条阶段行已翻)。收口后两条门(`check-05 --item 7` / `check-06`)已在 post-complete 树上复跑,仍绿。**注:本次 `phase.complete` 未越权翻需求(`requirements_updated: false`),但把 `progress.completed_phases` 从 2 改回 1、`percent` 33 → 17 —— 已按 ROADMAP 的 `## Progress` 校正为 3 / 50%。**

@@ -5,10 +5,10 @@ milestone_name: 前端视觉与可访问性
 current_phase: 8
 current_phase_name: 可访问性语义与键盘
 status: planning
-stopped_at: Phase 8 context gathered
-last_updated: "2026-09-23T12:14:30.127Z"
+stopped_at: Phase 8 UI-SPEC approved
+last_updated: "2026-09-24T01:51:42.268Z"
 last_activity: 2026-09-23
-state_head: 0e45b5af7dfb596efd341ecd2dd45dae578328b6
+state_head: 7885f9dbb3139024f4f0a9d4d1e0f8012f675c37
 progress:
   total_phases: 6
   completed_phases: 5
@@ -211,7 +211,7 @@ None yet.
 - [v1.14 P7] **UI 审计(19/24)的三条既有缺陷已转 backlog `999.2`**(用户 2026-09-23 裁定):①`#session-panel .panel-header` 有 `cursor: pointer` 却无点击行为(文件自己的惯例对另两个面板显式复位);②`.annotation-answer summary` 无 `:hover`/`:active` 且不在过渡挂载规则里,更关键的是**三个样本都没有 fixture 渲染 `<summary>`**,故 item 10 的普查从未见过它——「已覆盖」是名义的;③焦点环的 PAIR 清单漏 `--color-surface-warning-subtle`(`.verdict-card` 的底色,环在其上实测 5.77:1 达标),与本文件自订纪律「a token drawn as a UI boundary must have its own NON-TEXT pair on each ground it is drawn on」直接冲突,而兄弟令牌 `--color-border-hover` 正是按该纪律补上了这处底色。**修 999.2 会作废 `idi-07` 的 `passed` 指纹**(`frontend/style.css` 与 `scripts/check-05-ui-uat.py` 都在其 `covered_files` 里),须连带重新验证。
 - [v1.14 P7] **`phase.complete` 的 STATE.md 字段异常第三次复现**(`completed_phases` 4→1、`percent` 67→17,进度条同步退化)。已注册的 `tech-debt`,不会自愈;判据一律取 ROADMAP 的 `## Milestones` + `## Progress`。**注意 `state.json` 的 `phases` 数组本次是正确的**(1-7 全 complete、8 pending),错的只有 STATE.md 的派生计数——不要把 `state.json` 当判据来源。
 - [v1.14 P7] **归档半场的焦点环断言仍无服务对象**(五个样本 `#round-doc` 内 `a[href]` 计数为 0)。已按 `accept` 登记于 `idi-07-SECURITY.md` 的 Accepted Risks Log;一次性反事实探针 `scripts/probe-07-focus-composite.py` 承担可外推性。**Phase 8 给 `#round-doc` 加 `tabindex="0"` 后该场景变为活体,届时须复跑该探针**。
-- [v1.14 P8] **同一派生计数缺陷第四次复现,且本次的触发者是新动词。** Phase 8 的 discuss 收口跑 `state.record-session` 后,`progress.completed_phases` 从 **5 改回 1**、`percent` **83 → 17**(进度条同步退化)。**新增两条事实**:①`state.record-session` 也会触发(此前只记录了 `phase.complete` 与 `state.update-progress`);②**`state.sync` 会把它改得更差**(17% → 13%,且不动 `completed_phases`),`state.rebuild --dry-run` 报 `Nothing to rebuild`(它的推导源已经同意那个错值)⇒ **三个动词(`sync` / `rebuild` / `record-session`)都不能作为修正手段**。已按 ROADMAP 的 `## Progress` 校正为 **5 / 83%**。判据仍取 ROADMAP 的 `## Milestones` + `## Progress`,不从 `state.json` 的 `phases` 推(本次 `state.json` 的 `phases` 数组依然正确:1-8 全 complete、8 pending)。
+- [v1.14 P8] **同一派生计数缺陷第四次复现,且本次的触发者是新动词。** Phase 8 的 discuss 收口跑 `state.record-session` 后,`progress.completed_phases` 从 **5 改回 1**、`percent` **83 → 17**(进度条同步退化)。**新增三条事实**:①`state.record-session` 也会触发(此前只记录了 `phase.complete` 与 `state.update-progress`);②**`state.sync` 会把它改得更差**(17% → 13%,且不动 `completed_phases`),`state.rebuild --dry-run` 报 `Nothing to rebuild`(它的推导源已经同意那个错值)⇒ **三个动词(`sync` / `rebuild` / `record-session`)都不能作为修正手段**;③**它是确定性的,不是偶发** —— 同一次会话里 ui-phase 收口再跑一次 `record-session`,同样把 5/83% 改回 1/17%,两次逐字一致。已按 ROADMAP 的 `## Progress` 校正为 **5 / 83%**(两次都校正了)。判据仍取 ROADMAP 的 `## Milestones` + `## Progress`,不从 `state.json` 的 `phases` 推(本次 `state.json` 的 `phases` 数组依然正确:1-8 全 complete、8 pending)。
 - [v1.14 P8] **Phase 8 的 CONTEXT 已落盘**(`idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md`,D-01…D-26)。三条会改变下游行为的裁定:①**两个阻塞弹窗按实测换成 `#confirmation-modal` + `#tier-modal`**(路线图点名的 `#permission-modal` 可 Tab 出去、不卡;真正卡死的是无取消按钮且不移焦的 `#tier-modal`);②**键盘划词的提交手势 = 抬起 Shift**(路线图字面「keyup 分支移焦」会让键盘用户只能选中一个字符,而验收项仍会假绿);③**焦点环沿用整盒环、`style.css` 零改动** ⇒ Phase 8 在 D-01 路径下**不欠任何验证指纹**(`frontend/app.js` / `index.html` 不在任何 live 报告的 `covered_files` 里)。
 
 ### Quick Tasks Completed
@@ -244,9 +244,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-23T12:14:09.830Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md
+Last session: 2026-09-24T01:51:42.160Z
+Stopped at: Phase 8 UI-SPEC approved
+Resume file: .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-UI-SPEC.md
 
 ## Operator Next Steps
 

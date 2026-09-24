@@ -1159,7 +1159,7 @@ function renderAnnotations(annotations, isCurrentRound) {
   if (!items.length) {
     const empty = document.createElement('p');
     empty.className = 'hint';
-    empty.textContent = '本轮暂无批注——在左侧文档划词即可批注。';
+    empty.textContent = '本轮暂无批注——在右侧文档划词即可批注。';
     annotationList.appendChild(empty);
     if (!isCurrentRound) empty.textContent = '该轮暂无批注。';
     return;

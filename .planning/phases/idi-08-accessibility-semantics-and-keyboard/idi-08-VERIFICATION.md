@@ -1,6 +1,6 @@
 ---
 phase: idi-08-accessibility-semantics-and-keyboard
-status: human_needed
+status: passed
 verified: 2026-09-24T15:52:00Z
 reverified: 2026-09-24T13:23:27Z
 score: 34/39 truths verified (4 human, 1 present-but-behavior-unverified, 0 FAILED); 2 of the 34 are self-verified, not independent

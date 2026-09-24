@@ -73,18 +73,20 @@ created: "2026-09-24"
 
 - **计划要求**:`scripts/check-05-ui-uat.py` 本阶段**零改动**,以 `git status --porcelain` 为空为证据;它是 5 份 live 报告 `covered_files` 的成员,改它会作废那些指纹。
 - **实测**:`63fba08`(「declare tall focusable content regions in L-5, per user ruling」)改动了该文件,+46/−2。**这并非擅自改门** —— 计划对「门变红」的处置要求(先判「真缺陷 vs 普查集变化」再动门)被遵守了:L-5 门因把一个高的可聚焦**内容区**当控件断言而变红,用户裁定修改门的**范围**(把这类行**声明**出来而非断言,并加 fail-closed 兜底:若声明集吃掉整个判定集则记 `blocked` 而非 PASS)。
-- **后果已实测发生**:`check-05-ui-uat.py` 出现在 **6** 份 `*-VERIFICATION.md` 的 `covered_files` 中,其中 5 份现在读到 **`status: stale`**:
+- **后果已实测发生**:`check-05-ui-uat.py` 出现在 **6** 份 `*-VERIFICATION.md` 的 `covered_files` 中。其中 **5 份**现在读到 **`status: stale`**。**但这 5 份里只有 1 份是本阶段造成的** —— 逐份比对「该报告写入时 → 阶段 8 起点(`126646e`)」与「阶段 8 起点 → HEAD」两个窗口内其 `covered_files` 的实际变化:
 
-  | Phase | verification status |
-  |-------|---------------------|
-  | idi-04-tokens-contract | `stale` |
-  | idi-04.1-radix | `stale` |
-  | idi-05-typography-and-visual-hierarchy | `stale` |
-  | idi-06-layout-robustness | `stale` |
-  | idi-07-interaction-states-and-focus | `stale` |
-  | idi-08-accessibility-semantics-and-keyboard | `passed` |
+  | Phase | verification 写入于 | 阶段 8 **之前**已被改动 | 阶段 8 内被改动 | 归因 |
+  |-------|--------------------|------------------------|----------------|------|
+  | idi-04-tokens-contract | `812a224` (09-20) | `REQUIREMENTS.md`, `frontend/style.css` | `REQUIREMENTS.md` | **本阶段之前就已 stale** |
+  | idi-04.1-radix | `812a224` (09-20) | `REQUIREMENTS.md`, `frontend/style.css`, `check-05` | `REQUIREMENTS.md`, `check-05` | **本阶段之前就已 stale** |
+  | idi-05-typography | `e396c66` (09-21) | `REQUIREMENTS.md`, `frontend/style.css`, `check-05` | `REQUIREMENTS.md`, `check-05` | **本阶段之前就已 stale** |
+  | idi-06-layout-robustness | `5bc3b88` (09-22) | `REQUIREMENTS.md`, `frontend/style.css`, `check-05` | `REQUIREMENTS.md`, `check-05` | **本阶段之前就已 stale** |
+  | idi-07-interaction-states | `f0f0c31` (09-23) | *(无)* | `REQUIREMENTS.md`, `check-05` | **本阶段造成** |
+  | idi-08-accessibility | — | — | — | `passed` |
 
-  这个 `stale` 读数是**准确**的,不是假警报:共享仪器确实变了,那 5 份报告的验证结论相对 HEAD 不再自动成立。**补救方向是重跑那 5 个阶段的验证,不是去改指纹**(改指纹会掩盖真实的仪器变更)。
+  **准确的结论:阶段 8 使 `idi-07` 从 fresh 变为 stale;`idi-04 / 04.1 / 05 / 06` 在阶段 8 开始之前就已经 stale**(它们的 `frontend/style.css` 与 `REQUIREMENTS.md` 在阶段 5/6/7 期间已变,`check-05` 亦在阶段 7 被多次改动)。把 5 份全部归因于 `63fba08` 是**过度归因**,已在本次审计中实测更正。
+
+  这个 `stale` 读数在两种情形下都是**准确**的,不是假警报:共享仪器或覆盖内容确实变了,那些报告的验证结论相对 HEAD 不再自动成立。**补救方向是重跑那些阶段的验证,不是去改指纹**(改指纹会掩盖真实的仪器变更)。
 - **性质**:验证完整性债务,非漏洞。已登记为 AR-01。
 
 ---
@@ -93,7 +95,7 @@ created: "2026-09-24"
 
 | Risk ID | Threat Ref | Rationale | Accepted By | Date |
 |---------|------------|-----------|-------------|------|
-| AR-01 | T-idi08-11 | `63fba08` 对共享 harness `scripts/check-05-ui-uat.py` 的改动(用户裁定的 L-5 缺口收口)使 5 份先前阶段的 VERIFICATION 读到 `stale`。该改动本身经用户授权、且是必要的(门确实变红);`stale` 读数准确反映共享仪器已变。**补救路径(非阻塞,待用户决定)**:对 idi-04 / idi-04.1 / idi-05 / idi-06 / idi-07 各重跑一次 `/gsd-verify-work` 以刷新指纹。本阶段**不**代为修改那些报告。 | orchestrator (secure-phase audit) | 2026-09-24 |
+| AR-01 | T-idi08-11 | `63fba08` 对共享 harness `scripts/check-05-ui-uat.py` 的改动(用户裁定的 L-5 缺口收口)使 **`idi-07` 的 VERIFICATION 由 fresh 转为 `stale`**(实测归因,见 D-2 表)。该改动本身经用户授权、且是必要的(门确实变红);`stale` 读数准确反映共享仪器已变。`idi-04 / 04.1 / 05 / 06` 的 `stale` 在阶段 8 开始**之前**就已存在,不归因于本阶段。**补救路径(非阻塞,待用户决定)**:对这 5 个阶段各重跑一次 `/gsd-verify-work` 以刷新指纹;其中 `idi-07` 是唯一因本阶段而 stale 的。本阶段**不**代为修改那些报告。 | orchestrator (secure-phase audit) | 2026-09-24 |
 | AR-02 | T-idi08-03, T-idi08-08 | `#round-doc` 的 `tabindex="0"` 与两个新 id / `aria-labelledby` 属「accept」处置:不引入新输入 sink,渲染面既有 XSS 防线不变。已逐项实测复核。 | orchestrator (secure-phase audit) | 2026-09-24 |
 
 *Accepted risks do not resurface in future audit runs.*

@@ -1,19 +1,14 @@
 ---
-status: testing
+status: complete
 phase: idi-08-accessibility-semantics-and-keyboard
 source: [idi-08-VERIFICATION.md]
 started: 2026-09-24T13:23:27Z
-updated: 2026-09-24T13:23:27Z
+updated: 2026-09-24T21:56:00Z
 ---
 
 ## Current Test
 
-number: 1
-name: A11Y-08 — Tab 序到达每一个交互控件
-expected: |
-  每一个交互控件都能被 Tab 到达;新增的 #round-doc 停靠点位于第 2 位(紧接 #round-switcher 之后,
-  #authorize-row 可见时紧邻 #btn-authorize 之前)。
-awaiting: user response
+[testing complete]
 
 ## Tests
 
@@ -30,7 +25,7 @@ why_human: |
   p3 10/10、checking 8/8),但「每一个交互控件」是**跨状态的屏幕枚举**,而 harness 不采样
   archive 状态(item 10 的样本集硬编码为 p1/checking/p3,到不了 archive)。
 
-result: [pending]
+result: pass
 
 ### 2. A11Y-03 键盘划词那一半 — Shift+方向键扩选,再松开 Shift
 
@@ -44,7 +39,7 @@ why_human: |
   本环境无法自动化键盘文本选区(连 contenteditable 都选不中)。按 ROADMAP Phase 8 §Manual checks,
   这一条上的自动非结果**不构成功能缺陷判定**。
 
-result: [pending]
+result: pass
 
 ### 3. REG-03 — b9664e0 五条修复的人工验收项重跑
 
@@ -58,7 +53,7 @@ why_human: |
   依赖键盘选区的几条(第 4 条的扩选步、其余几条的键盘起点变体)无法自动化;执行器已机器观测
   1/2/4/5 条通过,并显式把 step 3 交给人。
 
-result: [pending]
+result: pass
 
 ### 4. 六条 backstop UI-consideration 真值(E1…E6)
 
@@ -73,7 +68,7 @@ why_human: |
   这些在计划 frontmatter 里被声明为 `verification: backstop` —— 规划期**弃权**而非承诺判据,
   故没有可对照的规格。多数确实不适用(静态 div、两按钮菜单、#app),但那是**裁定**不是**测量**。
 
-result: [pending]
+result: pass
 
 ### 5. phase-5 视图下零高度的 #round-doc Tab 停靠点
 
@@ -85,14 +80,14 @@ expected: |
 why_human: |
   执行器登记但未修(条件性属性会改变计划 01 的交付物)。这是**设计决策**,不是测量。
 
-result: [pending]
+result: pass
 
 ## Summary
 
 total: 5
-passed: 0
+passed: 5
 issues: 0
-pending: 5
+pending: 0
 skipped: 0
 blocked: 0
 

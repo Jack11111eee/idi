@@ -1517,6 +1517,21 @@ document.addEventListener('keydown', (e) => {
   //    刻意不清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
   if (!selectionMenu.classList.contains('hidden')) {
     hideSelectionMenu();
+    // ⚠ 承重的四行:抑制紧随其后的 Escape keyup,否则上面这次关闭会被**当场撤销**。
+    // 机制(实测,非推断):上面那次关闭的 F1-a 单点焦点交还会把焦点送回 #round-doc,
+    // 而 #round-doc 上绑着既有的 handleSelectionTrigger(keyup)—— 选区非折叠时它会**重开菜单**。于是:
+    //   keydown Escape → target=#btn-annotate → 菜单隐藏 ✓、焦点交还 ✓
+    //   keyup   Escape → target=#round-doc    → handleSelectionTrigger 重开菜单 ✗
+    // 净效果 = 「按 Escape 什么也没发生」,直接打破 D-08、UI-SPEC §K-2.6 第 6 步与
+    // ROADMAP Phase 8 §Manual checks 里 A11Y-03 的「Escape 关闭并交还焦点」。
+    // 为什么是 capture 阶段:document 的捕获阶段先于目标元素上的监听器 ⇒ 在捕获期
+    // stopPropagation() 能让事件根本到不了 #round-doc,handleSelectionTrigger 不会触发。
+    // 为什么不用「清空选区」绕开:那是 D-08 明文禁止的(会毁掉 Escape 后续选这条路径)。
+    // 为什么不改 handleSelectionTrigger:它的函数体在 Do-Not-Touch 名单上(硬规则 5);
+    // 本修法一行都不碰它。once:true 让监听器在首个 keyup 后自动摘除,无需记账、不会泄漏。
+    document.addEventListener('keyup', (ev) => {
+      if (ev.key === 'Escape') ev.stopPropagation();
+    }, { capture: true, once: true });
     e.preventDefault();
     return;
   }

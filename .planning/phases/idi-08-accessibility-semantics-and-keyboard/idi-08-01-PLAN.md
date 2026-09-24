@@ -195,7 +195,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 
     ⚠ **注释散文同样计入按子串计数的判据**:本任务**不得**在注释里写出任何 `tabindex` 之外的新属性字面量形态;`grep -c tabindex frontend/index.html` 的期望值恰为 **1**,所以注释里**不要**出现第二个 `tabindex` 字样 —— 讲「为什么加」时用「这个属性」「焦点停靠点」等措辞,不要复述属性名。
 
-    最后,把**执行前基线**跑一遍并逐条登记到 SUMMARY 的「基线对账」节:`grep -c 'inline-error' frontend/style.css`(期望 1)、`grep -c 'clearInlineError();' frontend/app.js`(期望 **9**,不是 6 —— `08-CONTEXT.md` D-21 的「6」来自 `b9664e0` 时代的旧 gate,照抄会造出永远不会失败的假门)、`grep -c ':focus-visible' frontend/style.css`(期望 9)、`grep -c '^\.hidden {' frontend/style.css`(期望 1)、`grep -c 'role=' frontend/index.html`(期望 0)、`grep -c inert frontend/app.js`(期望 0)、`grep -c 'hideSelectionMenu' frontend/app.js`(期望 **7** —— Task 3 的绝对判据)、`grep -c 'window.getSelection' frontend/app.js`(期望 **1** —— Task 3 的绝对判据,Task 3 之后应为 **2**)。**先建立基线,再登记本任务打破的项(只有 `tabindex` 一项:0 → 1)。**
+    最后,把**执行前基线**跑一遍并逐条登记到 SUMMARY 的「基线对账」节:`grep -c 'inline-error' frontend/style.css`(期望 1)、`grep -c 'clearInlineError();' frontend/app.js`(期望 **9**,不是 6 —— `08-CONTEXT.md` D-21 的「6」来自 `b9664e0` 时代的旧 gate,照抄会造出永远不会失败的假门)、`grep -c ':focus-visible' frontend/style.css`(期望 9)、`grep -c '^\.hidden {' frontend/style.css`(期望 1)、`grep -c 'role=' frontend/index.html`(期望 0)、`grep -c inert frontend/app.js`(期望 0)、`grep -c 'hideSelectionMenu' frontend/app.js`(期望 **7** —— Task 3 的绝对判据;⚠ 该值在阶段收口时已因计划 02 的分派器合法新增 1 个调用点而变为 **8**,见 Task 3 的 `fails_when`)、`grep -c 'window.getSelection' frontend/app.js`(期望 **1** —— Task 3 的绝对判据,Task 3 之后应为 **2**)。**先建立基线,再登记本任务打破的项(只有 `tabindex` 一项:0 → 1)。**
   </action>
   <verify>
     <automated>grep -c 'tabindex' frontend/index.html</automated>
@@ -329,7 +329,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     <automated>cd frontend && node --check app.js</automated>
     <fails_when>任何非空输出或非零退出(语法错误)</fails_when>
     <automated>grep -c 'hideSelectionMenu' frontend/app.js</automated>
-    <fails_when>输出不是恰好 `7`(`grep -c` 数**行**;**HEAD 实测 7**,逐行是 L1296 的定义行、L1331/L1335 的两条守卫、L1356/L1358 的两个关闭器、L1363/L1393 的两个菜单项调用点 —— 交还是写在函数**体内**,不新增调用点,故该计数**必须仍为 7**;变了说明交还被散落到了调用点,违反 D-08 的单点要求)</fails_when>
+    <fails_when>**期望值已由规划期的 `7` 更正为执行期实测的 `8`。** 变更来源已核实:计划 02 的 Escape 单点分派器必须关闭划词菜单,而它**正确地**调用了这个单点关闭函数(这正是 D-08 单点要求想要的行为,不是把交还散落到调用点)⇒ 合法新增 1 个调用点,7 → 8。**判据不是「计数是否等于某个数」,而是「F1 的焦点交还是否仍只写在函数体内、没有散落到调用点」** —— 用 `grep -n 'hideSelectionMenu' frontend/app.js` 逐行看:定义行 1 处、调用点若干、`addEventListener` 引用 1 处,交还逻辑本身**不出现在任何调用点**即为通过。**⚠ 注释散文同样计入本计数**(本阶段的实测教训:一条解释本函数行为的注释里写出该函数名,计数就会 +1)—— 故本门数到 9 时先看多出来的那一行是不是注释,是则改注释措辞,**不要**改门的期望值、也不要删注释。</fails_when>
     <automated>grep -c 'window.getSelection' frontend/app.js</automated>
     <fails_when>输出不是恰好 `2`(**HEAD 实测 1**(L1329 的既有读取);本任务新增的 Shift 监听器按 `<action>` 复用 `window.getSelection()` 的判据形态 ⇒ +1,改动后恰为 **2**)。输出 `1` 说明新监听器没有按 `<action>` 指定的形态读选区状态(或误删了既有读取);输出 >2 说明多写了读取,或把交还判据写成了清空选区的写法(D-08 禁清空)</fails_when>
     <automated>grep -c 'role=' frontend/index.html</automated>

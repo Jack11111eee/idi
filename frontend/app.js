@@ -840,6 +840,11 @@ async function chooseTier(tier) {
     syncBackgroundInert(); // D-14:选档成功即摘掉背景惰性(两个弹窗都已关闭)
     renderEvent({ kind: 'say', content: `已选择「${tier}」档,点「开始自检」启动核查。`, raw: null });
     await refreshChecksAfterStream();
+    // F1-d 的**成功路径**落点:D8-10 的豁免已收窄为只覆盖 #confirmation-modal —— 选档成功后
+    // 视图并不切换,上面那次刷新反而让 #btn-continue-check 变得可见,故把焦点交还给下一个动作。
+    // 位置必须在这条 await **之后**:是它把该按钮的 disabled 复位为 false,而 .focus() 对
+    // 禁用按钮是 no-op —— 提前放会静默什么都不做,缺陷照旧存活,而 diff 看上去是对的。
+    continueCheckBtn.focus();
   } catch {
     renderEvent({ kind: 'error', content: '档位选择失败(网络)', raw: null });
   }

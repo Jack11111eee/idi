@@ -211,14 +211,16 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
     **其余三个弹窗(`frontend/index.html:158` 的 `#permission-modal`、`:196` 的 `#mission-complete-modal`、`:213` 的 `#cli-check-overlay`)一个属性都不加** —— 范围锁死为 D-11 的两个对象,这是**刻意的,不是漏项**。
 
     **不要做的事:** 不改任何既有 id(改名或删除会在解析期静默杀死 `app.js:4-75` 的约 70 个句柄之下的全部处理器,G-idi01-8);不动 `.overlay-card` 的类名或结构;不动 `#selection-menu` 的 DOM 位置(硬规则 5:它必须是 `<body>` 直接子元素);不改 `#app` 的开闭边界(硬规则 5 之外的独立理由 —— `inert` 的挂载点依赖「五个 overlay 与菜单都是 `#app` 的兄弟」这条结构事实);不写任何 `aria-live`(Pitfall M7,本阶段一律不加);不改任何文案。
+
+    ⚠ **围栏注释里的属性字面量会打穿本任务的计数门(与 Task 1 的 `#round-doc` 注释同类,规划 01 已为 `tabindex` 立过同一条规矩)。** 本任务的三个计数门是 `grep -c 'role='`(**数行**)、`grep -o 'aria-modal' | wc -l`(**数出现次数**)、`grep -o 'aria-labelledby' | wc -l`(**数出现次数**),期望值都是**恰好 2**(两个弹窗各一处)。**注释散文同样计入这三条判据**:若你在弹窗上方写围栏注释解释「为什么落 `.overlay` 而不是 `.overlay-card`」「为什么只有两个弹窗加」,而注释里**复述了 `role="dialog"` / `aria-modal` / `aria-labelledby` 这些字面量**,计数会变成 3,门会红 —— 而 `fails_when` 会把它误报成「范围越界到了其余三个弹窗」,**把你引向一个不存在的缺陷**(实测会发生的形态:注释写得越清楚,门越红)。**故:注释照写(本项目惯例鼓励写「为什么」),但用措辞指代属性,不要复述字面量** —— 写「dialog 语义三件套」「无障碍名称指向既有标题元素」「role 与 aria-modal 两条宣告」等,不要写出 `属性名=` 的形态。**判据是「index.html 里这三个属性的出现处恰为两个弹窗」,不是「文件里这三个字符串出现两次」。** 若门报 3 而你的改动确实只落在两个弹窗上,**先 `grep -n 'role=' frontend/index.html` 看第三个命中是不是注释行**,是则改注释措辞(不要改门的期望值、不要删注释、更不要去动其余三个弹窗)。
   </action>
   <verify>
     <automated>grep -c 'role=' frontend/index.html</automated>
-    <fails_when>输出不是恰好 `2`(1 说明只落了一个弹窗;3 或更多说明范围越界到了其余三个弹窗)</fails_when>
+    <fails_when>输出不是恰好 `2`。**判红时先分辨两种成因,不要直接改门或删注释:** ①`grep -n 'role=' frontend/index.html` 的第三个命中若是**围栏注释行**(散文里复述了 `role="dialog"` 字面量),那是**注释措辞问题** ⇒ 改注释用措辞指代属性,门的期望值**不动**;②第三个命中若落在 `#permission-modal` / `#mission-complete-modal` / `#cli-check-overlay` 上,那才是真的范围越界 ⇒ 摘掉那三个弹窗上的属性。输出 `1` 说明只落了一个弹窗</fails_when>
     <automated>grep -o 'aria-modal' frontend/index.html | wc -l</automated>
-    <fails_when>输出不是恰好 `2`(`grep -c` 数**行**、不数出现次数,所以这一条必须用 `-o | wc -l` 写)</fails_when>
+    <fails_when>输出不是恰好 `2`(`grep -c` 数**行**、不数出现次数,所以这一条必须用 `-o | wc -l` 写)。**注意本门数的是出现次数 ⇒ 围栏注释里复述一次 `aria-modal` 字面量就会让它变成 3**;判红时同样先看第三个命中是否在注释里(是 ⇒ 改注释措辞),再考虑范围越界</fails_when>
     <automated>grep -o 'aria-labelledby' frontend/index.html | wc -l</automated>
-    <fails_when>输出不是恰好 `2`</fails_when>
+    <fails_when>输出不是恰好 `2`。**与上一条同理:注释里复述一次 `aria-labelledby` 字面量即变 3** ⇒ 判红时先分辨「注释措辞」与「范围越界」两种成因(成因判定同 `role=` 那条)</fails_when>
     <automated>grep -c 'id="confirmation-modal-title"' frontend/index.html; grep -c 'id="tier-modal-title"' frontend/index.html</automated>
     <fails_when>任一条输出不是恰好 `1`</fails_when>
     <automated>grep -o 'id="' frontend/index.html | wc -l</automated>

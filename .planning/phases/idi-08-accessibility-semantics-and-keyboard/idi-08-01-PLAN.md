@@ -185,7 +185,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 
     **不要改 `frontend/style.css` 的任何一行。** 落 `tabindex="0"` 的瞬间,`frontend/style.css:1514` 的 `[tabindex]:focus-visible` 自动把 `outline: 2px solid var(--color-focus)` + `outline-offset: 2px` 套上去。**不得新增任何 `:focus` / `:focus-visible` 规则,不得写针对 `#round-doc` 的专用焦点规则** —— 那会让「规则覆盖了谁」与「门检查了谁」分叉(`G-idi-05-1` 的成因;硬规则 10)。
 
-    **`#round-doc` 除了这个属性之外一个属性都不加(D-18,用户裁定「都不加」,保持窄切片)。** 不加 `role`(不加 `role="region"`),不加 `aria-label`。加了 `tabindex="0"` 之后它是一个**裸 `<div>` 的 Tab 停靠点**,辅助技术只会报「通用容器」—— 这是**知情接受的代价,不是疏漏**。理由取自用户自己立的立场:`REQUIREMENTS.md` 的 Out of Scope 表把「完整 ARIA」排除的原话是「ARIA 服务于不带上下文到达、且看不见屏幕的用户;本工具恰好一个用户,既是作者也看得见屏幕」。`role` 与焦点陷阱等一起归 v2 `A11Y-V2-02`。**这条必须写进围栏注释**,否则会被读者当成漏项补上。
+    **`#round-doc` 除了这个属性之外一个属性都不加(D-18,用户裁定「都不加」,保持窄切片)。** 不加 `role`(**不加** region 角色 —— ⚠ 此处**刻意不写出该属性的字面量形态**:本任务的验收面是 `grep -c 'role=' frontend/index.html` == **0**,而注释散文同样计入该判据,写出来就会自己打破它),不加 `aria-label`。加了 `tabindex="0"` 之后它是一个**裸 `<div>` 的 Tab 停靠点**,辅助技术只会报「通用容器」—— 这是**知情接受的代价,不是疏漏**。理由取自用户自己立的立场:`REQUIREMENTS.md` 的 Out of Scope 表把「完整 ARIA」排除的原话是「ARIA 服务于不带上下文到达、且看不见屏幕的用户;本工具恰好一个用户,既是作者也看得见屏幕」。`role` 与焦点陷阱等一起归 v2 `A11Y-V2-02`。**这条必须写进围栏注释**,否则会被读者当成漏项补上 —— 但注释里同样**只许用措辞指代**(如「role 与焦点陷阱一起归 v2」),不得写出属性字面量。
 
     **围栏注释(加在 `#round-doc` 上方,照本文件既有的 `<!-- … -->` 形态;注释一律中文,写「为什么」而不是「是什么」):** 必须写明四条事实 ——
     ① **零 CSS 履约的机制**:环来自 `frontend/style.css:1514` 的 Phase 7 焦点环枚举规则(Phase 7 D-05 刻意把「带本任务新加的这个属性的元素」写进 `:focus-visible` 枚举,就是为了让本阶段零 CSS 交付),**不是**本文件或 `style.css` 里新写的规则;⚠ **点名该出处时不得写出选择器字面量**(`[tabindex]:focus-visible`)—— 那一行本身会引入第二个命中行,直接打破本任务 `grep -c 'tabindex' frontend/index.html` == 1 的门;用「`frontend/style.css:1514` 的 Phase 7 焦点环枚举规则」这样的措辞指代即可(验收面只要求规则出处,不要求字面量);
@@ -333,7 +333,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     <automated>grep -c 'window.getSelection' frontend/app.js</automated>
     <fails_when>输出不是恰好 `2`(**HEAD 实测 1**(L1329 的既有读取);本任务新增的 Shift 监听器按 `<action>` 复用 `window.getSelection()` 的判据形态 ⇒ +1,改动后恰为 **2**)。输出 `1` 说明新监听器没有按 `<action>` 指定的形态读选区状态(或误删了既有读取);输出 >2 说明多写了读取,或把交还判据写成了清空选区的写法(D-08 禁清空)</fails_when>
     <automated>grep -c 'role=' frontend/index.html</automated>
-    <fails_when>输出不是恰好 `0`(本任务不该给 `#selection-menu` 加任何 ARIA;两个弹窗的 `role` 是计划 02 的事)</fails_when>
+    <fails_when>输出不是恰好 `0`(本任务不该给 `#selection-menu` 加任何 ARIA;两个弹窗的 `role` 是计划 02 的事)。**判红时先 `grep -n 'role=' frontend/index.html` 看命中在哪:** 若命中在**围栏注释行**(散文里写出了该属性的字面量),那是注释措辞问题 ⇒ 改注释用措辞指代,**不要**去动元素属性、也不要改门的期望值;若命中在元素上,才是真的越界</fails_when>
     <human-check>
       <test>按 UI-SPEC §K-2.6 的九步脚本逐项执行:进 p3 → Tab 到文档区(记位置)→ 按住 Shift 连按 → 扩选(看环是否不跳走)→ 松开 Shift(看菜单与焦点,并看扩选高亮是否仍可见)→ Tab / Shift+Tab 在两项间移动 → Escape(看焦点是否回到 #round-doc)→ 再按住 Shift+→(看能否续选)→ Enter 激活 #btn-annotate 走完一次真实批注 → 同法走一遍 #btn-plain-ask</test>
       <expected>第 3 步焦点环全程不跳走;第 4 步菜单出现且焦点在 #btn-annotate;第 5 步 Tab 序在两项之间往返;第 6 步菜单消失且焦点回到 #round-doc(环重新画出);第 8/9 步批注条目真的出现在批注流且 #pending-count 增加。§K-2.5 ①(扩选高亮是否仍可见)若为「否」⇒ 当场上报,不得静默登记;§K-2.5 ②(能否续选)若为「否」⇒ 登记为已知局限</expected>

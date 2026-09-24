@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""check-07-idi08-validation.py — idi-08 的 Nyquist 验证缺口补齐(3 条**行为**断言)。
+"""check-07-idi08-validation.py — idi-08 的 Nyquist 验证缺口补齐(4 条**行为**断言)。
 
 为什么另开一个文件
     idi-08 的三个计划,其 `<verify>` 块对 A11Y-05 / A11Y-06 / A11Y-03 只有**静态 grep**
@@ -10,9 +10,9 @@
     在 check-07 之前,`Escape` 这个词在 `scripts/` 与 `backend/tests/` 里出现次数为 **0**,
     即这三条需求在本文件之前**零自动化覆盖**。
 
-    本文件的三条断言全部是真实浏览器里的**行为/几何**读数,不是源码文本匹配。
+    本文件的四条断言全部是真实浏览器里的**行为/几何**读数,不是源码文本匹配。
 
-三条断言与需求的映射
+四条断言与需求的映射
     g1 → A11Y-05   受信 Escape 真的关闭三个可关对象(两个阻塞弹窗 + 划词菜单),
                    且其余三个弹窗**刻意不响应**(范围锁);含「非 Escape 按键不关闭」的判别控制
     g2 → A11Y-06   两个弹窗各自带 dialog 语义三件套,且无障碍名称**解析得出来**
@@ -21,6 +21,10 @@
     g3 → A11Y-03   划词菜单被 Escape 关掉后**保持隐藏** —— 后续 keyup 不得把菜单弹回来
                    (这正是 03-SUMMARY 记录、由 62dfd3e / 09b170d 两次提交修复的回归点),
                    且关闭**不清空选区**(D-08)
+    g4 → F1-d(成功路径)
+                   选档成功后**真的**把焦点交还 #btn-continue-check —— 判据是
+                   document.activeElement 的**读数**(源码里含 .focus() 不构成证据:
+                   那正是本缺陷第一次溜过去的原因,源码里早就有、行为上没有)
 
 每条断言都配了「判别控制」——本文件的纪律是:**不能区分「行为在」与「行为不在」的断言是废的**。
     g1:非 Escape 按键(Control)不得关闭弹窗 —— 排除「任何按键都关」的假绿
@@ -28,6 +32,8 @@
        ③非惰性时同一个背景元素必须**能**被聚焦 —— 排除恒真/恒假的读数
     g3:把关闭态守卫置空(= 修复前的代码路径)后,**同一个 keyup 必须把菜单弹回来** ——
        这是唯一能证明「上面的绿不是恒绿」的手段(变异测试)
+    g4:把 #btn-continue-check 实例的 focus 方法置空(= 把待修的那一行变成 no-op)后,
+       同一条真实路径的 activeElement 必须**不再**落在它上面 —— 排除恒绿
 
 未覆盖(如实记录,不伪装成已覆盖)
     **键盘来源的文本选区(Shift+方向键)本环境无法自动化**:受信 `Shift+ArrowRight` 连按
@@ -700,13 +706,103 @@ def g3(page, tmp_root):
     info("g3 选区来源", "真实鼠标拖拽;键盘来源(Shift+方向键)本环境不可自动化 ⇒ 人工项")
 
 
-ITEMS = {"g1": g1, "g2": g2, "g3": g3}
+# ---------------------------------------------------------------------------
+# g4 — F1-d 的**成功**路径落点:选档成功 ⇒ 交还 #btn-continue-check
+# ---------------------------------------------------------------------------
+# 为什么单列一项:g1 覆盖的是 Escape 分支的交还(F1-d 的「取消」路径),而 chooseTier()
+# 的**成功**路径此前不移焦 —— 被聚焦的 #btn-tier-loose 随弹窗隐藏变成 display:none,
+# document.activeElement 回落到 <body>。这打破 F1(焦点不得因隐藏回落到 <body>),
+# 且它发生在 D-11 判定为「真正的卡死」的那次交互之后。
+def _active_id(page):
+    """当前焦点元素的读数。#btn-continue-check 之外的回落目标(<body>)没有 id,
+    故读法固定为 `id || tagName` —— 只读 id 会打印空串,把两种状态读成同一个。"""
+    return page.evaluate(
+        "() => document.activeElement "
+        "? (document.activeElement.id || document.activeElement.tagName) : null")
+
+
+def _g4_enter_and_choose(page, item, tag, tmp_root, mutate_focus):
+    """进 phase5_awaiting_tier →(控制支:置空交还调用)→ 真实点击档位按钮 → 读数。
+
+    返回 {"before": 点击前的焦点, "after": {...}};任一步前提不成立时记 blocked 并返回
+    None —— 前提不成立时那条断言什么都没测到,记 PASS 就是把空转当证据。
+    """
+    c05.enter_project(page, _awaiting_tier_fixture(tmp_root))
+    page.wait_for_timeout(500)
+    if page.evaluate("document.getElementById('tier-modal').classList.contains('hidden')"):
+        blocked(item, f"g4 {tag} 选档路径可达(断言前提,防假绿)", "#tier-modal 可见",
+                "hidden=true", "phase5_awaiting_tier 下档位弹窗未自动打开 ⇒ 本项无法判定")
+        return None
+    before = _active_id(page)
+    if mutate_focus:
+        # 判别控制:把实例方法置空 = 把待修的那一行变成 no-op(变异测试)
+        page.evaluate("document.getElementById('btn-continue-check').focus = function(){}")
+    try:
+        # 真实 POST,不是伪造响应;包住点击以确认请求真的发出去了
+        with page.expect_response(lambda r: "/api/checks/tier" in r.url, timeout=8000):
+            page.click("#btn-tier-loose")
+    except Exception as exc:  # noqa: BLE001 — 请求没发出 ⇒ 交还路径没被走到,记 blocked
+        blocked(item, f"g4 {tag} 真实 POST /api/checks/tier", "收到响应",
+                f"无响应({exc.__class__.__name__})", "档位按钮点击未触发请求")
+        return None
+    page.wait_for_timeout(2000)  # 等 refreshChecksAfterStream() 落地(含 disabled 复位)
+    after = page.evaluate("""() => {
+        const b = document.getElementById('btn-continue-check');
+        return {
+            modalHidden: document.getElementById('tier-modal').classList.contains('hidden'),
+            active: document.activeElement ? (document.activeElement.id || document.activeElement.tagName) : null,
+            disabled: !!b.disabled,
+            rects: b.getClientRects().length,
+        };
+    }""")
+    return {"before": before, "after": after}
+
+
+def g4(page, tmp_root):
+    item = "g4"
+    print("\n=== g4: F1-d 成功路径 —— 选档成功后焦点交还 #btn-continue-check ===", flush=True)
+
+    # —— 实例 1/2:正向(本项的判定对象)——
+    r1 = _g4_enter_and_choose(page, item, "实例 1/2 正向", tmp_root, mutate_focus=False)
+    if r1 is not None:
+        if r1["before"] == "btn-tier-loose":
+            info("g4 缺陷前提:点击前焦点在弹窗内", str(r1["before"]))
+        else:
+            blocked(item, "g4 实例 1/2 缺陷前提:焦点此刻在弹窗内、即将因隐藏而失效",
+                    "btn-tier-loose", str(r1["before"]),
+                    "焦点不在档位按钮上 ⇒ 本项要断言的「丢失」不在现场,不可记 PASS")
+        ok_true(item, "g4 实例 1/2 选档后 #tier-modal 已隐藏",
+                r1["after"]["modalHidden"] is True, "hidden=true",
+                f"hidden={not r1['after']['modalHidden']}")
+        if r1["after"]["disabled"] or r1["after"]["rects"] <= 0:
+            # 禁用按钮上的 .focus() 是 no-op:此时记 PASS 会交付一个静默失效的修复
+            blocked(item, "g4 实例 1/2 交还时 #btn-continue-check 可聚焦(断言前提,防 no-op 假绿)",
+                    "disabled=false 且可见",
+                    f"disabled={r1['after']['disabled']} rects={r1['after']['rects']}",
+                    "目标不可聚焦 ⇒ 下一条断言会空转,故记 BLOCKED 而不是放行")
+        else:
+            ok_true(item, "g4 选档成功后焦点交还 #btn-continue-check(F1-d 成功路径)",
+                    r1["after"]["active"] == "btn-continue-check",
+                    "btn-continue-check", str(r1["after"]["active"]))
+
+    # —— 实例 2/2:判别控制(证明上面的绿不是恒绿)——
+    # 必须先 reload:模块级 tierModalShown 在第一次进入之后仍为 true,不 reload 时第二个
+    # 项目的档位弹窗根本不会自动打开,控制会退化成空转(规划期实测)。
+    page.reload(wait_until="domcontentloaded")
+    r2 = _g4_enter_and_choose(page, item, "实例 2/2 判别控制", tmp_root, mutate_focus=True)
+    if r2 is not None:
+        ok_true(item, "g4 判别控制:交还调用被置空后焦点不再落在 #btn-continue-check(证明实例 1 的绿非恒绿)",
+                r2["after"]["active"] != "btn-continue-check",
+                "active != btn-continue-check", str(r2["after"]["active"]))
+
+
+ITEMS = {"g1": g1, "g2": g2, "g3": g3, "g4": g4}
 
 
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="idi-08 Nyquist 缺口补齐 harness")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:g1 / g2 / g3(可重复,或逗号分隔)")
+                    help="只跑指定项:g1 / g2 / g3 / g4(可重复,或逗号分隔)")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
     return ap.parse_args()
 

@@ -352,7 +352,21 @@ Plans:
 - Playwright 若用于其余运行时验证,**必须** `chromium.launch({ channel: 'chrome' })`;本环境**截图不可用**(headless 渲染被挡,且常驻 `/api/events` SSE 流使采集处理器无法终止)——按计算样式检查 + 具名人工步骤规划,不要规划视觉 diff。
 
 **Gates**: 键盘路径人工验收通过;`node --check app.js`;pytest 219 基线不变;归档路径在切轮后无可点「处理本轮批注」;`grep -c 'inline-error' style.css` 仍为 1;`clearInlineError` 调用点计数只增不减;Phase 4/6/7 全部 gate 仍通过。
-**Plans**: TBD
+**Plans**: 0/3 plans executed
+
+Plans:
+**Wave 1**
+
+- [ ] idi-08-01-PLAN.md — `#round-doc` 的 Tab 停靠点与整盒焦点环 + 键盘划词手势与焦点交接(A11Y-02 + A11Y-03):`tabindex="0"` 端到端(零 CSS 环)+ Shift 专用提交监听器 + `hideSelectionMenu()` 单点交还 + 环可辨性实测与 D-02 判定 + probe-07 复跑
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-08-02-PLAN.md — 两个弹窗的 dialog 语义、Escape 与背景 inert(A11Y-05 + A11Y-06):2 个新 id + `role`/`aria-modal`/`aria-labelledby` + `syncBackgroundInert()` 单点派生(5 个调用点)+ `#tier-modal` 移焦 + Escape 单点分派器 + `tierModalShown` 复位 + F1-d 两条交还
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] idi-08-03-PLAN.md — 验收与回归收口(A11Y-08 + REG-03):S8-1 一个词的文案修正 + 两条 REG-02 门 + pytest 基线 + REG-03 六条人工项全量重跑(第 4 条按 D-05 重写)+ 归档切轮专项 + Tab 序全量普查 + 指纹义务登记
+
 **UI hint**: yes
 
 ## Progress
@@ -367,7 +381,7 @@ Plans:
 | 5. 排版与视觉层级 | v1.14 | 4/4 | Complete    | 2026-09-21 |
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete    | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete    | 2026-09-23 |
-| 8. 可访问性语义与键盘 | v1.14 | 0/0 | Not started | - |
+| 8. 可访问性语义与键盘 | v1.14 | 0/3 | Not started | - |
 
 **Execution Order:** Phases execute in numeric order: 4 → 4.1 → 5 → 6 → 7 → 8
 

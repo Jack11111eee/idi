@@ -1,7 +1,8 @@
 ---
 phase: "8"
 slug: "idi-08-accessibility-semantics-and-keyboard"
-status: draft
+status: approved
+reviewed_at: "2026-09-23T12:29:15Z"
 shadcn_initialized: false
 preset: none
 created: "2026-09-23"
@@ -12,7 +13,7 @@ supersedes_decisions:
   - "PITFALLS §Pitfall 6 的「prefer not adding tabindex to #round-doc」反对意见 → 用户已裁定加(D-01/D-18),以窄切片接受「通用容器」的宣告代价"
   - "ROADMAP Phase 8 SC2/SC3 的「Esc 能关闭 G3 确认与授权两个弹窗」→ 对象集按 D-11 替换"
   - "frontend/style.css L1499-1501 围栏注释的「Phase 8 加 tabindex 时连同它自己的内嵌处理一起落地」→ D-01 不做内嵌(除非 D-02 触发);注释留证不改(零 CSS 改动)"
-  - "06-UI-SPEC.md §Copywriting Contract 冻结的 app.js:1121 文案「在左侧文档划词即可批注。」→ 与 DESIGN.md §4.1(文档面板在右)矛盾,见 §Sign-Off Items S8-1"
+  - "06-UI-SPEC.md §Copywriting Contract 冻结的 app.js:1121 文案「在左侧文档划词即可批注。」→ 与 DESIGN.md §4.1(文档面板在右)矛盾;**用户 2026-09-23 裁定:修**(改为「在右侧文档」),见 §Sign-Off Items S8-1(已 RESOLVED)"
 ---
 
 # Phase 8 — UI Design Contract(可访问性语义与键盘)
@@ -106,9 +107,11 @@ Could not enumerate: 本项目没有设计系统包可枚举 —— 无 `compone
 | `frontend/app.js` | Shift 提交监听器(约 6 行,落 `initSelectionMenu()` 内) | A11Y-03 / D-05 / D-06 |
 | `frontend/app.js` | Escape **单点分派**监听器(约 12 行) | A11Y-05 / D-08 / D-12 / D-13 |
 | `frontend/app.js` | 焦点交接:菜单首按钮 / 菜单项执行后 / Escape 交还(三处) | D-05 / D-07 / D-08 |
+| `frontend/app.js` | 焦点交接:**两个弹窗关闭后各交还一个目标**(`#btn-authorize` / `#btn-continue-check`) | **A-8(用户 2026-09-23 裁定采纳)** |
 | `frontend/app.js` | `inert` 的**单点派生函数** + 5 个调用点 | D-14 |
 | `frontend/app.js` | `#tier-modal` 打开时移焦 + Escape 时复位 `tierModalShown` | D-13 / D-16 |
 | `frontend/app.js` | 新增 1 个顶层句柄 `const appEl = document.getElementById('app')`(**新增,不是改名**) | D-14 |
+| `frontend/app.js` | **`app.js:1121` 的一处用户可见字符串**:`在左侧文档` → `在右侧文档`(空态文案;**仅此一个词**,见 §Sign-Off Items S8-1) | S8-1(用户 2026-09-23 裁定) |
 | `frontend/style.css` | **零改动**(围栏内与围栏外都是) | D-01 |
 | `scripts/check-05-ui-uat.py` | **零改动** —— 保住零指纹债务 | D-21 |
 | `scripts/check-01…04` | 零改动;四条守卫必须仍然通过 | §契约校验命令 |
@@ -190,7 +193,7 @@ F1 在本阶段有**四个落点**,全部是它的实例:
 | F1-a | 菜单被隐藏时,若焦点在菜单内 ⇒ 交还 `#round-doc` | `hideSelectionMenu()` **单点** | D-08 |
 | F1-b | 菜单项执行后 ⇒ 交还 `#round-doc` | 同上(两个菜单项都先调 `hideSelectionMenu()`) | D-07 |
 | F1-c | Escape 关菜单 ⇒ 交还 `#round-doc` | 同上 | D-08 |
-| F1-d | **弹窗关闭后 ⇒ 交还触发者**(confirmation → `#btn-authorize`;tier → `#btn-continue-check`) | Escape 分支内 | **由 D-07/D-08 推导,见 §契约修正登记 A-8** |
+| F1-d | **弹窗关闭后 ⇒ 交还触发者**(confirmation → `#btn-authorize`;tier → `#btn-continue-check`) | Escape 分支内 | **A-8:用户 2026-09-23 裁定采纳**(镜像 D-07/D-08;见 §契约修正登记 A-8) |
 
 **F1 不覆盖的两种情形(显式登记,不是遗漏):**
 ① **成功路径不交还**:`#confirmation-modal` 的「放行」成功后整个视图即将切换(`refreshRoundsAfterStream()`),
@@ -676,11 +679,12 @@ DOM 节点 ⇒ **`aria-live` 绝不可加在 chunk 容器上**。`#stream-banner
 
 ---
 
-## Copywriting Contract —— 本阶段零新增文案
+## Copywriting Contract —— 本阶段仅改一处文案(S8-1)
 
-**本阶段不改任何面向用户的字符串(唯一待裁定的例外见 §Sign-Off Items S8-1)。**
-它不新增元素、不改按钮、不改提示、不改空态与错误态。下表**冻结既有文案**,
-使后续阶段有参照且不能静默漂移(与 `04/05/06-UI-SPEC.md` 一致)。
+**本阶段唯一改动的用户可见字符串是 `app.js:1121` 的一个词(`在左侧文档` → `在右侧文档`,见
+§Sign-Off Items S8-1,已 RESOLVED)。** 除此之外不新增元素、不改按钮、不改提示、不改空态与错误态。
+下表**冻结既有文案**(唯一例外是 S8-1 那一行),使后续阶段有参照且不能静默漂移
+(与 `04/05/06-UI-SPEC.md` 一致)。
 
 | Element | Copy(frozen —— 逐字来自 `index.html` / `app.js`) |
 |---|---|
@@ -691,7 +695,7 @@ DOM 节点 ⇒ **`aria-live` 绝不可加在 chunk 容器上**。`#stream-banner
 | 档位按钮 | `宽松` / `严格`(各带 `.tier-desc` 说明) |
 | G3 闸门确认 | `放行` / `拒绝` |
 | 不可逆动作(G3 —— 核心价值红线) | `授权撰写总设计文档` |
-| 空态(批注流) | `本轮暂无批注——在左侧文档划词即可批注。`(`app.js:1121` —— **与 DESIGN.md §4.1 矛盾,见 S8-1**) |
+| 空态(批注流) | **本阶段修改(S8-1,用户 2026-09-23 裁定)**:`本轮暂无批注——在左侧文档划词即可批注。` → **`本轮暂无批注——在右侧文档划词即可批注。`**(`app.js:1121`;原串与 `DESIGN.md` §4.1 矛盾,改后一致) |
 | 空态(批注流,历史轮) | `该轮暂无批注。`(`app.js:1123`) |
 | 错误态(内联) | `showInlineError(anchor, message)` —— 服务端消息,**`textContent`-only** |
 | 错误态(G3 确认) | `#confirm-error` —— 必须渲染为**红色**而非灰色(Pitfall M6) |
@@ -722,10 +726,12 @@ DOM 节点 ⇒ **`aria-live` 绝不可加在 chunk 容器上**。`#stream-banner
 | D8-7 | `#tier-modal` **打开时移焦** + Escape 关闭 + `tierModalShown` 复位 | 弹窗可在用户做别的事时**重现**(这是「档位未定就该继续问」的正确行为);焦点进入弹窗(此前不在) | D-13 / D-16 | 人工:A11Y-05 的 tier 分支 |
 | D8-8 | `#confirmation-modal` 的 Escape = **仅关闭,零决定** | 新增键位响应;不代替「拒绝」 | D-12 | 人工 |
 | D8-9 | **(条件)** D-02 触发时 `style.css` 的环承载面变更 | 仅在实测判定整盒环不可辨时存在;会**作废 5 份 live 指纹**并连带复验 | D-02 / D-25 | 实测 + 指纹重算 |
+| D8-10 | **两个弹窗关闭后把焦点交还触发者**(confirmation → `#btn-authorize`;tier → `#btn-continue-check`) | 此前弹窗关闭后焦点回落到 `<body>`;交还后键盘用户停在**同一个逻辑位置**上(可继续授权流程 / 继续自检流程)。**成功路径不交还**(见 §焦点契约的 F1 不覆盖情形①) | **A-8(用户 2026-09-23 裁定采纳)** | 人工:关弹窗后按 Tab,焦点从触发者处继续 |
+| D8-11 | **`app.js:1121` 的空态文案改一个词**:`在左侧文档` → `在右侧文档` | **用户可见文案变更**(本阶段唯一一处);改后与 `DESIGN.md` §4.1(v1.14 文档面板在右)一致 | **S8-1(用户 2026-09-23 裁定)** | 人工:阶段 3 空批注流下读该串 |
 
 **本阶段明确不产生的 delta:** 零 `style.css` 改动(D-01 路径)、零新增令牌、零颜色/字号/字重/行高改动、
-零新增依赖、零新增文件、零新增用户可见文案(唯一待裁定例外见 S8-1)、`scripts/check-05-ui-uat.py` 零改动、
-`frontend/vendor/` 仍恰好一个文件。
+零新增依赖、零新增文件、**零新增用户可见字符串**(D8-11 是**改写一个既有词**,不是新增文案)、
+`scripts/check-05-ui-uat.py` 零改动、`frontend/vendor/` 仍恰好一个文件。
 
 ---
 
@@ -740,24 +746,26 @@ DOM 节点 ⇒ **`aria-live` 绝不可加在 chunk 容器上**。`#stream-banner
 | **A-5** | **REG-02 门②的基线由「6」更正为实测 9** | 本文件实测(§基线与契约漂移口径 漂移项 3) | 门的写法是 `>= 9`;**照抄 6 会造出一条永远不会失败的假门** |
 | **A-6** | **pytest 口径 = 「219 passed + 6 skipped / 225 collected」** | D-24 | ROADMAP Phase 8 Gates 的「219」正确;**Phase 4 段里的「225」是 collected 数** —— 照抄会造假门。必须用项目 venv(`.venv/bin/python -m pytest`),环境 `python3` 是 miniconda 会让 4 个 `ai_caller` 测试假失败 |
 | **A-7** | **SC2 / SC3 的措辞按 D-11 / D-14 读** | D-11 / D-14 | SC2「Esc 能关闭 G3 确认与授权两个弹窗」→ 对象是 confirmation + tier;SC3「该宣告与实现一致」→ 靠 `inert` 兑现,不是靠焦点陷阱 |
-| **A-8** | **F1-d(弹窗关闭后交还触发者)由 D-07 / D-08 推导,不是用户新裁定** | D-07 / D-08 的同一条理由 | 本文件新增的**推导项**,已显式标注。若不采纳,替代处置是「登记为已知局限」;见 §Sign-Off Items S8-1 的呈报方式 |
+| **A-8** | **F1-d(弹窗关闭后交还触发者)—— 契约项,已由用户采纳** | **源:D-07 / D-08 的同一条理由**(镜像);**采纳本身是用户 2026-09-23 的裁定,不是本文件的推断** | **已采纳的契约项,两个弹窗都适用:**`#confirmation-modal` 关闭后 → `#btn-authorize`;`#tier-modal` 关闭后 → `#btn-continue-check`。用户接受的理由:D-07/D-08 已确立「焦点绝不停在已隐藏元素上,也绝不回落到 `<body>`」,而**弹窗关闭是同一形态**。两个返回目标已由 checker 独立核实存在:`#btn-authorize` 在 `index.html:143`、`#btn-continue-check` 在 `index.html:49` |
 | **A-9** | **`frontend/style.css:1499-1501` 围栏注释的「Phase 8 加 tabindex 时连同它自己的内嵌处理一起落地」不再成立** | D-01 / D-02 | 本阶段**不做内嵌**(整盒环已可辨);注释**留证不改**(零 CSS 改动)。**下游不得把该注释读成本阶段的契约** |
 
 ---
 
 ## Sign-Off Items(须用户裁定,不是 checker 裁定)
 
-**本阶段只有一项。** D-01 / D-11 / D-14 三项关键偏离**已在 2026-09-23 的讨论中由用户逐项裁定**
-(原话见 `08-CONTEXT.md`),**不得重开、不得重新讨论**。
+**本阶段共四项,全部已于 2026-09-23 由用户裁定完毕 —— 无未决项。**
+D-01 / D-11 / D-14 三项关键偏离在讨论中裁定(原话见 `08-CONTEXT.md`);
+**S8-1 与 A-8 在规划期由用户裁定**(原话见下表的「用户裁定」列)。
+**四项均不得重开、不得重新讨论。**
 
-| # | 裁定项 | 本文件的建议 | 一行式替代方案 | 若不裁定的后果 |
+| # | 裁定项 | 本文件的建议 | 用户裁定(2026-09-23) | 落地位置 |
 |---|---|---|---|---|
-| **S8-1** | **`app.js:1121` 的空态文案「本轮暂无批注——在左侧文档划词即可批注。」是否在本阶段改为「右侧」** | **改(一个字)**:`左侧` → `右侧`。理由:①它与**唯一权威设计文档** `DESIGN.md` §4.1 矛盾(v1.14 明写「主区(左)…文档面板(右)」),而本项目对面向用户的输出立有「名必须说实话」与 §3.8 语言红线;②`06-UI-SPEC.md` 的 checker 已把该串登记为**已知过期串并明确指派给「拥有 `app.js` 的阶段(Phase 8)」**;③它是**一个词**,在**本阶段已经在改的文件**里,零新字符串、零新元素、零新依赖;④不修则它在**本阶段正要打通的那条键盘路径上误导用户**(批注流空态告诉用户去「左侧文档」划词,而文档面板在右) | **不修,登记为 v2**(与 `#permission-modal` 的缺口同处置)—— 代价:该 FLAG 从此无主,且一个与权威文档矛盾的用户可见串会长期留在屏上 | 规划期会把它当成「文案冻结表里的一条普通冻结项」而静默继承(06 的 checker 已警告过一次) |
+| **S8-1** | **`app.js:1121` 的空态文案「本轮暂无批注——在左侧文档划词即可批注。」是否在本阶段改为「右侧」** | **改(一个字)**:`左侧` → `右侧`。理由:①它与**唯一权威设计文档** `DESIGN.md` §4.1 矛盾(v1.14 明写「主区(左)…文档面板(右)」),而本项目对面向用户的输出立有「名必须说实话」与 §3.8 语言红线;②`06-UI-SPEC.md` 的 checker 已把该串登记为**已知过期串并明确指派给「拥有 `app.js` 的阶段(Phase 8)」**;③它是**一个词**,在**本阶段已经在改的文件**里,零新字符串、零新元素、零新依赖;④不修则它在**本阶段正要打通的那条键盘路径上误导用户** | ✅ **裁定「改」** —— `本轮暂无批注——在左侧文档划词即可批注。` → **`本轮暂无批注——在右侧文档划词即可批注。`**(`app.js:1121`,仅此一个词) | §Copywriting Contract 对应行(已由「冻结」改为「本阶段修改」)+ §Deliberate Delta Ledger **D8-11** + §Files Modified 表 |
+| **A-8** | **F1-d(弹窗关闭后交还触发者)是否采纳为契约项** | 采纳 —— 源:D-07 / D-08 的同一条理由(镜像) | ✅ **裁定「两个都交还焦点」** —— `#confirmation-modal` 关闭后 → `#btn-authorize`;`#tier-modal` 关闭后 → `#btn-continue-check`。用户接受的理由:D-07/D-08 已确立「焦点绝不停在已隐藏元素上,也绝不回落到 `<body>`」,而**弹窗关闭是同一形态** | §焦点契约 **F1-d** + §Deliberate Delta Ledger **D8-10** + §Files Modified 表 |
 
-**呈报方式:** 规划期须把 S8-1 呈给用户**逐项裁定**;若裁定「改」,则该串进入
-§Deliberate Delta Ledger 的补充行 + §Copywriting Contract 的对应行由「冻结」改为「本阶段修改」;
-若裁定「不修」,则登记为 v2 项并在 `08-UAT.md` 留证。**A-8(F1-d)不单列签核项** ——
-它是已锁定原则(D-07/D-08)的直接推导,若用户不认可,按 S8-1 的呈报通道一并裁定。
+**已登记的两条落地约束:**
+1. **S8-1 使 `frontend/app.js` 的 diff 多一行** —— 该文件本就在本阶段的改动面内(§Files Modified),不引入新文件、不引入新字符串以外的任何东西。
+2. **A-8 的两个返回目标已由 checker 独立核实存在**:`#btn-authorize` 在 `index.html:143`、`#btn-continue-check` 在 `index.html:49`。**成功路径不交还焦点**(见 §焦点契约的 F1 不覆盖情形①)。
 
 ---
 
@@ -955,7 +963,7 @@ Not applicable —— 无 shadcn、无 registry、无第三方 block。项目没
 - [ ] Dimension 6 Registry Safety: PASS
 - [ ] Dimension 7 Inventory Provenance: PASS
 
-**Approval:** pending
+**Approval:** approved(2026-09-23;checker 报 `## UI-SPEC VERIFIED`,0 BLOCKER / 2 FLAG)
 
 **本文件为下游准备的三处「读之前必须知道」的提醒(供 checker 与 planner):**
 
@@ -964,7 +972,8 @@ Not applicable —— 无 shadcn、无 registry、无第三方 block。项目没
    本文件的契约面是**交互与状态**(键盘路径、焦点不变量 F1、两个弹窗的语义与 Escape 分派)。
 2. **Dimension 1 的答案是「零新增文案」** —— 唯一例外是 §Sign-Off Items 的 **S8-1**,
    它是一条**继承自 `06-UI-SPEC.md` 的 checker FLAG**、且 06 已明确指派给「拥有 `app.js` 的阶段」。
-   请按「待用户裁定」读,不要按「本文件擅自扩张范围」读。
+   **该串已由用户于 2026-09-23 裁定「改」**(`左侧` → `右侧`,`app.js:1121`,一个词),
+   故它现在是一条**已定稿的契约变更**,不是待裁定项 —— 下游按「本阶段要改这一处」读。
 3. **Dimension 7 的答案是 `Could not enumerate: …`** —— `Tool: none`,本项目没有设计系统包。
    模板明令该情形下省略本节;本文件保留那一行以留下 provenance 槽位。
 

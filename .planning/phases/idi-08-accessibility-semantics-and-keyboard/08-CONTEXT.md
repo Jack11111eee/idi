@@ -50,7 +50,9 @@
 
 - **D-01:** **`#round-doc` 的焦点环沿用 Phase 7 的整盒环,`style.css` 零改动。** 给 `#round-doc` 加 `tabindex="0"` 后,Phase 7 D-05 的枚举规则 `[tabindex]:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px }` **自动**生效,不需要任何新 CSS。
 
-  **研究 PITFALLS 5 失效模式 4 的「环套在 `#round-doc` 上只有上下边缘可见」论断被几何推翻:** `#round-doc` 的盒子 = 面板宽 − 80px(父级 `#doc-panel-body` 是 `padding: var(--space-8) var(--space-10)` = `32px 40px`)、高数千像素;`outline-offset: 2px` 画在边框盒**外** 2–4px,落在父级 40px padding 里 ⇒ **不被裁切**;盒高远超视口 ⇒ 视口里看到的是**左右两条贯穿全高的竖线**,不是「只有上下边缘」。**规划期须把这条实测证据写进计划**(本项目已记录「实测驱动,不采信上游文档的论断」)。
+  **研究 PITFALLS 5 失效模式 4 的「环套在 `#round-doc` 上只有上下边缘可见」论断被推翻** —— 但**推翻它的理由是「水平方向恒不被裁切」**(父级 40px 水平 padding),**不是**「盒高数千像素」。
+
+  ⚠ **执行期更正(2026-09-24,`idi-08-01` Task 2 实测;UI-SPEC §契约修正登记 A-10)。** 本条原文把「盒高数千像素 ⇒ 视口里是左右两条贯穿全高的竖线」写成了**实测证据**,但那是**规划期的几何推断,不是实测**。执行期实测:**p3 样本盒高 778.64px < 900px 视口** ⇒ 环是**完整矩形**(上边 + 左右两条竖边 + 下边);**环的垂直形态取决于文档长度与视口的关系,不是恒定的**(长于视口时才是两条竖线);底部边缘在默认滚动位被 `#doc-panel` 滚动边界裁 3.64px(scrollTop 67→71 即归零)。**D-01 的结论不变** —— 整盒环 + `style.css` 零改动**已由用户 2026-09-24 裁定为最终态**(实测对比度 5.57:1、环清晰可辨、D-02 不触发)。**但下游不得再引用本条原文的「两条竖线」当判据** —— 照它执行会对一个正确的实现**误触发 D-02**。
 
   **本项的实际收益是流程性的:Phase 8 因而成为唯一不欠任何指纹的阶段。** Phase 8 除环之外没有任何需要改 `style.css` 的理由(Escape 与焦点交接是 JS;`role`/`aria-modal`/`inert` 是 HTML/属性),而 `app.js` / `index.html` 不在任何 live 报告的 `covered_files` 里。 — **Reversibility:** costly — 回退是改 `style.css` 换承载面,作废 5 份 live 指纹并连带复验(见 D-25)。
 
@@ -58,7 +60,7 @@
 
   **不得把「不可辨」静默降级为已知局限** —— 那会造出一个「名义上可聚焦、实际看不出焦点在哪」的状态,正是 Pitfall 6 的失效形态。 — **Reversibility:** costly — 与 D-01 同因。
 
-- **D-03:** **「可辨」的机器半场已由 `check-05` item 10 自动覆盖,不必新写断言。** `#round-doc` 入册后(item 10 的判定集 = `FOCUSABLE_SELECTOR` 去掉 `[tabindex="-1"]` 与 `:disabled`),普查会对它断言 `:focus-visible` 下计算 `outline-width` / `outline-color` 非零。**登记两处变化:** ①判定集在 p3 / checking / archive 三个样本里多一个成员(p1 / p12 里 `#round-doc` 在 `.hidden` 子视图内 ⇒ `visible` 过滤排除);②`_idi07_tab_drive(page, len(data)+8)` 的上限是数据驱动的,会自然吸收这个新 Tab 停靠点。**若该项在某个样本变红,先判它是「真缺陷」还是「普查集变化」,不要直接改门。** — **Reversibility:** costly — 与 D-25 同理。
+- **D-03:** **「可辨」的机器半场已由 `check-05` item 10 自动覆盖,不必新写断言。** `#round-doc` 入册后(item 10 的判定集 = `FOCUSABLE_SELECTOR` 去掉 `[tabindex="-1"]` 与 `:disabled`),普查会对它断言 `:focus-visible` 下计算 `outline-width` / `outline-color` 非零。**登记两处变化:** ①判定集在 **checking / p3** 两个样本里多一个成员 —— ⚠ **执行期更正:item 10 的实际样本集是 `p1` / `checking` / `p3`**(`check-05-ui-uat.py:3704` + `:3740`),**不跑 `archive`、不跑 `p12`,CLI 无 `--state` 旗标**;原文的「p3 / checking / archive」与「p1 / p12」两句不可满足/不可验证,`archive` 下的环覆盖是**已知未覆盖项**;②`_idi07_tab_drive(page, len(data)+8)` 的上限是数据驱动的,会自然吸收这个新 Tab 停靠点。**若该项在某个样本变红,先判它是「真缺陷」还是「普查集变化」,不要直接改门。** — **Reversibility:** costly — 与 D-25 同理。
 
 - **D-04:** **`#round-doc` 入册后必须复跑 `scripts/probe-07-focus-composite.py`。** STATE.md 的 Deferred Items 已逐字登记该义务:「Phase 8 给 `#round-doc` 加 `tabindex="0"` 后该场景变为活体,届时须复跑该探针」。原因:五个样本的 `#round-doc` 内 `a[href]` 计数为 0 ⇒ `.archive-mode` 0.75 合成下的**运行时**环断言今天无服务对象,由常驻算术门(`check-02` 的 `--color-focus ON --color-surface NON-TEXT@0.75`,3.45 ≥ 3)+ 该一次性探针共同承担。**探针不进守卫契约**(与 `scripts/probe-05-resolve-color.py` 同定位)。 — **Reversibility:** reversible — 探针不是门。
 
@@ -260,7 +262,7 @@
 
 - **本阶段最重要的一条机制事实:「按路线图字面实现会假绿」。** ROADMAP 写「`handleSelectionTrigger` 的键盘分支把焦点移入 `#selection-menu` 首个按钮」,而该函数挂在**每一次** keyup 上 ⇒ 键盘用户永远只能选中一个字符;而 A11Y-03 的验收项「Shift+方向键选区 → 菜单出现 → 焦点已入菜单」**会照常通过**(它测状态,不测可用性)。这与 Pitfall 6 的「人工检查被继承而非重跑」是同一失效类。规划期必须把这条写进计划,否则会被当成「已按路线图实现」。
 - **第二个「点名对象是错的」**:ROADMAP 点名 `#confirmation-modal` + `#permission-modal`,而实测 `#confirmation-modal` 恰是**唯一已经移焦**的那个(不卡),真正卡死的是 `#tier-modal`(无取消 + 不移焦)。这与 Phase 6 A11Y-07「唯一确定不达标的是没被点名的那个」、Phase 7 D-02「路线图点名的缺陷对象是错的」三次同构。
-- **第三个「研究论断被几何推翻」**:PITFALLS 5 说环套在 `#round-doc` 上「只有上下边缘可见」,而父级有 40px 水平 padding ⇒ 左右两条竖线贯穿全高、不被裁切。**这条推翻直接换来「Phase 8 零指纹债务」这个流程性质** —— 是本阶段最划算的一处实测。
+- **第三个「研究论断被几何推翻」**:PITFALLS 5 说环套在 `#round-doc` 上「只有上下边缘可见」,而父级有 40px 水平 padding ⇒ **水平方向恒不被裁切**。**这条推翻直接换来「Phase 8 零指纹债务」这个流程性质。** ⚠ **执行期更正(2026-09-24)**:本条原文还写了「左右两条竖线贯穿全高」,那是**几何推断而非实测** —— 执行期实测 p3 盒高 **778.64px < 900px 视口** ⇒ 环是**完整矩形**,垂直形态取决于文档长度。**推翻上游论断的理由只是「水平方向」**,与「两条竖线」无关(UI-SPEC §契约修正登记 **A-10**)。
 - **`aria-modal="true"` 的诚实性问题被 ROADMAP 自己立为判据**(SC3「该宣告与实现一致」),而焦点陷阱是已排除项 ⇒ 只加两个属性就是「宣告一个不兑现的契约」,与 ROADMAP 警告 `role="dialog"` 时点名的形态完全一致。原生 `inert` 是零依赖的解法,用户已授权。
 - **`#tier-modal` 的 Escape 不能等于「关闭」**:它打开时立刻把 `tierModalShown` 置真,关掉不选 ⇒ 档位未定且入口消失。复位该标志是 1 行的解法,且「档位未定就该继续问」本来就是正确行为。
 - **`inert` 的边界是白送的**:五个 `.overlay` 与 `#selection-menu` 都是 `#app` 的兄弟(`index.html` L155 闭合 `#app`),所以 `inert` 挂 `#app` 天然只作用于背景 —— 不需要逐个元素处理。

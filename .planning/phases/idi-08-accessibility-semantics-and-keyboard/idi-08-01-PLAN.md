@@ -111,7 +111,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 <decision_register>
 **D-01 零 CSS 改动(D-01 路径):** 整盒焦点环**不需要任何新 CSS**。Phase 7 的 `[tabindex]:focus-visible`(`frontend/style.css:1514`)是**刻意**为这一刻预留的 —— 落 `tabindex="0"` 的瞬间它自动生效。**不得新增任何 `:focus` / `:focus-visible` 规则,不得写 `#round-doc:focus` 之类的专用规则**(那会与 Phase 7 的枚举集分叉,正是 `G-idi-05-1` 的成因;硬规则 10)。本计划 `frontend/style.css` **零改动** ⇒ 本阶段在 D-01 路径下**零验证指纹债务**(`frontend/app.js` / `frontend/index.html` 不在任何 live 报告的 `covered_files` 里,D-25)。
 
-**D-01 的几何前提(实测证据,规划期已写进计划):** `#round-doc` 的父级 `#doc-panel-body { padding: var(--space-8) var(--space-10) }`(`frontend/style.css:657` = `32px 40px`);环 `outline: 2px` + `outline-offset: 2px` 画在边框盒**外** 2–4px,落在父级 40px 水平 padding 里 ⇒ **不被裁切**;`#round-doc` 盒高数千像素(远超视口)⇒ 视口里看到的是**左右两条贯穿全高的竖线**,不是「只有上下边缘」。**研究 `PITFALLS.md` §Pitfall 5 失效模式 4 的「只有上下边缘可见」论断因此被几何推翻** —— 本项目纪律是「实测驱动,不采信上游文档的论断」。**注意 ROADMAP 点名的落点 `#doc-pane` 在 HEAD 上根本不存在**(04.1 D-13 已改名 `#doc-panel-body`)。
+**D-01 的几何前提(⚠ 规划期写成「实测证据」,实际是几何推断 —— 执行期已实测更正,见 UI-SPEC §契约修正登记 A-10):** `#round-doc` 的父级 `#doc-panel-body { padding: var(--space-8) var(--space-10) }`(`frontend/style.css:657` = `32px 40px`);环 `outline: 2px` + `outline-offset: 2px` 画在边框盒**外** 2–4px,落在父级 40px 水平 padding 里 ⇒ **水平方向恒不被裁切**(p3 实测左右裁切量均为 0px)。**环的垂直形态取决于文档长度与视口(900px)的关系**:p3 实测盒高 **778.64px < 900px** ⇒ 是**完整矩形**;长于视口时才是「上边 + 左右两条贯穿全高的竖线」。**研究 `PITFALLS.md` §Pitfall 5 失效模式 4 的「只有上下边缘可见」论断被推翻 —— 但理由是「水平方向从不裁切」,与盒高无关。** 本项目纪律是「实测驱动,不采信上游文档的论断」;本次补充的教训是**几何推断同样不能冒充实测**。**注意 ROADMAP 点名的落点 `#doc-pane` 在 HEAD 上根本不存在**(04.1 D-13 已改名 `#doc-panel-body`)。
 
 **D-05 / D-06 提交手势:** 提交手势 = **抬起 Shift**。按住 Shift 扩选时焦点**不动**;**松开 Shift** 时菜单弹出并把焦点送入 `#btn-annotate`。`handleSelectionTrigger`(`app.js:1323-1340`)**一字不改** —— 它挂在每一次 keyup 上,给**它**加按键白名单会改变鼠标路径与 t8g 既有决定的实质。**白名单只存在于本计划新增的 Shift 专用监听器里。** t8g 的既有决定原文(`app.js:1321-1322`)继续对它生效。
 
@@ -189,7 +189,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 
     **围栏注释(加在 `#round-doc` 上方,照本文件既有的 `<!-- … -->` 形态;注释一律中文,写「为什么」而不是「是什么」):** 必须写明四条事实 ——
     ① **零 CSS 履约的机制**:环来自 `frontend/style.css:1514` 的 Phase 7 焦点环枚举规则(Phase 7 D-05 刻意把「带本任务新加的这个属性的元素」写进 `:focus-visible` 枚举,就是为了让本阶段零 CSS 交付),**不是**本文件或 `style.css` 里新写的规则;⚠ **点名该出处时不得写出选择器字面量**(`[tabindex]:focus-visible`)—— 那一行本身会引入第二个命中行,直接打破本任务 `grep -c 'tabindex' frontend/index.html` == 1 的门;用「`frontend/style.css:1514` 的 Phase 7 焦点环枚举规则」这样的措辞指代即可(验收面只要求规则出处,不要求字面量);
-    ② **整盒环的几何**:`#doc-panel-body` 有 `32px 40px` 的内边距 ⇒ `outline-offset: 2px` 的环外伸 2–4px 落在父级 40px 水平 padding 里、**不被裁切**;盒高数千像素 ⇒ 视口里是**左右两条贯穿全高的竖线**。点名这条推翻了上游研究里「只有上下边缘可见」的论断,本项目纪律是「实测驱动,不采信上游文档的论断」;
+    ② **整盒环的几何(实测,非推断)**:水平方向恒不被裁切 —— `#doc-panel-body` 有 `32px 40px` 的内边距,`outline-offset: 2px` 的环外伸 2–4px 落在父级 40px 水平 padding 里(p3 实测左右裁切量均为 0px)。**垂直方向的形态取决于文档长度与视口(900px)的关系,不是恒定的**:文档短于视口时是**完整矩形**(p3 实测盒高 778.64px ⇒ 上边 + 左右两条竖边 + 下边),长于视口时才是「上边 + 左右两条贯穿全高的竖线」。底部边缘在默认滚动位可能被 `#doc-panel` 的滚动边界裁掉一截(p3 实测 3.64px,把该面板的 scrollTop 由 67 调到 71 即归零)。上游研究「只有上下边缘可见」的论断仍被推翻(水平方向从不裁切)。⚠ **规划期把「盒高数千像素 ⇒ 两条竖线」当成恒真前提写进本计划,是规划期的一处失误**(那是几何推断,不是实测);执行期实测已推翻并登记于 UI-SPEC §契约修正登记 **A-10**。写注释时照实写,不要再复述那条被推翻的前提;
     ③ **`#draft-content` 的刻意不对称**(上面那段 D-20 的理由);
     ④ **Pitfall 6 的门为什么由构造满足**:`tabindex` 计数 0 → 1 而 `:focus-visible` 计数 9 → 9,看似「独立移动」,实则不然 —— Phase 7 已把环的承载面先落地;**机械证据不是计数,是 `check-05 --item 10` 的运行时读数**(`#round-doc` 成为 `document.activeElement` 的那一刻读到 `2px` / 运行时解析的 `--color-focus`)。
 
@@ -210,7 +210,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     <fails_when>退出码非 0(0 = 全 PASS;1 = 有 FAIL 断言;2 = 有 BLOCKED 断言 —— 环色读不出、期望令牌解析不出、或 Tab 后 `activeElement` 不是预期元素都会走 BLOCKED),或输出里出现任何 `FAIL` / `BLOCKED` 开头的行,或 `item10` 的普查 INFO 行里不含 `round-doc`</fails_when>
     <human-check>
       <test>在 p3 样本里按 Tab 直到焦点进入轮次文档区(焦点环画出)</test>
-      <expected>环是**左右两条贯穿视口全高的竖线**(不是只有上下边缘);环与 `#doc-panel` 背景(`#f9f9f9`)一眼可区分;环**不压住**正文首字/末字。判据「不可辨」的定义(触发 D-02 的唯一条件):环的任一段被裁切 **或** 与相邻像素对比 &lt; 3:1 **或** 无法据此定位焦点在哪</expected>
+      <expected>环在焦点进入文档区时画出,且一眼可辨。**形态本身不是判据**(两种都算通过):p3 样本实测为**完整矩形**(上边 + 左右两条竖边 + 下边)—— 因该样本文档盒高 778.64px **短于** 900px 视口;文档长于视口时才是「上边 + 左右两条贯穿全高的竖线」。环与 `#doc-panel` 背景(`#f9f9f9`)的实测对比度 **5.57:1**;环**不压住**正文首字/末字。判据「不可辨」的定义(触发 D-02 的唯一条件):环的任一段被裁切 **或** 与相邻像素对比 &lt; 3:1 **或** 无法据此定位焦点在哪。**⚠ 本项已由用户裁定为「可辨」(2026-09-24),不触发 D-02,`style.css` 保持零改动** —— 依据:对比度 5.57:1(阈值 3:1)、环清晰可辨、焦点位置无歧;底部边缘在默认滚动位被裁 3.64px,但上/左/右三边完整,且该裁切量随 `#doc-panel` 滚动归零,不构成「无法定位焦点」。保留本条供**复核**,不再是未决门。**注:本条原写「环是左右两条贯穿视口全高的竖线」,那是规划期的几何推断而非实测,已被执行期实测推翻(UI-SPEC §契约修正登记 A-10)—— 按原字面执行会因形态不符而**误触发** D-02。**</expected>
       <why_human>「可辨」是人眼判断;本环境截图不可用(headless 渲染被阻,常驻 `/api/events` SSE 流让采集处理器无法终止)⇒ 用计算样式检查 + 具名人工步骤,不得计划视觉 diff。机器半场已由 `check-05 --item 10` 的运行时读数覆盖(§K-1.2)</why_human>
     </human-check>
   </verify>
@@ -219,12 +219,12 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     - `frontend/index.html` 里 `#draft-content` 仍然无 `tabindex`;`frontend/index.html` 的 id 总数仍为 80。
     - `frontend/style.css` 逐字节未改(`git status --porcelain -- frontend/style.css` 为空),`:focus-visible` 计数仍为 9。
     - `frontend/app.js` 未改(`tabindex` 计数 0,`node --check` 通过)。
-    - `#round-doc` 上方存在围栏注释,逐条写明:零 CSS 履约的机制与规则出处(`frontend/style.css:1514`)、整盒环的几何(父级 40px 水平 padding ⇒ 不被裁切 ⇒ 左右两条竖线)、`#draft-content` 不加的 D-20 理由、以及「计数 0→1 / 9→9 不构成 Pitfall 6 违规、机械证据是运行时读数」。
-    - `check-05 --item 10` 在 p3 样本上把 `#round-doc` 纳入判定集,且其运行时读数 `outline-width` == `2px`、`outline-color` == 运行时解析的 `--color-focus`;p1 / p12 两个样本里 `#round-doc` 因落在 `.hidden` 子视图内而不进判定集(这是 D-03 的预期,不是回归)。
+    - `#round-doc` 上方存在围栏注释,逐条写明:零 CSS 履约的机制与规则出处(`frontend/style.css:1514`)、整盒环的几何(**水平方向恒不被裁切;垂直形态随文档长度与视口的关系而变** —— 短文档为完整矩形、长文档才是两条竖线;并含底部边缘可能被 `#doc-panel` 滚动边界裁切及其归零条件)、`#draft-content` 不加的 D-20 理由、以及「计数 0→1 / 9→9 不构成 Pitfall 6 违规、机械证据是运行时读数」。注释**不得复述**已被实测推翻的「盒高数千像素 ⇒ 两条竖线」前提(A-10)。
+    - `check-05 --item 10` 把 `#round-doc` 纳入判定集,且其运行时读数 `outline-width` == `2px`、`outline-color` == 运行时解析的 `--color-focus`。**该门的样本集是 `p1` / `checking` / `p3` 三个**(`check-05-ui-uat.py:3704` 的 p1 + `:3740` 的 `for state in ("checking", "p3")`),**不跑 `archive`、也不跑 `p12`,且 CLI 没有 `--state` 旗标**(只有 `--item` / `--ai-smoke` / `--keep` / `--headed` / `--browser`)。故本计划原写的「在 archive 上跑」「p12 里不进判定集」两句**不可满足/不可验证**,已由执行期实测更正;`archive` 样本下的环覆盖因此是**已知未覆盖项**,登记在 SUMMARY 与 STATE.md,不改门(D-21)。
     - SUMMARY 里登记 `_idi07_tab_drive` 上限的数据驱动算术(判定集 +1 ⇒ 上限 +1,与 Tab 序 +1 相抵,无需改门)。
   </acceptance_criteria>
   <reversibility rating="costly">D-01 的承载面一旦由实测判定不可辨就要换成改 frontend/style.css,作废 5 份 live 指纹并连带复验(D-25);回退是改 CSS 换承载面,不是改一个属性。</reversibility>
-  <done>#round-doc 是一个真实的 Tab 停靠点,且整盒焦点环零 CSS 自动生效;`check-05 --item 10` 在 p3 / checking / archive 三个样本上读到 `2px` / 运行时解析的 `--color-focus`;四条既有不变量守卫(check-01…04)仍全绿;基线对账节记录了 `clearInlineError();` = 9 与 `:focus-visible` = 9。整条链路(HTML 属性 → 继承的 CSS 规则 → 浏览器计算样式读数)已在一个提交里可复跑。</done>
+  <done>#round-doc 是一个真实的 Tab 停靠点,且整盒焦点环零 CSS 自动生效;`check-05 --item 10` 在其实际样本集 `p1` / `checking` / `p3` 上读到 `2px` / 运行时解析的 `--color-focus`(该门不跑 archive —— 见 acceptance_criteria 的样本集更正);四条既有不变量守卫(check-01…04)仍全绿;基线对账节记录了 `clearInlineError();` = 9 与 `:focus-visible` = 9。整条链路(HTML 属性 → 继承的 CSS 规则 → 浏览器计算样式读数)已在一个提交里可复跑。</done>
 </task>
 
 <task type="auto">
@@ -243,9 +243,9 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 
     ⚠ **必须在 SUMMARY 里逐字记录探针的两条自证输出**:`PROBE links-before=0` 与 `PROBE links-after=1 (mutation-applied=yes)`,以及 `PROBE archive-state opacity=0.75 …`、`PROBE focus=…`、`PROBE ring outline-color=… outline-width=…`、`PROBE composite ring=… ratio=… (>= 3.0)`。**不记录这两条计数就无法区分「探针在工作」与「探针静默空转」** —— 这是探针自己的设计承诺,也是本任务的验收面。探针的 Tab 驱动是**数据驱动**的(上限 40 次、命中即停)⇒ 新增的 Tab 停靠点会被自然吸收,探针**零改动**。
 
-    **第二件:在 p3 / checking / archive 三个样本上各跑一次 `check-05 --item 10`**,逐样本记录判定集大小与 `#round-doc` 的读数,并登记 D-03 的两处普查变化(判定集在这三个样本里 +1;p1 / p12 里因 `.hidden` 子视图被 `visible` 过滤排除)。**若某个样本变红,先判它是「真缺陷」还是「普查集变化」,不要直接改门**(D-03);判据在 `scripts/check-05-ui-uat.py:2830-2854` 的 `judged` / `bad` 两段。
+    **第二件:跑 `check-05 --item 10`**,逐样本记录判定集大小与 `#round-doc` 的读数,并登记 D-03 的普查变化(判定集在 checking / p3 里 +1)。**该门的样本集是 `p1` / `checking` / `p3`(`:3704` + `:3740`),不跑 `archive`、不跑 `p12`,且 CLI 无 `--state` 旗标** —— 本计划原写的「在 p3 / checking / archive 三个样本上各跑一次」不可满足,已更正;`archive` 是已知未覆盖项。**若某个样本变红,先判它是「真缺陷」还是「普查集变化」,不要直接改门**(D-03);判据在 `scripts/check-05-ui-uat.py:2830-2854` 的 `judged` / `bad` 两段。
 
-    **第三件:把「环可辨」的人半场判据落成一条具名人工步骤,并登记 D-02 的分支。** 具名步骤(逐条记录观察结果):进 p3 样本 → 按 Tab 直到焦点落在轮次文档区 → 观察 ①环是否为**左右两条贯穿视口全高的竖线**;②环与 `#doc-panel` 背景(`#f9f9f9`)是否一眼可区分(实测 5.62:1,远高于 3:1 非文本下限);③环是否压住正文首字/末字(整盒环**不应**压字)。**「不可辨」= 环的任一段被裁切 ∨ 与相邻像素对比 < 3:1 ∨ 无法据此定位焦点在哪 —— 三条任一成立即触发 D-02。**
+    **第三件:把「环可辨」的人半场判据落成一条具名人工步骤,并登记 D-02 的分支。** 具名步骤(逐条记录观察结果):进 p3 样本 → 按 Tab 直到焦点落在轮次文档区 → 观察 ①环**是否画出且一眼看得出焦点在哪**(⚠ **形态本身不是判据** —— 短文档是完整矩形、长文档才是两条竖线,两种都通过;原写「是否为左右两条贯穿全高的竖线」是把规划期的几何推断当成了判据,已更正);②环与 `#doc-panel` 背景(`#f9f9f9`)是否一眼可区分(执行期实测 **5.57:1**,远高于 3:1 非文本下限);③环是否压住正文首字/末字(整盒环**不应**压字)。**「不可辨」= 环的任一段被裁切 ∨ 与相邻像素对比 < 3:1 ∨ 无法据此定位焦点在哪 —— 三条任一成立即触发 D-02。** **本项已由用户裁定为「可辨」(2026-09-24),D-02 不触发,`style.css` 保持零改动**;依据见 `08-CONTEXT.md` 与 UI-SPEC §契约修正登记 A-10。
 
     **D-02 的分支处置(必须写进 SUMMARY,不得留空):**
     - **可辨** ⇒ 记录「D-01 路径成立,本阶段零 CSS 改动、零指纹债务」,继续 Task 3。
@@ -264,13 +264,13 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     <fails_when>输出非空(本任务零改动;`frontend/style.css` 出现任何 diff 说明 D-01 路径被破坏)</fails_when>
     <human-check>
       <test>在 p3 样本里按 Tab 把焦点送进轮次文档区,逐条记录三个观察:①环的形态;②环与 `#doc-panel` 背景(`#f9f9f9`)是否一眼可区分;③环是否压住正文首字/末字</test>
-      <expected>①环是左右两条贯穿视口全高的竖线(不是只有上下边缘);②一眼可区分(实测 5.62:1);③不压字。三条任一不成立即为「不可辨」⇒ 触发 D-02,停下并上报,不得静默降级为已知局限</expected>
+      <expected>①环画出且一眼看得出焦点在哪(**形态不是判据**:p3 实测为完整矩形 —— 该样本文档 778.64px 短于 900px 视口;长文档才是两条竖线。**原写「左右两条贯穿视口全高的竖线」是规划期几何推断,已由执行期实测推翻,照原字面执行会误触发 D-02**);②一眼可区分(执行期实测 **5.57:1**);③不压字。**本项已由用户裁定为「可辨」(2026-09-24)⇒ D-02 不触发,不得据此去改 `frontend/style.css`。** 三条任一成立才为「不可辨」⇒ 停下上报,不得静默降级为已知局限</expected>
       <why_human>「可辨」是人眼判断,且本环境截图不可用(headless 渲染被阻 + 常驻 `/api/events` SSE 流让采集处理器无法终止)⇒ 用计算样式检查 + 具名人工步骤,不得计划视觉 diff</why_human>
     </human-check>
   </verify>
   <acceptance_criteria>
     - SUMMARY 里逐字记录了探针的 `PROBE links-before=0` 与 `PROBE links-after=1 (mutation-applied=yes)` 两条自证输出,以及 `PROBE archive-state opacity=0.75`、`PROBE focus=`、`PROBE ring outline-color=… outline-width=…`、`PROBE composite … ratio=… (>= 3.0)` 四条读数。
-    - SUMMARY 里逐样本记录了 `check-05 --item 10` 在 p3 / checking / archive 三个样本上的判定集大小与 `#round-doc` 读数,并登记了 D-03 的两处普查变化与 `_idi07_tab_drive` 上限的数据驱动算术。
+    - SUMMARY 里逐样本记录了 `check-05 --item 10` 在其**实际样本集 `p1` / `checking` / `p3`** 上的判定集大小与 `#round-doc` 读数,并登记了 D-03 的普查变化与 `_idi07_tab_drive` 上限的数据驱动算术;`archive` 样本未覆盖一事已登记为已知未覆盖项(该门不跑 archive,CLI 无 `--state`)。
     - SUMMARY 里记录了「可辨 / 不可辨」的判定与逐条观察结果;若判为「不可辨」,则记录了已停下上报、未静默降级,并列明 D-02 的 4 项连带登记与两条备选承载面。
     - SUMMARY 里登记了 `#draft-content` 刻意不加 `tabindex` 的 D-20 理由。
     - `git status --porcelain` 对 `frontend/style.css` 与 `scripts/probe-07-focus-composite.py` 均为空(探针是复跑,不是修改)。

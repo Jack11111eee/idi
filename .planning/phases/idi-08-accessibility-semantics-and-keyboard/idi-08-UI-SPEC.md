@@ -196,9 +196,11 @@ F1 在本阶段有**四个落点**,全部是它的实例:
 | F1-d | **弹窗关闭后 ⇒ 交还触发者**(confirmation → `#btn-authorize`;tier → `#btn-continue-check`) | Escape 分支内 | **A-8:用户 2026-09-23 裁定采纳**(镜像 D-07/D-08;见 §契约修正登记 A-8) |
 
 **F1 不覆盖的两种情形(显式登记,不是遗漏):**
-① **成功路径不交还**:`#confirmation-modal` 的「放行」成功后整个视图即将切换(`refreshRoundsAfterStream()`),
-此时把焦点钉回 `#btn-authorize` 是错的(它下一刻就随 `#authorize-row` 一起隐藏)—— 故
-**交还只写在 Escape 分支里,不写进 `closeConfirmModal()`**;
+① **`#confirmation-modal` 的「放行」成功路径不交还(本条只覆盖这一个弹窗)**:放行成功后整个视图即将切换
+(`refreshRoundsAfterStream()`),此时把焦点钉回 `#btn-authorize` 是错的(它下一刻就随 `#authorize-row`
+一起隐藏)—— 故**该路径的交还只写在 Escape 分支里,不写进 `closeConfirmModal()`**。
+`#tier-modal` 的选档成功路径**不适用本条**:选档后视图不切换,`#btn-continue-check` 反而变得可见
+(「继续自检」),故该路径**交还**,见 D8-10 与 `chooseTier()`(2026-09-24 收窄);
 ② **目标不可聚焦时静默降级**:`#btn-authorize` 若在弹窗打开期间变成 `disabled`(Chrome 下
 `.focus()` 对禁用按钮是 no-op),焦点停在原处 —— 登记为已知边界,**不新增兜底逻辑**。
 
@@ -728,7 +730,7 @@ DOM 节点 ⇒ **`aria-live` 绝不可加在 chunk 容器上**。`#stream-banner
 | D8-7 | `#tier-modal` **打开时移焦** + Escape 关闭 + `tierModalShown` 复位 | 弹窗可在用户做别的事时**重现**(这是「档位未定就该继续问」的正确行为);焦点进入弹窗(此前不在) | D-13 / D-16 | 人工:A11Y-05 的 tier 分支 |
 | D8-8 | `#confirmation-modal` 的 Escape = **仅关闭,零决定** | 新增键位响应;不代替「拒绝」 | D-12 | 人工 |
 | D8-9 | **(条件)** D-02 触发时 `style.css` 的环承载面变更 | 仅在实测判定整盒环不可辨时存在;会**作废 5 份 live 指纹**并连带复验 | D-02 / D-25 | 实测 + 指纹重算 |
-| D8-10 | **两个弹窗关闭后把焦点交还触发者**(confirmation → `#btn-authorize`;tier → `#btn-continue-check`) | 此前弹窗关闭后焦点回落到 `<body>`;交还后键盘用户停在**同一个逻辑位置**上(可继续授权流程 / 继续自检流程)。**成功路径不交还**(见 §焦点契约的 F1 不覆盖情形①) | **A-8(用户 2026-09-23 裁定采纳)** | 人工:关弹窗后按 Tab,焦点从触发者处继续 |
+| D8-10 | **两个弹窗关闭后把焦点交还触发者**(confirmation → `#btn-authorize`;tier → `#btn-continue-check`) | 此前弹窗关闭后焦点回落到 `<body>`;交还后键盘用户停在**同一个逻辑位置**上(可继续授权流程 / 继续自检流程)。**豁免只覆盖 `#confirmation-modal` 的「放行」路径**(理由是该路径整个视图即将切换);**`#tier-modal` 的选档成功路径交还** —— 选档后视图不切换、`#btn-continue-check` 反而变得可见(「继续自检」),交还写在 `chooseTier()` 的 `await refreshChecksAfterStream()` 之后(2026-09-24 收窄) | **A-8(用户 2026-09-23 裁定采纳)** | 人工:关弹窗后按 Tab,焦点从触发者处继续 |
 | D8-11 | **`app.js:1121` 的空态文案改一个词**:`在左侧文档` → `在右侧文档` | **用户可见文案变更**(本阶段唯一一处);改后与 `DESIGN.md` §4.1(v1.14 文档面板在右)一致 | **S8-1(用户 2026-09-23 裁定)** | 人工:阶段 3 空批注流下读该串 |
 
 **本阶段明确不产生的 delta:** 零 `style.css` 改动(D-01 路径)、零新增令牌、零颜色/字号/字重/行高改动、

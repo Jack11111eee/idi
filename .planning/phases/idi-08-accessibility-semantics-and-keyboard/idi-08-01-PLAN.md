@@ -53,7 +53,7 @@ must_haves:
       provides: "initSelectionMenu() 内、紧随 L1350 keyup 绑定之后的 Shift 提交监听器 + hideSelectionMenu() 的 F1-a/b/c 焦点交还"
       contains: "hideSelectionMenu"
   key_links:
-    - from: "frontend/index.html:139 (#round-doc)"
+    - from: "frontend/index.html:163 (#round-doc)"
       to: "frontend/style.css:1514 ([tabindex]:focus-visible)"
       via: "Phase 7 刻意写进枚举的 [tabindex] 选择器 —— 属性一落,整盒环零 CSS 自动生效"
       pattern: "\\[tabindex\\]:focus-visible"
@@ -62,7 +62,7 @@ must_haves:
       via: "松开 Shift ∧ 菜单可见 ∧ 选区非折叠 ⇒ annotateBtn.focus()"
       pattern: "annotateBtn\\.focus\\(\\)"
     - from: "frontend/app.js (hideSelectionMenu)"
-      to: "frontend/index.html:139 (#round-doc)"
+      to: "frontend/index.html:163 (#round-doc)"
       via: "F1-a/b/c:隐藏前取判据 selectionMenu.contains(document.activeElement),命中则 roundDoc.focus()"
       pattern: "roundDoc\\.focus\\(\\)"
   prohibitions:
@@ -86,7 +86,7 @@ must_haves:
 <objective>
 把 `#round-doc` 变成一个真实的键盘 Tab 停靠点并让键盘划词路径端到端可用(A11Y-02 + A11Y-03)。
 
-本计划交付三件事:①`frontend/index.html:139` 的 `#round-doc` 加 `tabindex="0"`,使 Phase 7 的 `[tabindex]:focus-visible` 枚举规则**零 CSS 自动**把整盒焦点环套上去(这是本阶段唯一一处「一个属性换一条完整交互路径」的地方);②在 `initSelectionMenu()` 内、紧随既有的 `keyup` 绑定之后新增一个 **Shift 专用**提交监听器(按住 Shift 扩选时焦点不动,松开 Shift 才把焦点送入 `#selection-menu` 的首个按钮),并把 F1-a/b/c 的焦点交还写进 `hideSelectionMenu()` 这个**单点**;③把「环可辨」的实测证据、D-02 的升级判据、`probe-07-focus-composite.py` 的复跑(D-04)与 A11Y-03 的具名人工脚本一并落成可复跑的证据。
+本计划交付三件事:①`frontend/index.html:163` 的 `#round-doc` 加 `tabindex="0"`,使 Phase 7 的 `[tabindex]:focus-visible` 枚举规则**零 CSS 自动**把整盒焦点环套上去(这是本阶段唯一一处「一个属性换一条完整交互路径」的地方);②在 `initSelectionMenu()` 内、紧随既有的 `keyup` 绑定之后新增一个 **Shift 专用**提交监听器(按住 Shift 扩选时焦点不动,松开 Shift 才把焦点送入 `#selection-menu` 的首个按钮),并把 F1-a/b/c 的焦点交还写进 `hideSelectionMenu()` 这个**单点**;③把「环可辨」的实测证据、D-02 的升级判据、`probe-07-focus-composite.py` 的复跑(D-04)与 A11Y-03 的具名人工脚本一并落成可复跑的证据。
 
 Purpose: 本阶段**按 ROADMAP 字面实现会假绿** —— 路线图写「`handleSelectionTrigger` 的键盘分支把焦点移入菜单首按钮」,而该函数挂在**每一次** `keyup` 上(`app.js:1350`):Shift+→ 选中 1 个字符即触发 keyup ⇒ 焦点跳到 `#btn-annotate` ⇒ 再按 Shift+→ 时事件目标已是菜单按钮,`roundDoc` 的 keyup 不再触发 ⇒ **键盘用户永远只能选中一个字符**;而 A11Y-03 的验收项「Shift+方向键选区 → 菜单出现 → 焦点已入菜单」**会照常通过**(它测状态,不测可用性)。本计划按 D-05/D-06 的手势实现,并把这条「按字面实现会假绿」的事实写进代码围栏注释,否则会被后来者当成「已按路线图实现」。
 Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shift 提交监听器与 `hideSelectionMenu()` 的焦点交还;以及 Task 2 / Task 3 记录的三份证据(环可辨性、D-02 判据、探针 0/1 计数、A11Y-03 人工脚本)。
@@ -142,7 +142,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 - `tier-modal-title`(计划 02;`#tier-modal` 的 `<h3>`)
 
 **新的 HTML 属性:**
-- `#round-doc` 的 `tabindex="0"`(本计划,`frontend/index.html:139`)
+- `#round-doc` 的 `tabindex="0"`(本计划,`frontend/index.html:163`)
 - `#confirmation-modal` / `#tier-modal` 的 `role="dialog"` + `aria-modal="true"` + `aria-labelledby`(计划 02)
 
 **新的 JS 顶层句柄(1 个,`frontend/app.js`):**
@@ -159,7 +159,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
 - `hideSelectionMenu()` 体内的 F1-a/b/c 焦点交还(本计划)
 - `#tier-modal` 打开分支的移焦 + `tierModalShown` 复位(计划 02)
 - `syncBackgroundInert()` 的 5 个调用点(计划 02;全部在既有函数体内)
-- `app.js:1121` 空态文案的一个词(计划 03)
+- `app.js:1162` 空态文案的一个词(计划 03)
 
 **新的 CSS:零。** 焦点环由 Phase 7 的 `[tabindex]:focus-visible` 枚举自动命中,本阶段 `frontend/style.css` **逐字节不变**(D-01)。
 
@@ -179,7 +179,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     - scripts/check-05-ui-uat.py(L1748 的 `FOCUSABLE_SELECTOR`、L1988 的 `focusable` 判据、L2830-2854 的判定集与 `bad` 过滤、L31-105 的 docstring 登记)
   </read_first>
   <action>
-    在 `frontend/index.html:139` 的 `#round-doc` 上**只加一个属性**。当前形态是 `<div id="round-doc" class="markdown-body">`,目标形态是 `<div id="round-doc" class="markdown-body" tabindex="0">` —— 属性顺序照本文件既有惯例(`id` → `class` → 新属性),`tabindex="0"` 放在 `class` 之后。**不新增 id、不改名、不删除任何既有 id**(硬规则 5 / G-idi01-8:`app.js:4-75` 约 70 个顶层 `getElementById` 句柄,改名或删除一个会在解析期静默杀死其下全部处理器)。**`frontend/index.html` 今天恰好 80 个 id,本任务之后仍是 80。**
+    在 `frontend/index.html:163` 的 `#round-doc` 上**只加一个属性**。当前形态是 `<div id="round-doc" class="markdown-body">`,目标形态是 `<div id="round-doc" class="markdown-body" tabindex="0">` —— 属性顺序照本文件既有惯例(`id` → `class` → 新属性),`tabindex="0"` 放在 `class` 之后。**不新增 id、不改名、不删除任何既有 id**(硬规则 5 / G-idi01-8:`app.js:4-75` 约 70 个顶层 `getElementById` 句柄,改名或删除一个会在解析期静默杀死其下全部处理器)。**`frontend/index.html` 今天恰好 80 个 id,本任务之后仍是 80。**
 
     **不要动 `frontend/index.html:113` 的 `#draft-content`。** 它同为 `.markdown-body`,但阶段 1-2 没有批注功能(`handleSelectionTrigger` 的第一条实质守卫是 `if (currentState !== 'phase3') return`,`app.js:1327`)⇒ 给它加 Tab 停靠点是**死代码**,违反本项目「不声明不被消费的东西」的纪律,且无法被运行时验证(D-20)。**这条理由必须写进下面那条围栏注释**,否则读代码的人会把它当漏项补上。
 
@@ -347,7 +347,7 @@ Output: `frontend/index.html` 的 `#round-doc` 属性;`frontend/app.js` 的 Shif
     - Shift 监听器的围栏注释写明四件事:手势语义、「为什么不能写在 `handleSelectionTrigger` 里(会让键盘用户只能选中一个字符,而验收项仍会通过)」、「白名单只在这里合法而 `handleSelectionTrigger` 一字不改」、以及自造惯例的已登记代价。
     - `hideSelectionMenu()` 的注释写明它覆盖 F1-a / F1-b / F1-c 三个落点,并写明「写在这一个函数里是因为四个调用点散落必然漏」。
     - 九步人工脚本的每一步观察结果(含每步的焦点位置)被逐项记录;§K-2.5 的两条待测项有明确的「是 / 否」结论与相应的处置(①为否 ⇒ 已上报;②为否 ⇒ 已登记为已知局限)。
-    - `frontend/index.html` 未改(`role=` 仍为 0,`#selection-menu` 仍在 `frontend/index.html:207` 且仍是 `<body>` 直接子元素);`frontend/style.css` 未改。
+    - `frontend/index.html` 未改(`role=` 仍为 0,`#selection-menu` 仍在 `frontend/index.html:249` 且仍是 `<body>` 直接子元素);`frontend/style.css` 未改。
   </acceptance_criteria>
   <done>键盘用户能按住 Shift 用方向键扩选一段文字(焦点全程不移动),松开 Shift 时菜单弹出且焦点落在 `#btn-annotate`;Escape 关菜单后焦点回到 `#round-doc`;两个菜单项执行后焦点也回到 `#round-doc`;`handleSelectionTrigger` 与 t9g 的既有注释一字未改;九步人工脚本的观察结果与 §K-2.5 两条待测项的结论已逐项记录;`node --check app.js` 通过。</done>
 </task>

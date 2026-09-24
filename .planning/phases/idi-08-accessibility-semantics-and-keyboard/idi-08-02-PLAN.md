@@ -71,11 +71,11 @@ must_haves:
       contains: "syncBackgroundInert"
   key_links:
     - from: "frontend/app.js (syncBackgroundInert)"
-      to: "frontend/index.html:10-155 (#app)"
+      to: "frontend/index.html:10-179 (#app)"
       via: "从两个弹窗的 .hidden 现状派生一个属性 —— 打开则 setAttribute,都关闭则 removeAttribute;幂等、不成对记账"
       pattern: "appEl\\.(set|remove)Attribute\\('inert'"
-    - from: "frontend/index.html:170 (#confirmation-modal)"
-      to: "frontend/index.html:172 (#confirmation-modal-title)"
+    - from: "frontend/index.html:249 (#confirmation-modal)"
+      to: "frontend/index.html:209 (#confirmation-modal-title)"
       via: "aria-labelledby —— 无障碍名称与屏幕上的标题是同一处真相(名必须说实话)"
       pattern: "aria-labelledby=\"confirmation-modal-title\""
     - from: "frontend/app.js (Escape 单点分派监听器)"
@@ -91,7 +91,7 @@ must_haves:
       status: unresolved
     - statement: "不得只加 role/aria-modal 而不让宣告成真 —— 焦点陷阱是已裁定 Out of Scope,若不加背景惰性属性,产物就是「宣告了一个实现并不兑现的契约」,比不加 role 更糟(ROADMAP 自己点名的形态)"
       status: unresolved
-    - statement: "背景惰性属性不得挂到任何「当前打开的弹窗」的祖先上(含 document.body 或任何共享祖先)—— 那会让打开的弹窗自身变惰性、键盘与指针双路锁死;它只挂 #app,而 #app 在 index.html:155 闭合,五个 .overlay 与 #selection-menu 都是它的兄弟"
+    - statement: "背景惰性属性不得挂到任何「当前打开的弹窗」的祖先上(含 document.body 或任何共享祖先)—— 那会让打开的弹窗自身变惰性、键盘与指针双路锁死;它只挂 #app,而 #app 在 index.html:179 闭合,五个 .overlay 与 #selection-menu 都是它的兄弟"
       status: unresolved
     - statement: "不得把 aria-live 加在任何流式容器上 —— appendSayToChat 每个 SSE 事件追加一个 DOM 节点(Pitfall M7);本阶段不加任何 aria-live"
       status: unresolved
@@ -134,17 +134,17 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
 
 **D-13 `#tier-modal` 的 Escape = 关闭 + 复位 `tierModalShown = false`(允许重弹)。** 已核实的死状态:该弹窗在 `sessionData.state === 'phase5_awaiting_tier'` 且未选档时弹出,**打开时立刻把 `tierModalShown = true`**(`app.js:638-640`);只有选档成功才 `classList.add('hidden')`(`app.js:799`)。**若被关掉而没选,`selfcheck.tier` 仍为空而 `tierModalShown` 已是 true ⇒ 它不会再弹** —— 用户落进「档位未定且入口消失」。复位该标志使下一个自检事件(`refreshChecksAfterStream`)能重新弹出。**已登记的代价:** 复位后弹窗可能在用户做别的事时重现 —— 但这正是「档位未定就该继续问」的正确行为。**不复位 `selfcheck.tier`;不发任何请求。**
 
-**D-14 `role="dialog"` + `aria-modal="true"` + 原生 `inert`,让宣告成真。** 在打开/关闭两个弹窗时给 `#app` 加/去原生 `inert`。**已核实 `#app` 的边界**:`frontend/index.html` 的 `#app` 在 **L10 起、L155 闭合**,五个 `.overlay`(L158 / L170 / L184 / L196 / L213)与 `#selection-menu`(L207)都是它的**兄弟** ⇒ 挂 `#app` 天然只作用于背景、不会波及弹窗自身。**`#selection-menu` 也在 `#app` 之外 ⇒ 弹窗打开时它不会被惰性化。两者同时可见的场景不存在,判据是结构性的**:菜单只在 `currentState === 'phase3'` 时显示(`app.js:1327` 的第一条实质守卫),而 `#tier-modal` 只在 `phase5_awaiting_tier` 弹出 —— 状态互斥。**规划期已确认这一点并登记(不是「理论上互斥」)。**
+**D-14 `role="dialog"` + `aria-modal="true"` + 原生 `inert`,让宣告成真。** 在打开/关闭两个弹窗时给 `#app` 加/去原生 `inert`。**已核实 `#app` 的边界**:`frontend/index.html` 的 `#app` 在 **L10 起、L179 闭合**,五个 `.overlay`(L182 / L207 / L226 / L238 / L255)与 `#selection-menu`(L249)都是它的**兄弟** ⇒ 挂 `#app` 天然只作用于背景、不会波及弹窗自身。**`#selection-menu` 也在 `#app` 之外 ⇒ 弹窗打开时它不会被惰性化。两者同时可见的场景不存在,判据是结构性的**:菜单只在 `currentState === 'phase3'` 时显示(`app.js:1327` 的第一条实质守卫),而 `#tier-modal` 只在 `phase5_awaiting_tier` 弹出 —— 状态互斥。**规划期已确认这一点并登记(不是「理论上互斥」)。**
 
 **D-14 的实现形态 = 单点派生,不成对记账。** 从两个弹窗的 `.hidden` 现状**派生**,不靠 open/close 成对记账 —— 成对记账会在任何一条早退路径上漏去属性(与 STATE.md 反复出现的派生计数缺陷同型),派生式在结构上不可能失配,且天然幂等。**5 个调用点**(全部在既有函数体内,**不新增函数**):`openConfirmModal()`(`remove('hidden')` 之后)、`closeConfirmModal()`(`add('hidden')` 之后)、`#tier-modal` 的打开分支(`app.js:640` 之后)、`chooseTier()` 成功路径(`app.js:799` 之后)、Escape 分派的 tier 分支。**`appEl` 是新增的顶层句柄**(加在 `app.js:83` 之后)—— **新增是安全的,改名或删除既有句柄才是 G-idi01-8 的失效形态**(硬规则 5)。
 
-**D-15 `aria-labelledby` 指向弹窗内的 `<h3>`,需给这两个 `<h3>` 各加一个**新** id。** 文案只存一处(随 `<h3>` 走,不会漂移)。**硬规则 5 禁的是改名/删除既有 id;新增 id 安全。** 已核实 `#confirmation-modal` 的 `<h3>` 是「授权确认」(`index.html:172`)、`#tier-modal` 的是「选择自检档位」(`index.html:186`)。**不选 `aria-label` 写字面串** 的理由:文案会变成第二处真相来源,与「名必须说实话」的纪律相冲。
+**D-15 `aria-labelledby` 指向弹窗内的 `<h3>`,需给这两个 `<h3>` 各加一个**新** id。** 文案只存一处(随 `<h3>` 走,不会漂移)。**硬规则 5 禁的是改名/删除既有 id;新增 id 安全。** 已核实 `#confirmation-modal` 的 `<h3>` 是「授权确认」(`index.html:209`)、`#tier-modal` 的是「选择自检档位」(`index.html:228`)。**不选 `aria-label` 写字面串** 的理由:文案会变成第二处真相来源,与「名必须说实话」的纪律相冲。
 
 **D-16 两个弹窗打开时都要移焦。** `#confirmation-modal` 已有(`app.js:488`);**`#tier-modal` 缺,须补**。**顺序锁定:`classList.remove('hidden')` → `syncBackgroundInert()` → `.focus()`。** 移焦目标是 `#btn-tier-loose`(首个可操作控件,与 `openConfirmModal()` 的既有形态对称;不选弹窗容器是因为那需要给它 `tabindex="-1"`,会被 item 10 的普查排除,又是一个需要解释的例外)。**规划期须实测 `inert` 生效瞬间焦点落在哪里**,并据此确认是否需要显式 `.focus()`(这是 D-16 明文要求的实测项,**不得写成「预期成立」**)。
 
 **D-17 `#permission-modal` 的「弹了键盘用户不知道」登记为已知缺口,归 v2 `A11Y-V2-02`,本阶段不修。** 登记位置:`08-UAT.md` 或 VERIFICATION 的 manual/advisory 节。
 
-**A-8(F1-d,用户 2026-09-23 裁定采纳):** 弹窗关闭后焦点**交还触发者** —— `#confirmation-modal` 关闭后 → `#btn-authorize`;`#tier-modal` 关闭后 → `#btn-continue-check`。**两个返回目标已由 checker 独立核实存在**:`#btn-authorize` 在 `index.html:143`、`#btn-continue-check` 在 `index.html:49`。**成功路径不交还**(F1 不覆盖情形①):`#confirmation-modal` 的「放行」成功后整个视图即将切换(`refreshRoundsAfterStream()`),把焦点钉回 `#btn-authorize` 是错的 ⇒ **交还只写在 Escape 分支里,不写进 `closeConfirmModal()`**。**目标不可聚焦时静默降级**(Chrome 下 `.focus()` 对禁用按钮是 no-op),**不新增兜底逻辑**。
+**A-8(F1-d,用户 2026-09-23 裁定采纳):** 弹窗关闭后焦点**交还触发者** —— `#confirmation-modal` 关闭后 → `#btn-authorize`;`#tier-modal` 关闭后 → `#btn-continue-check`。**两个返回目标已由 checker 独立核实存在**:`#btn-authorize` 在 `index.html:167`、`#btn-continue-check` 在 `index.html:49`。**成功路径不交还**(F1 不覆盖情形①):`#confirmation-modal` 的「放行」成功后整个视图即将切换(`refreshRoundsAfterStream()`),把焦点钉回 `#btn-authorize` 是错的 ⇒ **交还只写在 Escape 分支里,不写进 `closeConfirmModal()`**。**目标不可聚焦时静默降级**(Chrome 下 `.focus()` 对禁用按钮是 no-op),**不新增兜底逻辑**。
 
 **硬规则 8:** `frontend/index.html` / `frontend/app.js` 的每一次编辑都必须先确认「没有改名、没有删除既有 id」。`frontend/index.html` 今天恰好 **80 个 id**,本计划把它带到 **82**。**硬规则 12:** `inert` 与 `.hidden` 是两个**正交机制**,不得互相替代;`inert` 只挂 `#app`,不加在弹窗或 `#selection-menu` 上。
 </decision_register>
@@ -164,7 +164,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
 - `tier-modal-title`(本计划;`#tier-modal` 的 `<h3>`)
 
 **新的 HTML 属性:**
-- `#round-doc` 的 `tabindex="0"`(计划 01,`frontend/index.html:139`)
+- `#round-doc` 的 `tabindex="0"`(计划 01,`frontend/index.html:163`)
 - `#confirmation-modal` / `#tier-modal` 的 `role="dialog"` + `aria-modal="true"` + `aria-labelledby`(本计划)
 
 **新的 JS 顶层句柄(1 个,`frontend/app.js`):**
@@ -181,7 +181,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
 - `hideSelectionMenu()` 体内的 F1-a/b/c 焦点交还(计划 01)
 - `#tier-modal` 打开分支的移焦 + `tierModalShown` 复位(本计划)
 - `syncBackgroundInert()` 的 5 个调用点(本计划;全部在既有函数体内)
-- `app.js:1121` 空态文案的一个词(计划 03)
+- `app.js:1162` 空态文案的一个词(计划 03)
 
 **新的 CSS:零。** 焦点环由 Phase 7 的 `[tabindex]:focus-visible` 枚举自动命中,本阶段 `frontend/style.css` **逐字节不变**(D-01)。
 
@@ -194,21 +194,23 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
   <name>Task 1:两个弹窗的 dialog 语义与无障碍名称(index.html 的 2 个新 id + 两组属性)</name>
   <files>frontend/index.html</files>
   <read_first>
-    - frontend/index.html(L155 `#app` 闭合处与 L156-220 的五个 `.overlay` + `#selection-menu` —— **证明五个 overlay 与菜单都是 `#app` 的兄弟**;L170-181 `#confirmation-modal` 全卡;L184-193 `#tier-modal` 全卡;L196-205 `#mission-complete-modal`;L213-220 `#cli-check-overlay`)
+    - frontend/index.html(L179 `#app` 闭合处与 L180-261 的五个 `.overlay` + `#selection-menu` —— **证明五个 overlay 与菜单都是 `#app` 的兄弟**;L207-218 `#confirmation-modal` 全卡;L226-235 `#tier-modal` 全卡;L238-246 `#mission-complete-modal`;L213-220 `#cli-check-overlay`)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-UI-SPEC.md(§属性级规格表 —— 5 行逐字落点与目标值;§M-1.2 的「role 落 .overlay 而非 .overlay-card」三条裁定理由)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-PATTERNS.md(H-2 的命名惯例与 `index.html` 现有 80 个 id 的计数;H-3 的五个 `.overlay` 逐字形态与结构边界)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md(D-11 / D-15)
   </read_first>
   <action>
-    **第一处:给两个弹窗的 `<h3>` 各加一个新 id。** `frontend/index.html:172` 的 `<h3>授权确认</h3>` 加 `id="confirmation-modal-title"`;`frontend/index.html:186` 的 `<h3>选择自检档位</h3>` 加 `id="tier-modal-title"`。命名判据:与既有 kebab-case 风格一致(`confirm-word-input` / `tier-modal` / `btn-tier-loose`),且规划期已实测**零碰撞**(在 `frontend/index.html` / `frontend/app.js` / `frontend/style.css` 三处 grep 均为 0)。**这是新增而不是改名** —— 硬规则 5 禁的是改名与删除既有 id。`frontend/index.html` 的 id 总数由 **80 → 82**。
+    **第一处:给两个弹窗的 `<h3>` 各加一个新 id。** `frontend/index.html:209` 的 `<h3>授权确认</h3>` 加 `id="confirmation-modal-title"`;`frontend/index.html:228` 的 `<h3>选择自检档位</h3>` 加 `id="tier-modal-title"`。命名判据:与既有 kebab-case 风格一致(`confirm-word-input` / `tier-modal` / `btn-tier-loose`),且规划期已实测**零碰撞**(在 `frontend/index.html` / `frontend/app.js` / `frontend/style.css` 三处 grep 均为 0)。**这是新增而不是改名** —— 硬规则 5 禁的是改名与删除既有 id。`frontend/index.html` 的 id 总数由 **80 → 82**。
 
-    **第二处:两个 `.overlay` 各加三个属性。** `frontend/index.html:170` 的 `<div id="confirmation-modal" class="overlay hidden">` 与 `frontend/index.html:184` 的 `<div id="tier-modal" class="overlay hidden">` 各加 `role="dialog"` + `aria-modal="true"` + `aria-labelledby`(前者指 `confirmation-modal-title`,后者指 `tier-modal-title`)。属性顺序:`id` → `class` → `role` → `aria-modal` → `aria-labelledby`。
+    **第二处:两个 `.overlay` 各加三个属性。** `frontend/index.html:249` 的 `<div id="confirmation-modal" class="overlay hidden">` 与 `frontend/index.html:226` 的 `<div id="tier-modal" class="overlay hidden">` 各加 `role="dialog"` + `aria-modal="true"` + `aria-labelledby`(前者指 `confirmation-modal-title`,后者指 `tier-modal-title`)。属性顺序:`id` → `class` → `role` → `aria-modal` → `aria-labelledby`。
+
+    ⚠ **行号是规划期的快照,执行期已漂移(计划 01 的围栏注释把其后所有行下推了 24 行)。已按 HEAD 实测更正为上面这些值,但行号仍会随任何一次注释插入再次漂移 ⇒ 定位元素时以 `id` 与内容为准,不要以行号为准。** 本计划执行期实测确认:锚在行号字面量上会去改 `#permission-modal` / `#mission-complete-modal`,而**五个计数门(role= / aria-modal / aria-labelledby / id= / tabindex)全都照旧为绿** —— 计数门只数出现次数,分辨不出属性落在**哪个**元素上,故它们对「改错了弹窗」是结构性失明的。唯一能分辨的是内容检查。
 
     **落点是 `.overlay` 而不是 `.overlay-card`(逐字裁定,不得改):** ①**被切换的节点与被告白的节点是同一个** —— `.overlay` 就是 `classList.toggle('hidden')` 的作用对象,「宣告与实现一致」(SC3)因此是**结构性可查**的,而不是两处需要同步的记账;②`.overlay-card` **没有 id**、五个弹窗共用同一个类名 ⇒ 把 ARIA 挂在一个类共享的内层 `<div>` 上,会让「声明」与「状态」分居两个节点,必然漂移;③`aria-labelledby` 无论挂在哪一层,都解析到卡片内的同一个 `<h3>`。
 
     **为什么用 `aria-labelledby` 而不是 `aria-label` 写字面串:** 后者会让文案变成**第二处真相来源** —— 与「名必须说实话」的纪律相冲。**不新写任何字符串**:无障碍名称就是屏幕上那个 `<h3>`。
 
-    **其余三个弹窗(`frontend/index.html:158` 的 `#permission-modal`、`:196` 的 `#mission-complete-modal`、`:213` 的 `#cli-check-overlay`)一个属性都不加** —— 范围锁死为 D-11 的两个对象,这是**刻意的,不是漏项**。
+    **其余三个弹窗(`frontend/index.html:182` 的 `#permission-modal`、`:238` 的 `#mission-complete-modal`、`:255` 的 `#cli-check-overlay`)一个属性都不加** —— 范围锁死为 D-11 的两个对象,这是**刻意的,不是漏项**。
 
     **不要做的事:** 不改任何既有 id(改名或删除会在解析期静默杀死 `app.js:4-75` 的约 70 个句柄之下的全部处理器,G-idi01-8);不动 `.overlay-card` 的类名或结构;不动 `#selection-menu` 的 DOM 位置(硬规则 5:它必须是 `<body>` 直接子元素);不改 `#app` 的开闭边界(硬规则 5 之外的独立理由 —— `inert` 的挂载点依赖「五个 overlay 与菜单都是 `#app` 的兄弟」这条结构事实);不写任何 `aria-live`(Pitfall M7,本阶段一律不加);不改任何文案。
 
@@ -233,7 +235,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
     - 两个 `<h3>`(「授权确认」/「选择自检档位」)各带一个新 id:`confirmation-modal-title` / `tier-modal-title`;两个 id 在 `frontend/index.html` 各出现恰好 1 次。
     - `frontend/index.html` 的 id 总数为 82,且原有 80 个 id 全部逐字保留(零改名、零删除)。
     - 无障碍名称通过 `aria-labelledby` 指向既有 `<h3>`,**没有**新增任何字符串常量、**没有**使用 `aria-label`。
-    - `#app` 的开闭边界(L10-L155)与 `#selection-menu` 在 `frontend/index.html:207` 的位置均未改动 —— 五个 `.overlay` 与菜单仍是 `#app` 的兄弟。
+    - `#app` 的开闭边界(L10-L179)与 `#selection-menu` 在 `frontend/index.html:249` 的位置均未改动 —— 五个 `.overlay` 与菜单仍是 `#app` 的兄弟。
     - `frontend/index.html` 不出现任何 `aria-live`;`frontend/app.js` 与 `frontend/style.css` 未改。
   </acceptance_criteria>
   <reversibility rating="costly">对象集一旦要从 confirmation + tier 换回 ROADMAP 点名的名单,就要重开 A11Y-05 / A11Y-06 的对象集并重算 UI-SPEC 的覆盖声明;但属性本身是增量的,回退代价落在文档与验收面而非代码。</reversibility>
@@ -245,7 +247,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
   <files>frontend/app.js</files>
   <read_first>
     - frontend/app.js(L81-83:顶层句柄分组的末尾形态 —— 新句柄的落点与注释惯例;L483-495:`openConfirmModal` / `closeConfirmModal` 全文,含 L488 的 `confirmWordInput.focus()`(全文件唯一的 `.focus()` 调用);L632-643:`phase5_awaiting_tier` 分支与 `tierModalShown = true`(`app.js:638-640`);L786-800:`chooseTier()` 的成功路径与 `tierModal.classList.add('hidden')`;L94 的 `tierModalShown` 声明)
-    - frontend/index.html(L10 / L155:`#app` 的开闭边界 —— 背景惰性挂载点的结构前提)
+    - frontend/index.html(L10 / L179:`#app` 的开闭边界 —— 背景惰性挂载点的结构前提)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-UI-SPEC.md(§M-1.3 的边界核实;§M-1.4 的派生式实现形态与 5 个调用点清单;§M-1.5 的移焦与顺序锁定)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-PATTERNS.md(J-1 / J-5 / J-6 / J-7;No Analog Found 表的第一行 —— 该属性在 `index.html` 与 `app.js` 里今天出现次数均为 0,无 in-file 先例)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md(D-14 / D-16)
@@ -273,7 +275,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
     <automated>grep -c 'inert' frontend/app.js</automated>
     <fails_when>输出为 `0`(该属性在 `app.js` 里今天出现次数为 0,本任务之后必须为正 —— 覆盖函数定义、属性名与注释)</fails_when>
     <automated>grep -c 'syncBackgroundInert' frontend/app.js</automated>
-    <fails_when>输出小于 `6`(1 个定义 + 5 个调用点;少于 6 说明有调用点漏落,而漏落的调用点会让属性在早退路径上失配)</fails_when>
+    <fails_when>**本任务边界上的期望值是 `5`(1 个定义 + 4 个调用点)**,不是计划级的 `6`。⚠ **本门原写「小于 6 即失败」,那是把计划级的合计抄进了任务级 —— 而第 5 个调用点(Escape 分派的档位分支)按本任务 `<action>` 第 5 条明写是 **Task 3 落的** ⇒ 在 Task 2 的边界上这个门**永远无法满足**(执行期实测:Task 2 边界 5、计划收口 6)。** 判据是「4 个调用点(openConfirmModal / closeConfirmModal / tier 打开分支 / chooseTier)是否都落齐」——少于 4 个才是真失败(漏落的调用点会让属性在早退路径上失配);等于 5 说明你提前把 Task 3 的工作拉了过来,不算失败但应在 SUMMARY 登记。**不要为了让本门变绿而去改期望值或提前实现 Task 3 的分派器。**</fails_when>
     <automated>grep -c 'appEl' frontend/app.js</automated>
     <fails_when>输出小于 `2`(1 个句柄声明 + 至少 1 处属性写入)</fails_when>
     <automated>grep -c 'tierLooseBtn' frontend/app.js</automated>
@@ -310,7 +312,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
   <precondition>应用可在本机启动并能在浏览器里打开,且能进入一个会弹出 #tier-modal 的状态(phase5_awaiting_tier)</precondition>
   <read_first>
     - frontend/app.js(L1342-1423:`initSelectionMenu` 的完整边界(它的收尾大括号在 L1423)—— 分派器的插入点就在它之后、`refreshPendingCount`(L1426)之前;L1352-1358:文档级监听器的守卫优先形态(范本);L807-808:顶层 column-0 绑定的既有惯例;L483-495:`openConfirmModal` / `closeConfirmModal`;L786-800:`chooseTier`;L632-643:tier 的打开分支与 `tierModalShown = true`;L1296-1300:`hideSelectionMenu`(计划 01 已改);L58 / L76:`authorizeBtn` / `continueCheckBtn` 两个既有句柄)
-    - frontend/index.html(L143 的 `#btn-authorize`、L49 的 `#btn-continue-check` —— 两个 F1-d 返回目标)
+    - frontend/index.html(L167 的 `#btn-authorize`、L49 的 `#btn-continue-check` —— 两个 F1-d 返回目标)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-UI-SPEC.md(§M-2.1 的单点分派器与优先级表;§M-2.2 的逐分支行为契约与「明确不做什么」列;§M-2.3 的死状态;§M-2.4 的已知缺口;§焦点契约的 F1 表与「F1 不覆盖的两种情形」)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/idi-08-PATTERNS.md(J-3 / J-6 的第五行)
     - .planning/phases/idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md(D-08 / D-12 / D-13 / D-17 / A-8)
@@ -328,7 +330,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
 
     注释还要写明两条已登记的事实:①三个响应对象今天**互斥**(菜单只在 `currentState === 'phase3'` 显示,`#tier-modal` 只在 `phase5_awaiting_tier` 弹出),但**优先级表使行为与「谁先打开」无关,源码顺序不参与判定**;②`#confirmation-modal` 选「Escape = 仅关闭」的理由(最小、零副作用;键盘用户本来就能 Tab 到「拒绝」,因为 `openConfirmModal()` 已 `confirmWordInput.focus()`,Tab 跳过 disabled 的「放行」直达「拒绝」)。
 
-    **第二处:F1-d 的两条焦点交还(只写在 Escape 分支里)。** `#confirmation-modal` → `authorizeBtn`(`app.js:58` 的既有句柄,目标在 `frontend/index.html:143`);`#tier-modal` → `continueCheckBtn`(`app.js:76` 的既有句柄,目标在 `frontend/index.html:49`)。**成功路径不交还**(F1 不覆盖情形①):`#confirmation-modal` 的「放行」成功后整个视图即将切换(`refreshRoundsAfterStream()`),此时把焦点钉回 `#btn-authorize` 是错的(它下一刻就随 `#authorize-row` 一起隐藏)⇒ **交还只写在 Escape 分支里,绝不写进 `closeConfirmModal()`**。**目标不可聚焦时静默降级**(Chrome 下 `.focus()` 对禁用按钮是 no-op)⇒ **不新增兜底逻辑**,注释登记这是已知边界。
+    **第二处:F1-d 的两条焦点交还(只写在 Escape 分支里)。** `#confirmation-modal` → `authorizeBtn`(`app.js:58` 的既有句柄,目标在 `frontend/index.html:167`);`#tier-modal` → `continueCheckBtn`(`app.js:76` 的既有句柄,目标在 `frontend/index.html:49`)。**成功路径不交还**(F1 不覆盖情形①):`#confirmation-modal` 的「放行」成功后整个视图即将切换(`refreshRoundsAfterStream()`),此时把焦点钉回 `#btn-authorize` 是错的(它下一刻就随 `#authorize-row` 一起隐藏)⇒ **交还只写在 Escape 分支里,绝不写进 `closeConfirmModal()`**。**目标不可聚焦时静默降级**(Chrome 下 `.focus()` 对禁用按钮是 no-op)⇒ **不新增兜底逻辑**,注释登记这是已知边界。
 
     **第三处:登记 `#permission-modal` 的已知缺口(D-17,不修)。** 在 SUMMARY 里写明:`#permission-modal` 打开时不移焦、无任何宣告 ⇒ 「弹了键盘用户不知道」,归 v2 `A11Y-V2-02`,**本阶段不修**(理由:用户已裁定取 confirmation + tier 两个对象,而该弹窗可 Tab 出去、不构成卡死)。**不得在本阶段顺手修。**
 
@@ -395,7 +397,7 @@ Output: `frontend/index.html` 的 2 个新 id 与两组 ARIA 属性;`frontend/ap
 
 | Threat ID | Category | Component | Severity | Disposition | Mitigation Plan |
 |-----------|----------|-----------|----------|-------------|-----------------|
-| T-idi08-05 | Denial of Service | `syncBackgroundInert()` 的挂载点 | **high** | mitigate | 属性**只**挂 `appEl`(`#app`,`frontend/index.html:10-155`)。五个 `.overlay` 与 `#selection-menu` 都是 `#app` 的**兄弟** ⇒ 挂 `#app` 天然只作用于背景。**禁止挂 `document.body` 或任何共享祖先** —— 那会让当前打开的弹窗自身变惰性,键盘与指针双路锁死。该禁令已作为 `must_haves.prohibitions` 的一条登记,并在 Task 2 的 `<action>` 里点名 |
+| T-idi08-05 | Denial of Service | `syncBackgroundInert()` 的挂载点 | **high** | mitigate | 属性**只**挂 `appEl`(`#app`,`frontend/index.html:10-179`)。五个 `.overlay` 与 `#selection-menu` 都是 `#app` 的**兄弟** ⇒ 挂 `#app` 天然只作用于背景。**禁止挂 `document.body` 或任何共享祖先** —— 那会让当前打开的弹窗自身变惰性,键盘与指针双路锁死。该禁令已作为 `must_haves.prohibitions` 的一条登记,并在 Task 2 的 `<action>` 里点名 |
 | T-idi08-06 | Spoofing | `#confirmation-modal` / `#tier-modal` 的 `aria-modal="true"` | medium | mitigate | 只加属性而无背景惰性就是「宣告一个实现并不兑现的契约」(比不加 `role` 更糟)。`aria-modal` 与 `syncBackgroundInert()` 的挂载**在同一次提交**落地,使宣告与实现在结构上一致(SC3) |
 | T-idi08-07 | Tampering | Escape 分派器的确认分支 | medium | mitigate | Escape **只关闭、零决定**(D-12):不调 `rejectAuthorization()`(那会把用户推进原生 `window.prompt`,而替换它是 v2 `FLOW-V2-01`),不新增「拒绝但不弹 prompt」的写批注路径。分派器只调既有的 `closeConfirmModal()` / `hideSelectionMenu()` / 一次 `classList.add` |
 | T-idi08-08 | Elevation of Privilege | 新增的 2 个 id 与 `aria-labelledby` | low | accept | 无障碍名称指向既有 `<h3>`,**不新写字符串**、不做字符串拼接、不构造选择器;新增 id 不引入任何输入 sink。渲染面的既有 XSS 防线(`stripUnsafeNodes`)不受影响 |

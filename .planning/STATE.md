@@ -5,16 +5,16 @@ milestone_name: 前端视觉与可访问性
 current_phase: 08
 current_phase_name: 可访问性语义与键盘
 status: executing
-stopped_at: Completed idi-08-01-PLAN.md
-last_updated: "2026-09-24T03:16:55.532Z"
+stopped_at: Completed idi-08-02-PLAN.md
+last_updated: "2026-09-24T05:43:11.192Z"
 last_activity: 2026-09-24
 last_activity_desc: Phase idi-08 execution started
-state_head: b1351d231a9f19fc9999938758012ddf5a80b0a0
+state_head: 2a75ba1d719c36ae7cf756e4817d18197bbbe83d
 progress:
   total_phases: 6
   completed_phases: 5
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
   percent: 83
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-21)
 ## Current Position
 
 Phase: idi-08 (可访问性语义与键盘) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Executing Phase idi-08
 Last activity: 2026-09-24 — Phase idi-08 execution started
 
@@ -97,6 +97,7 @@ Progress: [████████░░] 83%
 | Phase idi-07 P02 | 14 min | 3 tasks | 2 files |
 | Phase idi-07 P03 | 33 min | 3 tasks | 2 files |
 | Phase idi-08 P01 | 8 min | 3 tasks | 2 files |
+| Phase idi-08 P02 | 12min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -195,6 +196,11 @@ Recent decisions affecting current work:
 - [Phase idi-08]: 键盘划词的提交手势 = **松开 Shift**(D-05),落成 initSelectionMenu() 内的独立 Shift 专用监听器;handleSelectionTrigger **一字不改**。原因:该函数挂在**每一次** keyup 上,在里面移焦会让键盘用户永远只能选中一个字符,而 A11Y-03 的验收项「Shift+方向键选区 → 菜单出现 → 焦点已入菜单」**仍会照常通过**(它测状态,不测可用性)—— 这就是「按路线图字面实现会假绿」的机制事实。
 - [Phase idi-08]: 焦点交还写在 hideSelectionMenu() **这一个**函数里(四个调用点散落必然漏),且判据 selectionMenu.contains(document.activeElement) 必须在 classList.add 隐藏类 **之前**取 —— 焦点元素一旦 display:none,document.activeElement 立刻回落到 body,之后再判永远为假。实测已用反控钉死:焦点在菜单内 ⇒ 交还 round-doc;焦点在 #round-switcher ⇒ 不动。
 - [Phase idi-08]: idi-08-01 实测推翻三条计划前提(登记,不改门不改样式表):①check-05 --item 10 的样本集是 p1/checking/p3(**不含 archive,也从不跑 p12**),CLI 无 --state 开关 ⇒ 「p3/checking/archive 三样本」与「p12 里 #round-doc 被 visible 过滤」两条验收面各自有一半无法用该门测;②D-01 的几何前提「盒高数千像素 ⇒ 左右两条贯穿全高的竖线」在 p3 样本不成立(实测盒高 778.64px < 视口 900px,环画成**完整矩形**),因为该样本的轮次文档只有 883 字节;新增实测:应用自身滚动位置下环**下边缘**越出 #doc-panel 滚动裁切界 3.64px,滚动 4px 即可四边全入(横向余量 36px);③Task 3 的 Escape 断言与九步脚本第 6/7 步归**计划 02**(本计划不装 Escape 处理器)。另:item 10 在改动前后均 PASS(41 条断言),判定集 p1 9→9 / checking 8→9 / p3 9→10,_idi07_tab_drive 上限 36→37 与 Tab 序 +1 相抵,无需改门 —— 是普查集变化,不是缺陷修复。
+- [Phase 08]: idi-08-02: ARIA 三件套落 `.overlay` 而非 `.overlay-card` —— 被切换的节点(classList.toggle('hidden') 的作用对象)与被告白的节点是同一个,「宣告与实现一致」因此结构性可查,而不是两处需要同步的记账;无障碍名称用 aria-labelledby 指向弹窗内既有 <h3>(新增 2 个 id,id 总数 80→82,零改名零删除,G-idi01-8 未触发)
+- [Phase 08]: idi-08-02: `inert` 走单点派生(读两个弹窗的 .hidden 现状)而非 open/close 成对记账,5 个调用点全部落在既有函数体内;只挂 #app —— 五个 .overlay 与 #selection-menu 都是它的兄弟,挂 document.body 或任何共享祖先会让打开的弹窗自身惰性、键盘与指针双路锁死(T-idi08-05)
+- [Phase 08]: idi-08-02: Escape 取「单点监听器 + 显式优先级表」(划词菜单 → #confirmation-modal → #tier-modal),不取各弹窗各自的监听器 —— 后者会把「谁先响应」变成源码顺序事实;确认弹窗分支仅关闭、零决定(D-12,不代替「拒绝」以免把用户推进原生 window.prompt);档位分支复位 tierModalShown 但不复位 selfcheck.tier、不发任何请求(D-13)
+- [Phase 08]: idi-08-02: D-16 实测(非「预期成立」)—— 用 Element.prototype.setAttribute 钩子捕获,setAttribute('inert') 执行的**那一瞬间** document.activeElement 仍是背景触发者(btn-enter)、不在弹窗内 ⇒ 显式 tierLooseBtn.focus() 是承重的,不是装饰;顺序锁定 remove('hidden') → syncBackgroundInert() → .focus()
+- [Phase 08]: idi-08-02: 「背景在指针层面惰性」在本应用**不是判别性证据** —— .overlay 是 position:fixed; inset:0(style.css:800),背景点击本就被覆盖层吞掉,elementFromPoint 在背景元素中心返回的是覆盖层。故该断言改由「反射属性 + 判别性对照(惰性下 enter-path-input.focus() 为 no-op,摘掉属性后同一调用生效)」承担,指针半场按 human_judgment:true 交人眼收口
 
 ### Pending Todos
 
@@ -220,6 +226,8 @@ None yet.
 - [v1.14 P8] **`gsd-tools gap-analysis` 对本项目结构性地看不见 CONTEXT 裁定**(与 `[Phase idi-07]` 的 `ui.safety-gate` 失明同族,必须留档)。它按字面文件名找 `${PHASE_DIR}/CONTEXT.md`,而本项目全阶段的命名是 `NN-CONTEXT.md`(实测 `08-CONTEXT.md` / `07-CONTEXT.md` 皆是),故走「CONTEXT.md missing → REQUIREMENTS-only report」的降级分支:输出里 **0 条 D-ID 行**,却不报错、不提示 —— 一份「26 条裁定全部未覆盖」的报告和一份「裁定根本未被检查」的报告长得一模一样,后者还会以 `✓` 的形态误导。另:它的 REQUIREMENTS 匹配是**全里程碑、按子串**的,不分阶段也不看覆盖语义 —— 本次它把 `REG-02` 记成 `✓ Covered`(只因 `idi-08-03-PLAN.md` 提到该 id 作为回归门引用,而 REG-02 早在 `260917-fqh` 就已完成,根本不在 Phase 8 范围内),同时把其余 30 条已完结阶段的需求列为 `✗ Not covered`。**⇒ 该步非阻塞,但它的输出不可作为判据;决策覆盖率须自跑阶段级核盘**(本次用 `grep -ho 'D-[0-9][0-9]' *-PLAN.md | sort -u` 逐 id 对照 `08-CONTEXT.md` 的 D-01…D-26,得 26/26)。
 - [v1.14 P8] **Phase 8 的 CONTEXT 已落盘**(`idi-08-accessibility-semantics-and-keyboard/08-CONTEXT.md`,D-01…D-26)。三条会改变下游行为的裁定:①**两个阻塞弹窗按实测换成 `#confirmation-modal` + `#tier-modal`**(路线图点名的 `#permission-modal` 可 Tab 出去、不卡;真正卡死的是无取消按钮且不移焦的 `#tier-modal`);②**键盘划词的提交手势 = 抬起 Shift**(路线图字面「keyup 分支移焦」会让键盘用户只能选中一个字符,而验收项仍会假绿);③**焦点环沿用整盒环、`style.css` 零改动** ⇒ Phase 8 在 D-01 路径下**不欠任何验证指纹**(`frontend/app.js` / `index.html` 不在任何 live 报告的 `covered_files` 里)。
 - [v1.14 P8] **同一派生计数缺陷第六次复现,本次是「三动词连击」,且 `update-progress` 是传播者而不是修正者。** `idi-08-01` 收口序列逐段实测:`state.advance-plan` 把 `completed_phases` **5 → 1**、`percent` **83 → 17**(与第 1-4 次同症状);紧接着 `state.update-progress` **没有**从磁盘重算,而是拿那个已被污染的 `completed_phases` 算 `percent = 1/6 = 17` 并回写 —— **它把错值固化了**(前四次只记录了它「把进度往回改」,没记它「不回算」);最后 `state.record-session` 再把它压到 **`completed_phases: 0` / `percent: 0` / 进度条 `[░░░░░░░░░░] 0%`** ⇒ **该字段不是被写成某个固定错值,而是被逐步推向 0,即 `record-session` 的破坏是累加式的**(第 4 次记录的是 5→1,本次同一次会话内 1→0)。**同批写入中正确的部分(照第 5 次的方法论结论:增量型可信、比值型不可信):** `completed_plans` 18 → 19 ✅、`total_plans: 21` 未动 ✅、`state.record-metric` 正确追加 `Phase idi-08 P01 | 8 min | 3 tasks | 2 files` ✅、`roadmap.update-plan-progress idi-08` 正确写 `1/3 | In Progress` ✅、`requirements.mark-complete A11Y-02 A11Y-03` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete)。**⇒ 收口序列里唯一可信的判据仍是 ROADMAP;`state.*` 的四个动词(`advance-plan` / `update-progress` / `record-session` / `planned-phase`)在这一条上全部不可信,且 `update-progress` 不可作为修正手段 —— 它会用坏值重算。**
+
+- [v1.14 P8] **第七次复现(2026-09-24,`idi-08-02` 收口)。** 本次序列:`state.advance-plan` 把 `completed_phases` **5 → 0**、`percent` **83 → 0**(首次一步到 0;前六次是先到 1 再被压到 0);`state.update-progress` 随后回显 `{"percent": 0, "completed": 20, "total": 21, "bar": "[░░░░░░░░░░] 0%"}` —— **它仍然不重算**,直接用被污染的 `completed_phases` 算出 0 并回写(与第六次逐字同症状);`state.record-session` 把进度条固化为 `[░░░░░░░░░░] 0%`。**同批写入中正确的部分:** `completed_plans` 19 → 20 ✅、`total_plans: 21` 未动 ✅、`state_head` 正确重算为 `2a75ba1`(preservation: derive 的契约被遵守,未像第五次那样删除字段)✅、`Plan: 2 of 3 → 3 of 3` ✅、`state.record-metric` 正确追加 `Phase idi-08 P02 | 12min | 3 tasks | 2 files` ✅、五条 `state.add-decision` 全部落盘且不越权 ✅、`roadmap.update-plan-progress idi-08` 正确写 `2/3 | In Progress` ✅、`requirements.mark-complete A11Y-05 A11Y-06` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅、`state.json` 的 `phases[8].status: pending → in_progress` 正确 ✅。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete),并把 `state.json` 的 `next.reason` 从 `0%` 改回 `83%`。**⇒ 与第六次的方法论结论逐条一致,无需新增结论;本条的增量事实只有一条:「一步到 0」的形态也存在,故核盘判据不能写成「期望看到 1」。**
 
 ### Quick Tasks Completed
 
@@ -251,8 +259,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-24T03:16:07.619Z
-Stopped at: Completed idi-08-01-PLAN.md
+Last session: 2026-09-24T05:43:11.143Z
+Stopped at: Completed idi-08-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

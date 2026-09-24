@@ -1810,6 +1810,9 @@ _IDI06_CENSUS_JS = _focusable_census_js(r"""() => {
                     && r.bottom > padTop && r.top < padBottom;
     clearance.push({el: labelOf(el), container: labelOf(nearest), clearance: gap,
                     visible: r.width > 0 && r.height > 0, intersects: intersects,
+                    // elH / padBoxH 供 L-5 的**声明集**判据用(见 L5_CONTENT_REGION_MIN_RATIO):
+                    // 高度占容器 padding 盒一半以上的可聚焦元素是「内容区」而非控件。
+                    elH: r.height, padBoxH: padBottom - padTop,
                     rect: rectOf(el)});
   });
 
@@ -2425,6 +2428,18 @@ STYLE_CSS = ROOT / "frontend" / "style.css"
 # `outline: 2px solid` + `outline-offset: 2px` 的环外伸量)。本阶段只为它**解裁切**,
 # 不写任何焦点规则。
 CLEARANCE_MIN_PX = 4.0
+# L-5 的**声明集**(用户裁定,2026-09-24;取代 08-UI-SPEC D-21 的「check-05 零改动」)。
+# 为什么需要:Phase 8 给 `#round-doc` 加了 `tabindex="0"`,于是它经 `FOCUSABLE_SELECTOR`
+# 的 `[tabindex]` 一臂**首次**进入 L-5 的判定集 —— 而它是**内容区**(当前轮文档的渲染容器),
+# 不是控件。实测(p3 样本,1440×900):元素高 778.64px、容器 padding 盒 900px、元素在盒内
+# 顶部偏移 188px ⇒ 默认滚动位(scrollTop 0)下其下边缘越界 66.64px;浏览器把元素滚入视野后
+# (scrollTop 67)下边缘恰好贴边(clearance 0.36px)。**L-5 的 4px 因此恒差约 4px**。
+# 三条承重理由:①L-5 的规定修法(抬该容器的 padding)对这类元素**只会更糟** —— padding 落在
+# 元素上方,把它推得更低;②元素高度**由文档内容决定、无上界**,故任何布局改动都无法稳健满足;
+# ③本阶段 D-02 已就**同一几何**裁定过「环可辨」(5.57:1,底边被裁 3.64px,正是上面那个 0.36px)。
+# 判据是**客观比例**而不是元素名清单:高度 >= 容器 padding 盒一半的可聚焦元素 = 内容区。
+# 命中者逐行 `info()` 报出,**不从视野里消失** —— 声明不是静默跳过。
+L5_CONTENT_REGION_MIN_RATIO = 0.5
 # L-6:每个可交互元素的计算盒宽与高均 >= 24px(WCAG 2.5.8 目标尺寸,AA;按字面走尺寸,
 # 不走 2.5.8 的间距例外 —— A11Y-07 明文要求「达到 24×24」)。
 TARGET_MIN_PX = 24.0
@@ -2569,6 +2584,11 @@ def _idi06_clearance_assert(page, item, state):
     按 **DOM 遍历**算出,不硬编码选择器列表。只判定**当前落在容器可视滚动区内**的行:
     与 padding 盒完全不相交的元素被滚动到视口之外,当前不渲染,其负 clearance 是噪声
     (见 `_IDI06_CENSUS_JS` 里 `intersects` 的注释);相交却越界才是真裁切,clearance 为负。
+
+    **判定集再分两半**(用户裁定,2026-09-24):高度 >= 容器 padding 盒一半的可聚焦元素是
+    **内容区**(见 `L5_CONTENT_REGION_MIN_RATIO` 的注释),对它**声明**而不断言 —— 逐行
+    `info()` 报出,断言只落在其余(控件)行上。声明集与断言集都为空时走 `blocked(...)`,
+    防止「判定集被声明集吃光」退化成一条空转 PASS。
     """
     data = page.evaluate(_IDI06_CENSUS_JS)
     if data is None:
@@ -2585,11 +2605,35 @@ def _idi06_clearance_assert(page, item, state):
              "无「裁剪容器 × 可聚焦后代」组合落在可视滚动区内 ⇒ 本样本无判定"
              "(不记断言,避免空转 PASS)")
         return
-    bad = [r for r in judged if r["clearance"] < CLEARANCE_MIN_PX]
+    # 内容区(声明集):高度占容器 padding 盒一半以上。缺 elH / padBoxH 的行不误伤 —— 判据
+    # 取不到就当控件处理(进断言集),宁可多判也不静默放行。
+    def _is_content_region(r):
+        elh, padbox = r.get("elH"), r.get("padBoxH")
+        if not elh or not padbox:
+            return False
+        return elh >= padbox * L5_CONTENT_REGION_MIN_RATIO
+
+    declared = [r for r in judged if _is_content_region(r)]
+    asserted = [r for r in judged if not _is_content_region(r)]
+    if declared:
+        info(f"item9 [{state}] L-5 声明集(内容区,不断言)",
+             f"{[(r['el'], r['container'], round(r['elH'], 1), round(r['padBoxH'], 1),
+                  round(r['clearance'], 1)) for r in declared]}"
+             f" —— 高度 >= 容器 padding 盒的 {L5_CONTENT_REGION_MIN_RATIO:.0%} 即可聚焦内容区:"
+             "环在浏览器滚入视野后必然贴边(见 L5_CONTENT_REGION_MIN_RATIO 的注释)")
+    if not asserted:
+        blocked(item,
+                f"[{state}] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= {CLEARANCE_MIN_PX:.0f}px",
+                f">= {CLEARANCE_MIN_PX:.0f}px(控件行)",
+                f"断言集为空:共 {len(judged)} 行判定行全部落进声明集(内容区)",
+                "判定集被声明集吃光 ⇒ 本样本对控件无判定,不记 PASS。走到这里说明声明集的"
+                "比例判据过宽(把控件也当成内容区了),不是「样本恰好只有内容区」")
+        return
+    bad = [r for r in asserted if r["clearance"] < CLEARANCE_MIN_PX]
     ok_true(item,
             f"[{state}] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= {CLEARANCE_MIN_PX:.0f}px",
             not bad, f"全部 >= {CLEARANCE_MIN_PX:.0f}px",
-            f"共 {len(judged)} 行,未达标 "
+            f"共 {len(asserted)} 行(另有 {len(declared)} 行内容区声明),未达标 "
             f"{[(r['el'], r['container'], round(r['clearance'], 1)) for r in bad]}",
             "4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。"
             "实测未达标时**只改那一个容器**的 padding 为 var(--space-1),"

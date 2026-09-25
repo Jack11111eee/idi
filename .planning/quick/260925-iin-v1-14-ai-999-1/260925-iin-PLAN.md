@@ -15,8 +15,10 @@ requirements:
   - LAYOUT-04
   - TOKEN-08
   - CHECK-01
+  - CHECK-02
   - CHECK-03
   - CHECK-04
+  - A11Y-01
 user_setup: []
 
 estimate:
@@ -46,7 +48,7 @@ must_haves:
     - "`renderEvent()` 的 `eventsEl.appendChild(item)` → `item.scrollIntoView({block:'nearest'})` → 外层滚动者 `#main-pane` 跟随 → 最新条目在可见盒内(修复的因果链)"
     - "check-05 `item9()` 的新断言 ← 驱动应用自身的 `renderEvent`(**不合成 DOM、不依赖 `--ai-smoke`**);变异(FIX 1 中和)必须让它 FAIL,否则该门与本任务要修的空转门同型"
     - "`.collapse-indicator` 的 `font-size` 声明 → `--text-lg-plus`(20px)→ 字形渲染尺寸不变(浏览器实读 computed,不靠 grep)"
-    - "`FOCUSABLE_SELECTOR`(L1748)→ `_focusable_census_js()` → `_IDI07_FOCUS_CENSUS_JS` 的 `document.querySelectorAll(...)` 参数(item 10 的普查判定集);CSS 侧同一条规则的字面量枚举(L1508)消费不了 Python 常量 ⇒ 两侧只能靠**一条静态断言**同步,这条断言今天不存在(注释 L1735-1747 自述「同步靠注释承诺承担」)"
+    - "`FOCUSABLE_SELECTOR`(L1748)→ `_focusable_census_js()` → `_IDI07_FOCUS_CENSUS_JS` 的 `document.querySelectorAll(...)` 参数(item 10 的普查判定集);CSS 侧同一条规则的字面量枚举(L1508)消费不了 Python 常量 ⇒ 两侧只能靠**一条静态断言**同步,这条断言今天不存在(注释 L1734-1747 自述「同步靠注释承诺承担」)"
     - "frontend/style.css / frontend/app.js / scripts/check-05-ui-uat.py 改动 ⇒ 六个阶段(idi-04 / 04.1 / 05 / 06 / 07 / 08)的指纹按「内容真变」stale —— **刻意保留**,本任务不重算 `covered_digest`、不重跑那六个阶段的验证"
 ---
 
@@ -106,7 +108,7 @@ Output:
 | `frontend/style.css` | 嵌入刻度注释里「契约阶梯的数值序是 12 / 14 / 16 / 18 / 22 / 24 / 28」= **L1440** |
 | `frontend/style.css` | `.event-list {` 规则体 = **L748**(已无 `max-height` / `overflow-y`;其上方注释 L746-747 已陈述「条目随外层 #main-pane 滚动」) |
 | `frontend/style.css` | `:focus-visible` 规则块起始行 = **L1508**(七选择器,逐行 `button:` / `input:` / `select:` / `textarea:` / `a[href]:` / `summary:` / `[tabindex]:`;规则体 = L1515-1517)—— **FIX 5 的比对对象**。判定方法:用 check-05 已有的 `_idi07_focus_rule_blocks()`(注释感知,注释里的 `:focus-visible` 提及不算)切块,今天恰 1 块 |
-| `scripts/check-05-ui-uat.py` | `FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"` = **L1748**;其上方注释块 = L1735-1747 |
+| `scripts/check-05-ui-uat.py` | `FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"` = **L1748**;其上方注释块 = L1734-1747 |
 | `scripts/check-05-ui-uat.py` | `def item2(page, tmp_root):` = **L785**;陈旧诊断串(`#8f8f8f,低于 AA 4.5:1`)= **L824**(在 item 2 内) |
 | `scripts/check-05-ui-uat.py` | `_IDI06_REACH_JS` 内 `c.scrollTop = scrollHeight;` = **L2483**(故 FIX 2 的新断言必须排在 `_idi06_reach` **之前**) |
 | `scripts/check-05-ui-uat.py` | `def item9(page, tmp_root):` = **L2679**;`_latest_check_max_height_guard(item)` 这一行调用 = **L2728**;40 条 `renderEvent` 注入块 = 注释行 **L2731** + `grown = page.evaluate("""() => {` **L2732** … `}""")` **L2739**;`_idi06_reach(page, item, "#main-pane", "p1", grown,` = **L2740**。判定方法:插入行必须在文本上位于 `_latest_check_max_height_guard(item)` 之后、且在**第一个** `_idi06_reach(` 调用之前(见 Task 2) |
@@ -261,8 +263,9 @@ node --check frontend/app.js
 2. 探针用一次 `page.evaluate` 完成「读 before → 经应用自身的 `renderEvent` 追加 N 条 → 读 after 与几何」,该 JS **不得出现任何 `scrollTop` 赋值**(这是「harness 自己从未设置过 `scrollTop`」的可核形态;把这一点写进断言旁的注释)。
    - 必须驱动**应用自己的** `renderEvent`(SSE handler 调用的同一个函数),**不得**合成 DOM、不得直接 `appendChild`。`kind` 取 `'say'`(对 `done` / `error`,`renderEvent` 会解除「发起」按钮禁用,污染后续项)。
    - **不得**依赖 `--ai-smoke`(那两条腿需要活的 CLI 调用且是 opt-in)。
-3. 判据:追加后 `#main-pane.scrollTop > 0`(**且** before == 0),**且**最后一条 `.event-item` 的 rect 完全落在 `#main-pane` 的可见盒内。
-4. **反空转前提(任一不成立记 `blocked(...)`,绝不记 PASS —— 与 `_idi06_reach` 的前提链同型,威胁表 T-idi-06-10 的落点):** `#main-pane` 存在;`rect.height > 0` 且 `display != 'none'`;注入后 `scrollHeight > clientHeight`(否则性质平凡成立);注入后 `#ai-events .event-item` 计数 > 0;`renderEvent` 可用。
+3. 判据:追加后 `#main-pane.scrollTop > 0`,**且**最后一条 `.event-item` 的 rect 完全落在 `#main-pane` 的可见盒内。
+   - **`before == 0` 不进判据,进第 4 步的前提链**(见下)。把它写进判据会让「起始滚动位非 0」——一个**被测前提不成立**的情形——报成 **FAIL**(回归信号),而它其实无从判定。前提不成立记 `BLOCKED`,判据不满足才记 `FAIL`;两者不是同一件事。
+4. **反空转前提(任一不成立记 `blocked(...)`,绝不记 PASS —— 与 `_idi06_reach` 的前提链同型,威胁表 T-idi-06-10 的落点):** `#main-pane` 存在;**追加前 `#main-pane.scrollTop == 0`**(否则「自动跟随」与「本来就在底部」不可区分);`rect.height > 0` 且 `display != 'none'`;注入后 `scrollHeight > clientHeight`(否则性质平凡成立);注入后 `#ai-events .event-item` 计数 > 0;`renderEvent` 可用。
 5. 断言文案要让「这条门测的是什么」一目了然,并在 note 里点明与既有「末条内容可达」的区别:后者是**显式滚动后**的可达性,本条是**应用自动跟随**。同时用 `info(...)` 逐行落盘原始读数(before / after / scrollHeight / clientHeight / 末条 rect / 容器盒)—— 本项目的纪律是不给结论替代证据。
 6. 复用既有的 `ok_true(...)` / `blocked(...)` / `info(...)` 助手与 item 9 的既有标签风格;**不要**改 `_idi06_reach`、`_IDI06_REACH_JS`、滚动者普查、或 item 9 的任何既有断言(那条普查断言 `#ai-events 计算 max-height == none` 是 L-4 的正确断言,只是对自动跟随零覆盖 —— 保留它,补它)。
 
@@ -342,7 +345,8 @@ node --check frontend/app.js
 
 **D. 契约文档同步(刻度表 7 → 8 档 + hard rule 9 引用)**
 7. **主要承载文件是 `idi-05-UI-SPEC.md`**(见 §已核实的偏差;下面的行号是 HEAD 实测,判定方法见锚点表):
-   - §Typography 的 §最终字号阶梯(该节标题 `### 最终字号阶梯(D-06 / D-07,定稿)` = **L164**,表体 L164-181):表由 **7 档 → 8 档**,加入 `--text-lg-plus` 20px 一行,并注明它位于 `--text-lg`(18)与 `--text-2xl`(22)之间、命名阶梯非单调依据 D-07;该节标题的「**7 档。**」改为 8 档。
+   - §Typography 的 §最终字号阶梯(该节标题 `### 最终字号阶梯(D-06 / D-07,定稿)` = **L164**,表体 L164-181):表由 **7 档 → 8 档**,加入 `--text-lg-plus` 20px 一行,并注明它位于 `--text-lg`(18)与 `--text-2xl`(22)之间、命名阶梯非单调依据 D-07。
+     - 该节**L166 整句**改写:「**7 档。** 5 → 7,新增两档。」→「**8 档。** 5 → 7 新增两档(Phase 5);7 → 8 新增一档(quick `260925-iin`,`--text-lg-plus` 20px)。」——**不要把这一行只改一半**:该句的「7 档」与「5 → 7,新增两档」是同一个断言的两半,只改前者会让它自相矛盾。**`--text-md` 16px 正文本体不变这半句逐字保留。**
    - §未在 HEAD 上受控的字号(该节标题 = **L365**,节体 L365-380):把 **L367** 那句「`.collapse-indicator` 的 `font-size: 20px`(`:434`)是刻度外的第 6 个渲染字号,属 backlog `999.1`」改写为「**已不再是刻度外字号** —— 已由 quick `260925-iin` 落为第 8 档 `--text-lg-plus`,backlog `999.1` 第 1 项关闭」。
      - **判据:改后 `20px` 与 `刻度外` 不再出现在同一行**(计划期实测:今天恰 1 行即 L367)。**L375 那句引述该短语以推翻计数的句子不动** —— 它讲的是 P-20 那次「枚举不全」的发现,是另一件事,不属于本任务的改动面。
      - 同段的 `#confirm-error` 16px 一条(**L378**)**仍然存在**,不要顺手改它。
@@ -380,6 +384,19 @@ grep -n 'var(--text-lg-plus)' frontend/style.css    # 1(.collapse-indicator)
 grep -n 'var(--lh-none)' frontend/style.css         # 1(.collapse-indicator)
 grep -c '^\.hidden {' frontend/style.css            # 1
 grep -o '!important;' frontend/style.css | wc -l    # 1(不是 grep -c '!important' 的 5)
+
+# ---- FIX 3:围栏注释同步(步骤 3/4/5)。基线为 0(或旧串为 1)才证明非空转:
+#      上面那批 `--text-*` / `--lh-*` / consumer 计数在**注释原封不动**时**照样通过**,
+#      故它们**不能**充当注释同步的判据。这五对是全半场的唯一门。
+grep -c '8 sizes' frontend/style.css                 # 1(基线 0;步骤 3)
+grep -c '7 sizes' frontend/style.css                 # 0(基线 1;步骤 3 的旧串已消失)
+grep -c 'Line height — 五条' frontend/style.css      # 1(基线 0;步骤 4)
+grep -c 'Line height — 四条' frontend/style.css      # 0(基线 1;步骤 4 的旧串已消失)
+grep -c '与 8 档字号刻度' frontend/style.css         # 1(基线 0;步骤 4 的配对表口径)
+grep -c '18 / 20 / 22' frontend/style.css            # 1(基线 0;步骤 5 的新数值序含 20)
+grep -c '18 / 22 / 24 / 28' frontend/style.css       # 0(基线 1;步骤 5 的旧数值序已消失)
+#   ⚠ 裸 `grep -c '四条'` 不可用作判据(基线 5,散落多处);必须锚到整句 `Line height — 四条`。
+
 bash scripts/check-01-token-conformance.sh          # PASS
 bash scripts/check-03-hidden-uniqueness.sh          # PASS
 bash scripts/check-04-important-count.sh            # PASS
@@ -414,7 +431,7 @@ grep -c '5.62:1' scripts/check-05-ui-uat.py         # 1
   <done>
 - `.collapse-indicator` 两个实例的 computed `font-size` 均为 `20px`(浏览器实读,逐实例记录);`line-height` 解析为 `20px`。
 - 围栏内 `--text-*` 声明 7 → 8、`--lh-*` 4 → 5;`var(--text-lg-plus)` 与 `var(--lh-none)` 各恰 1 处消费(同一提交,Hard Rule 5 核账成立)。
-- 围栏注释记录了第 8 档、值序位于 18 与 22 之间、命名阶梯非单调依据 D-07;行高注释记录了 `--lh-none` 的 glyph-only 性质与唯一消费者;嵌入刻度注释的数值序与「钉在已出货三对」的说明已同步。
+- 围栏注释记录了第 8 档、值序位于 18 与 22 之间、命名阶梯非单调依据 D-07;行高注释记录了 `--lh-none` 的 glyph-only 性质与唯一消费者;嵌入刻度注释的数值序与「钉在已出货三对」的说明已同步。**这三处注释同步各有一条基线为 0 的 grep 守着**(`8 sizes` / `Line height — 五条` / `与 8 档字号刻度` / `18 / 20 / 22`),旧串各有一条「已消失」grep(`7 sizes` / `Line height — 四条` / `18 / 22 / 24 / 28` 计数 0)—— 声明与门同时存在,不留「有声明、无门」。
 - 硬规则 1/2 仍成立(`^\.hidden {` == 1;`!important;` == 1);check-01/02/03/04 全 PASS;`node --check` OK。
 - 两份 UI-SPEC 已按 §已核实的偏差 处置:`idi-05-UI-SPEC.md` 承载实质同步(7 → 8 档 + 999.1 关闭 + hard rule 9 引用登记,第 9 条正文未改),`04-UI-SPEC.md` 加如实的指向行(6 档历史表与 L-1…L-5 清单**未改**)。
 - **FIX 3 落地后变假的散文已逐条分类处置**(见 §FIX 3 落地后会变假的散文):`:677-679` 的段级禁令**已收窄措辞**并登记唯一例外;`:555-556` / `:913` / `:1329-1330` 三处**刻意保留**为历史记录。四条都记入 SUMMARY。
@@ -441,12 +458,13 @@ grep -c '5.62:1' scripts/check-05-ui-uat.py         # 1
 3. 复用本文件**已有**的注释感知切分器 `_idi07_focus_rule_blocks(text)`(HEAD 实测 **L3479**;它逐行跟踪注释状态,注释里的 `:focus-visible` 提及**不算**规则块),取含 `:focus-visible` 的规则块。
 4. **反空转前提(任一不成立记 `blocked(...)`,绝不记 PASS —— 与同函数内已有各条同型):**
    - `len(blocks) == 1`(今天实测恰 1 块,起始行 **L1508**)。0 块 ⇒ 比对无对象;>1 块 ⇒ 选择器列表有歧义,不能拿 `blocks[0]` 冒充。(注释里的 `:focus-visible` 提及今天有 2 处 —— L239 / L1482 —— 正是切分器要剔除的东西。)
-   - 该块的选择器部分(块内**第一个 `{` 之前**的代码)非空,且能切出**恰 7** 个逗号分隔项;否则 `blocked`。
+   - 该块的选择器部分(块内**第一个 `{` 之前**的代码)**非空**;否则 `blocked`。
+   - **项数不进前提(本项的唯一前提就是上面两条结构性条件)。** 「恰 7 项」**不是**前提:项数不符(例如 CSS 侧被收窄成 6 项、或常量侧被收窄成 6 项)必须**流入第 6 步的逐项比较并记 `FAIL`**。把项数写进 `blocked()` 前提会让变异 B 得到 `BLOCKED` 而非 `FAIL`,与 `<done>` 要求的证据互斥 —— 变异证明要的是「门真的报了错」,而 `BLOCKED` 是「前提不成立、无从判定」,两者不是同一件事。
 5. 归一两侧:
    - CSS 侧:把每个选择器项 `strip()`,若以 `:focus-visible` 结尾则去掉该后缀,得基选择器。
    - Python 侧:`[s.strip() for s in FOCUSABLE_SELECTOR.split(",")]`(HEAD 实测 `FOCUSABLE_SELECTOR = "button, input, select, textarea, a[href], summary, [tabindex]"` 在 **L1748**)。
 6. **判据:`ok_true(...)`,条件为两侧列表「逐项相同」** —— `css_base == py_items`,**有序**比较,不是集合比较。
-   - **为什么比集合更强(机制选择,已说明):** `FOCUSABLE_SELECTOR` 上方的注释(L1735-1747)已声明「`:focus-visible` 规则的选择器列表(**顺序亦同**)」,而那条「顺序亦同」今天**没有任何门在守** —— 一条声明了却没门守的不变量,正是本任务要治的缺陷类型。有序比较**蕴含**集合相等(故完全覆盖「集合不等即 FAIL」这条要求),今天两侧逐字同序 ⇒ **零假 FAIL 风险**(计划期实测两侧均为 `['button','input','select','textarea','a[href]','summary','[tabindex]']`)。若日后确需换序,两侧一起换即可(提示里会说明)。
+   - **为什么比集合更强(机制选择,已说明):** `FOCUSABLE_SELECTOR` 上方的注释(L1734-1747)已声明「`:focus-visible` 规则的选择器列表(**顺序亦同**)」,而那条「顺序亦同」今天**没有任何门在守** —— 一条声明了却没门守的不变量,正是本任务要治的缺陷类型。有序比较**蕴含**集合相等(故完全覆盖「集合不等即 FAIL」这条要求),今天两侧逐字同序 ⇒ **零假 FAIL 风险**(计划期实测两侧均为 `['button','input','select','textarea','a[href]','summary','[tabindex]']`)。若日后确需换序,两侧一起换即可(提示里会说明)。
    - 失败时的**可执行提示**(写进 note,照本文件既有惯例 —— item 10 现有普查断言的提示已经是「到 `frontend/style.css` 文件末尾补它的选择器,并同步本文件的 `FOCUSABLE_SELECTOR`」):
      - **两侧必须同一次改完,永远不要只改一侧。** 只改 CSS ⇒ 门仍按旧集合普查,于是「规则覆盖了谁」与「门检查了谁」重新分叉,而**门会绿**(静默缩水)—— 这正是 `G-idi-05-1` 的成因。只改常量 ⇒ 普查会枚举到 CSS 规则没给环的元素,item 10 的运行时普查断言会报「未覆盖数 > 0」,症状是响的、不是静的。
      - **哪一侧是权威:** CSS 规则是**真正授予环**的工件,常量是门对它的**镜像**。两者不一致时,先判断本次改动的**本意**是哪一侧(是「规则要多覆盖一类可聚焦元素」还是「常量被误收窄」),再把另一侧同步到它 —— 不要两边各改一半。

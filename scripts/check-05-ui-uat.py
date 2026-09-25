@@ -2727,6 +2727,74 @@ def item9(page, tmp_root):
        "D-12:输入行必须钉底,会话流滚动者按保留项对待")
     _latest_check_max_height_guard(item)
 
+    # ---- (b0) 自动跟随(应用自身 renderEvent 驱动;harness 全程不设 scrollTop)----
+    # 与下面 (b) 的「末条内容可达」是**两个不同性质**:(b) 自己先设
+    # `c.scrollTop = scrollHeight` 再读 rect,测的是「**显式滚动后**可到达」;本条测的是
+    # **应用自己**在追加节点后把新条目滚入视野。探针 JS 内**零 scrollTop 赋值**(只读)
+    # —— 这是「harness 从未滚过」的可核形态。
+    # 落点必须在下面第一个 `_idi06_reach(...)` 之前:`_IDI06_REACH_JS` 自己会设
+    # `c.scrollTop = scrollHeight`,排在它之后「追加前 scrollTop == 0」的前提恒假,
+    # 本条就退化成一条恒绿的空转门(正是本项此前对自动跟随零覆盖的同一缺陷形态)。
+    follow_label = "[p1] 自动跟随:#main-pane 随应用自身的 renderEvent 滚到最新条目"
+    follow_expect = "before=0 ∧ after>0 ∧ 末条 rect ⊆ #main-pane 可见盒"
+    follow = page.evaluate("""() => {
+        const pane = document.querySelector('#main-pane');
+        if (!pane) return {error: '#main-pane 不存在'};
+        if (typeof renderEvent !== 'function') return {error: 'renderEvent 不可用'};
+        const cs = getComputedStyle(pane);
+        const before = pane.scrollTop;            // 只读,不赋值
+        const pr = pane.getBoundingClientRect();
+        for (let i = 0; i < 40; i++) {
+          renderEvent({kind: 'say', content: '第 ' + i + ' 条自动跟随探针:把面板撑到可滚。'});
+        }
+        const after = pane.scrollTop;             // 只读,不赋值
+        const items = document.querySelectorAll('#ai-events .event-item');
+        const last = items[items.length - 1];
+        const lr = last ? last.getBoundingClientRect() : null;
+        return {
+          before: before, after: after,
+          paneTop: pr.top, paneBottom: pr.bottom, paneHeight: pr.height,
+          scrollHeight: pane.scrollHeight, clientHeight: pane.clientHeight,
+          display: cs.display, itemCount: items.length,
+          lastTop: lr ? lr.top : null, lastBottom: lr ? lr.bottom : null,
+          lastText: last ? last.textContent.slice(0, 60) : null,
+        };
+    }""")
+    if not isinstance(follow, dict) or "error" in follow:
+        blocked(item, follow_label, follow_expect,
+                (follow or {}).get("error") if isinstance(follow, dict) else follow,
+                "反空转前提不成立:#main-pane 或 renderEvent 不可用 ⇒ 不记 PASS")
+    elif follow["before"] != 0:
+        blocked(item, follow_label, follow_expect, f"before={follow['before']}",
+                "反空转前提不成立:追加前 #main-pane.scrollTop != 0 ⇒「应用自动跟随」与"
+                "「本来就在底部」不可区分 ⇒ 不记 PASS")
+    elif follow["display"] == "none" or follow["paneHeight"] <= 0:
+        blocked(item, follow_label, follow_expect,
+                f"display={follow['display']} rect.height={follow['paneHeight']}",
+                "反空转前提不成立:容器被祖先藏住 ⇒ 几何读数全零,跟随判定是空转 ⇒ 不记 PASS")
+    elif follow["itemCount"] == 0:
+        blocked(item, follow_label, follow_expect, "0 条 .event-item",
+                "反空转前提不成立:注入后 #ai-events 里没有条目 ⇒ 无「最新条目」可判 ⇒ 不记 PASS")
+    elif follow["scrollHeight"] <= follow["clientHeight"]:
+        blocked(item, follow_label, follow_expect,
+                f"scrollHeight={follow['scrollHeight']} clientHeight={follow['clientHeight']}",
+                "反空转前提不成立:容器无需滚动 ⇒ 跟随性质平凡成立 ⇒ 不记 PASS")
+    else:
+        info("item9 [p1] 自动跟随原始读数",
+             f"before={follow['before']} after={follow['after']} "
+             f"scrollHeight={follow['scrollHeight']} clientHeight={follow['clientHeight']} "
+             f"pane=[{follow['paneTop']},{follow['paneBottom']}] "
+             f"last=[{follow['lastTop']},{follow['lastBottom']}] 末条={follow['lastText']!r}")
+        ok_true(item, follow_label,
+                follow["after"] > 0
+                and follow["lastTop"] >= follow["paneTop"]
+                and follow["lastBottom"] <= follow["paneBottom"],
+                follow_expect,
+                f"after={follow['after']} last=[{follow['lastTop']},{follow['lastBottom']}] "
+                f"pane=[{follow['paneTop']},{follow['paneBottom']}]",
+                "与 (b)「末条内容可达」的区别:(b) 先自设 c.scrollTop = scrollHeight 再读 rect,"
+                "测显式滚动后可达;本条 JS 内零 scrollTop 赋值,测应用自身把新条目滚入视野")
+
     # ---- (b) 末条可达性(D-14 第 2 条)---------------------------------------
     # `#main-pane`:经应用自身的 renderEvent 注入足量条目到 #ai-events(不手工拼 DOM)。
     grown = page.evaluate("""() => {

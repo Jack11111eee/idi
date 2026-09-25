@@ -250,7 +250,7 @@ function renderEvent(event) {
   item.appendChild(content);
 
   eventsEl.appendChild(item);
-  eventsEl.scrollTop = eventsEl.scrollHeight; // 保持最新可见
+  item.scrollIntoView({ block: 'nearest' }); // 把最新条目滚入外层 #main-pane 视野(自动跟随)
 
   // 终止事件:解除「发起」按钮禁用(流结束能再次发起)
   if (event.kind === 'done' || event.kind === 'error') {

@@ -309,17 +309,21 @@
   --doc-panel-w: clamp(340px, 30vw, 480px);
   --doc-panel-w-collapsed: 48px;
 
-  /* Type scale — 7 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed.
+  /* Type scale — 8 sizes (ChatGPT 视觉语言;TOKEN-08 的字面刻度由用户决策覆盖,意图不变). All consumed.
      D-07 命名冲突警示:`04-UI-SPEC.md` 的字号表把 `--text-2xl` 写作 18px、`--text-3xl` 写作 22px,
      而本围栏的 `--text-2xl` 是 22px、`--text-3xl` 是 28px —— **名同值不同,不是笔误**。
      理由是 18px 已被 `--text-lg` 占用,而本阶段继续跟随 xs / base / md / lg / xl 的尺寸递进命名法,
      2xl 只能是 xl(24)之上的下一档;故数值序与名字序在 xl(24) → 2xl(22) 这一处不单调。
-     七档依次为 xs 12px / base 14px / md 16px / lg 18px / xl 24px / 2xl 22px / 3xl 28px。
+     八档依次为 xs 12px / base 14px / md 16px / lg 18px / lg-plus 20px / xl 24px / 2xl 22px / 3xl 28px。
+     第 8 档 `--text-lg-plus`(20px)由 quick `260925-iin` 加入,值序插在 `--text-lg`(18)与
+     `--text-2xl`(22)之间;命名阶梯非单调的依据就是上面已登记的 D-07 冲突(`--text-xl` 24 >
+     `--text-2xl` 22),**不是笔误,不要「修正」它**。第 8 档的唯一消费者是 `.collapse-indicator`。
      这段注释的作用是防止日后有人把 22px「修正」回 18px —— 那会让 18px 有两个令牌名(2xl 与 lg),即第二事实源。 */
   --text-xs: 12px;
   --text-base: 14px;
   --text-md: 16px;
   --text-lg: 18px;
+  --text-lg-plus: 20px;
   --text-xl: 24px;
   --text-2xl: 22px;
   --text-3xl: 28px;
@@ -330,16 +334,20 @@
   --fw-medium: 500;
   --fw-semibold: 600;
 
-  /* Line height — 四条声明,与 7 档字号刻度按**比率配对**(不是整数配对):
+  /* Line height — 五条声明,与 8 档字号刻度按**比率配对**(不是整数配对):
        12/16.00(--lh-tight) 14/20.00(--lh-snug 1.4286) 16/26.00(--lh-reading 1.625)
        18/24.00(--lh-tight) 24/32.00(--lh-tight) 22/29.33(--lh-tight,非整数) 28/37.33(--lh-tight,非整数)
      整数配对在数学上不可得:28k 与 22k 同时为整数要求 k 是 0.5 的倍数,而 k = 1.5 太松
      (28 × 1.5 = 42px,标题会散开),故 2xl / 3xl 两档的乘积必然带小数。
-     --lh-compact(1.5556)是 **chrome-only** 行高,不属字号刻度配对 —— 唯一消费者是 .overlay-card p。 */
+     --lh-compact(1.5556)是 **chrome-only** 行高,不属字号刻度配对 —— 唯一消费者是 .overlay-card p。
+     --lh-none(1)是 quick `260925-iin` 新增的 **glyph-only** 行高,同样**不属字号刻度配对** ——
+     唯一消费者是 `.collapse-indicator`(它必须恰占一个行盒,否则 20px 的字形盒会被行高撑开)。
+     故第 8 档(20px)不进入上面那张比率配对表,该表逐项不变。 */
   --lh-tight: 1.3333;
   --lh-snug: 1.4286;
   --lh-compact: 1.5556;
   --lh-reading: 1.625;
+  --lh-none: 1;
 
   /* Radius — four values. */
   --radius-sm: 8px;
@@ -675,7 +683,7 @@ html, body {
 
 .panel-header h2 { margin: 0; font-size: var(--text-base); font-weight: var(--fw-medium); }
 
-.collapse-indicator { font-size: 20px; line-height: 1; }
+.collapse-indicator { font-size: var(--text-lg-plus); line-height: var(--lh-none); }
 
 .panel-body { padding: var(--space-2-5); }
 .panel-body.collapsed { display: none; }
@@ -1437,9 +1445,12 @@ button, input, select { color: var(--color-text); }
    字重 700 更是一个契约只声明三档(400 / 500 / 600)之外的**第四档**。
 
    取值规则(可复算,不是逐容器手调):嵌入档 = 文档档沿契约的**数值**阶梯下移一档。
-   契约阶梯的数值序是 12 / 14 / 16 / 18 / 22 / 24 / 28,故 28 → 24(`--text-xl`)、
+   契约阶梯的数值序是 12 / 14 / 16 / 18 / 20 / 22 / 24 / 28,故 28 → 24(`--text-xl`)、
    22 → 18(`--text-lg`)、18 → 16(`--text-md`)。**按数值序不按名字序** —— `--text-2xl`(22)
    与 `--text-xl`(24)的名字序不单调(D-07 已登记),照名字降一档会撞上文档二级标题的档位。
+   ⚠ quick `260925-iin` 插入 20 这一档后,数值阶梯上 22 的「下一档」会变成 20;但嵌入档
+   **钉在已出货的三对上**(28 → 24 / 22 → 18 / 18 → 16),**不**从数值阶梯重新推导 ——
+   `.markdown-body h2` 的嵌入档由 check-05 `--item 7` 断言为 `--text-lg`(18px),重推会改坏它。
    文档刻度本身(D-06:28 / 22 / 18 / 本体 16)一字未改,这组规则是它的推论。
    字重取 `--fw-semibold`(600):D-09 的分工里这五个容器渲染的是**内容**(AI 输出 / 用户批注),
    不是 chrome 标题,故归内容标题档 —— 这也正是消除第四字重档 700 的方式。

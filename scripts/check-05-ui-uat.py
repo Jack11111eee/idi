@@ -821,7 +821,8 @@ def item2(page, tmp_root):
         qr = contrast_ratio(q_rgb, bg_rgb)
         info("[p3→round1] blockquote 比值(诊断,非正文)",
              f"ratio={qr:.2f} (color={colors['quoted']} on bg={bg})"
-             " —— --color-text-muted 在 260918-qrq 换肤后由 #6a6a6a 变为 #8f8f8f,低于 AA 4.5:1")
+             " —— --color-text-muted = --radix-gray-11 = #646464(即 rgb(100,100,100)),"
+             "在 --color-surface 上 5.62:1、在 --color-surface-page 上 5.77:1,两者均达标 AA")
 
 
 # ---------------------------------------------------------------------------

@@ -125,7 +125,7 @@ v1.14 前端视觉与可访问性。范围来源为六支柱 UI 审计的**显�
 | TOKEN-05 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-06 | Phase 4: 设计契约、令牌层与契约校验 | Complete |
 | TOKEN-07 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — 序关系半场 manual-only,见文末人工验收项) |
-| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Complete (PARTIAL — `.collapse-indicator` 的 `20px` / `line-height: 1` 越轨字面量经用户裁定为 Phase 4 范围外,见 `idi-04-VERIFICATION.md` 的 `overrides:` 与 backlog `999.1`) |
+| TOKEN-08 | Phase 4: 设计契约、令牌层与契约校验 | Complete — 曾经的 `PARTIAL` 限定(`.collapse-indicator` 的 `20px` / `line-height: 1` 越轨字面量)已由 quick `260925-iin` 关闭:该规则现消费 `--text-lg-plus`(20px,第 8 档)与 `--lh-none`,字形渲染尺寸不变。原裁定与去向记录见 `idi-04-VERIFICATION.md` 的 `overrides:`(已 SPENT)与 ROADMAP backlog `999.1`(第 1 项已关闭) |
 | VISUAL-01 | Phase 5: 排版与视觉层级 | Complete |
 | VISUAL-02 | Phase 5: 排版与视觉层级 | Complete |
 | VISUAL-03 | Phase 5: 排版与视觉层级 | Complete |

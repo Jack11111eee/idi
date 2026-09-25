@@ -22,7 +22,7 @@ supersedes_sections: ["Typography"]
 
 | 节 | 权威来源 |
 |---|---|
-| `## Typography`(本文件) | **本文件** —— 它重写 `04-UI-SPEC.md` 的 `## Typography` 节(5 档 → 7 档) |
+| `## Typography`(本文件) | **本文件** —— 它重写 `04-UI-SPEC.md` 的 `## Typography` 节(5 档 → 7 档;后由 quick `260925-iin` 增至 **8 档**,见 §最终字号阶梯) |
 | `## Color` / `## Contrast Verification` | `.planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md` —— **本文件不重写它们**;本文件只**增补** Phase 5 新增的 4 条 PAIR 与 4 条令牌值改动,并逐条标明增补点 |
 | Spacing Scale(S-1,12 档) | `04-UI-SPEC.md` —— **已签核,本阶段一字不动** |
 | Design Decisions Q1–Q7 | `04-UI-SPEC.md`(Q2 的「Phase 5 applies」由本文件兑现;Q7 的机制被 D-20 刻意替换,见 §契约修正登记) |

@@ -82,14 +82,16 @@
 第 10 项的过渡与减弱动效半场(INTERACT-02 / D-11 / D-12 / D-13 / D-14,计划 03 追加)
     两段,与上面那些探针互补:**静态契约计数**先跑(不依赖任何运行时状态),**运行时
     过渡读数**在 p1 跑。
-    - **静态契约计数**(`_idi07_focus_contract_guards`)四条:①`:focus-visible` 计数
+    - **静态契约计数**(`_idi07_focus_contract_guards`)五条:①`:focus-visible` 计数
       `>= EXPECTED_FOCUS_VISIBLE_MIN`(判据是 `>=`,不是 `==`;**只数代码** —— 注释
       提及不计,否则整条规则删光后计数仍 >= 1,断言会与它守的东西脱钩);②**没有任何含
       `:focus-visible` 的规则块设置 `border` / `padding`** —— 这条必须做**块提取**
       (逐行跟踪注释状态,从选择器行切到第一个 `}`),全文件 grep 会数到满地的
       `border` / `padding`,回答不了「焦点规则自己设了没有」;③`prefers-reduced-motion`
       与新增过渡**同时存在**;④五个交互态令牌**围栏内声明恰好一次 ∧ 围栏外被消费**
-      (硬规则 5 的机械形态,用与 check-01 同一对围栏标记切分)。
+      (硬规则 5 的机械形态,用与 check-01 同一对围栏标记切分);⑤`FOCUSABLE_SELECTOR`
+      与 `frontend/style.css` 的 `:focus-visible` 枚举**逐项(含顺序)**一致 —— 失效模式是
+      常量被收窄后 item 10 的普查判定集**静默缩水**而门仍绿(quick `260925-iin` 追加)。
     - ⚠ **第 ③ 条不证明「同提交」。** 「同提交」是 **git 维度**的事实,文件文本断言在
       结构上无法证明它 —— 该断言只退化为「两者同时存在」,局限在 `info()` 里逐字声明。
       同提交只能落成计划 / 评审义务(见 `idi-07-03-PLAN.md` Task 1 的 `<verify>`/`<done>`)。
@@ -3617,7 +3619,8 @@ def _idi07_durations(raw):
 
 
 def _idi07_focus_contract_guards(item):
-    """D-15 中段的四条**契约计数静态断言**(INTERACT-02 / D-11…D-14)。
+    """D-15 中段的五条**契约计数静态断言**(INTERACT-02 / D-11…D-14;第 ⑤ 条由 quick
+    `260925-iin` 追加)。
 
     照 `_l2_guard_shape` 的三条共同纪律写:**`OSError` ⇒ `blocked()`**、
     **打印命中行号**、**比的是「实测计数 vs 独立决策常量」不是自比**。读的是
@@ -3717,6 +3720,61 @@ def _idi07_focus_contract_guards(item):
                 "硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),"
                 "消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— "
                 "裸令牌名不是消费")
+
+    # ---- 断言 5:`FOCUSABLE_SELECTOR` ↔ `:focus-visible` 枚举逐项(含顺序)一致 -------
+    # 两侧是同一份枚举的**两个手抄副本**:CSS 消费不了 Python 常量,反向也不行。此前的
+    # 「一致」只由 L1734-1747 的注释承诺承担 —— **承诺不是门**。
+    # 失效模式(本里程碑第三次出现的同型缺陷):把常量**收窄**一项(如删掉 `summary` 或
+    # `[tabindex]`),item 10 的普查判定集就会**静默缩水** —— `_IDI07_FOCUS_CENSUS_JS` 经
+    # `_focusable_census_js()` 用该常量生成 `document.querySelectorAll(...)` 的参数,而
+    # 「未覆盖数 == 0」仍然成立 ⇒ PASS。**门绿,但覆盖已经变窄。**
+    # 判据取**有序**比较:常量上方的注释已声明「顺序亦同」,而那条不变量今天没有任何门在守;
+    # 有序比较蕴含集合相等,故完全覆盖「集合不等即 FAIL」这条要求。
+    # 本断言**只读文件文本**,与同函数已有四条同型 —— 零 `page.*`、零浏览器、零 `--ai-smoke`。
+    sel_label = "[static] FOCUSABLE_SELECTOR 与 :focus-visible 枚举逐项(含顺序)一致"
+    if len(blocks) != 1:
+        blocked(item, sel_label, "恰 1 个含 :focus-visible 的规则块",
+                f"{len(blocks)} 个(起始行={[b[0] for b in blocks]})",
+                "0 块 ⇒ 比对无对象;>1 块 ⇒ 选择器列表有歧义,不能拿第一块冒充 ⇒ 不记 PASS")
+        return
+    sel_parts = []
+    for _ln, code in blocks[0][1]:
+        if "{" in code:
+            sel_parts.append(code.split("{", 1)[0])
+            break
+        sel_parts.append(code)
+    selector_text = "".join(sel_parts)
+    if not selector_text.strip():
+        blocked(item, sel_label, "规则块的选择器部分非空", repr(selector_text),
+                "选择器部分为空 ⇒ 无枚举可比对 ⇒ 不记 PASS")
+        return
+    # CSS 侧:逐项 strip,去掉 `:focus-visible` 后缀得基选择器。
+    css_items = [s.strip() for s in selector_text.split(",") if s.strip()]
+    css_base = [s[: -len(":focus-visible")] if s.endswith(":focus-visible") else s
+                for s in css_items]
+    # Python 侧:常量按逗号拆开、逐项 strip。
+    py_items = [s.strip() for s in FOCUSABLE_SELECTOR.split(",")]
+    const_line = "?"
+    try:
+        for i, ln in enumerate(Path(__file__).read_text(encoding="utf-8").splitlines(), 1):
+            if ln.startswith("FOCUSABLE_SELECTOR ="):
+                const_line = i
+                break
+    except (OSError, NameError):
+        pass
+    info("item10 [static] FOCUSABLE_SELECTOR ↔ :focus-visible",
+         f"CSS 侧(规则块起始行={blocks[0][0]})= {css_base};"
+         f"Python 侧(常量定义行={const_line})= {py_items};"
+         f"对称差={sorted(set(css_base) ^ set(py_items))}")
+    ok_true(item, sel_label, css_base == py_items, py_items, css_base,
+            "两侧必须**同一次改完,永远不要只改一侧**。只改 CSS ⇒ 门仍按旧集合普查,"
+            "「规则覆盖了谁」与「门检查了谁」重新分叉而**门会绿**(静默缩水,即 G-idi-05-1 的成因);"
+            "只改常量 ⇒ 普查会枚举到 CSS 规则没给环的元素,item 10 的运行时普查会报「未覆盖数 > 0」"
+            "(症状是响的、不是静的)。**哪一侧权威:** CSS 规则是**真正授予环**的工件,常量是门对它的"
+            "**镜像** —— 先判断本次改动的本意(是「规则要多覆盖一类可聚焦元素」还是「常量被误收窄」),"
+            "再把另一侧同步到它,不要两边各改一半。**顺序也要一致:** 同一份列表、同一顺序;确需换序时"
+            "两侧一起换。失败时到 `frontend/style.css` 文件末尾改该规则的选择器,并同步本文件的 "
+            "`FOCUSABLE_SELECTOR`")
 
 
 def _idi07_transition_motion_assert(page, item, state):

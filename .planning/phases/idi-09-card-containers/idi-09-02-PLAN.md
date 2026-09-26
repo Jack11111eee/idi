@@ -30,7 +30,7 @@ must_haves:
     - "`--color-surface-page` 的**声明值**是 `var(--radix-gray-3)`,且它仍只有一个消费者:`html, body` 的 `background`;围栏内零新增令牌、零新增 tier-1 原语"
     # ---- 密度(D-9-2)— 几何判据,不是文本判据 ----
     - "`#main-pane` 的计算 `gap` 为 `12px`(`var(--space-3)`),替换 HEAD 的 `6px`(`var(--space-1-5)`);卡片之间因此有可见间隙"
-    - "`.panel-body` 的计算 `padding` 为 `16px`(`var(--space-4)`),替换 HEAD 的 `10px`(`var(--space-2-5)`);`#doc-panel-body` 的 `padding` 逐字未动(它不带 `.panel-body` 类,且 `check-05` item 3 有活断言)"
+    - "`.panel-body` 的计算 `padding` 为 `16px`(`var(--space-4)`),替换 HEAD 的 `10px`(`var(--space-2-5)`);`#doc-panel-body` 的 `padding` 逐字未动(它不带 `.panel-body` 类,且 `check-05` item 4 有活断言)"
     # ---- 契约保持 ----
     - "`#doc-panel` 的计算 `overflow-y` 仍为 `auto`,`#chat-messages` 的计算 `overflow-y` 仍为 `auto`;`#doc-panel` 仍是 `#doc-panel-header` 的最近可滚祖先(sticky 表头因此仍生效)"
     - "`#main-pane` 仍是面板区唯一的面板级滚动容器祖先;本计划零 `overflow` 改动"
@@ -72,7 +72,7 @@ must_haves:
     - statement: "不得为了让 6 条重算后的配对达标而改任何颜色值或放宽阈值。这 6 条换值后**本来就达标**(深色前景对比度上升);若实测出现不达标,正确动作是停下来重新测量并把结果报回,不是改色、不是改 `scripts/check-02-contrast.py` 的任何一行、不是删条目"
       status: active
       verification: flagged
-    - statement: "不得改动 `#doc-panel-body { padding: var(--space-8) var(--space-10); }`(`:665`)。它是阅读列的呼吸空间,且 `check-05` item 3 有活断言 `[p1] #doc-panel-body padding == \"32px 40px\"`。密度改动只落在 `.panel-body`(左栏 4 个面板),两者互不影响"
+    - statement: "不得改动 `#doc-panel-body { padding: var(--space-8) var(--space-10); }`(`:665`)。它是阅读列的呼吸空间,且 `check-05` item 4 有活断言 `[p1] #doc-panel-body padding == \"32px 40px\"`。密度改动只落在 `.panel-body`(左栏 4 个面板),两者互不影响"
       status: active
       verification: flagged
     - statement: "不得为了「让间距看起来更大」而给 `#main-pane` 加 `padding` 或给卡片加 `margin`。`#main-pane` 是滚动容器,加 padding 会改变滚动几何与末条可达性(`check-05` item 9 断言面板区滚动者集合**恰好**是 `{#main-pane, #chat-messages, #latest-check}`,且断言末条内容可达);卡片加 margin 会移动既有几何并可能打在 24×24 命中区门上。页面级留白是**未裁定项**,列入截图后由用户裁定的开放清单,不在本阶段构建"
@@ -207,7 +207,7 @@ Output: `frontend/style.css` 的 `--color-surface-page` 换值、`#main-pane` �
     **第 3 步 —— 给 `scripts/check-09-idi09-validation.py` 追加断言集 `c4`(几何读数,不是文本匹配)。**
     - `#main-pane` 的计算 `gap` == `12px`;
     - `document.querySelector('.panel-body')`(文档序第一个 `.panel-body`,即 `#session-panel` 内的那一个)的计算 `padding` == `16px`;
-    - 对照组:`#doc-panel-body` 的计算 `padding` == `32px 40px`(证明密度改动没有漏到右栏 —— 与 `check-05` item 3 的既有断言同口径,不是重复劳动:这里是**回归护栏**,防止后续有人把 `.panel-body` 的选择器扩成同时命中 `#doc-panel-body`);
+    - 对照组:`#doc-panel-body` 的计算 `padding` == `32px 40px`(证明密度改动没有漏到右栏 —— 与 `check-05` item 4 的既有断言同口径,不是重复劳动:这里是**回归护栏**,防止后续有人把 `.panel-body` 的选择器扩成同时命中 `#doc-panel-body`);
     - 对照组:`.panel-header` 的计算 `padding-top` == `6px`(表头内边距**未**随卡片内边距一起改,这是刻意的 —— 表头是 36px 固定高的 chrome 条,它的内边距不在 D-9-2 的裁定范围内)。
 
     三个期望值都用字面量 px 字符串(几何读数,不是颜色令牌),与 `check-05` 里 `padding` 断言的既有写法一致。元素读不到时走 `blocked()` 分支,绝不记 PASS。
@@ -229,7 +229,7 @@ Output: `frontend/style.css` 的 `--color-surface-page` 换值、`#main-pane` �
     <fails_when>non-zero exit, or any verdict line beginning with "FAIL", or the trailing "exit=" line not "exit=0"</fails_when>
   </verify>
   <acceptance_criteria>
-    - `frontend/style.css` 中 `#main-pane` 规则体的 `gap` 值为 `var(--space-3)`,其选择器文本与行号与 HEAD 逐字一致;`.panel-body` 规则体的 `padding` 值为 `var(--space-4)`,行号与 HEAD 逐字一致。
+    - `frontend/style.css` 中 `#main-pane` 规则体的 `gap` 值为 `var(--space-3)`,其选择器文本与 HEAD 逐字一致,且改动全部落在既有规则体内部(源码顺序未变,未移动任何既有规则块);`.panel-body` 规则体的 `padding` 值为 `var(--space-4)`,其选择器文本与 HEAD 逐字一致,且改动全部落在既有规则体内部(源码顺序未变,未移动任何既有规则块)。
     - `grep -n 'gap: var(--space-3);' frontend/style.css` 命中数相对 HEAD **恰好 +1**(HEAD 已有的 `--space-3` gap 消费者不受影响);`grep -n 'gap: var(--space-1-5);' frontend/style.css` 的命中数相对 HEAD **恰好 −1**。
     - `grep -n 'padding: var(--space-2-5);' frontend/style.css` 相对 HEAD **恰好 −1**;`#doc-panel-body` 的 `padding: var(--space-8) var(--space-10);` 逐字未变。
     - `.venv/bin/python scripts/check-09-idi09-validation.py --item c4` 全 PASS,`exit=0`,BLOCKED 计数 0;INFO 行可见 `#main-pane` 的 gap 原始读数与 `.panel-body` 的 padding 原始读数。

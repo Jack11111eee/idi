@@ -28,7 +28,7 @@ must_haves:
     - "`.venv/bin/python scripts/check-06-idi05-validation.py` 退出码为 `0`(g1…g6 全 pass)"
     - "`.venv/bin/python scripts/check-07-idi08-validation.py` 退出码为 `0`(g1…g4 全 pass)"
     - "`.venv/bin/python scripts/probe-05-resolve-color.py` 退出码为 `0`(令牌解析的变异证明仍成立)"
-    - "`.venv/bin/python scripts/probe-07-focus-composite.py` 退出码为 `0`(焦点环合成算术的反事实证明仍成立)"
+    - "`.venv/bin/python scripts/probe-07-focus-composite.py` 退出码为 `0` —— 焦点环合成算术的反事实证明仍成立,**但它证明的地面在本阶段漂移了**:该探针把链接注入 `#round-doc` 并从 `effective_bg()`(`:221`)取运行时地面,而 `#round-doc` / `#rounds-placeholder` / `#doc-panel-body` 三者都不声明 background,计划 01 之后 `#round-doc` 的最近不透明祖先是卡片化的 `#doc-panel`,故地面由 `--color-surface`(3.431)变为**卡片白**(3.543)。断言形式与强度一字不变、退出码仍为 `0`;但本条的措辞不得被读成「仍在证明 `--color-surface` 上的算术」—— 它证明的是卡片白上的同一算术,而卡片白是更容易的一侧"
     - "每一条被判定为「门断言的事实被本阶段刻意改变」的失败,其期望侧都以**重新登记**处置 —— 断言形式(等值 / 阈值 / 几何判据)一字不变,只换指到新事实;没有任何一条被改成弱判据、被跳过、被删除。每一处门改动都在 SUMMARY 里逐条列出并给出理由"
     - "断言强度未被降低:`scripts/check-02-contrast.py` 的 `TEXT_MIN` / `NON_TEXT_MIN` 未动;`check-05` 的 24×24 命中区、sticky 表头、badge 流内机制、窄窗口不破版四条判据的阈值未动"
     # ---- 静态门与基线 ----
@@ -174,7 +174,7 @@ Output: 五条浏览器门的复跑记录、四个静态门 + pytest 基线的�
     - `scripts/check-05-ui-uat.py` `:2682-2760` —— item 9 的面板区滚动者普查,口径是「**恰好** `{#main-pane, #chat-messages, #latest-check}`」;本阶段零 `overflow` 改动,故应存活
     - `scripts/check-06-idi05-validation.py` `:233-275`(g3 竖条几何与 `h2Delta >= 3`)、`:365-410`(g5 340px 最窄面板单行 / 不裁切)、`:430-490`(g6 折叠往返 + 两条 `box-shadow 恒 none` 对照组)—— 本阶段最可能误伤的三组
     - `scripts/check-07-idi08-validation.py` `:1-60` —— 四条行为断言的映射(Escape / dialog 语义 / 菜单不复弹 / 焦点交还)
-    - `scripts/probe-05-resolve-color.py` `:1-40` 与 `scripts/probe-07-focus-composite.py` `:1-45` —— 两者的「变异证明」性质与运行方式
+    - `scripts/probe-05-resolve-color.py` `:1-40` 与 `scripts/probe-07-focus-composite.py` `:1-45` —— 两者的「变异证明」性质与运行方式。**probe-07 的地面读数在本阶段会漂移**:它把链接注入 `#round-doc` 并从 `effective_bg()`(`:221`)取地面(`:7` 的 docstring 把它登记为 `/* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */` 的证明);`#round-doc` / `#rounds-placeholder` / `#doc-panel-body` 都不声明 background,计划 01 之后其最近的不透明祖先是卡片化的 `#doc-panel`,故运行时地面由 `--color-surface`(3.431)变为卡片白(3.543)。探针仍 `exit=0`(断言形式与强度不变),但复核时必须按新地面读它,不得把它当成仍在证明 `--color-surface` 上的算术 —— 计划 01 已为 `check-05` item 2 的 `effective_bg("#round-doc")` 抓过同一机制,这里不重复漏掉
     - `.planning/phases/idi-09-card-containers/09-CONTEXT.md` §`门禁环境事实(省得重踩)`
   </read_first>
   <action>
@@ -191,7 +191,7 @@ Output: 五条浏览器门的复跑记录、四个静态门 + pytest 基线的�
 
     **第 3 步 —— 特别核对三条「预期存活」的断言组,它们红了一定有具体成因。**
     - `check-05` 的两条 `#doc-panel-header box-shadow == none` / `#ai-panel .panel-header box-shadow == none` 对照组:本阶段的卡片阴影加在 `#doc-panel` 与 `#main-pane > section` 上,**不加在 `.panel-header` 上**。若红了 ⇒ 阴影加错了元素,属产品缺陷。
-    - `check-05` item 3 的 `#doc-panel-body padding == "32px 40px"` 与 `.panel-header padding-top == "6px"`:本阶段的密度改动只落在 `.panel-body`(`:688`)。若红了 ⇒ 改错了选择器(例如把 `.panel-body` 的规则扩成也命中 `#doc-panel-body`),属产品缺陷。
+    - `check-05` item 4 的 `#doc-panel-body padding == "32px 40px"` 与 `.panel-header padding-top == "6px"`:本阶段的密度改动只落在 `.panel-body`(`:688`)。若红了 ⇒ 改错了选择器(例如把 `.panel-body` 的规则扩成也命中 `#doc-panel-body`),属产品缺陷。
     - `check-05` item 9 的滚动者普查(口径「恰好」):本阶段零 `overflow` 改动。若红了 ⇒ 卡片规则里混进了 `overflow`,属产品缺陷。
 
     **第 4 步 —— 把五条门的原始结论与分诊结论写进 SUMMARY。** SUMMARY 必须能让读者独立复核:每条的退出码、FAIL / BLOCKED 计数、`check-05` 的 item 5 两条 BLOCKED 腿的按设计说明、以及任何门改动的逐条登记。若本步骤零改动,明确写「预期零处门改动,实测零处」。
@@ -213,7 +213,7 @@ Output: 五条浏览器门的复跑记录、四个静态门 + pytest 基线的�
     - `check-06` / `check-07` / `probe-05` / `probe-07` 的退出码均为 0。
     - `check-05` 的 `[p1] .hint 实际背景 == var(--color-surface-card)` 为 PASS(不是 BLOCKED)。
     - `check-05` 的两条 `#doc-panel-header box-shadow == none` / `#ai-panel .panel-header box-shadow == none` 对照组为 PASS。
-    - `check-05` item 3 的 `#doc-panel-body padding == "32px 40px"` 与 `.panel-header padding-top == "6px"` 为 PASS;item 9 的滚动者普查为 PASS。
+    - `check-05` item 4 的 `#doc-panel-body padding == "32px 40px"` 与 `.panel-header padding-top == "6px"` 为 PASS;item 9 的滚动者普查为 PASS。
     - `check-06` g3 / g5 / g6 全 pass(竖条几何 / 340px 单行 / 折叠往返 + 两条 `box-shadow 恒 none` 对照组)。
     - `git diff scripts/check-05-ui-uat.py` 相对计划 01 的产出为空(**预期零处门改动**);若不为空,则 SUMMARY 里逐条列出改动行、旧期望、新期望与依据,且每处都是「期望侧换指到新事实」而非判据弱化。
     - `git status --porcelain frontend/` 仅列出 `frontend/style.css`。
@@ -294,12 +294,13 @@ Output: 五条浏览器门的复跑记录、四个静态门 + pytest 基线的�
   <action>
     **第 1 步 —— 出图。** 跑 `.venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-09-card-containers/screenshots`,覆盖 5 个状态样本(p1 / p12 / p3 / checking / archive),每张为 1440×900 的整窗截图。文件名须自解释(样本名进文件名,例如以样本名作主干的 PNG),使读者不看 SUMMARY 也能对上号。
 
-    **第 2 步 —— 自检每张图至少能看到三件事。** (a) 页面是灰的(`#f0f0f0`);(b) 该样本下可见的容器是白的、与页面有可见边界与圆角;(c) 卡片之间有灰色间隙(12px)。`archive` 样本还要能看到归档只读态(0.75 透明合成)与卡片并存而不互相干扰。若某张图看不到这些,说明出图时机(样本切换 / 等待渲染)不对,重出 —— 不要把「图出了」当「图对了」。
+    **第 2 步 —— 自检每张图至少能看到四件事。** (a) 页面是灰的(`#f0f0f0`);(b) 该样本下可见的容器是白的、与页面有可见边界与圆角;(c) 卡片之间有灰色间隙(12px);(d) **中间档与白卡片同帧可见** —— 同一张图里至少有一个 `--color-surface`(gray-2)的内陷面与一张白卡片并存,且它读作「凹」而不是又一张卡片。这是 ROADMAP SC3 的**屏幕级**半边:`idi-09-02` 的 `c3` 只证明了三档**令牌**的亮度序(以及 `body` 的计算底色),没有任何断言证明「gray-2 表面与白卡片在同一视口里同时被渲染」—— 而那正是 SC3 的原话(「屏幕上**同时可见**的三档顺序正确」)。本阶段仅存的可见 gray-2 内陷面是三个自带 `background: var(--color-surface)` 的 `<select>`(`#ai-route-select` / `#round-switcher` / `#check-switcher`)与 `.overlay-card`。`archive` 样本还要能看到归档只读态(0.75 透明合成)与卡片并存而不互相干扰。若某张图看不到这些,说明出图时机(样本切换 / 等待渲染)不对,重出 —— 不要把「图出了」当「图对了」。
 
     **第 3 步 —— 在 SUMMARY 里写明截图路径与提请用户裁定的开放项。** 逐项写明「本阶段未构建」及其依据:
     - `.overlay-card` 的底色(`frontend/style.css:819` 当前是 `--color-surface` gray-2 + `--shadow-overlay`)。页面下沉后它会显得比主界面卡片「内陷一档」;是否改白以同族 = **设计决策,本阶段不动**(`09-CONTEXT.md` 已登记为留待裁定的开放项)。
     - 卡片边界与阴影的**强度**:边界取的是既有 `--color-border-subtle`(gray-6,与 `#doc-panel` 原有边界同令牌)、阴影取的是用户裁定的 `0 1px 2px rgba(0, 0, 0, 0.04)`。层次目前主要靠底色差(ΔL≈6%)。是否要更强的边界 = 设计决策,本阶段不动。
     - **页面级留白**:本阶段没有给 `#main-pane` 加 `padding`、也没给卡片加 `margin`(那会移动既有几何并可能打在滚动 / 命中区门上)。卡片因此贴着视口上/下边缘。是否要留白 = 未裁定项,本阶段不动。
+    - **输入框在白卡片上的填充(本阶段新增的开放项)**:本应用的文本 input(`#project-path-input` / `#chat-input-row input` / `#enter-form input[type="text"]` / `#confirmation-modal input[type="text"]`)一律**不声明 `background`**,故卡片化之后它们在白卡片上画的是浏览器 UA 字段填充(也是白)—— 输入框因此读作「白底 + 边框」,不构成 gray-2 内陷面。三档刻度里的**中间档**在屏幕上实际只由三个 `<select>` 与 `.overlay-card` 承载(见第 2 步 (d))。「输入框是否该带一层 gray-2 内陷底」是**设计决策,本阶段不动**;请在截图评审时一并裁定。
     - 明确重申 **Out of Scope 四项不得预先构建**:表格重做(全边框 → 只留横向分隔线)、圆角刻度收敛(`--radius-lg: 28px` 与其他档不成比例)、图标与空状态、暗色模式。
 
     **第 4 步 —— 不构建任何后续候选。** 本任务只出图与写说明。发现的问题一律登记进 SUMMARY 的开放项,不就地实现(用户裁定「先看看效果」,后续 phase 待效果确认后再定)。
@@ -316,10 +317,11 @@ Output: 五条浏览器门的复跑记录、四个静态门 + pytest 基线的�
     - `.planning/phases/idi-09-card-containers/screenshots/` 下存在至少 5 个 PNG,覆盖 p1 / p12 / p3 / checking / archive 五个状态样本,每个文件名含其样本名。
     - `check-09 --screenshot` 命令 `exit=0`,0 FAIL / 0 BLOCKED。
     - SUMMARY 里列出全部截图路径,并逐张写明该样本下可见的是哪个容器(依 `HIDDEN_MATRIX`:p1 会话流 / p3 批注流 / checking 自检报告 / archive 归档)。
-    - SUMMARY 里列出至少 3 条开放项(`.overlay-card` 底色 / 边界与阴影强度 / 页面级留白),每条写明「本阶段未构建」及其依据;并重申 Out of Scope 四项不得预先构建。
+    - 每张图里至少有一个 `--color-surface`(gray-2)内陷面与白卡片**同帧可见**,且读作「凹」而不是又一张卡片(SC3 的屏幕级半边;承载者是三个自带 gray-2 底色的 `<select>` 与 `.overlay-card`)。
+    - SUMMARY 里列出至少 4 条开放项(`.overlay-card` 底色 / 边界与阴影强度 / 页面级留白 / 输入框在白卡片上画 UA 白填充),每条写明「本阶段未构建」及其依据;并重申 Out of Scope 四项不得预先构建。
     - `git status --porcelain frontend/` 仍仅列出 `frontend/style.css`(截图未落进 `frontend/`)。
   </acceptance_criteria>
-  <done>5 个状态样本的截图落在 `.planning/phases/idi-09-card-containers/screenshots/`,每张都能看到灰页面 / 白卡片 / 卡片间灰色间隙;SUMMARY 列出截图路径与至少 3 条开放项及 Out of Scope 四项的重申。</done>
+  <done>5 个状态样本的截图落在 `.planning/phases/idi-09-card-containers/screenshots/`,每张都能看到灰页面 / 白卡片 / 卡片间灰色间隙,且至少有一个 gray-2 内陷面与白卡片同帧可见;SUMMARY 列出截图路径与至少 4 条开放项及 Out of Scope 四项的重申。</done>
 </task>
 
 </tasks>

@@ -98,7 +98,7 @@ must_haves:
     - statement: "不得移动任何既有规则块的位置(硬规则 3:追加,不重排)。至少一对等特异性规则由源码顺序决定(例:`.chat-ai` 与 `.chat-bubble` 同为 0-1-0,`style.css:1017-1019` 的注释逐字登记了这条依赖)。本计划的全部改动都是**就地扩写既有规则体**(选择器位置与源码顺序逐字不变)+ 围栏内新增两行声明,没有任何新增规则块插到既有规则之前"
       status: active
       verification: flagged
-    - statement: "不得改动 `#doc-panel-body` 的 `padding: var(--space-8) var(--space-10)`(`style.css:665`)。它是阅读列的呼吸空间,且 `check-05` 有活断言 `[p1] #doc-panel-body padding == \"32px 40px\"`(item 3);本计划的密度改动只落在 `.panel-body`(左栏 4 个面板的正文容器),`#doc-panel-body` 不带 `.panel-body` 类,两者互不影响"
+    - statement: "不得改动 `#doc-panel-body` 的 `padding: var(--space-8) var(--space-10)`(`style.css:665`)。它是阅读列的呼吸空间,且 `check-05` 有活断言 `[p1] #doc-panel-body padding == \"32px 40px\"`(item 4);本计划的密度改动只落在 `.panel-body`(左栏 4 个面板的正文容器),`#doc-panel-body` 不带 `.panel-body` 类,两者互不影响"
       status: active
       verification: flagged
     - statement: "不得改动 `frontend/app.js` / `frontend/index.html` / `frontend/vendor/`(零字节);不得新增依赖、构建步骤、CSS 框架或任何新的 CSS/JS 文件(唯一允许的新文件是 `scripts/check-09-idi09-validation.py`,它属验证工具而非应用代码);不得在 `frontend/style.css` 里新增 `@layer` / `@property` / `var(--x, #fallback)` / 媒体查询 / `!important`"
@@ -133,7 +133,9 @@ Output: `frontend/style.css` 围栏内两个新令牌(`--color-surface-card` / `
 | `.venv/bin/python scripts/check-05-ui-uat.py --item 5 --browser bundled` | item 5 FAIL 计数 0;两条 `--ai-smoke` 腿 BLOCKED ⇒ `exit=2`(设计如此) |
 | `.venv/bin/python -m pytest backend/tests -q --tb=short` | `219 passed, 6 skipped`(必须用项目 `.venv`) |
 
-**本计划会打破的既有断言(规划期已逐条普查,恰好 1 条,已在本计划内重新登记)。** `scripts/check-05-ui-uat.py` 的 `[p1] .hint 实际背景 == var(--color-surface)`(`:1305`):`.hint` 自身无背景,该断言经 `effective_bg()` 沿祖先链取到的最近不透明祖先是 `#doc-panel`。本计划把 `#doc-panel` 的底色改为卡片白之后,该断言必然红 —— 它断言的**事实**被本阶段刻意改变了。处置:把期望侧从 `--color-surface` 换指到 `--color-surface-card`,断言形式(与运行时解析的令牌做精确等值)一字不变。**不得**改成「非透明」「包含 rgb(255」之类的弱化写法。除此之外,`check-05` / `check-06` / `check-07` / `probe-05` / `probe-07` 的其余断言**没有任何一条**触及五个容器的 `background` / `border` / `border-radius` / `box-shadow`(规划期逐条 grep 确认):`check-05` item 3 断言的是 `#doc-panel-body padding`(不动)、`.panel-header padding-top`(不动)、`button padding-top`(不动)、`.overlay-card padding-top`(不动);`check-06` g3 的 `radiusTL` 是 `info()` 观察项;`check-05` item 2 的 `#round-doc` 正文对比度用 `effective_bg("#round-doc")`,卡片化后地面由 gray-2 变白,比值**上升**,断言(≥4.5)仍绿。
+**本计划会打破的既有断言(规划期已逐条普查,恰好 1 条,已在本计划内重新登记)。** `scripts/check-05-ui-uat.py` 的 `[p1] .hint 实际背景 == var(--color-surface)`(`:1305`):`.hint` 自身无背景,该断言经 `effective_bg()` 沿祖先链取到的最近不透明祖先是 `#doc-panel`。本计划把 `#doc-panel` 的底色改为卡片白之后,该断言必然红 —— 它断言的**事实**被本阶段刻意改变了。处置:把期望侧从 `--color-surface` 换指到 `--color-surface-card`,断言形式(与运行时解析的令牌做精确等值)一字不变。**不得**改成「非透明」「包含 rgb(255」之类的弱化写法。除此之外,`check-05` / `check-06` / `check-07` / `probe-05` / `probe-07` 的其余断言**没有任何一条**触及五个容器的 `background` / `border` / `border-radius` / `box-shadow`(规划期逐条 grep 确认):`check-05` item 4 断言的是 `#doc-panel-body padding`(不动)、`.panel-header padding-top`(不动)、`button padding-top`(不动)、`.overlay-card padding-top`(不动);`check-06` g3 的 `radiusTL` 是 `info()` 观察项;`check-05` item 2 的 `#round-doc` 正文对比度用 `effective_bg("#round-doc")`,卡片化后地面由 gray-2 变白,比值**上升**,断言(≥4.5)仍绿。
+
+**另一条受影响但**通过**的既有断言(不是打破,不需要重新登记)。** `scripts/check-05-ui-uat.py:2282` 的 `[p1] sticky 把 #doc-panel-header 钉在 #doc-panel 顶部(<=1px)` 断言 `abs(hp["top"] - pp["top"]) <= 1.0`,HEAD 上实测 **0.0**。它的读数由 `_IDI06_SCROLL_JS`(`:1723`)取 `getBoundingClientRect()`(**边框盒**),而 sticky 元素被钳制在滚动容器的 **padding box** 上;`#doc-panel` 新增 `border: 1px solid` 后,它的 padding box 顶边相对边框盒下移**恰好 1px**,故本计划后该读数变为 **1.0** —— 对 `<= 1.0` 的闭区间**仍然通过,但余量为零**。这条断言的**事实**(sticky 仍生效)没有被本阶段改变,故**不构成打破、不需要重新登记**;登记在此有两个用途:(a) 计划 03 只允许「把期望侧重新登记到本阶段刻意改变的事实」这一种门改动,若它红了,分诊会找不到许可的处置而卡住;(b) 任何后续对 `#doc-panel` 上边框的 1px 级改动都会把它顶破。
 
 **本计划关闭的需求:** VIS-01、VIS-02、CARD-01、CARD-02、REG-01(REG-01 的页面换值半边由计划 02 关闭)。**本计划不触碰:** CARD-03(页面底色)与 D-9-2 的密度值(计划 02);`frontend/app.js` / `frontend/index.html` / `frontend/vendor/` 零字节改动;`scripts/check-01…04` / `check-06` / `check-07` / `probe-05` / `probe-07` 代码零改动;表格重做 / 圆角刻度收敛 / 图标与空状态 / `.overlay-card` 底色(REQUIREMENTS.md Out of Scope,用户裁定「先看看效果」)。
 
@@ -259,7 +261,7 @@ Output: `frontend/style.css` 围栏内两个新令牌(`--color-surface-card` / `
 
     每条断言一律走 `ok` / `ok_true`:元素读不到(`read_style` 返回 `None`)或令牌解析不出(`resolve_*` 返回 `None`)时自动落进 BLOCKED 分支,**绝不记 PASS**。断言标签里带选择器名与样本名。
 
-    命令行:`--item` 可重复,取值 `c1`(本任务)与 `c2`(Task 2 落地);默认跑全部已实现的项。`--screenshot DIR` 参数在本任务一并实现:进入每个状态样本后调 `page.screenshot(path=…)` 出图(见计划 03 的用法),本任务只需让参数存在且可跑通、图能落地。
+    命令行:`--item` 可重复,取值 `c1`(本任务)与 `c2`(Task 2 落地);默认跑全部已实现的项。`--screenshot DIR` 参数在本任务一并实现:遍历 check-05 的样本清单 `STATES`(`scripts/check-05-ui-uat.py:584`,`["p1", "p12", "p3", "checking", "archive"]`),进入每个样本后调 `page.screenshot(path=…)` 出**一张** 1440×900 的整窗截图(见计划 03 的用法),使 `--screenshot DIR` 的出图恰为 5 张、与样本清单逐项一一对应。
 
     **第 4 步 —— 不触碰清单之外的一切。** 本任务**不**改任何 PAIR 条目、**不**改 `--color-surface-page`、**不**改密度值、**不**改 `#doc-panel`。`frontend/app.js` / `frontend/index.html` / `frontend/vendor/` 零字节改动;`scripts/check-01…04` / `check-06` / `check-07` / `probe-05` / `probe-07` 代码零改动。
 
@@ -282,7 +284,7 @@ Output: `frontend/style.css` 围栏内两个新令牌(`--color-surface-card` / `
     - `grep -o -- '--color-surface-card' frontend/style.css | wc -l` >= 2(1 处围栏内声明 + 1 处消费者 `#main-pane > section` 的 `background`);`grep -o -- '--shadow-card' frontend/style.css | wc -l` >= 2(1 处围栏内声明 + 1 处消费者 `box-shadow`)。
     - `grep -n -- '--color-surface-card: var(--white);' frontend/style.css` 与 `grep -n -- '--shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);' frontend/style.css` 各命中恰好 1 行,且两个行号都落在 `===== DESIGN TOKENS: START` 与 `===== DESIGN TOKENS: END` 两行之间。
     - `frontend/style.css` 围栏外零裸 `#hex`、零 tier-1 原语引用(`bash scripts/check-01-token-conformance.sh` 打印 `PASS`、exit 0)。
-    - `#main-pane > section` 规则体的选择器文本与行号与 HEAD 逐字一致(就地扩写,未移动);其声明集 = HEAD 的 2 条 + 新增的 4 条,无删除。
+    - `#main-pane > section` 规则体的选择器文本与 HEAD 逐字一致,且改动全部落在既有规则体内部(源码顺序未变,未移动任何既有规则块);其声明集 = HEAD 的 2 条 + 新增的 4 条,无删除。
     - `#main-pane > section` 规则体内不含 `transform` / `filter` / `will-change` / `contain` / `perspective` / `opacity` / `position` / `z-index` / `overflow` 任何一项。
     - `scripts/check-09-idi09-validation.py` 存在,可用 `.venv/bin/python` 直接运行,退出码语义与 check-05 一致(0/1/2),且 `--item c1` 与 `--screenshot DIR` 两个参数都被 `parse_args` 接受。
     - `.venv/bin/python scripts/check-09-idi09-validation.py --item c1` 输出中 4 个左栏 section 的底色断言各为 PASS,`exit=0`,且 BLOCKED 计数为 0(任何 BLOCKED 都说明探针没读到元素,不构成 PASS)。
@@ -290,6 +292,7 @@ Output: `frontend/style.css` 围栏内两个新令牌(`--color-surface-card` / `
     - `bash scripts/check-02-contrast.py` 仍打印 `PASS: 0 failures`,清单规模与 ORDER 行逐字不变(本任务零 PAIR 改动)。
     - `bash scripts/check-03-hidden-uniqueness.sh` 打印 `PASS`;`bash scripts/check-04-important-count.sh` 打印 `PASS`。
     - `git status --porcelain frontend/` 仅列出 `frontend/style.css`;`frontend/vendor/` 内容仍只有 `marked.min.js`。
+    - `.venv/bin/python scripts/check-09-idi09-validation.py --screenshot <DIR>` 出图后,`<DIR>` 下**恰有 5 个 PNG**,与 check-05 的样本清单 `STATES = ["p1", "p12", "p3", "checking", "archive"]`(`scripts/check-05-ui-uat.py:584`)逐项一一对应(每个样本恰一张,无缺项、无多余样本),且每张为 **1440×900** 的整窗截图。仅「参数被 `parse_args` 接受」不满足本项 —— 少于 5 张或样本缺项即本项失败(计划 03 Task 3 直接消费这个产物,它的 `files_modified` 不含本脚本,无法自行补救)。
   </acceptance_criteria>
   <done>围栏内两个新令牌就位;左栏 4 个 section 在真实浏览器里的计算底色为白、圆角 10px、阴影非 none 且零位移;四个静态门 + 新运行时门 `--item c1` 全绿;`#main-pane > section` 的规则块位置与源码顺序逐字未变。</done>
 </task>
@@ -302,7 +305,7 @@ Output: `frontend/style.css` 围栏内两个新令牌(`--color-surface-card` / `
     - `frontend/style.css` `#doc-panel`(`:611-624`)—— 逐字读:`flex: 0 0 var(--doc-panel-w); display: flex; flex-direction: column; overflow-y: auto; border-left: 1px solid var(--color-border-subtle); background: var(--color-surface); min-width: 0;` 与其中 `min-width: 0` 上方那段「不得当作冗余代码删除」的注释
     - `frontend/style.css` `#doc-panel.collapsed { flex-basis: var(--doc-panel-w-collapsed); overflow: hidden; }`(`:626-629`)与 `#doc-panel.collapsed #doc-panel-header { justify-content: center; padding-inline: 0; }`(`:636-639`)—— 只读
     - `frontend/style.css` `#doc-panel-header`(`:641-654`)—— **含上方那段必须改写的注释**:它现在断言「背景是必需的」+「`--color-surface` 与 `#doc-panel` 自身背景同值且已被消费(`:474`)⇒ 零新增令牌」+「`border-radius: 0`:半径在本元素上是加背景之后才首次可见的新视觉物,而 10px 圆角会让滚动正文从四角露出」+「不加 `z-index`」。改底色后前两条与 `border-radius` 那条的理由都需按新事实重写
-    - `frontend/style.css` `#doc-panel-body { padding: var(--space-8) var(--space-10); }`(`:665`)—— 只读,**不得改动**(check-05 item 3 有活断言)
+    - `frontend/style.css` `#doc-panel-body { padding: var(--space-8) var(--space-10); }`(`:665`)—— 只读,**不得改动**(check-05 item 4 有活断言)
     - `frontend/style.css` `.hint { color: var(--color-text-muted); … }`(`:667`)—— 它自身无 `background`,这是 `effective_bg()` 会沿祖先链上溯的原因
     - `frontend/index.html` `:82-98` —— `aside#doc-panel` > `header.panel-header#doc-panel-header` + `div#doc-panel-body`(`#doc-panel-body` **不带** `.panel-body` 类)> `div#enter-form` + `p.hint`。`document.querySelector('.hint')` 命中的就是这一条(全文件文档序第一条 `.hint`)
     - `scripts/check-05-ui-uat.py` `:471-484` —— `effective_bg()` 的定义(沿祖先链找第一个非透明 `background-color`,元素自身优先)
@@ -360,7 +363,7 @@ Output: `frontend/style.css` 围栏内两个新令牌(`--color-surface-card` / `
     <fails_when>exit code is not 2 (item 5 的两条 --ai-smoke 腿在无 --ai-smoke 时按设计 BLOCKED), or any verdict line beginning with "FAIL", or the "=== 逐项结论 ===" block showing a non-zero FAIL count for item 5</fails_when>
   </verify>
   <acceptance_criteria>
-    - `#doc-panel` 规则体的选择器文本与行号与 HEAD 逐字一致(就地改写,未移动);声明集 = HEAD 的 6 条 − `border-left` + `border` + 新增 2 条;`overflow-y: auto;` 与 `min-width: 0;` 逐字保留。
+    - `#doc-panel` 规则体的选择器文本与 HEAD 逐字一致,且改动全部落在既有规则体内部(源码顺序未变,未移动任何既有规则块);声明集 = HEAD 的 6 条 − `border-left` + `border` + 新增 2 条;`overflow-y: auto;` 与 `min-width: 0;` 逐字保留。
     - `#doc-panel` 规则体内不含 `transform` / `filter` / `will-change` / `contain` / `perspective` / `opacity` / `position` / `z-index` / `overflow: hidden` 任何一项。
     - `#doc-panel-header` 规则体内 `border-radius: 0;` 逐字保留;其 `background` 指向 `--color-surface-card`;其上方注释里不再出现「`--color-surface` 与 `#doc-panel` 自身背景同值」「零新增令牌」这类现已为假的表述。
     - `frontend/style.css` 围栏外零裸 `#hex`、零 tier-1 原语引用(`check-01` 打印 `PASS`);`!important;` 声明计数仍为 1(`check-04` 打印 `PASS`);`^[[:space:]]*\.hidden[[:space:]]*\{` 计数仍为 1(`check-03` 打印 `PASS`)。

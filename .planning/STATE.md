@@ -275,6 +275,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
+| uat_gaps | `idi-05-typography-and-visual-hierarchy` / `05-UAT.md` — 报 `[diagnosed]`,0 pending scenarios。**台账滞后,非活缺口**:`G-idi-05-1` 的 `status: failed` 从未在 plan 04 修复后回写,而修复本身经两次独立复验确认在 HEAD 上成立(`--item 7` 九个渲染目标全过、`MARKER_DOWN_TARGETS` 普查守卫在位、UI-SPEC P-19 在盘)。UAT 文件本身未被改动,故扫描器仍报它 | (presence-only) | 2026-09-25 | v1.14 |
+| quick_tasks | `260917-fqh-b9664e0-hidden-flex` — 报 `[unknown]`。**缺完成标记,非未完成**:其 3 条实现提交(`fac268d` / `46e8ea3` / `793071e`)与 `SUMMARY.md` 均在盘,ROADMAP 亦记录 REG-01/REG-02 由它收口。其 `SUMMARY.md` 无 `status:` 字段,扫描器读作 `unknown` | (presence-only) | 2026-09-25 | v1.14 |
 | known-limitation | 已归档阶段的 `covered_digest` 不可解析:`covered_files` 声明 `.planning/phases/...` 路径,归档后移至 `.planning/milestones/v1.13-phases/`,重算返回 `null`(fail-closed=stale)。归档后的阶段报告不再被 staleness 机制消费,故记为已知限制而非回填重算 | acknowledged | 2026-09-14 | v1.13 |
 | tech-debt | `SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧「无脏状态」语义仍成立)— PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |
 | tech-debt | `annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口)— PROJECT.md 已登记 | acknowledged | 2026-09-14 | v1.13 |

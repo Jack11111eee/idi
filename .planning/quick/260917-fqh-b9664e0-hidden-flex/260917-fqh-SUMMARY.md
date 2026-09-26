@@ -5,19 +5,27 @@ subsystem: ui
 tags: [frontend, vanilla-js, css, css-specificity, inline-error, flexbox]
 
 # Dependency graph
+
 requires:
+
   - phase: 260916-t8g-ui-5-blocker-hidden-sse-onerror
     provides: 唯一全局 `.hidden` 规则、`showInlineError`/`clearInlineError` 与 `.inline-error`、错误内联投递通道
 provides:
+
   - 修正后的 `.hidden` 注释理由(点名三个 ID 特异性 1-0-0 竞争者,`.overlay` 正确降级为 0-1-0 弱竞争者,移除幻影类名)
   - 错误内联锚点由 `#btn-process-round` 改为 `#probe-controls`(结构性修复,不打 CSS 补丁)
   - 三条视图切换路径(轮次切换 / 归档视图 / 撰写视图)清除陈旧内联错误
+
 affects: [frontend, ui-audit-remediation, v1.14-phase-4, v1.14-phase-8]
 
 # Actuals (#2632)
+
 # tokens = chars/4 over realized diff content (3438 chars -> 859).
+
 # NOTE: plan `estimate.raw_tokens: 14000` is a whole-task/context estimate, NOT a diff-size
+
 # estimate — the two are not on the same scale. Do not read 859 vs 14000 as a 16x miss.
+
 actuals:
   tokens: 859
   tasks: 3
@@ -38,18 +46,21 @@ key-files:
     - frontend/app.js
 
 key-decisions:
+
   - "锚点改为 `#probe-controls` 而非给该行加 `flex-wrap`:后者会改变探针行自身的换行行为,属产品行为变更而非缺陷修复"
   - "`inlineErrorEl` 单例「两个并发错误只显示一个」经裁定**不是缺陷**(单错误显示是既定的「下次动作即清除」设计),不修"
   - "`hidePhase3Extras`/`applyPhase3Extras` 不加 `clearInlineError()`:发散失败时状态不变(仍在阶段 1-2),锚点 `#divergence-entry` 不会已隐藏,构不成可达的残留场景"
   - "`loadChecksView` 已有 `clearInlineError()`(第 592 行),不重复添加"
 
 patterns-established:
+
   - "错误内联锚点必须选块级流容器;flex 行内的控件作锚点会让错误成为额外的 flex 项"
   - "视图切换路径统一调 `clearInlineError()`,消除「锚点控件已隐藏而错误仍在屏上」"
 
 requirements-completed: [REG-01, REG-02]
 
 coverage:
+
   - id: D1
     description: ".hidden 注释的理由与实际竞争关系一致(三个 1-0-0 竞争者被点名、.overlay 降级为 0-1-0 弱竞争者、幻影类名移除);!important 声明与 .hidden 规则零改动"
     requirement: "REG-01"
@@ -82,11 +93,16 @@ coverage:
         status: pass
 
 # 代写说明
+
 authored_by: orchestrator
 authored_by_reason: |
   执行器在三次任务提交**全部落地之后**卡死(600s 无进展,stream watchdog 未恢复),
   未写 SUMMARY.md。编排器独立复核了全部门禁与真实浏览器 UAT 后代写本文件。
   代码改动本身全部由执行器完成,编排器未改动任何 frontend/ 文件。
+audit_acknowledged:
+  milestone: v1.14
+  at: 2026-09-25
+  status: unknown
 ---
 
 # 260917-fqh SUMMARY — 修复 b9664e0 自身引入的两条缺陷
@@ -133,6 +149,7 @@ frontend/style.css +4 -2
 ```
 
 三次提交,每个任务一次:
+
 - `fac268d` 修正 `.hidden` 注释的 `!important` 理由(REG-01)
 - `46e8ea3` 内联错误锚点由按钮改为探针行容器(REG-02)
 - `793071e` 视图切换时清除陈旧内联错误(REG-02)

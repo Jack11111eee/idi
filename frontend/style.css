@@ -654,7 +654,11 @@ html, body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1-5);
+  /* Phase 9 / D-9-2:卡片间距取紧凑档 12px(HEAD 是 6px)。间隙里透出的是页面底色
+     (gray-3),这正是「白卡片浮在灰页面之上」的可见形态 —— 间距不只是留白,它是
+     卡片层次的载体。卡片本身不得加 margin:那会移动既有几何并可能打在 24x24 命中区
+     门上,而页面级留白是未裁定项(见 STATE 的开放清单)。 */
+  gap: var(--space-3);
   overflow-y: auto;
   align-items: center;
   /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
@@ -779,7 +783,12 @@ html, body {
 
 .collapse-indicator { font-size: var(--text-lg-plus); line-height: var(--lh-none); }
 
-.panel-body { padding: var(--space-2-5); }
+/* Phase 9 / D-9-2:左栏 4 个面板的正文内边距取紧凑档 16px(HEAD 是 10px)。这是
+   .panel-body 唯一的声明,四个面板一致生效 —— 两条更具体的规则(#session-panel /
+   #checks-panel 的 .panel-body)都只声明 display / flex / gap,不声明 padding,
+   故无覆盖冲突。右栏 #doc-panel-body 是 id 选择器且元素不带该类,逐字不受影响
+   (它有 check-05 item 4 的活断言 `padding == "32px 40px"`)。 */
+.panel-body { padding: var(--space-4); }
 .panel-body.collapsed { display: none; }
 
 /* 探针控制行 */

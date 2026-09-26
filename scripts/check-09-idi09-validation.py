@@ -34,6 +34,9 @@
 断言与需求的映射
     c1 → VIS-01 / VIS-02 / CARD-01   左栏 4 个 section 的卡片语言(令牌 + 计算读数)
     c2 → CARD-02 / REG-01            #doc-panel 的卡片语言 + #doc-panel-header 对照组
+    c4 → CARD-03                    密度几何(D-9-2):#main-pane gap 12px / .panel-body
+                                     padding 16px,外加 #doc-panel-body 与 .panel-header
+                                     两条对照组(证明改动没有漏出裁定范围)
     shot                             逐样本整窗截图,供用户评审(不参与卡片判据)
 
 浏览器路线(实测结论,不是偏好)
@@ -220,6 +223,43 @@ def c2(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# c4 — 密度几何(D-9-2):卡片间距 12px / 左栏面板内边距 16px
+# ---------------------------------------------------------------------------
+# 判据是**计算几何读数**,不是源码文本匹配 —— 与 check-05 的 padding 断言同口径,
+# 期望侧一律写字面量 px 字符串(不是令牌名:两侧都从同一个令牌解析会让「令牌改坏
+# 但声明仍接线」假绿)。
+#
+# 两条对照组是**回归护栏**,不是重复劳动:
+#   · #doc-panel-body —— 证明密度改动没有漏到右栏。它的 padding 由 check-05 item 4
+#     独立断言(`32px 40px`);这里重列一遍是为了让「有人把 .panel-body 的选择器扩成
+#     同时命中 #doc-panel-body」这件事在本文件里也能当场变红,而不必等 check-05。
+#   · .panel-header padding-top —— 表头是 36px 固定高的 chrome 条,它的内边距**不在**
+#     D-9-2 的裁定范围内,故刻意未随卡片内边距一起改。
+def c4(page, tmp_root):
+    item = "c4"
+    print("\n=== c4: 密度几何(D-9-2)—— 间距 12px / 面板内边距 16px ===", flush=True)
+    proj = c05.make_fixture("p1", tmp_root)
+    c05.enter_project(page, proj)
+
+    # 文档序第一个 .panel-body 是 #session-panel 内的那一个(p1 下它在 DOM 里;
+    # getComputedStyle 对 display:none 的元素同样返回解析值)。
+    readings = [
+        ("#main-pane", "gap", "12px", "卡片间距(D-9-2 紧凑档;HEAD 是 6px)"),
+        (".panel-body", "padding", "16px", "左栏 4 个面板的正文内边距(D-9-2 紧凑档;HEAD 是 10px)"),
+        ("#doc-panel-body", "padding", "32px 40px", "对照组:右栏阅读列内边距未受影响"),
+        (".panel-header", "padding-top", "6px", "对照组:表头 chrome 条的内边距未随卡片内边距改动"),
+    ]
+    for sel, prop, expected, note in readings:
+        actual = read_style(page, sel, prop)
+        info(f"c4 {sel} {prop} 原始读数", f"{actual}")
+        if actual is None:
+            blocked(item, f"[p1] {sel} 计算 {prop} == {expected}", expected,
+                    "<MISSING>", "元素/选择器不存在")
+            continue
+        ok(item, f"[p1] {sel} 计算 {prop} == {expected}", expected, actual, note=note)
+
+
+# ---------------------------------------------------------------------------
 # shot — 逐样本整窗截图(供用户评审;不参与卡片判据)
 # ---------------------------------------------------------------------------
 def run_screenshots(page, out_dir, tmp_root):
@@ -244,13 +284,13 @@ def run_screenshots(page, out_dir, tmp_root):
        sorted(f"{s}.png" for s in c05.STATES), pngs)
 
 
-ITEMS = {"c1": c1, "c2": c2}
+ITEMS = {"c1": c1, "c2": c2, "c4": c4}
 
 
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="Phase 9 卡片语言的运行时门")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:c1 / c2(可重复,或逗号分隔)")
+                    help="只跑指定项:c1 / c2 / c4(可重复,或逗号分隔)")
     ap.add_argument("--screenshot", default=None, metavar="DIR",
                     help="遍历 check-05 的 5 个样本,每个样本出一张 1440x900 整窗截图到 DIR")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")

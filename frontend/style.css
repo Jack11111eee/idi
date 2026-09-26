@@ -119,7 +119,24 @@
   --color-text: var(--radix-gray-12);
   --color-text-secondary: var(--radix-gray-11);
   --color-text-muted: var(--radix-gray-11);
-  --color-surface-page: var(--radix-gray-1);
+  /* Phase 9 sinks the page one step (CARD-03 / user decision D-9-1): gray-1 #fcfcfc ->
+     gray-3 #f0f0f0. Reason: gray-1 was the LIGHTEST value on the whole screen, so the
+     white cards Phase 9 plan 01 introduced had almost nothing to sit against. gray-3
+     completes the three-tier elevation scale — page gray-3 < --color-surface gray-2
+     (the inset control surface) < --color-surface-card white (raised) — which is
+     shadcn's canvas / inset / raised ladder. Zero new tokens and zero new tier-1
+     primitives: gray-3 is already declared above and already consumed by
+     --color-surface-sunken and --color-surface-hover.
+
+     This token has exactly ONE consumer (`html, body`'s background), so changing the
+     value here re-colours the whole page and nothing else needs synchronising. What it
+     DOES invalidate is every contrast pair drawn on it: eight entries were on this
+     ground. Two of them (the mid-tone blue-11 and gray-9 foregrounds) could not clear
+     their thresholds on gray-3 and were re-attributed to the card ground by plan 01;
+     the remaining six were RECOMPUTED — not refreshed — against gray-3 and registered
+     in the manifest's Phase 9 ledger below. "Refreshed" would assert nothing changed
+     since verification, which is false here. */
+  --color-surface-page: var(--radix-gray-3);
   --color-surface-sunken: var(--radix-gray-3);
   --color-kind-default: var(--radix-gray-11);
   --color-kind-result: var(--radix-gray-11);
@@ -491,7 +508,46 @@
      panels and #doc-panel stopped being transparent / gray-2 and became white
      cards, so the elements those two entries describe are now painted on the
      card. The six numbers above stay a SIZE ledger; 53 is both the Phase 7 and
-     the Phase 9 size. */
+     the Phase 9 size.
+
+     ---- Phase 9 page-ground RECOMPUTATION ledger (plan 02, CARD-03 / REG-01) ----
+
+     Sinking --color-surface-page from gray-1 (#fcfcfc) to gray-3 (#f0f0f0)
+     invalidated every pair drawn on it. EIGHT entries were on that ground. Each
+     was RECOMPUTED from the new ground — not refreshed. Refreshing would assert
+     "nothing has changed since verification", and that is false here: the ground
+     moved one whole step, so every one of these numbers moved.
+
+       pair                              need  gray-1  gray-3   white  disposition
+       --color-text TEXT                 4.5   15.88   14.30       —   name unchanged, passes
+       --color-text-secondary TEXT       4.5    5.77    5.19       —   name unchanged, passes
+       --color-text-muted TEXT           4.5    5.77    5.19       —   name unchanged, passes
+       --color-focus NON-TEXT            3.0    5.72    5.15       —   name unchanged, passes
+       --color-border-hover NON-TEXT     3.0    5.77    5.19       —   name unchanged, passes
+       --color-marker-active NON-TEXT    3.0    4.65    4.18       —   name unchanged, passes
+       --color-marker-active TEXT        4.5    4.65    4.18    4.77   re-attributed to card
+       --color-border-strong NON-TEXT    3.0    3.24    2.91    3.32   re-attributed to card
+
+     The last two are the complete chain, not a refresh: their old PAGE value
+     (4.65 / 3.24 on gray-1) was passing, their new PAGE value (4.18 / 2.91 on
+     gray-3) FAILS, and plan 01 had already re-attributed them to
+     --color-surface-card, where they pass (4.77 / 3.32). The re-attribution
+     happened first, in plan 01, precisely so that check-02 was never red in the
+     intermediate state.
+
+     Counter-intuitive, and measured rather than assumed: darkening the page does
+     NOT improve every pair. Dark foregrounds gain contrast on a darker ground,
+     but the MID-TONE foregrounds lose it — blue-11 #0d74ce falls 4.65 -> 4.18
+     and gray-9 #8d8d8d falls 3.24 -> 2.91. Both failures are mid-tones. That is
+     the mechanical reason the answer was re-attribution and not recolouring.
+
+     The correct fix for those two was re-attribution, NOT recolouring and NOT
+     loosening a threshold. Both tokens' elements are painted entirely inside the
+     panels, and after plan 01 those panels are opaque white cards, so recording
+     the card as the ground is simply stating where the colour is really drawn.
+     Across the whole phase ZERO colour values changed, ZERO tier-1 primitives
+     were added, and ZERO thresholds were touched (check-02's TEXT_MIN / NON_TEXT_MIN
+     are byte-identical to HEAD). */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */

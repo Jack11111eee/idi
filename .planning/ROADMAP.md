@@ -58,7 +58,7 @@
 
 **回归面(本里程碑最高风险):** 五条浏览器门 —— `scripts/check-05-ui-uat.py`(Playwright UAT)、`scripts/check-06-idi05-validation.py`、`scripts/check-07-idi08-validation.py`、`scripts/probe-05-resolve-color.py`、`scripts/probe-07-focus-composite.py` —— 大量断言绑死具体 DOM 与 computed style(焦点环 2px 与其解析后的 `--color-focus`、sticky 表头、badge 流内机制、滚动容器收敛、命中区 24×24、窄窗口不破版)。**任何 surface 改动都可能打破它们** ⇒ 每次改动必须复跑。环境事实:`check-05` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该机 `channel="chrome"` + headless 会挂死);全量跑 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归。
 
-- [ ] **Phase 9: 卡片容器化与页面底色下沉** - 左栏 4 个面板与右栏文档区成为白底卡片;页面底色下沉至 gray-3,形成 gray-3 < gray-2 < 白 三级 elevation 刻度;受影响的对比度对重算并登记;五条 UI 门复跑无新增失败
+- [x] **Phase 9: 卡片容器化与页面底色下沉** - 左栏 4 个面板与右栏文档区成为白底卡片;页面底色下沉至 gray-3,形成 gray-3 < gray-2 < 白 三级 elevation 刻度;受影响的对比度对重算并登记;五条 UI 门复跑无新增失败 (completed 2026-09-26)
 
 ## Phase Details
 
@@ -122,7 +122,7 @@
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
-| 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | In Progress | - |
+| 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete    | 2026-09-26 |
 
 **v1.13 / v1.14 共 9 个阶段已收口。** v1.15 为**单一阶段**(Phase 9),**进行中** —— 计划 2/3 已完成(卡片容器化端到端落地 + 页面底色下沉到 gray-3 与密度收档);余下计划 03 复跑五条浏览器门、复核 pytest 基线并出 5 张截图。用户裁定「开一个 phase,先看看效果吧」,看过 Phase 9 的截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase。
 

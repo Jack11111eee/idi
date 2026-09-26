@@ -5,16 +5,16 @@ milestone_name: 视觉构图升级
 current_phase: 9
 current_phase_name: 卡片容器化与页面底色下沉
 status: executing
-stopped_at: "**计划 idi-09-02 已完成**(卡片容器化与页面底色下沉 · 波次 2/3)。3 任务 / 3 提交(`e7ffa36` / `7930c35` / `c4357c2`)。页面底色由 gray-1 下沉到 `--radix-gray-3`(#f0f0f0),`body` 计算底色实测 `rgb(240, 240, 240)`;三档 elevation 由真实浏览器读数证明严格递增(页面 0.871367 < 内陷面 0.947307 < 卡片 1.000000);画在页面地面上的 6 条 PAIR 以 gray-3 **重算并登记**(14.30 / 5.19 / 5.19 / 5.15 / 5.19 / 4.18,与 check-02 实跑逐位一致),2 条已重新归属的配对写出完整链条(4.65→4.18 FAIL→4.77 / 3.24→2.91 FAIL→3.32);密度收到用户裁定紧凑档(卡片间距 12px / 面板内边距 16px)。`check-09` 扩到 c1…c5 五组(51 条断言,`exit=0`)。四个静态门全绿;额外复跑 `check-05 --item 2/9` 与 `check-06` 全绿(密度改动未打破滚动者普查、末条可达、24×24 命中区与 340px 窄窗口)。**下一步:计划 idi-09-03**(五条浏览器门复跑 + pytest 基线 + 5 张截图供用户评审)。"
-last_updated: "2026-09-26T13:42:08.227Z"
+stopped_at: "**计划 idi-09-03 已完成**(卡片容器化与页面底色下沉 · 波次 3/3)。3 任务 / 3 提交(`32fa653` / `284963d` / `4b83c07`)。五条浏览器门复跑:`check-05` 全量 `exit=2` 且 `=== 逐项结论 ===` 十项 FAIL 计数全 0(唯一 2 条 BLOCKED 是 item 5 的两条 `--ai-smoke` 腿,按设计),`check-06` / `check-07` / `probe-05` / `probe-07` 全部 `exit=0`;**零处门改动**(`git status --porcelain scripts/` 与 `git diff HEAD -- scripts/` 双空)。四个静态门全绿(`check-02` 为 `PASS: 0 failures`),8 条受影响配对实测 14.30 / 5.19 / 5.19 / 5.15 / 5.19 / 4.18 / 4.77 / 3.32 与清单登记值逐位一致,`ORDER 0.363`;pytest `219 passed, 6 skipped`。产出 5 张 1440×900 整窗截图(`screenshots/`)并补证 SC3 的屏幕级半边(gray-2 内陷面与白卡片 5/5 样本同帧共存);9 份原始门禁 stdout 落盘 `gate-logs/` 供独立复核。**下一步:用户看截图后裁定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase —— 本里程碑刻意不含它们。**"
+last_updated: "2026-09-26T14:06:33.654Z"
 last_activity: 2026-09-26
-last_activity_desc: "计划 idi-09-02 已完成:页面底色下沉到 gray-3 + 6 条页面地面 PAIR 逐条重算并登记(不是刷新旧值)+ 密度收档(12px/16px)+ 运行时门 check-09 c3/c4/c5"
-state_head: c4357c2153a0132007f47028121d254e4dd0c5f5
+last_activity_desc: "计划 idi-09-03 已完成:五条浏览器门复跑零 FAIL 且零处门改动 + 四个静态门与 pytest 基线复核 + 5 张 1440x900 截图供用户评审 + SC3 屏幕级半边证据"
+state_head: 343ea3c47ddcb6c070a981947e76aa110bd07487
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-26)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** v1.15 视觉构图升级 —— Phase 9 卡片容器化与页面底色下沉(计划 2/3 已完成,进行中)
+**Current focus:** v1.15 视觉构图升级 —— Phase 9 卡片容器化与页面底色下沉(计划 3/3 已完成,待用户看截图裁定后续)
 
 ## Current Position
 
 Phase: 9 (卡片容器化与页面底色下沉) — EXECUTING
-Plan: 2 of 3
-Status: Executing — 计划 02 已完成并提交,下一步计划 03(五条浏览器门复跑 + pytest 基线复核 + 5 张截图供用户评审)
-Last activity: 2026-09-26 — 计划 idi-09-02 完成:页面底色下沉到 gray-3(`body` 实测 `rgb(240, 240, 240)`)+ 三档亮度序由运行时门证明 + 6 条页面地面 PAIR 逐条重算并登记 + 密度收档(间距 12px / 内边距 16px)+ 运行时门 check-09 c3/c4/c5
+Plan: 3 of 3
+Status: Executing — 计划 03 已完成并提交,三个计划全部收口;下一步是**用户看截图后裁定**后续候选是否另开 phase
+Last activity: 2026-09-26 — 计划 idi-09-03 完成:五条浏览器门复跑(0 FAIL,零处门改动)+ 四个静态门与 pytest 基线(219 passed / 6 skipped)+ 5 张 1440×900 截图 + SC3 屏幕级半边证据
 
 ## Performance Metrics
 
@@ -55,7 +55,7 @@ Last activity: 2026-09-26 — 计划 idi-09-02 完成:页面底色下沉到 gray
 | idi-06 | 4 | - | - |
 | idi-07 | 3 | - | - |
 | idi-08 | 3 | - | - |
-| idi-09 | 2 | 43min | 21.5min |
+| idi-09 | 3 | 60min | 20min |
 
 **Recent Trend:**
 
@@ -101,6 +101,7 @@ Last activity: 2026-09-26 — 计划 idi-09-02 完成:页面底色下沉到 gray
 | Phase idi-08 P03 | 16min | 3 tasks | 1 files |
 | Phase 9 P01 | 23min | 3 tasks | 3 files |
 | Phase idi-09 P02 | 20min | 3 tasks | 2 files |
+| Phase 9 P03 | 17min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -236,6 +237,12 @@ Recent decisions affecting current work:
 - [Phase idi-09]: 两条变异证明 c3/c5 非空转(本项目口径:只有变异测试能证明守卫真的会失败):position sticky→static ⇒ c5 报 2 FAIL(几何断言 header.top=-1589);--color-surface-page gray-3→gray-2(页面与内陷面塌成一档)⇒ c3 报 2 FAIL。两次都在已提交的树上做、定向 git checkout -- 还原(不用 git stash),还原后逐字节相同
 - [Phase idi-09]: 计划 02 里的行号全是波次 1 之前的旧锚点(gap 写 :594 实为 :657、.panel-body 写 :688 实为 :782、清单头写 :427-452 实为 :449-494);本计划一律按选择器文本与源码内容定位,不按行号定位
 - [Phase idi-09]: Phase 9 的重算登记以独立段落追加在既有六个规模数字(24/34/43/47/50/53)之后 —— 六个数字是规模台账,本阶段规模不变(53 对 + 1 ORDER),变的是地面归属与实测值;混在一起会让规模台账与值台账不可区分
+- [Phase idi-09]: 零处门改动 —— 计划预期的唯一受影响断言(check-05 的 [p1] .hint 实际背景)已在计划 01 重新登记,故本计划对 scripts/ 的净 diff 为零;判据取 git status --porcelain scripts/ 与 git diff HEAD -- scripts/ 双空,不是记忆
+- [Phase idi-09]: probe-05 的 BLOCKED [mutated] ... post-fix 是变异证明的对照支,不是门失败:该探针在同一份被变异的样式表上跑同一条断言两次,「修复前 PASS / 修复后 BLOCKED」正是它要证明的对照;退出码仍为 0
+- [Phase idi-09]: probe-07 的焦点环地面在本阶段漂移:该探针从 #round-doc 取运行时地面,计划 01 之后其最近不透明祖先是卡片化的 #doc-panel ⇒ 地面由 --color-surface(3.431)变为卡片白(实测 3.54);断言形式与强度一字未变、退出码仍为 0,但这是往更容易的方向漂,不得被读成「仍在证明 --color-surface 上的算术」
+- [Phase idi-09]: SC3 的屏幕级半边由本计划补证:idi-09-02 的 c3 只证明三档令牌亮度序与 body 计算底色,没有任何断言证明「gray-2 表面与白卡片在同一视口里同时被渲染」;本计划逐样本运行时读得 5/5 样本同帧共存(承载者是三个自带 background 的 <select> 与 .overlay-card)
+- [Phase idi-09]: 原始门禁输出落盘为 .planning/phases/idi-09-card-containers/gate-logs/(9 份)而非只留 SUMMARY 摘录 —— 依据是威胁 T-idi-09-03:「门绿了」这一结论须有原始证据,而摘录是选过的;三条提交按任务切分,使每份日志可追溯到产生它的命令
+- [Phase idi-09]: 输入框在白卡片上画 UA 白填充 = 本阶段新增的开放项:四个文本 input 一律不声明 background,实测计算 background-color 全为 rgb(255,255,255);三档刻度里的中间档在屏幕上实际只由三个 <select> 与 .overlay-card 承载。注:style.css:878 的 background: var(--color-surface) 属于紧随 #project-path-input 之后的 button 规则,不是该输入框
 
 ### Pending Todos
 
@@ -262,6 +269,11 @@ None yet.
 
 - **`state.*` 动词第十次复现,本次的形态组合与第九次不同,已逐条核盘修正。** ①`state.advance-plan` **本次成功**(不再是 `plan_position_unreadable`)—— 因为波次 1 已把 `## Current Position` 从 `Plan: — of TBD` 手工改成 `Plan: 1 of 3`,命中了它可读的 `Plan: N of M` 形态;正确写入 `Plan: 2 of 3` 与 `completed_plans: 1 → 2`,并把 `state_head` 正确重算为 `c4357c2`(preservation: derive 契约被遵守)。②`state.update-progress` 仍然**零写入**并回显 `{"reason": "no Progress: line found in STATE.md body to update (frontmatter progress data is unaffected)"}` —— 与第九次同形,**回显不可作为判据**。③`state.record-metric` 正确追加 `Phase idi-09 P02 | 20min | 3 tasks | 2 files` ✅。④五条 `state.add-decision` 全部落盘 ✅(仍自动加 `[Phase 9]:` 前缀,与既有的 `[Phase idi-09]:` 撞成双前缀,已手工去重 —— **第二次复现同一处格式副作用**)。⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-09` 正确写 `**Plans**: 2/3` 与 Progress 行 `2/3` ✅,但**两处格式副作用与第九次逐字相同**:(a) Progress 行的空格掉了(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) 在 `**Plans**:` 段**又**插入了一份与下方既有散文列表重复的裸复选框列表(三行裸文件名、无描述),已手工删除并把散文列表第二项标为 `[x]`。⑦`requirements.mark-complete CARD-03 REG-01 VIS-02` 只改 2 行(1 复选框 + 1 追溯行)无越权 ✅(REG-01 / VIS-02 本已勾选),但**又在 `**Coverage:**` 后插入一个空行**,已手工回退。⑧`state.json` 本次**被动词触碰了 `updated_at`**(`12:53:44Z` → `13:40:14.278Z`,内容其余不变),`phases[9].status` 已是 `in_progress` 无需手工。**⇒ 与第九次的方法论结论逐条一致,无需新增结论;本次的增量事实只有两条:(a) `advance-plan` 的 fail-closed 是**可绕过**的 —— 只要 `## Current Position` 的 `Plan:` 行落进它认识的形态集,它就正常工作(它此前失败是本项目自己的写法不在形态集里,不是它坏了);(b) `add-decision` 的双前缀与 `roadmap.update-plan-progress` 的两处格式副作用是**确定性的、每次都发生**,核盘清单应当把它们当作必查项而不是偶发。**
 - **本机 8765 端口存在一个先前遗留的 uvicorn 进程**,本计划全部浏览器门都走了「复用,不新起、结束时也不关闭」分支。读数不受影响(被测页面仍是本仓库的 `frontend/`),但意味着这些门的证据不是在全新进程上取得的;若日后出现与「陈旧服务进程」相关的可疑读数,先排查该残留进程。
+
+**Open — introduced by v1.15 Phase 9(计划 03):**
+
+- **`state.*` 动词第十一次复现,形态与第十次几乎逐字相同,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 2 of 3 → 3 of 3` 与 `completed_plans: 2 → 3`,并把 `state_head` 正确重算为 `343ea3c`(preservation: derive 契约被遵守);**本次连格式也没坏**(全 diff 仅 4 个字段行,正文零改动)。②`state.update-progress` 仍然**零写入**,回显 `{"updated": false, "percent": 0, "completed": 3, "total": 3, "reason": "no Progress: line found in STATE.md body to update"}` —— 与第九/十次同形,**回显不可作为判据**(它把 `completed: 3` 说成 plan 数,而 frontmatter 的 `completed_phases` 是 0)。③`state.record-metric` 正确追加 `Phase 9 P03 | 17min | 3 tasks | 14 files` ✅。④六条 `state.add-decision` 全部落盘 ✅(仍自动加 `[Phase 9]:` 前缀,与既有的 `[Phase idi-09]:` 撞成双前缀,已手工去重 —— **第三次复现同一处格式副作用**,`grep -c '^\- \[Phase 9\]:'` 本次为 6、去重后为 0)。⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-09` 正确写 `**Plans**: 3/3` 与 Progress 行 `3/3` ✅,但**两处格式副作用与第九/十次逐字相同**:(a) Progress 行的空格掉了(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) 在 `**Plans**:` 段**又**插入一份与下方既有散文列表重复的裸复选框列表(三行裸文件名、无描述),已手工删除并把散文列表第三项标为 `[x]`。⑦`requirements.mark-complete REG-02 CARD-01 CARD-02 CARD-03` 只改 2 行(1 复选框 + 1 追溯行)无越权 ✅(CARD-01/02/03 已勾选),但**又在 `**Coverage:**` 后插入一个空行**,已手工回退(**第三次复现同一处格式副作用**)。⑧`state.json` 本次**被动词触碰了 `updated_at`**(`13:40:14.278Z` → `14:05:02.353Z`,内容其余不变,`phases[9].status` 已是 `in_progress` 无需手工)。**⇒ 与第九/十次的方法论结论逐条一致,无需新增结论;本次的增量事实只有一条:`add-decision` 的双前缀、`roadmap.update-plan-progress` 的两处格式副作用、`mark-complete` 的 `**Coverage:**` 空行是**三处确定性副作用**,连续三次复现,核盘清单必须把它们当作必查项。**
+- **用户评审点是本阶段唯一的未闭合出口,不是缺陷。** Phase 9 的三个计划全部收口、五条门零 FAIL,但阶段真正的终点是**用户看过 5 张截图后的设计裁定**:4 条开放项(`.overlay-card` 底色 / 卡片边界与阴影强度 / 页面级留白 / 输入框在白卡片上画 UA 白填充)与 Out of Scope 四项(表格重做 / 圆角刻度收敛 / 图标与空状态 / 暗色模式)是否另开 phase。`gate-logs/` 9 份原始 stdout 与 `idi-09-03-SUMMARY.md` 的 Gate Evidence 表构成可独立复核的门禁记录。
 
 **Resolved during v1.14 — 保留为本里程碑的缺陷台账(下方条目均已闭合,不再阻塞):**
 
@@ -322,15 +334,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-26T13:42:08.203Z
-Stopped at: **计划 idi-09-02 已完成**(卡片容器化与页面底色下沉 · 波次 2/3)。3 任务 / 3 提交(`e7ffa36` / `7930c35` / `c4357c2`)。页面底色下沉到 `--radix-gray-3`(`body` 实测 `rgb(240, 240, 240)`),三档 elevation 亮度序严格递增;6 条页面地面 PAIR 以 gray-3 重算并登记(14.30 / 5.19 / 5.19 / 5.15 / 5.19 / 4.18);密度收到紧凑档(12px / 16px);`check-09` 扩到 c1…c5(51 条断言,`exit=0`)。四个静态门 + 额外复跑的 `check-05 --item 2/9` 与 `check-06` 全绿。**下一步:计划 idi-09-03**(五条浏览器门复跑 + pytest 基线 + 5 张截图)。
-Resume file: None(计划 02 已收口;下一步是 `idi-09-03-PLAN.md`,无进行中的半成品)
+Last session: 2026-09-26T14:06:33.612Z
+Stopped at: **计划 idi-09-03 已完成**(卡片容器化与页面底色下沉 · 波次 3/3)。3 任务 / 3 提交(`32fa653` / `284963d` / `4b83c07`)。五条浏览器门复跑:0 FAIL、**零处门改动**(`check-05` 全量 `exit=2`,唯一 2 条 BLOCKED 是 item 5 的两条 `--ai-smoke` 腿,按设计;`check-06` / `check-07` / `probe-05` / `probe-07` 全 `exit=0`)。四个静态门全绿 + pytest `219 passed, 6 skipped`;8 条受影响配对实测值与清单登记值逐位一致。5 张 1440×900 截图落 `.planning/phases/idi-09-card-containers/screenshots/`,并补证 SC3 的屏幕级半边(gray-2 与白卡片 5/5 样本同帧共存)。**下一步:用户看截图后裁定后续候选是否另开 phase。**
+Resume file: None(计划 03 已收口;三个计划全部完成,无进行中的半成品)
 
 ## Operator Next Steps
 
-- **下一步**:运行 `/gsd-execute-phase 9` 执行 **计划 idi-09-03**(五条浏览器门复跑与失败分诊 + 四个静态门与 pytest 基线复核 + 5 个状态样本的截图)。计划 01/02 已收口并提交,`frontend/` 的最终形态已就位。规划已完成:`.planning/ROADMAP.md`(v1.15 里程碑段 + `### Phase 9:` 详情 + Progress 行 `2/3 | In Progress`)与 `.planning/REQUIREMENTS.md`(7 条需求,6 条已勾选,仅 REG-02 待计划 03 收口)。
-- **计划 02 已替计划 03 预跑了三条最受威胁的门**(本计划的 `<verification>` 未要求,属额外确认,全部在 HEAD `c4357c2` 上绿):`check-05 --item 2`(5 条断言)、`check-05 --item 9`(17 条断言)、`check-06`(g1…g6 全 PASS)。计划 03 尚需自行完成:折叠行为 / badge 流内机制两条门、`pytest` 基线(必须 `.venv/bin/python -m pytest`;**基线 219 passed / 6 skipped**)、以及 5 张 1440×900 截图。
-- **用户评审点**:Phase 9 完成后须向用户呈上**截图**,由其裁定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase —— 本里程碑刻意不含它们。出图命令已就绪:`.venv/bin/python scripts/check-09-idi09-validation.py --screenshot <DIR>`(5 个样本 × 1440×900)。
-- **截图时须一并提请用户裁定的未裁定项**:①`.overlay-card` 的底色(页面下沉后它会显得比主界面卡片「内陷一档」);②页面级留白(本阶段明令未加 `#main-pane` padding、未给卡片加 margin —— 会移动滚动几何并可能打在 24×24 命中区门上)。
+- **下一步 = 用户评审,不是继续执行。** Phase 9 的三个计划全部收口并提交(`f121a2f` 之后:`32fa653` / `284963d` / `4b83c07` + SUMMARY 元数据提交)。规划与实现已全部就位:`.planning/ROADMAP.md` 的 `### Phase 9:` 详情与 Progress 行现为 `3/3 | In Progress`(阶段本身待 `phase.complete` 收口),`.planning/REQUIREMENTS.md` 的 7 条需求**全部勾选**(REG-02 由计划 03 关闭)。**请向用户呈上截图并请其裁定后续候选是否另开 phase。**
+- **截图已就绪,无需重出**:`.planning/phases/idi-09-card-containers/screenshots/` 下 5 张 1440×900 整窗 PNG(`p1.png` 会话流 / `p12.png` 阶段 1-2 讨论中 / `p3.png` 批注流 / `checking.png` 自检报告 / `archive.png` 归档只读 + 使命完成弹窗)。重出命令:`.venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-09-card-containers/screenshots`。
+- **提请用户裁定的 4 条开放项(每条均已写明「本阶段未构建」及依据,详见 `idi-09-03-SUMMARY.md` 的「供用户裁定的开放项」节)**:①`.overlay-card` 的底色(`frontend/style.css:978` 现为 `--color-surface` gray-2 + `--shadow-overlay`,页面下沉后显得比主界面卡片「内陷一档」);②卡片边界与阴影的**强度**(层次目前主要靠底色差 ΔL≈6%,阴影几乎不可见);③**页面级留白**(本阶段明令未加 `#main-pane` padding、未给卡片加 margin —— 后果在截图里可见:卡片贴着视口上/下边缘);④**输入框在白卡片上画 UA 白填充**(四个文本 input 一律不声明 `background`,实测计算 `background-color` 全为 `rgb(255,255,255)`;三档刻度的**中间档**在屏幕上实际只由三个 `<select>` 与 `.overlay-card` 承载)。
+- **Out of Scope 四项重申(REQUIREMENTS.md 明文,不得预先构建)**:表格重做(全边框 → 只留横向分隔线)/ 圆角刻度收敛(`--radius-lg: 28px` 与其他档不成比例)/ 图标与空状态 / 暗色模式。用户裁定「开一个 phase,先看看效果吧」。
 - 候选范围另见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
 - **归档后注意**:阶段报告现位于 `.planning/milestones/v1.14-phases/`,其 `covered_files` 里的 `.planning/phases/...` 路径已不可解析(重算返回 `null`,fail-closed=stale)。这是 v1.13 收口时已登记的**已知限制**,归档后的报告不再被 staleness 机制消费,无需回填重算。

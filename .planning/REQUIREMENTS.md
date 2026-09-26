@@ -22,7 +22,7 @@
 ### 回归保障
 
 - [x] **REG-01**: 页面底色换值后 `check-02` 全部对比度对仍达标;受影响的配对逐条以 `/* PAIR */` 注释**重算并登记**进清单(不是刷新旧值)
-- [ ] **REG-02**: 五条 UI 门复跑无新增失败 —— 折叠行为 / 滚动容器收敛 / sticky 表头 / badge 流内机制 / 焦点环 / 24×24 命中区 / 窄窗口不破版全部保持
+- [x] **REG-02**: 五条 UI 门复跑无新增失败 —— 折叠行为 / 滚动容器收敛 / sticky 表头 / badge 流内机制 / 焦点环 / 24×24 命中区 / 窄窗口不破版全部保持
 
 ## v2 Requirements
 
@@ -50,7 +50,7 @@
 | VIS-01 | Phase 9 | Complete |
 | VIS-02 | Phase 9 | Complete |
 | REG-01 | Phase 9 | Complete |
-| REG-02 | Phase 9 | Pending |
+| REG-02 | Phase 9 | Complete |
 
 **Coverage:**
 - v1.15 requirements: 7 total

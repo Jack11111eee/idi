@@ -1,0 +1,116 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-09-gate-3xfxl0nz(--keep 可保留)
+INFO browser.version: 153.0.8010.12
+
+=== c1: 左栏 4 个 section 的卡片语言(VIS-01 / VIS-02 / CARD-01)===
+INFO c1 令牌解析: --color-surface-card=rgb(255, 255, 255) --radius-md=10px --shadow-card=0 1px 2px rgba(0, 0, 0, 0.04)
+PASS c1 [令牌] --color-surface-card 解析为白: expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿
+PASS c1 [令牌] --shadow-card == 用户裁定值(D-9-3): expected=0 1px 2px rgba(0, 0, 0, 0.04) actual=0 1px 2px rgba(0, 0, 0, 0.04)  # 令牌级断言:期望侧是字面量,不是同一个令牌
+INFO c1 #session-panel 原始读数: background-color=rgb(255, 255, 255) border-top-left-radius=10px border-top=1px solid box-shadow=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #session-panel 计算底色 == var(--color-surface-card): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # HEAD 上是完全透明(rgba(0, 0, 0, 0)),卡片化后必须是白
+PASS [p1] #session-panel 计算 border-top-left-radius == var(--radius-md): expected=10px actual=10px  # 证明圆角取自既有刻度,零新增圆角值(VIS-02)
+PASS [p1] #session-panel 计算 border-top-width == 1px: expected=1px actual=1px
+PASS [p1] #session-panel 计算 border-top-style == solid: expected=solid actual=solid
+PASS [p1] #session-panel box-shadow 非 none 且含卡片阴影: expected=非 none 且含 rgba(0, 0, 0, 0.04) actual=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #session-panel box-shadow 水平偏移为 0px(零位移): expected=offset-x == 0px actual=分量=['0px', '1px', '2px', '0px']
+INFO c1 #annotations-panel 原始读数: background-color=rgb(255, 255, 255) border-top-left-radius=10px border-top=1px solid box-shadow=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #annotations-panel 计算底色 == var(--color-surface-card): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # HEAD 上是完全透明(rgba(0, 0, 0, 0)),卡片化后必须是白
+PASS [p1] #annotations-panel 计算 border-top-left-radius == var(--radius-md): expected=10px actual=10px  # 证明圆角取自既有刻度,零新增圆角值(VIS-02)
+PASS [p1] #annotations-panel 计算 border-top-width == 1px: expected=1px actual=1px
+PASS [p1] #annotations-panel 计算 border-top-style == solid: expected=solid actual=solid
+PASS [p1] #annotations-panel box-shadow 非 none 且含卡片阴影: expected=非 none 且含 rgba(0, 0, 0, 0.04) actual=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #annotations-panel box-shadow 水平偏移为 0px(零位移): expected=offset-x == 0px actual=分量=['0px', '1px', '2px', '0px']
+INFO c1 #checks-panel 原始读数: background-color=rgb(255, 255, 255) border-top-left-radius=10px border-top=1px solid box-shadow=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #checks-panel 计算底色 == var(--color-surface-card): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # HEAD 上是完全透明(rgba(0, 0, 0, 0)),卡片化后必须是白
+PASS [p1] #checks-panel 计算 border-top-left-radius == var(--radius-md): expected=10px actual=10px  # 证明圆角取自既有刻度,零新增圆角值(VIS-02)
+PASS [p1] #checks-panel 计算 border-top-width == 1px: expected=1px actual=1px
+PASS [p1] #checks-panel 计算 border-top-style == solid: expected=solid actual=solid
+PASS [p1] #checks-panel box-shadow 非 none 且含卡片阴影: expected=非 none 且含 rgba(0, 0, 0, 0.04) actual=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #checks-panel box-shadow 水平偏移为 0px(零位移): expected=offset-x == 0px actual=分量=['0px', '1px', '2px', '0px']
+INFO c1 #ai-panel 原始读数: background-color=rgb(255, 255, 255) border-top-left-radius=10px border-top=1px solid box-shadow=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #ai-panel 计算底色 == var(--color-surface-card): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # HEAD 上是完全透明(rgba(0, 0, 0, 0)),卡片化后必须是白
+PASS [p1] #ai-panel 计算 border-top-left-radius == var(--radius-md): expected=10px actual=10px  # 证明圆角取自既有刻度,零新增圆角值(VIS-02)
+PASS [p1] #ai-panel 计算 border-top-width == 1px: expected=1px actual=1px
+PASS [p1] #ai-panel 计算 border-top-style == solid: expected=solid actual=solid
+PASS [p1] #ai-panel box-shadow 非 none 且含卡片阴影: expected=非 none 且含 rgba(0, 0, 0, 0.04) actual=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #ai-panel box-shadow 水平偏移为 0px(零位移): expected=offset-x == 0px actual=分量=['0px', '1px', '2px', '0px']
+
+=== c2: #doc-panel 卡片语言 + #doc-panel-header 对照组(CARD-02 / REG-01)===
+INFO c2 令牌解析: --color-surface-card=rgb(255, 255, 255) --radius-md=10px
+INFO c2 #doc-panel 原始读数: background-color=rgb(255, 255, 255) border-top-left-radius=10px box-shadow=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px overflow-y=auto
+INFO c2 #doc-panel 四条边框宽度原始读数: top=1px / right=1px / bottom=1px / left=1px
+INFO c2 #doc-panel 四条边框样式原始读数: top=solid / right=solid / bottom=solid / left=solid
+PASS [p1] #doc-panel 计算底色 == var(--color-surface-card): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # HEAD 上是 gray-2(比页面更暗,读作凹陷),卡片化后是白卡片
+PASS [p1] #doc-panel 计算 border-top-left-radius == var(--radius-md): expected=10px actual=10px  # 与左栏同族,圆角取自同一既有刻度
+PASS [p1] #doc-panel 计算 border-top-width == 1px: expected=1px actual=1px  # 四边同族边界,取代原 border-left 的单边凹陷读感
+PASS [p1] #doc-panel 计算 border-top-style == solid: expected=solid actual=solid
+PASS [p1] #doc-panel 计算 border-right-width == 1px: expected=1px actual=1px  # 四边同族边界,取代原 border-left 的单边凹陷读感
+PASS [p1] #doc-panel 计算 border-right-style == solid: expected=solid actual=solid
+PASS [p1] #doc-panel 计算 border-bottom-width == 1px: expected=1px actual=1px  # 四边同族边界,取代原 border-left 的单边凹陷读感
+PASS [p1] #doc-panel 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #doc-panel 计算 border-left-width == 1px: expected=1px actual=1px  # 四边同族边界,取代原 border-left 的单边凹陷读感
+PASS [p1] #doc-panel 计算 border-left-style == solid: expected=solid actual=solid
+PASS [p1] #doc-panel box-shadow 非 none 且含卡片阴影: expected=非 none 且含 rgba(0, 0, 0, 0.04) actual=rgba(0, 0, 0, 0.04) 0px 1px 2px 0px
+PASS [p1] #doc-panel 计算 overflow-y == auto(承重的滚动契约): expected=auto actual=auto  # L-1 的 sticky 表头依赖 #doc-panel 仍是最近的可滚祖先
+INFO c2 #doc-panel-header 原始读数: box-shadow=none
+PASS [p1] #doc-panel-header 计算 box-shadow == none(对照组): expected=none actual=none  # 阴影画在卡片上,不在表头上
+
+=== c3: 三层刻度(CARD-03)—— body 底色 + 亮度序 ===
+INFO c3 body 计算 background-color 原始读数: rgb(240, 240, 240)
+PASS [p1] body 计算 background-color == rgb(240, 240, 240)(gray-3): expected=rgb(240, 240, 240) actual=rgb(240, 240, 240)  # 页面不再是全场最亮的东西(CARD-03 / D-9-1)
+INFO c3 --color-surface-page 令牌解析值: rgb(240, 240, 240)
+PASS [p1] --color-surface-page 解析值 == body 计算底色(底色来自令牌): expected=rgb(240, 240, 240) actual=rgb(240, 240, 240)  # 与上一条互为对照:硬编码字面量会在这里 FAIL
+INFO c3 页面 --color-surface-page 解析值: rgb(240, 240, 240)
+INFO c3 内陷面 --color-surface 解析值: rgb(249, 249, 249)
+INFO c3 卡片 --color-surface-card 解析值: rgb(255, 255, 255)
+INFO c3 页面 相对亮度: 0.871367
+INFO c3 内陷面 相对亮度: 0.947307
+INFO c3 卡片 相对亮度: 1.000000
+INFO c3 页面 vs 内陷面 对比度比值(只读诊断,不判定): 1.0824
+INFO c3 页面 vs 卡片 对比度比值(只读诊断,不判定): 1.1396
+INFO c3 内陷面 vs 卡片 对比度比值(只读诊断,不判定): 1.0528
+PASS [p1] 三档亮度严格递增:页面 < 内陷面 < 卡片: expected=lum(页面) < lum(内陷面) < lum(卡片) actual=页面=0.871367 < 内陷面=0.947307 < 卡片=1.000000  # 严格递增(不是 <=):三档若有两档相等,层次就没有画出来
+
+=== c4: 密度几何(D-9-2)—— 间距 12px / 面板内边距 16px ===
+INFO c4 #main-pane gap 原始读数: 12px
+PASS [p1] #main-pane 计算 gap == 12px: expected=12px actual=12px  # 卡片间距(D-9-2 紧凑档;HEAD 是 6px)
+INFO c4 .panel-body padding 原始读数: 16px
+PASS [p1] .panel-body 计算 padding == 16px: expected=16px actual=16px  # 左栏 4 个面板的正文内边距(D-9-2 紧凑档;HEAD 是 10px)
+INFO c4 #doc-panel-body padding 原始读数: 32px 40px
+PASS [p1] #doc-panel-body 计算 padding == 32px 40px: expected=32px 40px actual=32px 40px  # 对照组:右栏阅读列内边距未受影响
+INFO c4 .panel-header padding-top 原始读数: 6px
+PASS [p1] .panel-header 计算 padding-top == 6px: expected=6px actual=6px  # 对照组:表头 chrome 条的内边距未随卡片内边距改动
+
+=== c5: 滚动契约保持 —— #doc-panel / #chat-messages / sticky 表头 ===
+PASS [p1] #doc-panel 计算 overflow-y == auto(承重的滚动契约): expected=auto actual=auto  # L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删它会同时打破 L-1 与计数门
+PASS [p1] #chat-messages 计算 overflow-y == auto(输入行钉底依赖它): expected=auto actual=auto
+PASS [p1] #doc-panel-header 计算 position == sticky: expected=sticky actual=sticky
+PASS [p1] #doc-panel-header 计算 top == 0px: expected=0px actual=0px
+INFO c5 滚动前 rect: panel.top=0 panel.bottom=900 header.top=1 header.bottom=37
+INFO c5 滚动后 rect: panel.top=0 panel.bottom=900 header.top=1 header.bottom=35
+INFO c5 可滚前提读数: scrollHeight=2488 clientHeight=898 scrollTop=1590
+PASS [p1] #doc-panel 可滚前提下,滚到底时 #doc-panel-header 仍在面板可视区内: expected=scrollHeight > clientHeight ∧ header ⊆ panel(滚到底后) actual=header=[1.00, 35.00] panel=[0.00, 900.00]  # 0.5px 容差是浮点读数容差,不是几何放宽 —— 表头必须整体落在面板可视带内
+
+=== shot: 逐样本整窗截图(1440x900)===
+INFO shot p1: .planning/phases/idi-09-card-containers/screenshots/p1.png 1440x900
+PASS shot [p1] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot p12: .planning/phases/idi-09-card-containers/screenshots/p12.png 1440x900
+PASS shot [p12] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot p3: .planning/phases/idi-09-card-containers/screenshots/p3.png 1440x900
+PASS shot [p3] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot checking: .planning/phases/idi-09-card-containers/screenshots/checking.png 1440x900
+PASS shot [checking] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot archive: .planning/phases/idi-09-card-containers/screenshots/archive.png 1440x900
+PASS shot [archive] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+PASS shot 样本清单逐项一一对应(无缺项、无多余样本): expected=['p1', 'p12', 'p3', 'checking', 'archive'] actual=['p1', 'p12', 'p3', 'checking', 'archive']  # 来源 check-05 的 STATES=['p1', 'p12', 'p3', 'checking', 'archive']
+PASS shot 输出目录恰含 5 个 PNG: expected=['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png'] actual=['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png']
+
+=== 逐项结论 ===
+item c1: PASS  (26 条断言,0 FAIL,0 BLOCKED)
+item c2: PASS  (13 条断言,0 FAIL,0 BLOCKED)
+item c3: PASS  (3 条断言,0 FAIL,0 BLOCKED)
+item c4: PASS  (4 条断言,0 FAIL,0 BLOCKED)
+item c5: PASS  (5 条断言,0 FAIL,0 BLOCKED)
+item shot: PASS  (7 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)

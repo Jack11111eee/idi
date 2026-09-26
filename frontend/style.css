@@ -165,7 +165,15 @@
      --color-surface-page — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
      and is this phase's thinnest margin (0.15). Do NOT "play it safe" and step
      it darker (05-N-2 / Pitfall 4a). Because the step is already declared,
-     this phase adds ZERO tier-1 primitives. */
+     this phase adds ZERO tier-1 primitives.
+
+     Phase 9 update (the value above is unchanged — only the ground moved): both
+     consumers live in .panel-header, and the three panels are now opaque white
+     cards, so the colour is drawn on --color-surface-card, measured 4.77 there.
+     Once Phase 9 plan 02 sinks the page to gray-3 the page-ground reading is
+     4.18 — still >= NON-TEXT (3.0), but below TEXT (4.5). That is precisely why
+     the TEXT half of the manifest entry had to be re-attributed to the card
+     ground rather than the value being darkened. */
   --color-marker-active: var(--radix-blue-11);
 
   /* Tier 2 — event-kind vocabulary (its own closed group) */
@@ -474,7 +482,16 @@
      rather than the 50 a pattern map would project from the focus ring alone.
      The six numbers are not drift: the contract is
      "enumerate the combinations that actually render", and each successive value
-     layer changes which combinations occur. */
+     layer changes which combinations occur.
+
+     Phase 9 (card containers) changes no SIZE, so it adds no seventh number:
+     the manifest is still 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry.
+     What it changes is the GROUND of one group — two entries move from
+     --color-surface-page to --color-surface-card, because the four left-hand
+     panels and #doc-panel stopped being transparent / gray-2 and became white
+     cards, so the elements those two entries describe are now painted on the
+     card. The six numbers above stay a SIZE ledger; 53 is both the Phase 7 and
+     the Phase 9 size. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */
@@ -540,15 +557,26 @@
   /* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */
 
   /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
-     heading switches to the marker colour (SC 1.4.5). All three panels live
-     inside #main-pane, and #main-pane and its ancestors declare no background
-     (html, body is what sets --color-surface-page), so the ground is
-     --color-surface-page. The non-text half — the 3px inset bar, a state
-     indicator under SC 1.4.11 — sits with the other NON-TEXT pairs below. */
-  /* PAIR --color-marker-active ON --color-surface-page TEXT */
+     heading switches to the marker colour (SC 1.4.5). Phase 9 RE-ATTRIBUTES the
+     ground: all three panels now declare a card background (#main-pane > section
+     takes the card token), so the heading really is painted on the white card —
+     measured 4.77 >= 4.5 there. The previous --color-surface-page ground only
+     held while those panels were fully transparent, which is exactly what HEAD
+     was; the old entry was right then and is wrong now. The value is untouched —
+     re-attribution, not recolouring. The non-text half — the 3px inset bar, a
+     state indicator under SC 1.4.11 — sits with the other NON-TEXT pairs below. */
+  /* PAIR --color-marker-active ON --color-surface-card TEXT */
 
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
-  /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
+  /* the resting input / select boundary, ground re-attributed (Phase 9). This
+     token has ten consumers and every one of them is a resting input / select
+     border. The selects carry their own gray-2 background and are covered by the
+     entry just below. The inputs declare NO background, so Chrome paints the UA
+     field fill white and the border is drawn on white — a fact this file already
+     registered verbatim in the hover-boundary note further down, together with
+     the measured resting ratio 3.32 on white. So this is the honest re-location
+     of an ALREADY-RECORDED fact, not a new claim invented for Phase 9. */
+  /* PAIR --color-border-strong ON --color-surface-card NON-TEXT */
   /* PAIR --color-border-strong ON --color-surface NON-TEXT */
   /* the input controls' hover boundary (INTERACT-01 / D-10): a state indicator
      under SC 1.4.11, drawn on three grounds — every input / select sits either on
@@ -582,8 +610,18 @@
   /* PAIR --color-action-irreversible ON --color-surface NON-TEXT */
 
   /* the active sidebar panel marker, non-text half: the 3px inset bar is a state
-     indicator (SC 1.4.11), on the same --color-surface-page ground as its TEXT
-     half above. */
+     indicator (SC 1.4.11). Two facts, so that this entry is not read as an
+     oversight now that its TEXT half above moved to the card ground.
+
+     (a) The bar is drawn by the SAME element family as that TEXT half — both are
+     .panel-header inside the three panels — so its physical ground is also the
+     white card, and its card-ground ratio is 4.77.
+
+     (b) It deliberately STAYS on --color-surface-page, because that is the
+     stricter side: the page ground measures 4.65 on HEAD's gray-1 and 4.18 once
+     Phase 9 plan 02 sinks the page to gray-3 — both strictly BELOW the card's
+     4.77. Keeping the lower of the two ratios is a conservative reading, not a
+     missing update. */
   /* PAIR --color-marker-active ON --color-surface-page NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than

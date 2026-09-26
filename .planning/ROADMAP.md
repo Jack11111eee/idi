@@ -101,11 +101,11 @@
 - **范围蔓延到后续候选** —— 表格重做 / 圆角刻度收敛 / 图标与空状态**不在本阶段**(用户裁定先看效果)。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS;`scripts/check-02-contrast.py` PASS(受影响 PAIR 全部重算并登记,`ORDER` 断言不退化);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`);`node --check frontend/app.js`;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`,环境 `python3` 是 miniconda 会让 4 个 `ai_caller` 测试假失败);`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`。
-**Plans**: 3 plans
+**Plans**: 1/3 plans executed
 
 Plans:
 
-- [ ] `idi-09-01-PLAN.md` — 卡片令牌(围栏内 `--color-surface-card` / `--shadow-card`)+ 左栏 4 个 section 与右栏 `#doc-panel` 的卡片语言 + `#doc-panel-header` 底色跟随 + 2 条 PAIR 的地面重新归属(4.77 / 3.32)+ 新建运行时门 `check-09-idi09-validation.py`
+- [x] `idi-09-01-PLAN.md` — 卡片令牌(围栏内 `--color-surface-card` / `--shadow-card`)+ 左栏 4 个 section 与右栏 `#doc-panel` 的卡片语言 + `#doc-panel-header` 底色跟随 + 2 条 PAIR 的地面重新归属(4.77 / 3.32)+ 新建运行时门 `check-09-idi09-validation.py`
 - [ ] `idi-09-02-PLAN.md` — 密度收档(卡片间距 12px / 面板内边距 16px)+ 页面底色下沉到 `--radix-gray-3` + 画在页面上的 6 条 PAIR 逐条重算并登记(不是刷新旧值)+ 三层刻度与滚动契约的运行时门
 - [ ] `idi-09-03-PLAN.md` — 五条浏览器门复跑与失败分诊 + 四个静态门与 pytest 基线复核 + 5 个状态样本的截图(供用户评审)
 
@@ -124,9 +124,9 @@ Plans:
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
-| 9. 卡片容器化与页面底色下沉 | v1.15 | 0/0 | Not started | - |
+| 9. 卡片容器化与页面底色下沉 | v1.15 | 1/3 | In Progress | - |
 
-**v1.13 / v1.14 共 9 个阶段已收口。** v1.15 为**单一阶段**(Phase 9),尚未开始 —— 用户裁定「开一个 phase,先看看效果吧」,看过 Phase 9 的截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase。
+**v1.13 / v1.14 共 9 个阶段已收口。** v1.15 为**单一阶段**(Phase 9),**进行中** —— 计划 01/03 已完成(卡片容器化端到端落地);计划 02 起继续页面底色下沉与密度。用户裁定「开一个 phase,先看看效果吧」,看过 Phase 9 的截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase。
 
 ## Backlog
 

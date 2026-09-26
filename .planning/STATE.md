@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.14
 milestone_name: 前端视觉与可访问性
-current_phase: 08
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase idi-08 complete — all phases complete
-last_updated: "2026-09-24T15:33:24.969Z"
-last_activity: 2026-09-24
-last_activity_desc: Phase idi-08 complete
-state_head: 5a9100c9a989dae4441efcdb1eb95955976a0f02
+last_updated: "2026-09-26T04:43:21.606Z"
+last_activity: 2026-09-26
+last_activity_desc: Milestone v1.14 completed and archived
+state_head: 68ab0843ea5d94f88f9c59afb45c45e138dcdaaf
 progress:
   total_phases: 6
   completed_phases: 6
   total_plans: 21
   completed_plans: 21
   percent: 100
+current_phase: 08
 ---
 
 # Project State
@@ -28,12 +28,10 @@ See: .planning/PROJECT.md (updated 2026-09-24)
 
 ## Current Position
 
-Phase: idi-08
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-09-25 — Completed quick task 260925-iin: v1.14 收口前修复(自动跟随回归 + 5 项门/字面量收口)
-
-Progress: [████████████████████] 21/21 plans (100%)
+Phase: Milestone v1.14 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-26 — Milestone v1.14 completed and archived
 
 ## Performance Metrics
 
@@ -292,33 +290,4 @@ Resume file: .planning/v1.14-MILESTONE-AUDIT.md
 
 ## Operator Next Steps
 
-- **当前待办(一条):** **`/gsd-complete-milestone v1.14`**(已跑过一次审计,现续跑)。
-  - **里程碑审计结果:`.planning/v1.14-MILESTONE-AUDIT.md`,`status: gaps_found`。** 需求侧 34/38 satisfied + 4 条按设计保留人工半场、**0 条 unsatisfied**;缺口在**流程**维度 —— Phase 6 的 L-4 改动引入了一个零门覆盖的跨阶段回归(见下)。另有门诚实性 4 条、技术债若干、Nyquist 覆盖缺口 2 处(idi-04 / idi-06 缺 `VALIDATION.md`)。
-  - **审计发现的回归已由 quick `260925-iin` 修掉并补门**(五修一票:恢复自动跟随 + 补自动跟随门 + `.collapse-indicator` 第 8 档 + 订正陈旧诊断 + 新增 `FOCUSABLE_SELECTOR` 对齐门)。两组双向变异由编排器独立复现。
-  - **收口前必须裁决的一件事(审计后才浮现,先前裁决已失效):** 你此前选择「带覆盖收口」的理由是「终态由 Phase 8 在 `ad43f64` 重建验证,其后前端/脚本零改动」。`260925-iin` 改了 `frontend/app.js`(FIX 1)与 `scripts/check-05-ui-uat.py`(FIX 2/4/5),**六个阶段的 `covered_files` 全部命中 ⇒ 6/6 指纹作废**(此前是 5 stale + 1 passed)。二选一:(a) 在同一 HEAD 上逐个 `/gsd-verify-work` 复验 6 个阶段(已核:**没有任何 `VERIFICATION.md` 出现在别的阶段的 `covered_files` 里**,故 6 份结果可互相一致,代价 6 次冷启动);(b) 带覆盖收口,在 MILESTONES.md 记明「6 个阶段的验证在收口 HEAD 上未重做」。
-  - **收口时另需处理(均非阻断):** Nyquist 缺口记录(idi-04 / idi-06 建议 `/gsd-validate-phase`);审计标出的 4 条门标签宽于实测(L-5「每个」实为 9/10 行、L-6 只测可见行、item 10 SC4 固定 12 次 Tab 窗口、check-07 g1 措辞);`.planning/WINDOWS.md` 的 `windows append` 因既存台账不一致(`row id(s): 17`)被拒,`260925-iin` 未改该文件。
-  - **backlog `999.1` 两项均已关闭**(`.collapse-indicator` 字面量 → 第 8 档;`check-05:824` 陈旧诊断 → 订正)。**backlog `999.2` 的前提经实测确认成立,无需订正** —— 审计报告早先草稿曾错误否认它(把集成检查器的推断当事实),现已订正为实测结论:`<summary>` 在三个 fixture 里都不存在,item 9 那个是它自己用 `renderAnnotations` 造的探针。
-  - **一处刻意保留的陈旧散文(已分类,非疏漏):** `idi-05-UI-SPEC.md:1088` 与 `:110-111` 仍把 `.collapse-indicator` 的 20px 列为「不在本阶段(范围锁)」——它们是 Phase 5 的**范围记录**(表头自带阶段限定),不是禁令,故按计划声明的分类规则保留为历史。同类的 `:557-559` / `:913` / `:1337-1338` 亦然。
-- **当前待办(一条):** **`/gsd-complete-milestone v1.14`** —— 里程碑 v1.14(前端视觉与可访问性)6 个阶段全部收口:Phase 4 / 4.1 / 5 / 6 / 7 / 8,21/21 计划,ROADMAP `## Progress` 全 `Complete`。Phase 8 的收口记录:UAT **5/5 pass**(含用户裁定的两项设计决策 —— D-17 的 5″ 与 phase-5 视图下 351×0 的 `#round-doc` Tab 停靠点)、Nyquist 补齐 **3 处零覆盖需求**(A11Y-05 / A11Y-06 / A11Y-03 的 Escape 半场 —— 此前 `Escape` 一词在 `scripts/` 与 `backend/tests/` 里出现次数为 **0**;新增 `scripts/check-07-idi08-validation.py`,70 条断言)、`threats_open: 0`(14 条威胁,3 条 high 全部实测关闭)、UI 审计 **21/24**。
-  - **收口后追加了 quick `260924-vb7`(用户裁定「先修焦点,再收口」):** UI 审计优先级 1 —— `chooseTier()` 隐藏 `#tier-modal` 后不交还焦点,`document.activeElement` 回落到 `<body>`。修复置于 `await refreshChecksAfterStream()` **之后**(该刷新才复位按钮的 `disabled`,而 `.focus()` 对禁用按钮是 no-op —— 提前放会静默失效)。因 `frontend/app.js` 内容真变,`idi-08-VERIFICATION.md` 已按「内容真变 → 重新验证」重做(非重算指纹),现 `status: passed`,35/40(3 条自验)。
-  - **本阶段收口时的三条登记(不阻断里程碑归档):**
-    1. **`phase.complete` 的进度计数器第四次复现。** 本次把 `progress.completed_phases` 从 **6 改回 1**、`percent` **100 → 17**。与 Phase 5 / Phase 7 两次逐字同型;`requirements_updated: false`(未越权翻需求)、`total_plans`/`completed_plans`(21/21)均正确。已按 **`gsd_run query progress.bar --raw`**(返回 `21/21 plans (100%)`)校正为 **6/6 / 100%**。**新判据:`progress.bar` 可直接作权威值,不必手工从 ROADMAP 数。**
-    2. **T-idi08-11 的缓解措施被证伪,已登记为 AR-01。** 计划声称 `scripts/check-05-ui-uat.py` 本阶段**零改动**,实际被 `63fba08`(用户裁定的 L-5 收口)改动 +46/−2。实测归因:该改动使 **`idi-07` 的 VERIFICATION 由 fresh 转 `stale`**;`idi-04 / 04.1 / 05 / 06` 的 `stale` 在 Phase 8 开始**之前**就已存在(其 `frontend/style.css` / `REQUIREMENTS.md` 在 Phase 5/6/7 就变过),**不归因于本阶段**。补救是重跑那 5 个阶段的验证,不是改指纹。
-    3. **UI 审计另外两条优先级项的处置:** 优先级 2(`#selection-menu` 逃过 `inert` 且 z-index 高于弹窗)**经实测证伪** —— `openConfirmModal()` 全文件只有一个调用点(在 `#btn-authorize` 的 click 里),而 `app.js:1489` 的 document 级 `mousedown` 已在弹窗打开前关掉菜单;证据保留在 `scripts/probe-menu-modal-reachability.py` 与 `idi-08-UI-REVIEW.md` 的编排器复核附节。优先级 3(UI-SPEC 基线漂移)**成立但未修** —— 属文档债,待后续补登记。
-- ~~**当前待办:规划 Phase 8**~~ **已收口** —— `idi-07`(交互状态与焦点样式)收口:UAT 1/1 pass(唯一人工项 D-17 的 5″ 经用户确认)、`idi-07-VERIFICATION.md` `status: passed`(8/9 机器 + 1 具名人工)、`threats_open: 0`、Nyquist 0 缺口、UI 审计 19/24。
-- ~~**当前待办:规划 Phase 5**~~ **已完成** —— `idi-05` 的 3 个计划(`idi-05-01` / `idi-05-02` / `idi-05-03`)全部执行完毕,各有 SUMMARY。
-- **当前待办(一条):**
-  1. ~~**`/gsd-verify-work idi-05`**~~ **已收口(2026-09-21,`/gsd-execute-phase idi-05 --gaps-only`)** —— 计划 04 关闭 BLOCKER `G-idi-05-1`,verifier 独立复核报 9/9 must-haves `passed`;`phase.complete` 已执行(ROADMAP Phase 5 → `Complete 2026-09-21`,REQUIREMENTS 的 8 条阶段行已翻)。收口后两条门(`check-05 --item 7` / `check-06`)已在 post-complete 树上复跑,仍绿。**注:本次 `phase.complete` 未越权翻需求(`requirements_updated: false`),但把 `progress.completed_phases` 从 2 改回 1、`percent` 33 → 17 —— 已按 ROADMAP 的 `## Progress` 校正为 3 / 50%。**
-  2. **`/gsd-verify-work idi-04.1-radix`** —— **D-05 的连带义务,本计划已把输入备齐但未写指纹**。`idi-04.1-radix` 的 `covered_digest`(`v1:sha256:25d5f1fe…`)因 `frontend/style.css` 与 `scripts/check-05-ui-uat.py` 被 wave 1/2/3 改写而 **stale**;成因是**内容真变**,故走**重新验证**而非补指纹。重算后的全部数值与逐条核对结果见 `idi-05-03-SUMMARY.md` 的「D-05 复验记录」节(`ORDER 0.363` 不变 / `--color-text-info ON --color-surface-info` 4.53 逐字不变 / `--color-border-strong` 3.24+3.15 逐字不变 / 冻结轮 `opacity 1` + `filter saturate(0.6)` + `inset 3px 0 0` 琥珀 逐字不变 / tier-1 25 不变、tier-2 47 → **48**、清单 43 → **47**)。**`idi-04.1-VERIFICATION.md` 一字未改**(`git status --porcelain` 为空)。
-- ~~04.1 的上游三步路线~~ **已走完(2026-09-20)** —— discuss → ui-phase → plan → execute → verify 全程完成,4/4 计划交付,`idi-04.1-UAT.md` 3/3 pass。
-- ~~**当前待办:Phase 4 的复验收口**~~ **已收口(2026-09-20)** —— `/gsd-verify-work idi-04` 完成:
-  - 旧报告指纹 stale 成因为**内容真变**(04.1 重写了它覆盖的 `frontend/style.css` 值层,实测 `f4dd04b6…` → `cd9aa761…`),故走**重新验证**而非补指纹:新 `idi-04-VERIFICATION.md` 对 HEAD 逐条重核,`14/15`、`behavior_unverified: 0`,全部数值从 HEAD 重算(`ORDER 0.363`、43 对、`--color-text-muted` `rgb(100,100,100)` 5.62)。
-  - UAT 6 项全部与报告的人工项一一对应并复现(除第 5 项两次需真实 AI 调用的冒烟,沿用已记录的 `--ai-smoke` 证据)。
-  - 复核中发现一条**阶段后引入**的新缺口:`frontend/style.css:434` `.collapse-indicator { font-size: 20px; line-height: 1; }`(由 quick `260918-qrq` / `3684353` 在 Phase 4 收口后引入)。**用户裁定为 Phase 4 范围外**,以 `overrides:` 落证并指派到 backlog **`999.1`**(连同 `check-05-ui-uat.py:588` 的陈旧诊断文案)。TOKEN-08 因此标为 `Complete (PARTIAL — …)`。
-  - `phase.complete` 已跑:ROADMAP Progress 表 Phase 4 → `Complete 2026-09-20`;REQUIREMENTS.md 的 Phase 4 需求行随之翻转。两份报告(idi-04 / idi-04.1)的指纹因 `REQUIREMENTS.md` 被改而重算一次,各自在报告内披露。
-- **~~当前待办:规划 Phase 5~~ 已执行** —— `idi-05`(排版与视觉层级)3/3 计划完成,待 `/gsd-verify-work idi-05` 收口。Pitfall 7 把触碰 `.collapse-indicator` 的范围锁死为两处 `content:` emoji(本阶段已把这两处换成 mask 字形),而 backlog `999.1` 的第 1 项是该元素的 `font-size` —— 两者未互相覆盖,`.collapse-indicator` 逐字节与 HEAD 相同。
-  以下 S-1…S-4 签核项仍然有效(04.1 明令不改 S-1/S-2),规划器/执行器不得重新讨论,也不得执行任何一行式替代方案:
-  - **S-1** ✅ 批准:间距刻度保留 12 档,含 1/2/6/10/14 五个非 4px 倍数档(TOKEN-05 的七档是子集而非上限;压平会移动像素、违反 SC2)
-  - **S-2** ✅ 批准:保留 14px 为一级字号档(7 档而非字面 6 档;删除会同时打破 Phase 5 SC5 与 Phase 6 SC5)
-  - **S-3** ✅ 批准:控件边框 `#ccc` → `#8a8a8a`(10 处;本阶段最大视觉变更,依据 SC 1.4.11)
-  - **S-4** ✅ 批准:冻结轮删除 `opacity: 0.55`,改用 `filter: saturate(0.6)` + 琥珀色 `box-shadow: inset` 结构性标记(替代路线 opacity 0.65 会使 Phase 7 焦点环在冻结态降至 2.85:1、低于 3:1 非文本下限)
+- Start the next milestone with /gsd-new-milestone

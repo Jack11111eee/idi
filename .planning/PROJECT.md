@@ -8,57 +8,70 @@
 
 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤——总设计文档通过自检、界面提示「使命完成」即为终点(只读归档态)。
 
-## Current Milestone: v1.14 前端视觉与可访问性
+## Current State
 
-**Goal:** 把前端从"零设计契约下长出来的功能骨架"变成有设计契约、键盘可用、视觉可信的工具界面。
+**v1.14 前端视觉与可访问性 — ✅ SHIPPED 2026-09-25**(归档 2026-09-26)
 
-**Target features:**
-- **设计令牌体系** — 颜色/间距/字号/圆角四类 CSS 自定义属性 + 语义色分层,收掉 32 个硬编码 hex 与"0 个变量"的现状
-- **视觉层级** — G3 授权按钮的不可逆动作权重(现与例行「继续自检」视觉完全相同)、页面级层级(现全屏最大字是容器标签 `<h1>文档区</h1>`)、侧栏面板活动态、emoji 图标替代
-- **排版系统** — 字号阶梯(现 7 个字号、13px 用了 14 次)、字重层级(现仅 600/400 两档)、markdown 正文字号受控(现 `.markdown-body h1/h2/h3` 无 font-size 规则,落到浏览器默认)
-- **可访问性** — 全站 `:focus` 样式(现 grep 命中 0)、键盘可达性(`tabindex` 与 focus 样式必须一起定)、4 处 WCAG AA 对比度失败
-- **布局稳健性** — `#state-badge { right: 448px }` 魔法数、420px 侧栏内 4 个滚动容器套娃、窄窗口不破版
-- **交互状态** — hover/active/disabled/transition(现为 2/0/8/1)
+把前端从"零设计契约下长出来的功能骨架"变成有设计契约、键盘可用、视觉可信的工具界面。6 个阶段(4 / 4.1 / 5 / 6 / 7 / 8)、21 个计划、81 个任务,38 条需求全部交付。**零新增运行时依赖、零构建步骤**(DESIGN.md D-06 守住):六个范围域中五个是纯 `style.css` 改动,只有 Phase 8 触碰 `app.js` / `index.html`。
 
-**Source:** 六支柱 UI 审计 13/24、7 个 BLOCKER(`.planning/milestones/v1.13-phases/idi-03-g3/03-UI-REVIEW.md`)。其中 5 条功能性 BLOCKER 已于 2026-09-16 修复并合入 main(`b9664e0`);本里程碑收的是被显式延后的部分——延后理由一致:修法本身就是设计决策,必须先定契约再落地。
+**核心价值首次被前端兑现:** 不可逆的 G3 授权动作现在有独立的视觉处理(实心填充 + 白字 + 16px + 600,四个强调通道用满),不再与例行「继续自检」逐字节相同——工具此前在对自己说谎,现在不再。
 
-**Status: ✅ 完成 (2026-09-24)** — 6 个阶段全部交付:Phase 4(设计契约与令牌层)、4.1(Radix 颜色族重写)、5(排版与视觉层级)、6(布局稳健性)、7(交互状态与焦点样式)、8(可访问性语义与键盘)。21/21 计划完成。收口终审见 `.planning/REQUIREMENTS.md`(20/20 需求)。待 `/gsd-complete-milestone v1.14` 归档。
+**Next Milestone Goals:** 待 `/gsd-new-milestone` 定义。候选见下方 Active 段与 `.planning/ROADMAP.md` 的 Backlog(`999.1` / `999.2`)。
 
 ## Requirements
 
 ### Validated
 
+**v1.13 交互式讨论迭代系统 MVP**(DESIGN.md v1.13 全范围,20 条):
+
 - ✓ 行走骨架(阶段 1-2 全链路:进入/会话/发散/G1/恢复/权限门/双轨 AICaller/中止)— Phase 1
-- ✓ FLOW-01/02/03/06、UI-03、AI-01~05 共 10 条需求 — Phase 1(见 .planning/milestones/v1.13-phases/idi-01-1-2/01-VERIFICATION.md,8/8 真值 + UAT 6/6)
+- ✓ FLOW-01/02/03/06、UI-03、AI-01~05 共 10 条需求 — Phase 1(见 `.planning/milestones/v1.13-phases/idi-01-1-2/01-VERIFICATION.md`,8/8 真值 + UAT 6/6)
 - ✓ 轮次收敛循环(划词批注/大白话即时答/处理本轮批注 G2/轮次冻结/批注回应回写/§6.4 机器文法全解析)— Phase 2
-- ✓ FLOW-04/07、UI-01/02/04、DATA-01 共 6 条需求 — Phase 2(见 .planning/milestones/v1.13-phases/idi-02-g2/02-VERIFICATION.md,7/7 SC + UAT 7/7 零 gap)
+- ✓ FLOW-04/07、UI-01/02/04、DATA-01 共 6 条需求 — Phase 2(见 `.planning/milestones/v1.13-phases/idi-02-g2/02-VERIFICATION.md`,7/7 SC + UAT 7/7 零 gap)
 - ✓ 授权、自检与终点(G3 四处机械校验 + 确认词、DESIGN.md.tmp 原子落盘、宽松/严格自检两角色自动循环、D-22 残余裁决、崩溃自愈、使命完成只读归档)— Phase 3
-- ✓ FLOW-05、DATA-02/03/04 共 4 条需求 — Phase 3(见 .planning/milestones/v1.13-phases/idi-03-g3/03-VERIFICATION.md,5/5 ROADMAP 判据 + UAT 8 检查点,4 处运行时缺陷修复后复验 passed)
+- ✓ FLOW-05、DATA-02/03/04 共 4 条需求 — Phase 3(见 `.planning/milestones/v1.13-phases/idi-03-g3/03-VERIFICATION.md`,5/5 ROADMAP 判据 + UAT 8 检查点,4 处运行时缺陷修复后复验 passed)
 
-**全部 20 条需求(DESIGN.md v1.13 全范围)已交付并验证。**
+**v1.14 前端视觉与可访问性**(38 条,2026-09-25 收口;逐条状态与验证记录见 `.planning/milestones/v1.14-REQUIREMENTS.md`):
 
-- ✓ **v1.14 前端视觉与可访问性**(6 阶段 / 21 计划)— Phase 4 ~ Phase 8,2026-09-24 收口。范围:设计契约与令牌层(P4)、Radix 颜色族值层重写(P4.1)、排版与视觉层级(P5)、布局稳健性(P6)、交互状态与焦点样式(P7)、可访问性语义与键盘(P8)。需求清单与逐条状态见 `.planning/REQUIREMENTS.md`。
+- ✓ **TOKEN 8 条** — 单一围栏 `:root` 令牌块 + 颜色两层(primitive → semantic)/ 间距 / 字号 / 行高 / 字重 / 圆角 / `z-index` 单层;令牌块外零裸 `#hex`(117 → 0);primitive 名绝不出围栏 — Phase 4 + 4.1
+- ✓ **VISUAL 5 条** — `#btn-authorize` 的不可逆独立处理(实心 green-12 / 白字 / 16px / 600)、G1 两只第二档、页面级层级、侧栏活动面板标记、两处 emoji 改内联掩码字形 — Phase 5
+- ✓ **TYPE 3 条** — 字号刻度 5 → 7 → 8 档;`.markdown-body` 与 `renderMarkdown()` 全部 9 个注入目标获得显式 `font-size`(UA 默认与第四字重档 700 退出应用);字重三档分工 — Phase 5
+- ✓ **A11Y 9 条** — 全站 `:focus-visible`(七选择器,`--color-focus` 三条 PAIR 全达标)、`#round-doc` 的 Tab 停靠点、键盘划词路径、AA 对比度全量修复(含 opacity 合成面)、两个阻塞弹窗的 Escape + `role="dialog"` / `aria-modal` — Phase 4/7/8
+- ✓ **LAYOUT 4 条** — `#state-badge` 魔法数消除、窄窗口不破版(768px 承诺按实测收窄并登记 A-10)、badge 不再被横幅遮挡、侧栏滚动容器套娃收敛 — Phase 6
+- ✓ **INTERACT 2 条** — hover / active / disabled 覆盖(禁用态**未被软化**)、过渡限定 `background-color` / `border-color` 120ms + `prefers-reduced-motion` — Phase 7
+- ✓ **CHECK 4 条** — 四条零依赖契约校验命令(`check-01`…`check-04`),每条失败方向经变异证明 — Phase 4 + 4.1
+- ✓ **REG 3 条** — `.hidden` 注释的错误理由修正、`showInlineError` 结构性修复、`b9664e0` 五条修复人工验收项全量重跑 — quick `260917-fqh` + Phase 8
 
 ### Active
 
 **无。** v1.13 与 v1.14 两个里程碑的范围均已交付完毕,当前没有进行中的需求。
 
-下一个里程碑由 `/gsd-new-milestone` 定义。候选(尚未裁定,来自本里程碑执行期登记的 backlog):`999.1`(Phase 4 残留卫生项)、`999.2`(Phase 7 交互态契约暴露的三条既有 affordance 缺陷),以及各阶段登记为 v2 的延后项(`A11Y-V2-01/02` 焦点陷阱与其余弹窗语义、`FLOW-V2-01` 替换 `window.prompt`)。
+下一个里程碑由 `/gsd-new-milestone` 定义。候选(尚未裁定,来自本里程碑执行期登记的 backlog 与 v2 延后项):
+
+- `999.1`(Phase 4 残留卫生项)— 已在 v1.14 收口前的 quick `260925-iin` 中处置完毕,条目可关闭
+- `999.2`(Phase 7 交互态契约暴露的三条既有 affordance 缺陷)— 仍在 Backlog
+- `A11Y-V2-01/02`(焦点陷阱、其余非阻塞弹窗的 `role` / `aria-modal`)、`FLOW-V2-01`(替换两处 `window.prompt`)、`TOKEN-V2-01`(暗色模式)、`FLOW-V2-02`(`#probe-controls` 的移除或重定位)
+- 本里程碑审计登记的 4 条门标签宽于实测(见下方 Context 的技术债)
 
 ### Out of Scope
 
-见 DESIGN.md §1.5 与 REQUIREMENTS.md 的 Out of Scope 表——写代码实施本工具之外的功能、多项目并行、多人协作、云端部署、批注以外的文档编辑、AI 生成中途插话(v2 再议)。
+见 DESIGN.md §1.5 与 `.planning/milestones/v1.14-REQUIREMENTS.md` 的 Out of Scope 表——写代码实施本工具之外的功能、多项目并行、多人协作、云端部署、批注以外的文档编辑、AI 生成中途插话(v2 再议);v1.14 另显式排除暗色模式、组件级令牌层、CSS 框架 / 构建步骤、lint 流水线、完整 ARIA / 屏幕阅读器合规、焦点陷阱、图标库、骨架屏、动效体系、Storybook、移动端适配。
 
 ## Context
 
 - **设计已完成:** DESIGN.md v1.13,由 22 条已确认决策(D-01~D-22)、4 轮讨论(docs/discuss-round-0~4.md)、14 轮自检核查(docs/DESIGN-check-1~14.md)收敛而来。第 14 轮为 PASS 收口。
 - **为什么存在:** 用 AI 做项目最大的浪费是"开工前没对齐"。本工具把对齐流程产品化。
 - **唯一权威:** 一切入 implement 细节以 DESIGN.md 为准;`.planning/` 文档若与 DESIGN.md 冲突,DESIGN.md 胜出。
-- **当前代码状态(v1.13 shipped, 2026-09-13):** 13,322 LOC(不含 vendor);Python + FastAPI 后端(`backend/` 15 个测试文件,219 passed / 6 skipped),原生 HTML/JS 前端(`frontend/`,仅 vendored `marked.min.js`);SSE 事件直播 + 双轨 AICaller(SDK / 子进程);纯模块 `grammar.py`/`annotations.py`/`g3.py`/`checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
-- **已知技术债:** ①`SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧"无脏状态"语义仍成立);②`annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口);③STATE.md 在 `phase.complete` 后偶发字段异常(需人工修正)。
-- **方法论教训:** 真浏览器 UAT 抓出了机器级验证漏掉的 6 处真实缺陷(含一处高危无界自动链);文本级 gate 通过不等于运行时语义成立(详见 `.planning/RETROSPECTIVE.md`)。
-- **前端设计债(v1.14 的处理对象):** v1.13 的前端在**零设计契约**下建成——`DESIGN.md` §4 只规定了布局区域与交互语义,未规定任何间距刻度、字号阶梯、颜色令牌、断点或文案契约。2026-09-16 的六支柱审计给出 13/24,7 个 BLOCKER。对一个自称价值是"无歧义对齐"的工具而言,2435 行 UI 无设计契约本身就是结构性缺口。
-- **UAT 环境事实(省得重踩):** Playwright 必须用 `chromium.launch({ channel: 'chrome' })`,捆绑版 chromium 版本对不上;键盘文本选区**无法自动化**(连 `contenteditable` 都选不中),依赖 Shift+方向键的验收项必须标注为人工检查。
+- **当前代码状态(v1.14 shipped, 2026-09-25):** 后端 10,887 LOC(含测试;15 个测试文件,219 passed / 6 skipped)、前端 3,831 LOC(`style.css` 1708 / `app.js` 1854 / `index.html` 269);Python + FastAPI,原生 HTML/JS,仅 vendored `marked.min.js`。纯模块 `grammar.py` / `annotations.py` / `g3.py` / `checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
+- **v1.14 建立的设计契约面:** `frontend/style.css` 顶部单一围栏 `:root` 令牌块(8 档字号 / 5 条行高 / 4 个 `z-index` / 25 个 Radix primitive / 47 个 `--color-*`),外加 7 条零依赖校验命令(`scripts/check-01`…`check-07`)与 3 个一次性探针(`probe-05` / `probe-07` / `probe-menu-modal-reachability`)。**设计契约现在是可执行的,不是文档承诺。**
+- **已知技术债:**
+  ①`SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧"无脏状态"语义仍成立);
+  ②`annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口);
+  ③**`phase.complete` 的 STATE.md 进度计数器已四次复现异常**(`completed_phases` / `percent` 被往回改),不自愈;判据一律取 ROADMAP 的 `## Milestones` + `## Progress` 或 `gsd_run query progress.bar --raw`,不得从 `state.json` 推;
+  ④**4 条门标签宽于实测**(v1.14 审计 §7):L-5 称「每个」实为 9/10 行、L-6 只测可见行、`check-05` item 10 的 SC4 用固定 12 次 Tab 窗口、`check-07` g1 措辞与实测不符。四条都**不影响已通过的结论**,但门文本与其真实覆盖面不一致,是同一类「门绿但没在看」缺陷的温床;
+  ⑤`idi-04` 与 `idi-06` 缺 `VALIDATION.md`(Nyquist 覆盖缺口),已登记待补。
+- **方法论教训:** 真浏览器 UAT 抓出了机器级验证漏掉的真实缺陷(v1.13 六处、v1.14 一处跨阶段回归)。**文本级 gate 通过不等于运行时语义成立**,且**一条不能失败的门比没有门更糟**——v1.14 的 `check-05 --item 9` 不但漏掉 AI 事件自动跟随的回归,还正面断言了该回归的前提。变异测试是唯一能证明门真的会失败的手段。
+- **UAT 环境事实(省得重踩):** `check-05-ui-uat.py` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该路线的 `channel="chrome"` + headless 会挂死);Node 路线才用 `channel: 'chrome'`。键盘文本选区**无法自动化**(连 `contenteditable` 都选不中),依赖 Shift+方向键的验收项必须标注为人工检查。`check-05` 全量跑 exit=2 是因为 item 5 的两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归。
 
 ## Constraints
 
@@ -69,6 +82,7 @@
 - **语言**: 讨论文档以中文为主;面向用户的输出遵守 DESIGN.md §3.8 语言红线(简洁精准、大白话定义术语)
 - **Scope**: 代码实施不在本工具职责范围内(工具产出设计文档后归档;本仓库的"实施"是把这个工具本身建起来)
 - **Git**: 实施分支活动按仓库 CLAUDE.md 第 5 条纪律执行
+- **v1.14 遗留的编辑纪律(`style.css` / `app.js`,每个改动都必须遵守)** — 来源 `.planning/milestones/v1.14-ROADMAP.md` §全局硬规则:`grep -c '^\.hidden {' frontend/style.css` 恒为 1;`!important` **声明**数恒为 1(按声明计数,不能数命中行);**追加,不重排**(至少一对等特异性规则由源码顺序决定);不得新增 `!important`、不得令牌化 `display`、不得引入 `@layer` / `@property` / `var(--x, #fallback)`;零新增运行时依赖、零构建步骤;每个 `style.css` 计划必须带至少一项运行时验证
 
 ## Key Decisions
 
@@ -94,17 +108,18 @@
 | Phase 04.1:验证报告的 `covered_files` 必须覆盖相位目录内**全部** `*-PLAN.md` / `*-SUMMARY.md` | `verification.cjs:716` 的 `allCurrentArtifactsCovered` 要求逐一声明;idi-04.1-VERIFICATION.md 漏了 `01-PLAN.md`,仅此一项即令 `status=stale`,而指纹本身与记录值逐字节一致 | ✓ Good(补声明 + 重算指纹后 stale→human_needed→passed) |
 | Phase 4:阶段**收口后**引入的字面量不算该阶段的偏差,以 `overrides:` 落证而非静默放过 | `style.css:434` `.collapse-indicator { font-size: 20px; line-height: 1; }` 由 quick `260918-qrq`(`3684353`)在 Phase 4 收口(`0c658aa`)后约 20 小时引入;Phase 4 自己的提交区间干净、已交付枚举基线范围。用户裁定为范围外,但**必须留证并指派去向**,否则就是「无人认领的洞」 | ✓ Good(记入 `idi-04-VERIFICATION.md` 的 `overrides:` + `REQUIREMENTS.md` 标 `Complete (PARTIAL)` + backlog `999.1`) |
 | Phase 4:stale 的两种成因走**方向相反**的补救,不得混用 | 「内容真变」→ 重新验证(idi-04 的旧报告被取代,全部数值从 HEAD 重算);「记账性编辑」(UAT 状态归一、`phase.complete` 翻需求行)→ 重算指纹并**在报告内披露改了什么、为何不移动任何被核验的事实**。判据是拿 HEAD 内容重算指纹比对,不是看 mtime | ✓ Good(两条路径各自留证,未出现「重新盖章」掩盖内容变更) |
-| Phase 4:`REQUIREMENTS.md` 不该进 `covered_files`(待后续裁决) | 它同时存在于 `idi-04` 与 `idi-04.1` 的报告里,而 `phase.complete` **每次收口都会改它** → 任何一次阶段收口都会同时打掉此前所有覆盖该文件的报告(本次收口即打掉两份)。`covered_files` 的语义应是「其变更足以使本报告结论失效的输入」,需求索引表属**下游记账**,不满足该语义 | ⚠️ Revisit(建议移出 `covered_files`,或让 `phase.complete` 的翻转不参与指纹)|
-
+| Phase 4:`REQUIREMENTS.md` 不该进 `covered_files`(待后续裁决) | 它同时存在于 `idi-04` 与 `idi-04.1` 的报告里,而 `phase.complete` **每次收口都会改它** → 任何一次阶段收口都会同时打掉此前所有覆盖该文件的报告(本次收口即打掉两份)。`covered_files` 的语义应是「其变更足以使本报告结论失效的输入」,需求索引表属**下游记账**,不满足该语义 | ✓ Good(**v1.14 收口时采纳**:6 份报告全部移出 `REQUIREMENTS.md`,否则收口的 `git rm` 会二次打掉刚完成的 6 次复验) |
 | Phase 5:嵌入标题刻度 = 文档档沿**数值**阶梯下移一档(28→24 / 22→18 / 18→16),逐容器列举而非写全局 `h1,h2,h3` 规则 | 全局裸类型选择器特异性 0-0-1,对四处 chrome 覆盖与 `.markdown-body` 规则都是惰性的,于是「恰好只命中这五个失控容器」——看起来更省事,但无法表达三档各不相同,且会把**任何将来的标题**一并捕获,正是本缺陷(影响面不透明)的成因;枚举还能逐条对照 `app.js` 的调用点 | ✓ Good(G-idi-05-1 关闭;文档 h1 28 > 嵌入 h1 24 由 5 条严格不等式保证,不依赖 fixture 恰好有内容) |
 | Phase 5:渲染目标枚举**按 `renderMarkdown()` 调用点**而非按类名,并配一条会失败的静态普查守卫 | 同一类错误在本阶段发作了两次:plan 01 只探一个 `.markdown-body` 宿主,让 chrome 后代选择器的层叠缺陷活到执行期;修法把探针扩到 4 个宿主,但没问等价的反向问题「`renderMarkdown()` 到底注入到哪些容器」——`app.js` 有 10 个调用点 / 9 个目标,只枚举了 4 个 | ✓ Good(守卫比的是两个独立量:app.js 的 token 计数 vs `MARKDOWN_TARGETS` 条数,非自比) |
-| Phase 5:`phase.complete` 又一次把 `progress.completed_phases` / `percent` 往回改(2→1 / 33→17),收口后由编排器按 ROADMAP `## Progress` 校正 | 与 `advance-plan` 同一族缺陷(既往已有复现记录)。本次未越权翻需求(`requirements_updated: false`),但进度计数器仍不可信;`state.json` 的 phases 也不是判据来源 | ⚠️ Revisit(编排器每次收口后必须自己核盘并校正) |
+| Phase 5:`phase.complete` 又一次把 `progress.completed_phases` / `percent` 往回改(2→1 / 33→17),收口后由编排器按 ROADMAP `## Progress` 校正 | 与 `advance-plan` 同一族缺陷(既往已有复现记录)。本次未越权翻需求(`requirements_updated: false`),但进度计数器仍不可信;`state.json` 的 phases 也不是判据来源 | ⚠️ Revisit(已四次复现,编排器每次收口后必须自己核盘并校正) |
 | Phase 7:焦点环环色取字面值 `#1f63bd`,**不**采纳同族的 `--radix-blue-11` | 这是对已签核契约 S-4 的**字面遵从**,不是疏漏:S-4 的签核算术(`04-UI-SPEC.md`)就是用这个值算的。`blue-11` 在归档态 0.75 合成下实测 **3.03:1** —— 余量仅 0.03,任何后续微调都会把它推回线下;`blue-12` 是高对比**文本**档,作 2px 环会被读成边框而非焦点指示。环色因此进围栏并带「不得修正」注释 | ✓ Good(三条 PAIR 实测 5.72 / 5.57 / 3.45 全达标;围栏注释逐字禁止「顺手修正」) |
 | Phase 7:禁用态的 hover 闸门**落在既有 `button:hover` 规则的选择器上**(就地改写为 `:where(:not(:disabled))`),而非给每个禁用控件补一条反向规则 | 就地改写让特异性**逐位不变**(`:where()` 计 0),从而不会与九组既有填充规则发生层叠竞速;补反向规则则会新增一个需要与既有规则比特异性的竞争者。同样的推理让朴素 `:active` **刻意停在 0-1-0** —— 升到 0-1-1 就会靠源码顺序夺走 `button.primary` / `.overlay-card button` 的填充底色 | ✓ Good(SC5′ 用真实 `renderVerdictCard` + 真实 `.disabled` 断言「hover 背景 == 静默背景」;变异测试证明去掉 gate 或让位即变红) |
-| Phase 7:`phase.complete` 的 STATE.md 字段异常**第三次**复现(本次 `completed_phases` 4→1、`percent` 67→17),收口后由编排器按 ROADMAP `## Progress` 校正为 5 / 83% | 与 Phase 5 那次逐字同型(`total_plans` / `completed_plans` 与未越权翻需求这两点本次均正确,只有进度计数器错)。**已注册的 `tech-debt`,不是新缺陷**;但三次复现说明该缺陷不会自愈,编排器每次收口后必须自己核盘 | ⚠️ Revisit(判据一律取 ROADMAP 的 `## Milestones` + `## Progress`) |
-| Phase 8:`phase.complete` 的进度计数器**第四次**复现(`completed_phases` 6→1、`percent` 100→17),收口后由编排器按 `progress.bar` 校正为 6/6 / 100% | 与 Phase 5 / Phase 7 两次逐字同型:进度计数器错,而 `requirements_updated: false`(未越权翻需求)与 `total_plans/completed_plans` 均正确。**本次新增一条判据**:权威值可直接取 `gsd_run query progress.bar --raw`,它返回 `21/21 plans (100%)` —— 比手工从 ROADMAP 数更快且同样可靠 | ⚠️ Revisit(已第四次复现,`tech-debt` 确认不自愈) |
 | Phase 8:选档成功后的焦点交还必须放在 `await refreshChecksAfterStream()` **之后**,不能紧跟 `syncBackgroundInert()` | `continueCheckBtn.disabled` 在检查在途时为 `true`,而 Chrome 的 `.focus()` 对**禁用按钮是 no-op**;`disabled` 的复位恰在 `refreshChecksAfterStream()` 内。提前放会静默失效——diff 看起来是对的、缺陷却仍然存活,比原缺陷更糟(读起来像已修)。UI 审计把它列为优先级 1,用户裁定「先修焦点,再收口」 | ✓ Good(先写出守卫看它红 `expected=btn-continue-check actual=BODY`,再修至绿;判别控制证明绿非恒绿) |
 | Phase 8:`chooseTier()` 的成功路径**交还焦点**,而 `#confirmation-modal` 的「放行」路径**不交还** —— D8-10 的豁免收窄为只覆盖后者 | 豁免援引的「F1 不覆盖情形①」(整个视图即将切换)是为确认弹窗写的:放行后视图确实切换、触发者随之隐藏,钉回焦点是错的。选档成功**不切换视图**,反而让 `#btn-continue-check`(「继续自检」)变得可见 —— 正是 D8-10 自己所说的「可继续自检流程」那个位置,故豁免不适用 | ✓ Good(D8-10 + §焦点契约情形① 同步收窄;check-07 item g4 钉死该行为) |
+| **v1.14 收口:预收口审计发现一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),用户裁定「先修回归,再收口」** | Phase 6 的滚动容器收敛从 `.event-list`(= `#ai-events`)原地删掉 `max-height` / `overflow-y`,使其计算为 `overflow-y: visible`;`app.js:253` 的 `eventsEl.scrollTop = scrollHeight` 按 CSS 规范成为 no-op(非滚动元素的 `scrollTop` 恒为 0)。**没有任何东西替代它**,而本里程碑的其他五个范围域都动过 `style.css` | ✓ Good(修法:追加节点上 `item.scrollIntoView({ block: 'nearest' })`,把最新条目滚入外层 `#main-pane`;**不回退 L-4**——恢复内滚动会打破 `check-05 --item 9` 的滚动者普查) |
+| **v1.14 收口:一条不能失败的门比没有门更糟 —— 新门必须用变异证明会 FAIL** | `check-05 --item 9` 不但零覆盖该回归,**还正面断言了回归的前提**(`#ai-events 计算 max-height == none # L-4:套娃第一层(55vh 限高 + 内滚动)已原地删除`),其唯一的滚动行为断言「末条内容可达」自己设 `c.scrollTop = scrollHeight` —— 那是「显式滚动下的可达性」,与「自动跟随」是两个性质 | ✓ Good(新断言驱动 app 自己的 `renderEvent` 路径追加 N 条,断言最新条目落在 `#main-pane` 可视盒内且**不动 `scrollTop`**;变异证明 `after=0 last=[2569,2621] pane=[0,900]` 转 FAIL。**本里程碑反复出现的缺陷类就是这一类**) |
+| **v1.14 收口:`.collapse-indicator` 的 20px 走「加第 8 档」而非重映射** | backlog `999.1` 的三条候选(加档 / 重映射到 18-24 / 加 L-6 例外)中,加档是唯一**保持字形渲染尺寸不变**的;重映射会改已出货的 ▾/▸ 视觉,加例外则让 `20px` 永久留在出货 chrome 里 | ⚠️ Revisit(新增 `--text-lg-plus: 20px` + `--lh-none: 1`,字号刻度 7 → 8 档;**命名阶梯因此非单调**(xl=24 > 2xl=22),属已登记的 D-07 冲突,不得"顺手修正") |
+| **v1.14 收口:收口类型 = `verified_closeout`** | 6/6 阶段在 `0b6283a` 全部复验 `passed`,`all_phases_verified = true`;不再需要 `override_closeout`。前提是先把被本次修复作废的 6 份指纹**全部重算并重新验证**,而不是刷新旧指纹(刷新等于断言"自验证以来什么都没变",而这里是假的) | ✓ Good(6 份报告逐份以 HEAD 内容重算 digest;`REQUIREMENTS.md` 同时移出全部 `covered_files` 以吸收收口自身的 `git rm`) |
 
 ---
-*Last updated: 2026-09-24 after Phase 8 (可访问性语义与键盘) — 里程碑 v1.14 收口:UAT 5/5 pass(含用户裁定的 D-17 与零高度 Tab 停靠点两项设计裁定)、Nyquist 补齐 3 处零覆盖需求(A11Y-05/06/03 的 Escape 半场,新增 `scripts/check-07-idi08-validation.py`)、`threats_open: 0`、UI 审计 21/24;收口后追加 quick `260924-vb7` 修复选档成功路径的焦点丢失(UI 审计优先级 1,用户裁定「先修焦点,再收口」)。下一里程碑待 `/gsd-new-milestone` 定义*
+*Last updated: 2026-09-26 after v1.14 milestone — 6 阶段 / 21 计划 / 81 任务 / 38 需求全部交付并归档;预收口审计抓到并修复一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),6 个阶段的指纹因此全部作废并逐份重新验证;`check-05` 新增一条经变异证明的自动跟随门、`check-07` 新增 `FOCUSABLE_SELECTOR` ↔ `:focus-visible` 对齐门;`.collapse-indicator` 的 20px 加为第 8 档字号。下一里程碑待 `/gsd-new-milestone` 定义*

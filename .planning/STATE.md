@@ -1,20 +1,16 @@
 ---
 gsd_state_version: "1.0"
-milestone: v1.14
-milestone_name: 前端视觉与可访问性
-status: Awaiting next milestone
-stopped_at: Phase idi-08 complete — all phases complete
-last_updated: "2026-09-26T04:43:21.606Z"
+milestone: v1.15
+milestone_name: 视觉构图升级
+status: planning
+last_updated: "2026-09-26T09:06:26.162Z"
 last_activity: 2026-09-26
-last_activity_desc: Milestone v1.14 completed and archived
-state_head: 68ab0843ea5d94f88f9c59afb45c45e138dcdaaf
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 21
-  completed_plans: 21
-  percent: 100
-current_phase: 08
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -28,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-09-26)
 
 ## Current Position
 
-Phase: Milestone v1.14 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-09-26 — Milestone v1.14 completed and archived
+Status: Defining requirements
+Last activity: 2026-09-26 — Milestone v1.15 started
 
 ## Performance Metrics
 

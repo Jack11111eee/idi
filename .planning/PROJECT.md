@@ -8,6 +8,17 @@
 
 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤——总设计文档通过自检、界面提示「使命完成」即为终点(只读归档态)。
 
+## Current Milestone: v1.15 视觉构图升级
+
+**Goal:** 把界面的**构图层次**补齐。v1.14 的设计纪律全部花在了**正确性**(颜色 / 对比度 / 焦点环),**构图**(容器层次、视觉重量、组件变体)从未被任何阶段覆盖 —— 界面因此仍然"丑"。本里程碑按 shadcn/ui 的**配方**(不引入其依赖,见 Context 的可行性结论)逐层收敛。
+
+**Target features:**
+
+- **Phase 9(首个,先看效果):** 卡片化 —— 左栏 4 个 section 与右栏文档区从裸贴页面底色(`--color-surface-page`)改为卡片容器(圆角 + 边框 + 极轻阴影 + 内边距),让界面首次拥有 elevation 层次
+- **后续 phase 待 Phase 9 效果确认后再定**(用户裁定「先看看效果」):表格重做(全边框 → 只留横向分隔线)/ 圆角刻度收敛 / 图标与空状态
+
+**硬约束:** 遵守 `scripts/check-01-token-conformance.sh`(令牌块外零裸 `#hex`、零 tier-1 原语引用)与 `check-02` 对比度门禁;复用现有 `--color-*` 语义令牌,**不新增 tier-1 原语**;零新增运行时依赖、零构建步骤(DESIGN.md D-06)。
+
 ## Current State
 
 **v1.14 前端视觉与可访问性 — ✅ SHIPPED 2026-09-25**(归档 2026-09-26)
@@ -16,7 +27,7 @@
 
 **核心价值首次被前端兑现:** 不可逆的 G3 授权动作现在有独立的视觉处理(实心填充 + 白字 + 16px + 600,四个强调通道用满),不再与例行「继续自检」逐字节相同——工具此前在对自己说谎,现在不再。
 
-**Next Milestone Goals:** 待 `/gsd-new-milestone` 定义。候选见下方 Active 段与 `.planning/ROADMAP.md` 的 Backlog(`999.1` / `999.2`)。
+**Next Milestone Goals:** v1.15 视觉构图升级(见上方 `## Current Milestone`)。
 
 ## Requirements
 
@@ -64,6 +75,12 @@
 - **唯一权威:** 一切入 implement 细节以 DESIGN.md 为准;`.planning/` 文档若与 DESIGN.md 冲突,DESIGN.md 胜出。
 - **当前代码状态(v1.14 shipped, 2026-09-25):** 后端 10,887 LOC(含测试;15 个测试文件,219 passed / 6 skipped)、前端 3,831 LOC(`style.css` 1708 / `app.js` 1854 / `index.html` 269);Python + FastAPI,原生 HTML/JS,仅 vendored `marked.min.js`。纯模块 `grammar.py` / `annotations.py` / `g3.py` / `checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
 - **v1.14 建立的设计契约面:** `frontend/style.css` 顶部单一围栏 `:root` 令牌块(8 档字号 / 5 条行高 / 4 个 `z-index` / 25 个 Radix primitive / 47 个 `--color-*`),外加 7 条零依赖校验命令(`scripts/check-01`…`check-07`)与 3 个一次性探针(`probe-05` / `probe-07` / `probe-menu-modal-reachability`)。**设计契约现在是可执行的,不是文档承诺。**
+- **v1.15 范围裁定依据(shadcn/ui 可行性结论,2026-09-26 实地核查):** 已克隆 `shadcn-ui/ui` 并逐层核对,结论是**不能引入,但可借鉴配方**。
+  ①**不能引入:** 组件是 `.tsx`(React + Tailwind + Radix primitives,`apps/v4/registry/new-york-v4/ui/` 共 61 个),与「原生 HTML/JS、零构建」(D-06)直接冲突;`npx shadcn init` 会装 npm 依赖并改写 tsconfig。
+  ②**但配色层面本项目并不落后** —— `frontend/style.css` 已在用 Radix Colors 12 步语义刻度(`--radix-gray-1` 等,Phase 4.1 的成果),与 shadcn 同源。**缺的是构图,不是颜色。**
+  ③**可借鉴:** Card / Table / Badge / Button 的视觉配方数值;单一 `--radius` + `calc()` 派生的圆角刻度(天然不会像现有 `--radius-sm:8 / md:10 / lg:28` 那样漂);语义 token **别名**层(以新增别名方式加在现有 token 之后、不动现有名 ⇒ 门禁不受影响);lucide 图标可 vendored 成 SVG(与 `vendor/marked.min.js` 同路子,无构建)。
+  ④**最大风险:** `check-05-ui-uat.py` / `check-06` / `check-07` / `probe-05` / `probe-07` 五条门大量断言绑死具体 DOM 与 computed style(焦点环 2px、`--color-focus` 解析值、sticky 表头、badge 流内机制、滚动容器收敛、命中区 24×24),**改样式极易打破,每次改动必须复跑**。
+  ⑤**影响面已实测收窄:** `--radius-lg`(28px)只被 2 处消费(聊天气泡、`#chat-input-row input`),`--radius-pill` 被 5 处消费 ⇒ 圆角收敛的风险面很小。
 - **已知技术债:**
   ①`SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧"无脏状态"语义仍成立);
   ②`annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口);
@@ -121,5 +138,22 @@
 | **v1.14 收口:`.collapse-indicator` 的 20px 走「加第 8 档」而非重映射** | backlog `999.1` 的三条候选(加档 / 重映射到 18-24 / 加 L-6 例外)中,加档是唯一**保持字形渲染尺寸不变**的;重映射会改已出货的 ▾/▸ 视觉,加例外则让 `20px` 永久留在出货 chrome 里 | ⚠️ Revisit(新增 `--text-lg-plus: 20px` + `--lh-none: 1`,字号刻度 7 → 8 档;**命名阶梯因此非单调**(xl=24 > 2xl=22),属已登记的 D-07 冲突,不得"顺手修正") |
 | **v1.14 收口:收口类型 = `verified_closeout`** | 6/6 阶段在 `0b6283a` 全部复验 `passed`,`all_phases_verified = true`;不再需要 `override_closeout`。前提是先把被本次修复作废的 6 份指纹**全部重算并重新验证**,而不是刷新旧指纹(刷新等于断言"自验证以来什么都没变",而这里是假的) | ✓ Good(6 份报告逐份以 HEAD 内容重算 digest;`REQUIREMENTS.md` 同时移出全部 `covered_files` 以吸收收口自身的 `git rm`) |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-09-26 after v1.14 milestone — 6 阶段 / 21 计划 / 81 任务 / 38 需求全部交付并归档;预收口审计抓到并修复一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),6 个阶段的指纹因此全部作废并逐份重新验证;`check-05` 新增一条经变异证明的自动跟随门、`check-07` 新增 `FOCUSABLE_SELECTOR` ↔ `:focus-visible` 对齐门;`.collapse-indicator` 的 20px 加为第 8 档字号。下一里程碑待 `/gsd-new-milestone` 定义*
+*Last updated: 2026-09-26 after v1.14 milestone — 6 阶段 / 21 计划 / 81 任务 / 38 需求全部交付并归档;预收口审计抓到并修复一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),6 个阶段的指纹因此全部作废并逐份重新验证;`check-05` 新增一条经变异证明的自动跟随门、`check-07` 新增 `FOCUSABLE_SELECTOR` ↔ `:focus-visible` 对齐门;`.collapse-indicator` 的 20px 加为第 8 档字号。**v1.15 视觉构图升级已启动(见上方 `## Current Milestone`),首个 phase 为卡片化;本次同时回填了 `## Evolution` 结构段(本项目建于该特性之前)***

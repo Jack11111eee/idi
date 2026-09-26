@@ -76,6 +76,8 @@
 - `--color-surface-page` 换值为 `--radix-gray-3`(#f0f0f0):页面底色与白卡片形成明确层次(现值 `rgb(252,252,252)` 是全场最亮,层次是反的)。
 - 左栏 4 个面板 + 右栏文档区的**卡片容器规则**(白底 + 可见边界 + 圆角 + 极轻阴影 + 内边距 + 卡片间可见间隙),**追加不重排**。
 - `scripts/check-02-contrast.py` 围栏内 PAIR 清单的**重算与登记**:现有 54 条配对中有 **8 条画在 `--color-surface-page` 上**(`style.css` 第 455 / 465 / 470 / 514 / 523 / 526 / 542 / 562 行:`--color-text` / `--color-text-secondary` / `--color-text-muted` / `--color-focus` / `--color-marker-active` ×2(TEXT + NON-TEXT)/ `--color-border-strong` / `--color-border-hover`)。页面换值后这 8 条全部失效,须逐条以 HEAD 内容重新计算比值后登记(不是刷新旧值)。
+  **其中 2 条会直接 FAIL(已实测,规划期预判):** `--color-marker-active` TEXT **4.18 < 4.5**、`--color-border-strong` NON-TEXT **2.91 < 3.0**。原因是二者都是**中间调**前景(blue-11 `#0d74ce` / gray-9 `#8d8d8d`)—— 页面变暗会让深色前景对比度上升,却让中间调**下降**,与直觉相反。
+  **解法 = 重新归属,不是调色、也不是放宽阈值:** 这 2 条的元素全部画在**面板内部** —— `--color-marker-active` 仅 2 处消费者(`style.css:1429` / `1434`,`#session-panel`/`#annotations-panel`/`#checks-panel` 的 `.panel-header` inset 竖条 + h2 颜色);`--color-border-strong` 的 10 处消费者(`701/710/717/850/1040/1082/1224/1288/1316/1378`)全是 input/select 的静止边框。它们今天被记为 ON surface-page,是因为面板当前**完全透明**、页面底色透上来;卡片化后它们坐在**白卡片**上 ⇒ 配对须改记为卡片底色,在白底实测 **4.77 / 3.32,双双达标**。**因此本阶段不需要改任何颜色值、不需要引入新 primitive。**
 - 五条浏览器门的复跑记录(`check-05` / `check-06` / `check-07` / `probe-05` / `probe-07`),含 `check-05` 全量结果与 item 5 两条 BLOCKED 腿的按设计说明。
 - 供用户评审的**截图** —— 用户将据此裁定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase。
 
@@ -85,11 +87,12 @@
 2. 右栏文档区呈现为**同族卡片**(同底色 / 同边框语言 / 同圆角 / 同阴影),其原有的 `border-left: 1px` 凹陷读感被卡片语言取代。
 3. 页面底色确实**比卡片更暗**:`body` 的计算底色为 gray-3(`rgb(240,240,240)`),与白卡片构成可见层次;屏幕上同时可见的三档顺序正确 —— gray-3(页面)< gray-2(`--color-surface`,控件内陷面)< 白(卡片),控件内陷面仍读作"凹"、卡片仍读作"凸"。
 4. 卡片令牌全部落在围栏 `:root` 内:`scripts/check-01-token-conformance.sh` 通过(令牌块外零裸 `#hex`、零 tier-1 原语引用);圆角取自现有 `--radius-*` 刻度;阴影零位移、不参与布局。
-5. 页面换值后 `scripts/check-02-contrast.py` 全部对比度对仍达标 —— 画在 `--color-surface-page` 上的 **8 条** PAIR 逐条以 HEAD 内容重算比值、以 `/* PAIR */` 注释**登记**(非刷新旧值);五条浏览器门复跑**无新增失败** —— 折叠行为 / 滚动容器收敛 / sticky 表头 / badge 流内机制 / 焦点环 / 24×24 命中区 / 窄窗口不破版全部保持。
+5. 页面换值后 `scripts/check-02-contrast.py` 全部对比度对仍达标 —— 画在 `--color-surface-page` 上的 **8 条** PAIR 逐条以 HEAD 内容重算比值、以 `/* PAIR */` 注释**登记**(非刷新旧值);其中重算后不达标的 2 条(`--color-marker-active` TEXT 4.18、`--color-border-strong` NON-TEXT 2.91)已按**卡片化后元素的实际绘制面**重新归属到卡片底色,并在白底实测达标(4.77 / 3.32),**全程未改动任何颜色值、未新增 primitive、未放宽阈值**;五条浏览器门复跑**无新增失败** —— 折叠行为 / 滚动容器收敛 / sticky 表头 / badge 流内机制 / 焦点环 / 24×24 命中区 / 窄窗口不破版全部保持。
 
 **Avoids** (Pitfalls):
 
-- **"刷新"旧 PAIR 值** —— `--color-surface-page` 现值是 `var(--radix-gray-1)`(#fcfcfc),换值会使画在其上的 **8 条** PAIR(见 Deliverables)全部失效;刷新等于断言"自验证以来什么都没变",而这里是假的。必须逐条以 HEAD 内容重算并登记 —— 实测基线里 `--color-marker-active on --color-surface-page` 是 **4.65:1**(余量仅 0.15),页面下沉到 gray-3 后它的比值必然改变,这正是"照抄旧值"会漏掉的那一类。
+- **"刷新"旧 PAIR 值** —— `--color-surface-page` 现值是 `var(--radix-gray-1)`(#fcfcfc),换值会使画在其上的 **8 条** PAIR(见 Deliverables)全部失效;刷新等于断言"自验证以来什么都没变",而这里是假的。必须逐条以 HEAD 内容重算并登记。**注意:其中 2 条重算后是 FAIL,不是"数值变了但仍达标"**(见 Deliverables 的实测值与重新归属解法)—— 把它们当成"重算一下就好"会在执行期撞墙。
+- **为救 2 条 FAIL 去动颜色值或放宽阈值** —— 两者都是错的方向。`check-01` 的硬不变式禁止在围栏外引用 tier-1 原语,而改 `--radix-blue-11` / `--radix-gray-9` 的值会连锁影响它们的**全部**其他配对(二者分别被多处消费);放宽 `check-02` 的 4.5 / 3.0 阈值则是**把门改小以让结论成立**,是本仓库明令禁止的"门绿但没在看"。正解只有一条:**把配对重新归属到卡片底色**(见 Deliverables)—— 因为卡片化本身确实改变了这些元素的绘制面,这不是变通,是如实登记。
 - **重排规则** —— 至少一对等特异性规则由源码顺序决定;重排即渲染变更,而源码 diff 看起来完全无辜。只追加。
 - **计数门的算术陷阱** —— `check-04` 数的是 `!important;` **声明**数(恰为 1),不是命中行数;解释性注释的散文会把 `grep -c` 顶高(本项目已因此红过三次)。
 - **为凑卡片效果删掉 `#doc-panel` 的 `overflow-y: auto`** —— 它是另一列的滚动者,L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删它会同时打破 L-1 与计数门(期望值是 4 不是 3)。

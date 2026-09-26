@@ -284,6 +284,31 @@
   --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
   --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
 
+  /* Tier 2 — the card container language (Phase 9 / VIS-01 / VIS-02 / CARD-01 /
+     CARD-02). Five load-bearing facts, so that a later reader does not "fix"
+     either token away.
+
+     1. The SURFACE RELATIONSHIP is a three-step ladder the user adjudicated
+        (D-9-1, PROJECT.md Key Decisions — do NOT reopen it): page
+        (--radix-gray-3 after Phase 9 plan 02) < --color-surface (gray-2, the
+        inset ground of controls) < white (the card). It is the shadcn
+        canvas / inset / raised trio.
+
+     2. The shadow value is the user's adjudicated one (D-9-3). It is almost
+        invisible on purpose: the elevation reads mainly from the boundary plus
+        the ground difference (delta L ~ 6%), not from the shadow.
+
+     3. The shadow MUST be zero-displacement — it is an ordinary box-shadow,
+        never a margin / position trick that fakes a lift and costs layout.
+
+     4. The card RADIUS is deliberately NOT declared here: cards take the
+        existing --radius-md (VIS-02 — zero new radius values).
+
+     5. --color-surface-card is an alias of --white, which is already declared
+        at the top of this fence => Phase 9 adds ZERO tier-1 primitives. */
+  --color-surface-card: var(--white);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+
   /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
   --color-border-danger-subtle: var(--radix-red-7);
@@ -602,9 +627,26 @@ html, body {
   min-width: 0;
 }
 
+/* 左栏四个面板的卡片语言(Phase 9 / CARD-01 / CARD-02)。就地扩写既有规则体,
+   选择器文本与源码顺序逐字不变 —— 硬规则 3「追加,不重排」的落地形态。
+
+   ① 边界色取 --color-border-subtle:它已经是 #doc-panel 与 .event-list 的容器边界色,
+      即本文件既有的容器边界语言 ⇒ 零新增令牌。不得顺手换成别的令牌,也不得为卡片
+      新声明一个边界令牌。
+   ② 本规则体内**禁止**出现 transform / filter / will-change / contain / perspective /
+      opacity / position / z-index / overflow 任何一项。#stream-banner 是 #doc-panel 的
+      后代且 position: fixed,前六个属性会建立「fixed 定位包含块」或新层叠上下文,把它
+      钉到卡片上而不是视口;overflow: hidden 会裁剪 :focus-visible 的 2px 焦点环 ——
+      左栏卡片**不需要**它,因为 .panel-header 自身的 border-radius 已是 --radius-md,
+      不会把卡片四角顶成方角。
+   ③ 阴影取 --shadow-card,零位移,不参与布局。 */
 #main-pane > section {
   width: 100%;
   max-width: 768px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
 }
 
 /* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条) */

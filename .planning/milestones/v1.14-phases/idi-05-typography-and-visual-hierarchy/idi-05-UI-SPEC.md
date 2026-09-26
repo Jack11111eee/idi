@@ -22,7 +22,7 @@ supersedes_sections: ["Typography"]
 
 | 节 | 权威来源 |
 |---|---|
-| `## Typography`(本文件) | **本文件** —— 它重写 `04-UI-SPEC.md` 的 `## Typography` 节(5 档 → 7 档) |
+| `## Typography`(本文件) | **本文件** —— 它重写 `04-UI-SPEC.md` 的 `## Typography` 节(5 档 → 7 档;后由 quick `260925-iin` 增至 **8 档**,见 §最终字号阶梯) |
 | `## Color` / `## Contrast Verification` | `.planning/phases/idi-04.1-radix/idi-04.1-UI-SPEC.md` —— **本文件不重写它们**;本文件只**增补** Phase 5 新增的 4 条 PAIR 与 4 条令牌值改动,并逐条标明增补点 |
 | Spacing Scale(S-1,12 档) | `04-UI-SPEC.md` —— **已签核,本阶段一字不动** |
 | Design Decisions Q1–Q7 | `04-UI-SPEC.md`(Q2 的「Phase 5 applies」由本文件兑现;Q7 的机制被 D-20 刻意替换,见 §契约修正登记) |
@@ -163,7 +163,7 @@ Phase 5 的标题改动没有溢出到 chrome**。D-02 之所以能把 `#brainst
 
 ### 最终字号阶梯(D-06 / D-07,定稿)
 
-**7 档。** 5 → 7,新增两档。**正文本体保持 16px**(`--text-md`)不变 —— DESIGN.md 的阅读尺寸不动。
+**8 档。** 5 → 7 新增两档(Phase 5);7 → 8 新增一档(quick `260925-iin`,`--text-lg-plus` 20px)。**正文本体保持 16px**(`--text-md`)不变 —— DESIGN.md 的阅读尺寸不动。
 
 | 档 | Token | 值 | 与契约(`04-UI-SPEC.md`)的关系 |
 |---|---|---|---|
@@ -171,9 +171,10 @@ Phase 5 的标题改动没有溢出到 chrome**。D-02 之所以能把 `#brainst
 | 2 | `--text-base` | 14px | 同(**S-2 已签核的一级字号档,不得删**) |
 | 3 | `--text-md` | 16px | 同 |
 | 4 | `--text-lg` | 18px | 同 |
-| 5 | `--text-xl` | 24px | 同 |
-| 6 | `--text-2xl` | **22px** | **新** —— 契约里同名令牌指 18px,现指 22px。**名同值不同,不是笔误** |
-| 7 | `--text-3xl` | **28px** | **新** —— 契约里同名令牌指 22px,现指 28px |
+| 5 | `--text-lg-plus` | **20px** | **新**(quick `260925-iin`)—— 值序在 `--text-lg`(18)与 `--text-2xl`(22)之间;命名阶梯非单调,依据是已登记的 D-07 冲突(`--text-xl` 24 > `--text-2xl` 22)。唯一消费者 `.collapse-indicator` |
+| 6 | `--text-xl` | 24px | 同 |
+| 7 | `--text-2xl` | **22px** | **新** —— 契约里同名令牌指 18px,现指 22px。**名同值不同,不是笔误** |
+| 8 | `--text-3xl` | **28px** | **新** —— 契约里同名令牌指 22px,现指 28px |
 
 **`--text-2xl` 的命名冲突必须写进围栏注释(D-07)。** 04-UI-SPEC 的字号表写
 `--text-2xl: 18px` / `--text-3xl: 22px`,而 HEAD 上 18px 已被 `--text-lg` 占用、22px 不存在。
@@ -364,9 +365,10 @@ D-06 要求的 22px(只有 `#latest-check` 是对的 —— 它嵌在 `#checks-p
 
 ### 未在 HEAD 上受控的字号(不属本阶段,见 §不在本阶段)
 
-`.collapse-indicator` 的 `font-size: 20px`(`:434`)是刻度外的第 6 个渲染字号,属 backlog `999.1`;
-`#confirm-error` 因 `.overlay-card p`(0-1-1)压过 `.hint`(0-1-0)而渲染 16px,是全站唯一以两个
-不同字号渲染的 `.hint`。两者都**不在本阶段**,理由与一行式替代方案见 §不在本阶段。
+`.collapse-indicator` 的字号**已不再是刻度外字号** —— 已由 quick `260925-iin` 落为第 8 档
+`--text-lg-plus`(20px),backlog `999.1` 第 1 项由此关闭;`#confirm-error` 因 `.overlay-card p`(0-1-1)
+压过 `.hint`(0-1-0)而渲染 16px,是全站唯一以两个
+不同字号渲染的 `.hint`。后者**仍不在本阶段**,理由与一行式替代方案见 §不在本阶段。
 
 **本节此前的普查漏了五个渲染目标(已由 P-20 闭合)。** `renderMarkdown()` 的返回值还被注入
 `.event-content` / `.chat-bubble` / `.say-chunk` / `.annotation-note` / `.annotation-answer-body`
@@ -375,7 +377,8 @@ D-06 要求的 22px(只有 `#latest-check` 是对的 —— 它嵌在 `#checks-p
 「刻度外的第 6 个渲染字号」这个计数本身不成立** —— 实际刻度外字号至少有 8 个,且其中含一个
 契约只声明三档之外的**第四个字重档**。**闭合状态:** 已由 **P-20** 与 `G-idi-05-1` 的修法消除
 (五个目标改取 24 / 18 / 16px 与 `--fw-semibold`,由 check-05 的 `--item 7` 逐目标断言);
-本节剩余的 `.collapse-indicator` 20px 与 `#confirm-error` 16px 两条**仍然存在**,不因 P-20 而消失。
+P-20 闭合后本节剩余的两条中,`.collapse-indicator` 的 20px 已由 quick `260925-iin` 落为第 8 档
+(见本节开头);**`#confirm-error` 16px 仍然存在**,不因 P-20 而消失。
 **这条漏项的类型(枚举不全)与本阶段 plan 01 的层叠缺陷同型** —— 两次都是「只枚举了影响面的一部分」。
 
 ---
@@ -674,9 +677,11 @@ NON-TEXT 阈值(3.0),同一对 fg/bg 的 TEXT 通过即蕴含 NON-TEXT 通过** 
 
 ### 与 `.collapse-indicator` 的关系(D-23,零交互)
 
-**`.collapse-indicator` 不得触碰。** `app.js:1563` / `:1569` 用 `textContent` 赋值,内联 `<svg>` 会被
-擦掉(`#ai-panel` 与 `#doc-panel` 是两个可折叠面板,各有自己的指示器)。它的 `font-size: 20px` /
-`line-height: 1` 越轨字面量属 backlog `999.1`,**本阶段不修**。
+**`.collapse-indicator` 的 `textContent` 赋值路径不得触碰。** `app.js:1563` / `:1569` 用 `textContent`
+赋值,内联 `<svg>` 会被擦掉(`#ai-panel` 与 `#doc-panel` 是两个可折叠面板,各有自己的指示器)。
+**唯一例外(quick `260925-iin`):** 该规则的 `font-size` / `line-height` 两个**声明值**已换成令牌
+(`--text-lg-plus` / `--lh-none`)—— 只改值,`textContent` 赋值路径与「不得内联 `<svg>`」一字未动,
+故本条禁令**在实质上仍然成立**;backlog `999.1` 第 1 项由此关闭。
 
 **mask 方案的一个附带简化(值得写进计划):** 本阶段**不在 DOM 里放任何内联 `<svg>`** ——
 图标是伪元素上的 CSS 掩码。所以即便日后有人给 `.collapse-indicator` 换成图标,也不存在「`textContent`
@@ -1055,6 +1060,9 @@ computed 值**(`color` / `background-color` / `border-color` 不依赖布局)。
      (`line-height` / `margin-bottom` / `letter-spacing`),以及**任何落在 `.markdown-body` 之外、
      又没有更具体规则兜底的标题**。**那半句已经点出了暴露面,却没有把暴露面枚举出来** ——
      `G-idi-05-1` 就是只读这半句、没做枚举的结果。
+   - **引用登记(quick `260925-iin`):** 本次新增的 `--text-lg-plus`(20px)与 `--lh-none`(1)
+     **只被 `.collapse-indicator` 消费** —— 未新增任何标题字号规则、未新增任何 `.markdown-body`
+     之外的目标,故**本条(第 9 条)不受影响**。
 
 ---
 
@@ -1064,7 +1072,7 @@ computed 值**(`color` / `background-color` / `border-color` 不依赖布局)。
 
 | Artifact | Rule |
 |---|---|
-| **`.collapse-indicator`(`style.css:434`)** | **本阶段零改动。** `app.js:1563` / `:1569` 用 `textContent` 赋值,内联 `<svg>` 会被擦掉。它的 `font-size: 20px` / `line-height: 1` 越轨字面量属 backlog `999.1` |
+| **`.collapse-indicator`(`style.css:434`)** | **已由 quick `260925-iin` 令牌化(值不变,仍 20px):** `font-size` / `line-height` 两个声明值改为 `--text-lg-plus` / `--lh-none`。`textContent` 赋值路径与「不得内联 `<svg>`」**仍不得触碰**。backlog `999.1` 第 1 项由此关闭 |
 | **`scripts/check-02-contrast.py`** | **本阶段零代码改动。** 它从围栏读清单;清单变而代码不变正是它的设计。改它会破坏「值层改动不产生假 FAIL」这条 04.1 已立的性质 |
 | **`#ai-panel` 与 `#doc-panel` 的折叠行为** | `app.js:1561-1570` 的两处 `classList.toggle('collapsed')` 与两处 `textContent` 赋值**零改动**。VISUAL-04 对 `#ai-panel` 的处置是「承认既有 `▾`/`▸` 指示器已构成可辨状态」,与该元素**零交互** |
 | **`--color-action-irreversible*` 的消费者集合** | **只被 `#btn-authorize` 消费,永不出现第二个消费者**(D-15)。本阶段改了它的**值**,没改它的**消费者** —— 这两件事必须分别核对 |

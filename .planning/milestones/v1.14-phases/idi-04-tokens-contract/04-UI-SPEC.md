@@ -314,6 +314,12 @@ the table and in ledger row D-16.
 
 ## Typography
 
+> **本节已被重写(指向行,quick `260925-iin` 追加)。** 下面这张表是 **Phase 4 的历史声明**
+> (6 档:11 / 12 / 13 / 14 / 15 / 16),其值已被 `idi-04.1-radix` 的 Radix 重写与 Phase 5 推翻。
+> 现行刻度以 `.planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-UI-SPEC.md` 的
+> `## Typography` 为准;截至本指向行,现行刻度为 **8 档**,含新增的 `--text-lg-plus`
+> 20px。**本表原样保留为历史记录,不随之改写。**
+
 Two families, one numeric scale. 6 sizes, all integers, all consumed. No `12.5px`, no fractional
 step.
 

@@ -20,6 +20,7 @@
     "cross_ai_command": "",
     "cross_ai_timeout": 300,
     "test_gate_timeout": 600,
+    "test_command": ".venv/bin/python -m pytest backend/tests -q --tb=short",
     "use_worktrees": false,
     "windows_enforce": true,
     "_auto_chain_active": false

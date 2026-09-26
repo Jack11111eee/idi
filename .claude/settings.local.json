@@ -13,7 +13,14 @@
       "Bash(git *)",
       "Skill(gsd-quick)",
       "Skill(gsd-execute-phase)",
-      "Skill(gsd-code-review)"
+      "Skill(gsd-code-review)",
+      "Skill(gsd-validate-phase)",
+      "Skill(gsd-secure-phase)",
+      "Skill(gsd-ui-review)",
+      "Skill(gsd-plan-phase)",
+      "Bash(P=\".claude/gsd-core/bin/lib/ui-consideration-probe.cjs\" && echo \"=== TAXONOMY ===\" && sed -n '/UI_TAXONOMY = /,/^};/p' \"$P\" && echo \"=== proposeElements + CLI input shape ===\" && sed -n '/function proposeElements/,/^}/p' \"$P\" && echo \"=== runProbeCli invocation ===\" && grep -n \"runProbeCli\\\\|runMain\\\\|process.argv\" \"$P\" | head)",
+      "Bash(sed -n '/function autoResolve/,/^}/p' .claude/gsd-core/bin/lib/ui-consideration-probe.cjs)",
+      "Bash(node -e ' *)"
     ]
   },
   "hooks": {

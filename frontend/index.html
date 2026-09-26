@@ -136,7 +136,31 @@
             <select id="round-switcher" title="切换轮次(历史轮只读)"></select>
           </div>
           <p class="hint" id="rounds-hint">已进入轮次阶段(本阶段占位)。</p>
-          <div id="round-doc" class="markdown-body"><!-- 当前轮文档 markdown 渲染区 --></div>
+          <!-- 键盘 Tab 停靠点(D-01 / A11Y-02):这里加一个布尔属性,整盒焦点环零 CSS 自动生效。
+               ① 环的来源不是本文件、也不是 style.css 里新写的规则,而是 frontend/style.css:1514 的
+                  Phase 7 焦点环枚举规则 —— Phase 7 D-05 刻意把「带这个属性的元素」写进枚举,
+                  就是为了让本阶段零 CSS 履约。故不得新增任何 :focus 专用规则(硬规则 10:
+                  新增会让「规则覆盖了谁」与「门检查了谁」分叉,正是 G-idi-05-1 的成因)。
+               ② 环的几何(实测,非推断):**水平方向恒不被裁切** —— 父级 #doc-panel-body 有
+                  32px 40px 内边距,环外伸 2–4px 落在父级 40px 水平内边距里(p3 实测左右裁切量
+                  均为 0px)。**垂直方向的形态取决于文档长度与视口(900px)的关系,不是恒定的**:
+                  文档短于视口时是一个**完整矩形**(p3 实测盒高 778.64px ⇒ 上边 + 左右两条竖边
+                  + 下边),长于视口时才是「上边 + 左右两条贯穿全高的竖线」。规划期把后者当成
+                  恒真前提写进计划,实测已推翻(见 UI-SPEC §契约修正登记 A-10)。底部边缘在默认
+                  滚动位可能被 #doc-panel 的滚动边界裁掉一截(p3 实测 3.64px;把该面板的
+                  scrollTop 由 67 调到 71 即归零)。上游研究「只有上下边缘可见」的论断仍被推翻 ——
+                  水平方向从不裁切。**可辨性已由用户裁定(2026-09-24):不触发 D-02**,依据是实测
+                  对比度 5.57:1(阈值 3:1)、环清晰可辨、焦点位置无歧。故「本文件零 CSS 改动」是
+                  **最终态,不是待定态** —— 后来者不要因为读到上游那句被推翻的论断就去补 CSS。
+               ③ #draft-content(L113)同为 .markdown-body 却刻意不加这个属性,不是漏项:
+                  handleSelectionTrigger 的第一条实质守卫是 currentState !== 'phase3',阶段 1-2
+                  没有批注功能 ⇒ 给它加停靠点是死代码,无法被运行时验证(D-20)。不要顺手补上。
+               ④ 计数 0 → 1 而 :focus-visible 计数 9 → 9,看似「独立移动」实则不然:Phase 7 已把
+                  环的承载面先落地。机械证据不是计数,是 check-05 --item 10 的运行时读数
+                  (#round-doc 成为 document.activeElement 那一刻读到 2px / 运行时解析的 --color-focus)。
+               代价:裸 <div> 的停靠点,辅助技术只报「通用容器」—— 这是知情接受,不是疏漏:
+               role 与焦点陷阱一起归 v2 A11Y-V2-02(D-18,用户裁定「都不加」)。 -->
+          <div id="round-doc" class="markdown-body" tabindex="0"><!-- 当前轮文档 markdown 渲染区 --></div>
 
           <!-- G3 授权入口(FLOW-05 §4.4:仅阶段 3 呈现;按钮三态由 g3_available 驱动) -->
           <div id="authorize-row" class="hidden">
@@ -167,9 +191,22 @@
   </div>
 
   <!-- G3 确认词模态(FLOW-05 / D-P3-3:输入「确认授权」strip 全等才放行;默认拒绝) -->
-  <div id="confirmation-modal" class="overlay hidden">
+  <!-- A11Y-06 / D-14 / D-15:本卡片的**外层** .overlay 承载 dialog 语义三件套 ——
+       对话框角色、模态宣告、以及指向卡片内既有 <h3> 的无障碍名称。
+       ① 落点选 .overlay 而不是内层 .overlay-card:.overlay 正是 classList.toggle('hidden')
+          的作用对象 ⇒「被告白的节点」与「被切换的节点」是同一个,「宣告与实现一致」因此是
+          结构性可查的,而不是两处需要同步的记账;内层 .overlay-card 没有 id、五个弹窗共用
+          同一个类名,把语义挂在它上面会让声明与状态分居两个节点、必然漂移。
+       ② 无障碍名称用「指向既有标题元素」的方式而不是新写字面串:文案只存一处(随 <h3> 走),
+          不会变成第二处真相来源(「名必须说实话」)。
+       ③ 模态宣告的**兑现**在 frontend/app.js 的 syncBackgroundInert():本弹窗打开期间背景
+          #app 带原生惰性属性、两个弹窗都关闭后移除。只加宣告不加惰性,就是「宣告一个实现
+          并不兑现的契约」—— 那比不加宣告更糟,故两者在同一次改动里落地。
+       ④ 范围锁(D-11):只改本弹窗与 #tier-modal 两个(判据是「键盘用户今天真的会卡住」);
+          其余三个弹窗的 dialog 语义归 v2 A11Y-V2-02,是刻意的,不是漏项。 -->
+  <div id="confirmation-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title">
     <div class="overlay-card">
-      <h3>授权确认</h3>
+      <h3 id="confirmation-modal-title">授权确认</h3>
       <p>授权后 AI 将撰写总设计文档并进入收尾流程。<strong>默认拒绝</strong>:不输入确认词或不点放行,即视为拒绝——拒绝会作为一条普通批注转给下一轮,本轮仍可继续讨论。</p>
       <input type="text" id="confirm-word-input" placeholder="请输入确认词:确认授权" autocomplete="off">
       <p id="confirm-error" class="hint hidden"></p>
@@ -181,9 +218,14 @@
   </div>
 
   <!-- 档位选择模态(§8.2 / D-P3-11:两选项各一句话说明;不自动起检) -->
-  <div id="tier-modal" class="overlay hidden">
+  <!-- dialog 语义三件套与上面 #confirmation-modal 同一形态、同一落点理由(A11Y-06 / D-14 /
+       D-15):外层 .overlay 承载宣告,无障碍名称指向卡片内既有的那个 <h3>。
+       D-16:本弹窗打开时焦点送入首个可操作控件(宽松档按钮)—— 背景惰性落地后背景不可聚焦,
+       焦点若不在弹窗内会掉到 <body>,下一次 Tab 会绕开整个背景,比不惰性更糟。
+       D-13:本弹窗**没有取消按钮**,故 Escape 关闭时还要复位 tierModalShown(见 app.js)。 -->
+  <div id="tier-modal" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tier-modal-title">
     <div class="overlay-card">
-      <h3>选择自检档位</h3>
+      <h3 id="tier-modal-title">选择自检档位</h3>
       <p>总设计文档初稿已写完。请选择自检档位(记录在每份核查报告头部):</p>
       <div class="modal-buttons tier-buttons">
         <button id="btn-tier-loose">宽松<span class="tier-desc">一次核查 + 修复 + 追加 PASS 即止</span></button>

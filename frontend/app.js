@@ -82,6 +82,13 @@ const missionCloseBtn = document.getElementById('btn-mission-close');
 const docPanel = document.getElementById('doc-panel');
 const docPanelHeader = document.getElementById('doc-panel-header');
 
+// 背景惰性挂载点(D-14 / A11Y-06):下面那个背景惰性同步函数**只**往这一个节点挂原生属性。
+// 边界已核实:frontend/index.html 的 #app 自 L10 起、L179 闭合,五个 .overlay 与
+// #selection-menu 都是它的**兄弟** ⇒ 挂在这里天然只作用于背景、不波及任何弹窗自身。
+// 新增句柄是安全的;改名或删除既有句柄才是 G-idi01-8 的失效形态(硬规则 5)——
+// 上面 app.js:4-83 的既有句柄一个都没动。
+const appEl = document.getElementById('app');
+
 // 当前会话状态(前端侧;权威判定在后端 derive_state)
 let currentProject = null;
 let currentState = null;
@@ -243,7 +250,7 @@ function renderEvent(event) {
   item.appendChild(content);
 
   eventsEl.appendChild(item);
-  eventsEl.scrollTop = eventsEl.scrollHeight; // 保持最新可见
+  item.scrollIntoView({ block: 'nearest' }); // 把最新条目滚入外层 #main-pane 视野(自动跟随)
 
   // 终止事件:解除「发起」按钮禁用(流结束能再次发起)
   if (event.kind === 'done' || event.kind === 'error') {
@@ -485,11 +492,37 @@ function openConfirmModal() {
   confirmAuthorizeBtn.disabled = true; // 初始 disabled(未输入即不可放行)
   confirmError.classList.add('hidden');
   confirmationModal.classList.remove('hidden');
+  syncBackgroundInert(); // D-14:顺序锁定 —— 先让背景惰性,再把焦点送进弹窗
   confirmWordInput.focus();
 }
 
 function closeConfirmModal() {
   confirmationModal.classList.add('hidden');
+  syncBackgroundInert(); // D-14:两个弹窗都关闭后摘掉背景惰性
+  // 刻意不在这里交还焦点(A-8 / F1-d):「放行」成功后整个视图即将切换
+  // (refreshRoundsAfterStream),把焦点钉回触发者那一刻它就会随 #authorize-row 一起隐藏,
+  // 交还反而把焦点丢给 <body>。故交还只写在 Escape 分支里。
+}
+
+// ---------------------------------------------------------------------------
+// 背景惰性同步(A11Y-06 / D-14):让两个弹窗的模态宣告成真
+// ---------------------------------------------------------------------------
+
+// D-14:弹窗打开期间,背景对辅助技术与指针都惰性。
+// 原生 HTML 属性,零依赖零构建(硬规则 6);焦点陷阱是已裁定 Out of Scope —— **这不是陷阱**,
+// 它只拿到陷阱的主要效果(背景不可聚焦、不可点)。
+// 从两个弹窗的 .hidden 现状**派生**,不靠 open/close 成对记账:成对记账会在任何一条早退路径上
+// 漏去属性(与 STATE.md 反复出现的派生计数缺陷同型),而派生式在结构上不可能失配,且天然幂等。
+// 硬规则 12:它与 .hidden 是两个正交机制(前者管「背景对辅助技术与指针惰性」,后者管显隐),
+// 不得互相替代。
+// 只挂 appEl(#app):五个 .overlay 与 #selection-menu 都是 #app 的兄弟 ⇒ 天然只作用于背景。
+// 绝不挂 document.body 或任何共享祖先 —— 那会让当前打开的弹窗自身变惰性,键盘与指针双路锁死
+// (T-idi08-05,本计划最重的一条禁令)。
+function syncBackgroundInert() {
+  const anyDialogOpen = !confirmationModal.classList.contains('hidden')
+    || !tierModal.classList.contains('hidden');
+  if (anyDialogOpen) appEl.setAttribute('inert', '');
+  else appEl.removeAttribute('inert');
 }
 
 // 拒绝路径(D-P3-5):不 POST 授权,把拒绝原因作为一条普通批注转给下一轮
@@ -638,6 +671,13 @@ async function loadChecksView(sessionData) {
     if (!selfcheck.tier && !tierModalShown) {
       tierModalShown = true;
       tierModal.classList.remove('hidden');
+      syncBackgroundInert(); // D-14:顺序锁定 —— 先让背景惰性,再把焦点送进弹窗
+      // D-16:补打开时移焦。这是 D-11 判定的「卡死」的实质修复 —— #tier-modal 的陷阱不是
+      // 「没有 Escape」而是「焦点不在里面」;背景惰性落地后背景不可聚焦,焦点若不在弹窗内会掉到
+      // <body>,下一次 Tab 会绕开整个背景、落到弹窗外围,比不惰性化更糟。
+      // 目标取首个可操作控件(与 openConfirmModal() 的既有形态对称);不取弹窗容器是因为那需要
+      // 给它一个程序化聚焦用的负值停靠点,会被 check-05 --item 10 的普查排除,又是一个需要解释的例外。
+      tierLooseBtn.focus();
     }
     return;
   }
@@ -797,8 +837,14 @@ async function chooseTier(tier) {
       return;
     }
     tierModal.classList.add('hidden');
+    syncBackgroundInert(); // D-14:选档成功即摘掉背景惰性(两个弹窗都已关闭)
     renderEvent({ kind: 'say', content: `已选择「${tier}」档,点「开始自检」启动核查。`, raw: null });
     await refreshChecksAfterStream();
+    // F1-d 的**成功路径**落点:D8-10 的豁免已收窄为只覆盖 #confirmation-modal —— 选档成功后
+    // 视图并不切换,上面那次刷新反而让 #btn-continue-check 变得可见,故把焦点交还给下一个动作。
+    // 位置必须在这条 await **之后**:是它把该按钮的 disabled 复位为 false,而 .focus() 对
+    // 禁用按钮是 no-op —— 提前放会静默什么都不做,缺陷照旧存活,而 diff 看上去是对的。
+    continueCheckBtn.focus();
   } catch {
     renderEvent({ kind: 'error', content: '档位选择失败(网络)', raw: null });
   }
@@ -1118,7 +1164,7 @@ function renderAnnotations(annotations, isCurrentRound) {
   if (!items.length) {
     const empty = document.createElement('p');
     empty.className = 'hint';
-    empty.textContent = '本轮暂无批注——在左侧文档划词即可批注。';
+    empty.textContent = '本轮暂无批注——在右侧文档划词即可批注。';
     annotationList.appendChild(empty);
     if (!isCurrentRound) empty.textContent = '该轮暂无批注。';
     return;
@@ -1266,6 +1312,11 @@ roundSwitcher.addEventListener('change', () => {
 // mouseup 时捕获的选区快照(菜单动作延迟读取会因选择被清除而丢)
 let menuSelection = null;
 
+// 「已被显式关掉」的那一份选区(配合下面的守卫函数;D-08 的配套,不是 D-08 的替代)。
+// 菜单被 Escape / 滚轮 / 点外部关掉时记下当时**仍然存活**的那份选区;只要选区还是这一份,
+// 就不允许 keyup 把菜单重新弹开。null = 没有关闭态要维持。
+let dismissedSelectionRange = null;
+
 // before 计算(D-P2-3):选区真正起点(方向无关)在其文本节点中的前文取末 40 字。
 // 用 getRangeAt(0).startContainer/startOffset,不用 anchorNode——反向拖拽时
 // anchor 是选区终点,locate_quote 的 before 二次定位会被反向起点败掉;
@@ -1294,8 +1345,58 @@ function selectionInRoundDoc(selection) {
 
 // 隐藏菜单并清空选区快照
 function hideSelectionMenu() {
+  // D-07 / D-08(F1-a / F1-b / F1-c):焦点此刻若停在菜单内,隐藏后它会回落到 <body>,
+  // 键盘用户要重新 Tab 穿过整个侧栏才能回到文档区 —— 交还 #round-doc。
+  // 覆盖三个落点:F1-a 菜单被隐藏时、F1-b **两个菜单项执行后**(两者都会先调本函数,
+  // 而焦点当时停在一个**已隐藏的按钮**上 —— 这条腿 ROADMAP 未提)、F1-c Escape 关菜单。
+  // 写在这**一个**函数里而不是散到各调用点(两个关闭器 + handleSelectionTrigger 的两条
+  // 守卫 + 两个菜单项):调用点散落必然漏掉一个,单点才不会。
+  // (此处刻意不写调用点**个数**:本阶段它随新监听器增长过一次,数字会腐坏;要核数用 grep 现算。)
+  // 判据必须在 classList.add('hidden') **之前**取:焦点元素一旦变成 display:none,
+  // document.activeElement 立刻回落到 body,之后再判就永远为假。
+  // 刻意不在这里清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
+  const hadFocus = selectionMenu.contains(document.activeElement);
+  // 关闭态登记(见 dismissedSelectionRange 的注释):取 menuSelection —— 它正是这次被关掉时
+  // 展示的那份选区,故不必再向浏览器读一次当前选区。菜单从未展示过时它为 null,登记即失效,
+  // 正好对应「没有关闭态要维持」。
+  // ⚠ 只在「可见 → 隐藏」这一次登记,不要在每次调用都登记。本函数被**每一个 scroll 事件**
+  // 调用(见初始化函数里的 scroll 监听),而它自己的 roundDoc.focus() 就可能引发一次滚动 ⇒
+  // 紧接着会有第二次调用;第二次调用时 menuSelection 已被置 null,若照样登记就会把刚记下的
+  // 关闭态**覆写成「无」**,于是紧随的 keyup 又把菜单弹回来。实测确认:这正是「单次 Escape
+  // 有效、连按两次或先松 Shift 就失效」的成因 —— 失败只在焦点移回 #round-doc 真的滚动了
+  // 页面时出现,所以单独跑一个场景复现不出来。
+  const wasVisible = !selectionMenu.classList.contains('hidden');
+  if (wasVisible) {
+    dismissedSelectionRange = (menuSelection && !menuSelection.isCollapsed && menuSelection.rangeCount > 0)
+      ? menuSelection.getRangeAt(0).cloneRange()
+      : null;
+  }
   selectionMenu.classList.add('hidden');
   menuSelection = null;
+  if (hadFocus) roundDoc.focus(); // round-doc 不可聚焦时(非 phase3 / 被祖先藏住)静默降级
+}
+
+// 当前选区是否仍是「刚被显式关掉」的那一份?是 ⇒ 调用方不得把菜单重新弹开。
+// 为什么需要它(实测,非推断):只读容器里方向键**不改变**选区,而 #round-doc 的 keyup 处理器
+// 只要看到「选区非折叠且落在 #round-doc 内」就弹菜单 ⇒ 没有本守卫时,Escape 之后的**任何**一次
+// keyup 都会把菜单原样弹回来:再按一次 Escape、按一下方向键、滚轮关掉菜单后再按键,全部如此。
+// 判据刻意是**选区身份**而不是「按了哪个键」:后者就是按键白名单,而本阶段已裁定白名单只允许
+// 存在于 Shift 监听器里,不得进入划词触发路径(见该函数上方的围栏注释)。
+// 选区一旦真的变了(用户又划了一次),本守卫立即自清并放行 —— 无需订阅事件,也就没有时序假设。
+function isDismissedSelectionLive() {
+  if (!dismissedSelectionRange) return false;
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
+    dismissedSelectionRange = null;
+    return false;
+  }
+  const r = sel.getRangeAt(0);
+  const same = r.startContainer === dismissedSelectionRange.startContainer
+    && r.startOffset === dismissedSelectionRange.startOffset
+    && r.endContainer === dismissedSelectionRange.endContainer
+    && r.endOffset === dismissedSelectionRange.endOffset;
+  if (!same) dismissedSelectionRange = null;
+  return same;
 }
 
 // 显示菜单在选区附近(向右下偏移,不越视口——简单 clamp)
@@ -1347,7 +1448,44 @@ function initSelectionMenu() {
 
   // 仅 round-doc 容器内触发(D-P2-2:draft-view / chat 区绝不绑此菜单)
   roundDoc.addEventListener('mouseup', handleSelectionTrigger);
-  roundDoc.addEventListener('keyup', handleSelectionTrigger);
+  // keyup 这一路包一层关闭态守卫。**handleSelectionTrigger 的函数体一字不改**(D-06 把它列为
+  // 不得触碰;上面那段围栏注释也说明了为什么白名单不能进它)—— 守卫在**它之前**返回,它本身
+  // 完全不知道守卫存在。mouseup 一路刻意不包:单击会折叠选区,折叠后那个处理器自己就会走
+  // 「隐藏菜单」分支,不存在被误弹回来的路径;只有键盘这一路能(方向键不改选区)。
+  roundDoc.addEventListener('keyup', (e) => {
+    if (isDismissedSelectionLive()) return;
+    handleSelectionTrigger(e);
+  });
+
+  // 键盘划词的提交手势(D-05):按住 Shift 扩选时焦点**不动**,松开 Shift 才把焦点送入
+  // 菜单首按钮。为什么不能写进 handleSelectionTrigger:那个函数挂在**每一次** keyup 上,
+  // 在里面移焦会让键盘用户**永远只能选中一个字符** —— Shift+→ 选中 1 个字符即触发 keyup ⇒
+  // 焦点跳到 #btn-annotate ⇒ 再按 Shift+→ 时事件目标已是菜单按钮,roundDoc 的 keyup 不再
+  // 触发,浏览器也不会给按钮内的文本扩选。而 A11Y-03 的验收项「Shift+方向键选区 → 菜单出现
+  // → 焦点已入菜单」**仍会照常通过**(它测状态,不测可用性)—— 这就是「按路线图字面实现会
+  // 假绿」的机制事实,故这条手势是承重的,不是风格选择。
+  // 白名单边界(D-06):handleSelectionTrigger **一字不改**;t8g 的既有决定(L1321-1322
+  // 「不对 keyup 做按键白名单 —— 折叠/空白选区即关闭菜单已让非选择类按键成为安全 no-op」)
+  // **继续对它生效**。按键白名单只存在于下面这个新增的 Shift 专用监听器里 —— 这是对那条
+  // 决定实质的偏离,不是推翻它。
+  // 三条合取判据同时成立才移焦,任一条不成立即 no-op;空选区 / 折叠选区 / 菜单已隐藏三种
+  // 情形都不在这里处理,handleSelectionTrigger 的既有守卫已经覆盖。
+  // 绑 document 而不是 roundDoc:Shift 的 keyup 只在焦点位于 #round-doc 子树内时才在扩选
+  // 语境下发生 —— 那恰好是「扩选结束」的时刻,绑 document 才能在该时刻稳定捕获。
+  // 已登记的代价:①「松开 Shift 即提交」是自造惯例(非平台约定);②它引入了一个按键白名单
+  // 事实;③鼠标路径的副作用见 UI-SPEC §K-1.5(鼠标 Shift+点击扩选后松开 Shift 也会移焦)。
+  document.addEventListener('keyup', (e) => {
+    if (e.key !== 'Shift') return;
+    if (selectionMenu.classList.contains('hidden')) return;
+    // 焦点必须仍在文档区:扩选手势期间焦点**不动**,所以「焦点不在 #round-doc」就意味着
+    // 这次 Shift 抬起与扩选无关 —— 典型是 Shift+Tab 反向移焦:焦点已落到别的控件上,此时
+    // 再夺焦会把用户从刚导航到的控件里拽走,而 #selection-menu 在文档序末尾,他要重新
+    // 穿过整个侧栏才回得来(实测复现)。松开 Shift 这个习惯动作同理。
+    if (document.activeElement !== roundDoc) return;
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+    annotateBtn.focus();
+  });
 
   // 点文档其他位置/滚动 → 菜单消失(菜单自身点击不冒泡关闭)
   document.addEventListener('mousedown', (e) => {
@@ -1421,6 +1559,64 @@ function initSelectionMenu() {
     }
   });
 }
+
+// ---------------------------------------------------------------------------
+// Escape 单点分派(A11Y-05 / D-08 / D-12 / D-13):关闭三个可关对象,其余弹窗刻意不响应
+// ---------------------------------------------------------------------------
+
+// 为什么取「单点 + 显式优先级表」而不是「各弹窗各自的监听器」(裁定,理由):
+// ① 三个响应对象里有一个是划词菜单(它已经在上面那一段初始化函数里),分派器与它相邻使
+//    「Escape 的完整语义在一个屏幕内可读完」;② 分散到各弹窗会把「谁先响应」变成**源码顺序事实**
+//    (硬规则 3 的同型风险);③ 单点可解释、可枚举(本项目「影响面必须可枚举」的既定口径)。
+// 绑定在顶层 ⇒ 一次性、与菜单的初始化路径解耦,不需要一次性绑定守卫。
+// 优先级按 z 序:--z-selection-menu(200)> --z-overlay(100)。
+// 三个响应对象今天**互斥**(菜单只在 currentState === 'phase3' 显示,档位弹窗只在
+// phase5_awaiting_tier 弹出),但优先级表使行为与「谁先打开」无关 —— 源码顺序不参与判定。
+document.addEventListener('keydown', (e) => {
+  // 输入法组字期间的 Escape 是「取消候选窗」,不是「关弹窗」—— 而 D-12 的对象是弹窗本身。
+  // #confirm-word-input 收中文,组字是常态,故这一步必须放过;否则用户取消候选词会顺手把
+  // 授权弹窗关掉。isComposing 在非组字时恒为 false,此判据不改变其余任何路径的行为。
+  if (e.isComposing) return;
+  if (e.key !== 'Escape') return;
+  // 1. 划词菜单(关闭函数已含计划 01 落的 F1-a 焦点交还)。
+  //    刻意不清空选区(D-08):那会毁掉「Escape 关菜单后接着 Shift+→ 继续扩选」这条路径。
+  //    本分支**不需要**再抑制紧随其后的 Escape keyup:关闭函数会登记关闭态,keyup 那一路的
+  //    守卫据此拦截(见 isDismissedSelectionLive)。这里原先用一个 once 监听器只抑制「紧接着的
+  //    那一次」Escape keyup —— 那个写法挡不住第二次 Escape、也挡不住任意其它按键,更挡不住
+  //    「先松 Shift 再松 Escape」的抬手顺序,三种都会把菜单原样弹回来(均实测复现);
+  //    关闭态登记取代了它,不再存在「只覆盖一次」的窗口。
+  if (!selectionMenu.classList.contains('hidden')) {
+    hideSelectionMenu();
+    e.preventDefault();
+    return;
+  }
+  // 2. G3 授权确认(D-12:仅关闭、**零决定**)。不代替「拒绝」——那会走拒绝路径把用户直接推进一个
+  //    原生 window.prompt,而替换 window.prompt 是 v2 FLOW-V2-01;也不新增「拒绝但不弹 prompt」的
+  //    写批注路径,那要引入第二处真相来源。键盘用户本来就能 Tab 到「拒绝」:打开该弹窗时已把焦点
+  //    送进确认词输入框,Tab 跳过 disabled 的「放行」直达「拒绝」,故 Escape 不需要代替它。
+  //    F1-d:关闭后把焦点交还触发者(授权按钮);背景惰性的去除已在关闭函数内完成,这里不重复。
+  if (!confirmationModal.classList.contains('hidden')) {
+    closeConfirmModal();
+    authorizeBtn.focus();
+    e.preventDefault();
+    return;
+  }
+  // 3. 自检档位(D-13)。复位本会话的已弹标记,让下一个自检事件(refreshChecksAfterStream)能重新
+  //    弹出 —— 否则该弹窗「打开即置真、只有选档成功才隐藏」会让「关掉而没选」落进
+  //    「档位未定且入口消失」的死状态。**不复位 selfcheck.tier;不发任何请求。**
+  //    F1-d:关闭后把焦点交还下一个动作(继续自检按钮)。
+  if (!tierModal.classList.contains('hidden')) {
+    tierModal.classList.add('hidden');
+    tierModalShown = false;
+    syncBackgroundInert();
+    continueCheckBtn.focus();
+    e.preventDefault();
+    return; // 与分支 1/2 对称:下面那段是「刻意不响应」的说明,不是本分支的后续步骤
+  }
+  // 4. 其余三个弹窗(权限确认 / 使命完成 / 启动前自检浮层)**刻意不响应 Escape** —— 范围锁死为
+  //    D-11 的两个对象(D-17 的已知缺口归 v2 A11Y-V2-02)。这是刻意的,不是漏项:不要因为
+  //    「顺手」而扩张 A11Y-05/06 的对象集。
+});
 
 // 拉新未处理数(建批注后 / done 后共用)
 async function refreshPendingCount() {

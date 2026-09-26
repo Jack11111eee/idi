@@ -24,6 +24,7 @@
 
 运行方式
     .venv/bin/python scripts/check-09-idi09-validation.py --item c1
+    .venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2
     .venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-09-card-containers/screenshots
     .venv/bin/python scripts/check-09-idi09-validation.py --keep
 
@@ -32,6 +33,7 @@
 
 断言与需求的映射
     c1 → VIS-01 / VIS-02 / CARD-01   左栏 4 个 section 的卡片语言(令牌 + 计算读数)
+    c2 → CARD-02 / REG-01            #doc-panel 的卡片语言 + #doc-panel-header 对照组
     shot                             逐样本整窗截图,供用户评审(不参与卡片判据)
 
 浏览器路线(实测结论,不是偏好)
@@ -158,6 +160,66 @@ def c1(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# c2 — #doc-panel 的卡片语言 + #doc-panel-header 对照组(CARD-02 / REG-01)
+# ---------------------------------------------------------------------------
+# 同族判据:右栏与左栏用**同一组**令牌(底色 / 边界 / 圆角 / 阴影),故期望侧一律取
+# 运行时解析的令牌值 —— 与 c1 的对照正是「两栏取同一批令牌」这件事本身。
+def c2(page, tmp_root):
+    item = "c2"
+    print("\n=== c2: #doc-panel 卡片语言 + #doc-panel-header 对照组(CARD-02 / REG-01)===",
+          flush=True)
+    proj = c05.make_fixture("p1", tmp_root)
+    c05.enter_project(page, proj)
+
+    card = resolve_color(page, "--color-surface-card")
+    radius = resolve_token(page, "--radius-md")
+    info("c2 令牌解析", f"--color-surface-card={card} --radius-md={radius}")
+
+    sides = ("top", "right", "bottom", "left")
+    bg = read_style(page, "#doc-panel", "background-color")
+    radius_tl = read_style(page, "#doc-panel", "border-top-left-radius")
+    shadow = read_style(page, "#doc-panel", "box-shadow")
+    overflow_y = read_style(page, "#doc-panel", "overflow-y")
+    widths = {s: read_style(page, "#doc-panel", f"border-{s}-width") for s in sides}
+    styles = {s: read_style(page, "#doc-panel", f"border-{s}-style") for s in sides}
+    info("c2 #doc-panel 原始读数",
+         f"background-color={bg} border-top-left-radius={radius_tl} "
+         f"box-shadow={shadow} overflow-y={overflow_y}")
+    info("c2 #doc-panel 四条边框宽度原始读数",
+         " / ".join(f"{s}={widths[s]}" for s in sides))
+    info("c2 #doc-panel 四条边框样式原始读数",
+         " / ".join(f"{s}={styles[s]}" for s in sides))
+
+    if None in (bg, radius_tl, shadow, overflow_y) or None in widths.values():
+        blocked(item, "[p1] #doc-panel 的读数可读", "非 None 的读数",
+                f"{bg} / {radius_tl} / {shadow} / {overflow_y}", "元素/选择器不存在")
+    else:
+        ok(item, "[p1] #doc-panel 计算底色 == var(--color-surface-card)", card, bg,
+           note="HEAD 上是 gray-2(比页面更暗,读作凹陷),卡片化后是白卡片")
+        ok(item, "[p1] #doc-panel 计算 border-top-left-radius == var(--radius-md)",
+           radius, radius_tl, note="与左栏同族,圆角取自同一既有刻度")
+        for s in sides:
+            ok(item, f"[p1] #doc-panel 计算 border-{s}-width == 1px", "1px", widths[s],
+               note="四边同族边界,取代原 border-left 的单边凹陷读感")
+            ok(item, f"[p1] #doc-panel 计算 border-{s}-style == solid", "solid",
+               styles[s])
+        ok_true(item, "[p1] #doc-panel box-shadow 非 none 且含卡片阴影",
+                shadow != "none" and c05.norm(SHADOW_CARD_COLOR) in c05.norm(shadow),
+                f"非 none 且含 {SHADOW_CARD_COLOR}", str(shadow))
+        # 承重事实,必须正面断言:它是右列的滚动者,L-1 的 sticky 表头依赖它仍是最近的
+        # 可滚祖先。删掉它不会让任何颜色断言变红,所以这里不靠颜色门兜底。
+        ok(item, "[p1] #doc-panel 计算 overflow-y == auto(承重的滚动契约)", "auto",
+           overflow_y, note="L-1 的 sticky 表头依赖 #doc-panel 仍是最近的可滚祖先")
+
+    header_shadow = read_style(page, "#doc-panel-header", "box-shadow")
+    info("c2 #doc-panel-header 原始读数", f"box-shadow={header_shadow}")
+    # 对照组:阴影属于卡片容器,不属于 sticky 表头 —— 与 check-06 g6 的既有对照组同口径
+    # (那里断言 #ai-panel-header / #doc-panel-header 的 box-shadow 恒 none)。
+    ok(item, "[p1] #doc-panel-header 计算 box-shadow == none(对照组)", "none",
+       header_shadow, note="阴影画在卡片上,不在表头上")
+
+
+# ---------------------------------------------------------------------------
 # shot — 逐样本整窗截图(供用户评审;不参与卡片判据)
 # ---------------------------------------------------------------------------
 def run_screenshots(page, out_dir, tmp_root):
@@ -182,13 +244,13 @@ def run_screenshots(page, out_dir, tmp_root):
        sorted(f"{s}.png" for s in c05.STATES), pngs)
 
 
-ITEMS = {"c1": c1}
+ITEMS = {"c1": c1, "c2": c2}
 
 
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="Phase 9 卡片语言的运行时门")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:c1(可重复,或逗号分隔)")
+                    help="只跑指定项:c1 / c2(可重复,或逗号分隔)")
     ap.add_argument("--screenshot", default=None, metavar="DIR",
                     help="遍历 check-05 的 5 个样本,每个样本出一张 1440x900 整窗截图到 DIR")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")

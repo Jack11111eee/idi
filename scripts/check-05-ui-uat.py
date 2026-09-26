@@ -1299,10 +1299,12 @@ def item5(page, tmp_root, ai_smoke):
     ok(item, "[p1] .hint color == var(--color-text-muted)",
        resolve_color(page, "--color-text-muted"), read_style(page, ".hint", "color"))
     # .hint 自身无背景,沿祖先链取到的实际底色。实测:命中的是 index.html 里
-    # #doc-panel-body → #doc-panel 内的那条,而 #doc-panel { background: var(--color-surface) }
-    # —— 故是 --color-surface,不是 --color-surface-page(两者在 04.1 之后是 #f9f9f9 / #fcfcfc)。
-    ok(item, "[p1] .hint 实际背景 == var(--color-surface)",
-       resolve_color(page, "--color-surface"), effective_bg(page, ".hint"),
+    # #doc-panel-body → #doc-panel 内的那条。Phase 9 卡片化之后 #doc-panel 画的是
+    # --color-surface-card(卡片白),故实际地面是卡片表面,不再是 --color-surface。
+    # 这是**重新登记**(期望侧换指到本阶段刻意改变的那条事实),断言形式一字未变 ——
+    # 仍是「实测 computed 值 == 运行时解析的令牌值」的精确等值,不是放宽。
+    ok(item, "[p1] .hint 实际背景 == var(--color-surface-card)",
+       resolve_color(page, "--color-surface-card"), effective_bg(page, ".hint"),
        note=".hint 自身无背景,沿祖先链取到的实际底色")
     ok(item, "[p1] #stream-banner border-top-color == var(--color-action-warning)",
        resolve_color(page, "--color-action-warning"),

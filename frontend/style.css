@@ -649,14 +649,23 @@ html, body {
   box-shadow: var(--shadow-card);
 }
 
-/* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条) */
+/* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条)
+
+   Phase 9:与左栏**同族卡片** —— 同底色令牌 / 同边界令牌 / 同圆角令牌 / 同阴影令牌
+   (CARD-02)。原 `border-left: 1px` 的单边凹陷读感由四边边界 + 卡片底色取代,故这里
+   是就地改写那条声明,不是追加一条 `border` 覆盖它(留下一条已死的 border-left 会让
+   注释与代码互相矛盾)。
+   `overflow-y: auto` 是**承重的滚动契约**,不得删除:它是右列的滚动者,L-1 的 sticky
+   表头依赖 #doc-panel 仍是最近的可滚祖先。 */
 #doc-panel {
   flex: 0 0 var(--doc-panel-w);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-left: 1px solid var(--color-border-subtle);
-  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
   /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
      min-width: auto 胜出,长不可断内容能把 #doc-panel 顶得比它的 clamp() 还宽。
      上面的 anywhere 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖「六个目标
@@ -682,16 +691,21 @@ html, body {
 
 /* D-03 / D-05:sticky 表头 —— 把「恒可见」补回来,不改 badge 的流内机制。
    背景是必需的,不是可选:`.panel-header` 规则体内没有任何 background 声明,
-   sticky 之后正文会从标题行底下穿过去。`--color-surface` 与 `#doc-panel` 自身背景
-   同值且已被消费(`:474`)⇒ 零新增令牌。
+   sticky 之后正文会从标题行底下穿过去。表头底色与卡片底色同值(都取卡片令牌)⇒
+   sticky 的遮挡机制保持:滚动正文不会从表头底下穿出来,也不会在白色卡片上出现一条
+   比卡片更暗的条带(Phase 9 之前这里是 gray-2 表头压在 gray-2 面板上)。
    不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测若有穿透再补,
    届时须连带登记 `--z-*` 的序关系断言(badge 10 < banner 20 < overlay 100 < selection-menu 200)。
-   border-radius: 0:半径在本元素上是加背景之后才**首次可见**的新视觉物,而 10px 圆角
-   会让滚动正文从四角露出;全宽条带没有卡片边缘需要圆角。 */
+   border-radius: 0:**一字不动**。Phase 9 之前这里的理由是「10px 圆角会让滚动正文从
+   四角露出」,而卡片化**刻意反转**了那个前提 —— 卡片圆角本来就该在四角裁切。
+   新理由:#doc-panel 是溢出容器(overflow-y: auto),其后代被裁剪到**带圆角的
+   padding box**,表头的方角因此不可能把卡片四角顶成方角;而 #doc-panel-body 的
+   32/40 内边距使正文与四角保持距离,10px 的裁切不触及任何文字。改这条半径是没有
+   被迫的编辑,不做。 */
 #doc-panel-header {
   position: sticky;
   top: 0;
-  background: var(--color-surface);
+  background: var(--color-surface-card);
   border-radius: 0;
 }
 

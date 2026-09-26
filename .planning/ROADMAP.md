@@ -4,6 +4,7 @@
 
 - ✅ **v1.13 交互式讨论迭代系统 MVP** — Phases 1-3 (shipped 2026-09-13) — 详见 `milestones/v1.13-ROADMAP.md`
 - ✅ **v1.14 前端视觉与可访问性** — Phases 4-8 (shipped 2026-09-26) — 38 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3)全部交付 — 详见 `milestones/v1.14-ROADMAP.md`
+- 🚧 **v1.15 视觉构图升级** — Phase 9 (in progress) — 7 条需求(CARD 3 / VIS 2 / REG 2)**全部映射至唯一阶段 Phase 9**;用户裁定「开一个 phase,先看看效果吧」,后续候选待看过截图后再定
 
 ## Phases
 
@@ -45,6 +46,66 @@
 
 </details>
 
+### 🚧 v1.15 视觉构图升级 (In Progress)
+
+**Milestone Goal:** 把界面的**构图层次**补齐 —— 左栏 4 个面板与右栏文档区成为白底卡片容器(圆角 + 可见边界 + 极轻阴影 + 内边距),页面底色下沉,界面**首次**拥有 elevation 层次。
+
+**范围裁定(用户,2026-09-26):** 「开一个 phase。先看看效果吧」⇒ **本里程碑只有一个阶段(Phase 9)**。后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)已在 `.planning/REQUIREMENTS.md` 的 Out of Scope 表逐条列明,**待用户看过 Phase 9 的截图后再决定是否另开 phase**;本里程碑**不得**为其预建阶段。
+
+**为什么是构图而不是配色:** v1.14 的六个范围域(TOKEN / VISUAL / TYPE / A11Y / LAYOUT / INTERACT)全部花在**正确性** —— 颜色、对比度、焦点环;构图(容器层次、视觉重量、组件变体)**从未被任何阶段覆盖**,界面因此仍然"丑"。`shadcn/ui` 的实地核查结论是「不能引入,但可借鉴配方」:配色层面本项目并不落后(已在用 Radix Colors 12 步语义刻度),**缺的是构图**。实测的机械成因(真浏览器探针,非推断):`body` 底色 `rgb(252,252,252)`(gray-1)是**全场最亮**;`#session-panel` / `#annotations-panel` / `#ai-panel` **完全透明**;`#doc-panel` 是更暗的 `rgb(249,249,249)`(gray-2,读作"凹陷")且 **`border-radius: 0px`、零 `box-shadow`**;全应用零 `box-shadow`。
+
+**硬约束(每个计划都适用):** `scripts/check-01-token-conformance.sh`(围栏外零裸 `#hex`、零 tier-1 原语引用;新令牌必须声明在围栏 `:root` 内)、`scripts/check-02-contrast.py`(围栏内 PAIR 清单)、`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` 恒为 1)、`scripts/check-04-important-count.sh`(`!important` **声明**数恒为 1);**追加,不重排**(至少一对等特异性规则由源码顺序决定);零新增 `!important`、不令牌化 `display`、不引入 `@layer` / `@property` / `var(--x, #fallback)`;零新增运行时依赖、零构建步骤(DESIGN.md D-06)。
+
+**回归面(本里程碑最高风险):** 五条浏览器门 —— `scripts/check-05-ui-uat.py`(Playwright UAT)、`scripts/check-06-idi05-validation.py`、`scripts/check-07-idi08-validation.py`、`scripts/probe-05-resolve-color.py`、`scripts/probe-07-focus-composite.py` —— 大量断言绑死具体 DOM 与 computed style(焦点环 2px 与其解析后的 `--color-focus`、sticky 表头、badge 流内机制、滚动容器收敛、命中区 24×24、窄窗口不破版)。**任何 surface 改动都可能打破它们** ⇒ 每次改动必须复跑。环境事实:`check-05` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该机 `channel="chrome"` + headless 会挂死);全量跑 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归。
+
+- [ ] **Phase 9: 卡片容器化与页面底色下沉** - 左栏 4 个面板与右栏文档区成为白底卡片;页面底色下沉至 gray-3,形成 gray-3 < gray-2 < 白 三级 elevation 刻度;受影响的对比度对重算并登记;五条 UI 门复跑无新增失败
+
+## Phase Details
+
+### Phase 9: 卡片容器化与页面底色下沉
+
+**Goal**: 左栏 4 个面板(会话流 / 本轮批注流 / 自检报告 / AI 工作面板)与右栏文档区各自成为**白底卡片容器**(白底 + 可见边界 + 圆角 + 极轻阴影 + 内边距),页面底色下沉至 `--radix-gray-3`(#f0f0f0) —— 界面首次拥有 elevation 层次,并与既有 `--color-surface`(gray-2,控件内陷面)接成连贯三级刻度:gray-3(页面)< gray-2(内陷面)< 白(卡片)。
+**Depends on**: Nothing(v1.15 唯一阶段;v1.14 的 6 个阶段已 shipped 并归档)
+**Requirements**: CARD-01, CARD-02, CARD-03, VIS-01, VIS-02, REG-01, REG-02
+
+**Rationale**: 底色关系取「**页面下沉 + 白卡片**」已由用户裁定(2026-09-26,PROJECT.md Key Decisions),**本阶段不重开该决策**。三个候选中此项层次最强(ΔL≈6%),且顺带把现有三层接成连贯刻度 —— 正好是 shadcn 的 canvas / inset / raised 三档。本阶段真正的难点不是选色,而是**在落地它的同时不打破五条浏览器门**:它们是本仓库唯一能证明"渲染语义仍然成立"的机器,而它们断言的正是 computed style。
+
+**Deliverables**:
+
+- `frontend/style.css` 围栏 `:root` 内的**卡片令牌**(卡片底色 / 卡片阴影);卡片圆角取自现有 `--radius-*` 刻度,**不引入新圆角值**;阴影**零位移**(不参与布局)。令牌块外零裸 `#hex`、零 tier-1 原语引用。
+- `--color-surface-page` 换值为 `--radix-gray-3`(#f0f0f0):页面底色与白卡片形成明确层次(现值 `rgb(252,252,252)` 是全场最亮,层次是反的)。
+- 左栏 4 个面板 + 右栏文档区的**卡片容器规则**(白底 + 可见边界 + 圆角 + 极轻阴影 + 内边距 + 卡片间可见间隙),**追加不重排**。
+- `scripts/check-02-contrast.py` 围栏内 PAIR 清单的**重算与登记**:现有 54 条配对中有 **8 条画在 `--color-surface-page` 上**(`style.css` 第 455 / 465 / 470 / 514 / 523 / 526 / 542 / 562 行:`--color-text` / `--color-text-secondary` / `--color-text-muted` / `--color-focus` / `--color-marker-active` ×2(TEXT + NON-TEXT)/ `--color-border-strong` / `--color-border-hover`)。页面换值后这 8 条全部失效,须逐条以 HEAD 内容重新计算比值后登记(不是刷新旧值)。
+- 五条浏览器门的复跑记录(`check-05` / `check-06` / `check-07` / `probe-05` / `probe-07`),含 `check-05` 全量结果与 item 5 两条 BLOCKED 腿的按设计说明。
+- 供用户评审的**截图** —— 用户将据此裁定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase。
+
+**Success Criteria** (what must be TRUE):
+
+1. 左栏 4 个面板(会话流 / 本轮批注流 / 自检报告 / AI 工作面板)在浏览器里各自呈现为**独立卡片** —— 每个容器的计算底色为白、计算圆角非零、计算阴影非 `none`,彼此之间有可见间隙;不再是 v1.14 收口时的"完全透明贴页面底色"。
+2. 右栏文档区呈现为**同族卡片**(同底色 / 同边框语言 / 同圆角 / 同阴影),其原有的 `border-left: 1px` 凹陷读感被卡片语言取代。
+3. 页面底色确实**比卡片更暗**:`body` 的计算底色为 gray-3(`rgb(240,240,240)`),与白卡片构成可见层次;屏幕上同时可见的三档顺序正确 —— gray-3(页面)< gray-2(`--color-surface`,控件内陷面)< 白(卡片),控件内陷面仍读作"凹"、卡片仍读作"凸"。
+4. 卡片令牌全部落在围栏 `:root` 内:`scripts/check-01-token-conformance.sh` 通过(令牌块外零裸 `#hex`、零 tier-1 原语引用);圆角取自现有 `--radius-*` 刻度;阴影零位移、不参与布局。
+5. 页面换值后 `scripts/check-02-contrast.py` 全部对比度对仍达标 —— 画在 `--color-surface-page` 上的 **8 条** PAIR 逐条以 HEAD 内容重算比值、以 `/* PAIR */` 注释**登记**(非刷新旧值);五条浏览器门复跑**无新增失败** —— 折叠行为 / 滚动容器收敛 / sticky 表头 / badge 流内机制 / 焦点环 / 24×24 命中区 / 窄窗口不破版全部保持。
+
+**Avoids** (Pitfalls):
+
+- **"刷新"旧 PAIR 值** —— `--color-surface-page` 现值是 `var(--radix-gray-1)`(#fcfcfc),换值会使画在其上的 **8 条** PAIR(见 Deliverables)全部失效;刷新等于断言"自验证以来什么都没变",而这里是假的。必须逐条以 HEAD 内容重算并登记 —— 实测基线里 `--color-marker-active on --color-surface-page` 是 **4.65:1**(余量仅 0.15),页面下沉到 gray-3 后它的比值必然改变,这正是"照抄旧值"会漏掉的那一类。
+- **重排规则** —— 至少一对等特异性规则由源码顺序决定;重排即渲染变更,而源码 diff 看起来完全无辜。只追加。
+- **计数门的算术陷阱** —— `check-04` 数的是 `!important;` **声明**数(恰为 1),不是命中行数;解释性注释的散文会把 `grep -c` 顶高(本项目已因此红过三次)。
+- **为凑卡片效果删掉 `#doc-panel` 的 `overflow-y: auto`** —— 它是另一列的滚动者,L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删它会同时打破 L-1 与计数门(期望值是 4 不是 3)。
+- **把阴影做成参与布局的东西** —— 阴影必须零位移;用 `margin` / `position` 模拟"浮起"会移动既有几何,直接打在命中区与窄窗口门上。
+- **只在静态 grep 上验收** —— 每个 `style.css` 计划必须带至少一项运行时验证(真实浏览器的 computed style 读数);`grep -c 'var(--'` 对渲染结果零证明力。
+- **范围蔓延到后续候选** —— 表格重做 / 圆角刻度收敛 / 图标与空状态**不在本阶段**(用户裁定先看效果)。
+
+**Gates**: `scripts/check-01-token-conformance.sh` PASS;`scripts/check-02-contrast.py` PASS(受影响 PAIR 全部重算并登记,`ORDER` 断言不退化);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`);`node --check frontend/app.js`;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`,环境 `python3` 是 miniconda 会让 4 个 `ai_caller` 测试假失败);`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`。
+**Plans**: TBD
+
+Plans:
+
+- [ ] TBD (run `/gsd-plan-phase 9` to break down)
+
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -58,8 +119,9 @@
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
+| 9. 卡片容器化与页面底色下沉 | v1.15 | 0/0 | Not started | - |
 
-**全部 9 个阶段已收口。** 下一里程碑待 `/gsd-new-milestone` 定义。
+**v1.13 / v1.14 共 9 个阶段已收口。** v1.15 为**单一阶段**(Phase 9),尚未开始 —— 用户裁定「开一个 phase,先看看效果吧」,看过 Phase 9 的截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase。
 
 ## Backlog
 

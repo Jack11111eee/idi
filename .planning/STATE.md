@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.15
 milestone_name: 视觉构图升级
 status: planning
-last_updated: "2026-09-26T09:06:26.162Z"
+last_updated: "2026-09-26T09:26:30.346Z"
 last_activity: 2026-09-26
 progress:
-  total_phases: 0
+  total_phases: 1
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-26)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** v1.14 已归档;下一里程碑待 `/gsd-new-milestone` 定义
+**Current focus:** v1.15 视觉构图升级 —— Phase 9 卡片容器化与页面底色下沉(路线图已建立,待规划)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-09-26 — Milestone v1.15 started
+Phase: 9 of 1 (卡片容器化与页面底色下沉) — v1.15 唯一阶段
+Plan: — of TBD
+Status: Ready to plan
+Last activity: 2026-09-26 — v1.15 路线图已建立:单一阶段 Phase 9,7/7 需求映射完成(用户裁定「开一个 phase,先看看效果吧」)
 
 ## Performance Metrics
 
@@ -101,6 +101,8 @@ Last activity: 2026-09-26 — Milestone v1.15 started
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Roadmap]: **v1.15 阶段边界 = 单一阶段(Phase 9)** —— 用户裁定「开一个 phase,先看看效果吧」,故本里程碑**不**按 v1.14 的「风险面 + 契约依赖」切法展开,而是把构图轴的第一件事(卡片容器化 + 页面底色下沉)单独交付,让用户看过截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase;三者已在 `REQUIREMENTS.md` 的 Out of Scope 表明文排除,**不得预建阶段**
+- [Roadmap]: v1.15 的 7 条需求(CARD-01..03 / VIS-01..02 / REG-01..02)**全部映射到 Phase 9**,无 orphan、无跨阶段重复。REG-01/REG-02 之所以与 CARD/VIS 同阶段交付,是因为页面换值(`--color-surface-page` → `--radix-gray-3`)与「对比度对重算并登记」「五条浏览器门复跑」是**同一次改动**的两面 —— 拆开会造出「改了值但没人验」的中间态
 - [Roadmap]: v1.14 阶段边界 = 5 阶段(Phases 4-8),按"风险面 + 契约依赖"切,而非按审计报告的六支柱切——P4 设计契约与令牌层(硬前置,唯一纯重构阶段)、P5 排版与视觉层级(承载核心价值修复)、P6 布局稳健性(回归风险最高的 CSS 阶段)、P7 交互状态与焦点样式(纯追加)、P8 可访问性语义与键盘(唯一触碰 app.js/index.html 的阶段)。四份研究的建序分歧按"Architecture 的骨架胜出、Pitfalls 的 Phase E 折入 P8 作收口 gate、STACK 的六步作为 P4 的提交序"调和
 - [Roadmap]: v1.14 压缩裁定——6 阶段压到 5 阶段,采用的唯一合并是研究自陈允许的那一条(交互状态 P3 并入焦点样式 P5,即本路线图 P7);**未**采用"P3 并入 P4"这一被研究明令禁止的合并。焦点规则在 P7 落地、`tabindex` 在 P8 落地,以满足"tabindex 与 :focus 同提交"硬规则的实质(不存在可聚焦而焦点不可见的中间状态)
 - [Roadmap]: CHECK-01/02 两条校验脚本并入 P4 而非独立前置阶段——它们校验的不变量(块外零 hex、声明令牌配对达 AA)正是 P4 的中心主张;在必须满足该不变量的同一阶段交付检查器,把该阶段的中心主张从散文变成一条命令,后续每个阶段免费继承该工具
@@ -293,11 +295,12 @@ Items acknowledged and deferred at milestone close, most recent first:
 ## Session Continuity
 
 Last session: 2026-09-26
-Stopped at: **v1.14 归档完成**(`/gsd-complete-milestone v1.14`)。6 阶段 / 21 计划 / 60 任务 / 38 需求全部交付;`closeout_type = verified_closeout`(6/6 阶段在 `0b6283a` 复验 `passed`)。预收口审计抓到并修复了一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),六个阶段的指纹因此全部作废并**逐份以 HEAD 内容重新验证**(不是刷新)。两条预收口审计项已 acknowledge 并记入上方 Deferred Items。
+Stopped at: **v1.15 路线图已建立** —— 单一阶段 Phase 9(卡片容器化与页面底色下沉),7/7 需求映射完成;`.planning/ROADMAP.md` 已追加 v1.15 里程碑段 + `### Phase 9:` 详情与 Progress 行,`.planning/REQUIREMENTS.md` 追溯表逐条核对为 Phase 9。**尚未规划** ⇒ 下一步 `/gsd-plan-phase 9`。前一段:**v1.14 归档完成**(`/gsd-complete-milestone v1.14`)。6 阶段 / 21 计划 / 60 任务 / 38 需求全部交付;`closeout_type = verified_closeout`(6/6 阶段在 `0b6283a` 复验 `passed`)。预收口审计抓到并修复了一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),六个阶段的指纹因此全部作废并**逐份以 HEAD 内容重新验证**(不是刷新)。两条预收口审计项已 acknowledge 并记入上方 Deferred Items。
 Resume file: (无进行中的工作)
 
 ## Operator Next Steps
 
-- **下一里程碑**:`/clear` 后运行 `/gsd-new-milestone`(questioning → research → requirements → roadmap)。当前 `.planning/REQUIREMENTS.md` 已按流程移除,新里程碑会重新定义需求。
-- 候选范围见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
+- **下一步**:运行 `/gsd-plan-phase 9`(如需先收集上下文,先 `/gsd-discuss-phase 9`)。路线图与需求已落盘:`.planning/ROADMAP.md`(v1.15 里程碑段 + `### Phase 9:` 详情 + Progress 行)与 `.planning/REQUIREMENTS.md`(7 条需求 + 追溯表 7/7)。
+- **用户评审点**:Phase 9 完成后须向用户呈上**截图**,由其裁定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase —— 本里程碑刻意不含它们。
+- 候选范围另见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
 - **归档后注意**:阶段报告现位于 `.planning/milestones/v1.14-phases/`,其 `covered_files` 里的 `.planning/phases/...` 路径已不可解析(重算返回 `null`,fail-closed=stale)。这是 v1.13 收口时已登记的**已知限制**,归档后的报告不再被 staleness 机制消费,无需回填重算。

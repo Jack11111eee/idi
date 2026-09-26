@@ -15,3 +15,6 @@ __pycache__/
 
 # GSD 研究员的网页抓取缓存(hash 命名的 JSON,机器本地,不属仓库内容)
 .planning/research/.cache/
+
+# 机器本地权限授予(会话级 Skill/Bash allow 条目,机器相关,不属仓库内容)
+.claude/settings.local.json

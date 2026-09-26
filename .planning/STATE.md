@@ -21,10 +21,10 @@ current_phase: 08
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-24)
+See: .planning/PROJECT.md (updated 2026-09-26)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** 里程碑 v1.14 已全部收口,待 `/gsd-complete-milestone v1.14` 归档;下一里程碑待 `/gsd-new-milestone` 定义
+**Current focus:** v1.14 已归档;下一里程碑待 `/gsd-new-milestone` 定义
 
 ## Current Position
 
@@ -227,6 +227,18 @@ None yet.
 
 ### Blockers/Concerns
 
+**Open — carried forward from v1.14:**
+
+- **`state.*` 写入动词全部不可信**(第 1–8 次复现,已注册 `tech-debt`,不自愈)。已复现的触发者:`phase.complete` / `advance-plan` / `update-progress` / `record-session` / `planned-phase`。失效形态**不止一种**:改错值(`completed_phases` → 1 或 0)、改分母(`total_phases` 数阶段**编号**,把 v1.13 并进 v1.14 的分母)、删字段、以及**假报成功 + 零写入**(`last_plan` 分支返回 `updated: []` 却报 `ready_for_verification`)。**判据一律取 ROADMAP 的 `## Milestones` + `## Progress`**(或 `gsd_run query progress.bar --raw`),不从 `state.json` 的 `phases` 推;**核盘须逐字段对照写入前快照**,不能只比 `percent` 一个数(「一步到 0」的形态也存在);**`update-progress` 会用坏值重算,不可作为修正手段**。
+- **四条门标签宽于实测**(v1.14 审计 §7;已记入 PROJECT.md 与 MILESTONES.md):`04-UI-SPEC.md` L-5「每个」实为 9/10 行、L-6 只测可见行、`check-05 --item 10` 的 SC4 用固定 12 次 Tab 窗口、`check-07` g1 措辞与实测不符。均不影响已通过的结论,但都是「门绿但没在看」的温床。
+- **Nyquist 缺口**:`idi-04` 与 `idi-06` 无 `VALIDATION.md`。建议 `/gsd-validate-phase 4` / `/gsd-validate-phase 6`。
+- **`check-05 --item 10` 的 docstring 陈旧**:声称 p3 判定集必含 `summary`,而实测 HEAD 的 p3 普查是 29 元素 / **10 判定**、`summary` 不在其中(造出 `<summary>` 的是 item 9,不是 item 10)。⇒ backlog `999.2` 第 2 条的前提**经实测确认成立**(2026-09-26 复核)。
+- **`idi-07` 人工项 5″ 无有效证据**:其引用的样本无法 exercise 禁用态(`#authorize-row` 在 `#btn-authorize` 被禁用的四个样本里都是 `.hidden`),故已记录的 UAT `pass` 不构成该感知主张的证据。复验器已把 Test 改写为可到达场景,但**无人重跑**。用户 2026-09-26 裁定接受现状并归档。
+- **`gsd-tools windows append` 被拒**(`Ledger table … disagrees with the fenced JSON entries … row id(s): 17`),三条应入账条目改记于 `idi-08-03-SUMMARY.md`,记为已知限制而非回填。
+- **backlog 状态**:`999.1` 已由 quick `260925-iin` 关闭;`999.2`(Phase 7 三条既有 affordance 缺陷)仍开,执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证。
+
+**Resolved during v1.14 — 保留为本里程碑的缺陷台账(下方条目均已闭合,不再阻塞):**
+
 - [v1.14 P4] ~~规划前必须先答复 ARCHITECTURE.md 向 UI-SPEC 作者提的 7 个未决问题~~ **已关闭(2026-09-17,`24a9abe`)** — 7 个问题全部在 `04-UI-SPEC.md` 的 `## Design Decisions` 中给出裁定(令牌命名与三族切分、不可逆动作处理、字号锚点、`--fw-medium` 不声明、窄窗口范围、`#state-badge` 采 `calc()`、emoji 走 data-URI 内联 SVG)。**取而代之的是四个待用户签核的偏差 S-1…S-4**(见 Operator Next Steps)—— ✅ **已签核(2026-09-17,规划期)**:用户在 `/gsd-plan-phase 4` 呈上四项时**逐项照契约原文批准**(S-1 保留半步带 / S-2 保留 14px / S-3 接受 `#ccc`→`#8a8a8a` / S-4 删除冻结轮 opacity 改用结构性标记)。四项的一行式替代方案**均不执行**;S-1/S-2 是超越已锁 TOKEN-05 / TOKEN-08 字面的授权依据。签核为 planning 期用户决定,不是 checker 裁定。
 - [v1.14 P8] 五条 b9664e0 修复无自动化覆盖,而本里程碑重写其依赖的 CSS;`.hidden { display: !important }` 是 5 路单点故障
 - [v1.14 全局] gate 算术陷阱:`grep -c '!important' frontend/style.css` 返回 3(其中 2 行是 L13-14 注释散文),而声明数必须为 1——写 gate 时按"声明"计数
@@ -284,10 +296,12 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-25T06:52:38Z
-Stopped at: quick `260925-iin` complete(`verification.status: passed`,8/8)after the v1.14 milestone audit returned `gaps_found`. Ready to resume `/gsd-complete-milestone v1.14`, now with an unresolved decision: the audit's five fixes invalidated **all six** phases' verification fingerprints (previously five were stale and `idi-08` was `passed`), so the earlier "带覆盖收口" rationale no longer holds.
-Resume file: .planning/v1.14-MILESTONE-AUDIT.md
+Last session: 2026-09-26
+Stopped at: **v1.14 归档完成**(`/gsd-complete-milestone v1.14`)。6 阶段 / 21 计划 / 60 任务 / 38 需求全部交付;`closeout_type = verified_closeout`(6/6 阶段在 `0b6283a` 复验 `passed`)。预收口审计抓到并修复了一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),六个阶段的指纹因此全部作废并**逐份以 HEAD 内容重新验证**(不是刷新)。两条预收口审计项已 acknowledge 并记入上方 Deferred Items。
+Resume file: (无进行中的工作)
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- **下一里程碑**:`/clear` 后运行 `/gsd-new-milestone`(questioning → research → requirements → roadmap)。当前 `.planning/REQUIREMENTS.md` 已按流程移除,新里程碑会重新定义需求。
+- 候选范围见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
+- **归档后注意**:阶段报告现位于 `.planning/milestones/v1.14-phases/`,其 `covered_files` 里的 `.planning/phases/...` 路径已不可解析(重算返回 `null`,fail-closed=stale)。这是 v1.13 收口时已登记的**已知限制**,归档后的报告不再被 staleness 机制消费,无需回填重算。

@@ -332,7 +332,7 @@
      5. --color-surface-card is an alias of --white, which is already declared
         at the top of this fence => Phase 9 adds ZERO tier-1 primitives. */
   --color-surface-card: var(--white);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 
   /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
@@ -728,9 +728,11 @@ html, body {
 /* 左栏四个面板的卡片语言(Phase 9 / CARD-01 / CARD-02)。就地扩写既有规则体,
    选择器文本与源码顺序逐字不变 —— 硬规则 3「追加,不重排」的落地形态。
 
-   ① 边界色取 --color-border-subtle:它已经是 #doc-panel 与 .event-list 的容器边界色,
-      即本文件既有的容器边界语言 ⇒ 零新增令牌。不得顺手换成别的令牌,也不得为卡片
-      新声明一个边界令牌。
+   ① 边界色取 --color-border(gray-7),比 --color-border-subtle(gray-6)深一档 ——
+      依据是用户 2026-09-26 的裁定「边框与阴影强度:现在太轻了,稍微重一点」,即
+      Phase 9 自己 parked 的强度决策的落地。取的是既有令牌 ⇒ 仍是零新增令牌;
+      --color-border-subtle 仍是 .event-list / .annotation-item / .badge-answered /
+      #latest-check 四处的边界色 —— 那四处不是卡片,本次不动。
    ② 本规则体内**禁止**出现 transform / filter / will-change / contain / perspective /
       opacity / position / z-index / overflow 任何一项。#stream-banner 是 #doc-panel 的
       后代且 position: fixed,前六个属性会建立「fixed 定位包含块」或新层叠上下文,把它
@@ -742,7 +744,7 @@ html, body {
   width: 100%;
   max-width: 768px;
   background: var(--color-surface-card);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
@@ -760,7 +762,7 @@ html, body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-border);
   background: var(--color-surface-card);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);

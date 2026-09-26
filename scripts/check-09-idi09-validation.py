@@ -83,10 +83,11 @@ resolve_token = c05.resolve_token
 # 左栏 4 个 section(index.html 的 main#main-pane 的 4 个直接子 section)。
 LEFT_SECTIONS = ["#session-panel", "#annotations-panel", "#checks-panel", "#ai-panel"]
 
-# 用户裁定值(D-9-3)。字面量写在这里,是因为本断言的用途正是「运行时读到的值
-# 等于用户裁定的那个值」—— 若两侧都从同一个令牌解析,改坏令牌值也照样 PASS。
-SHADOW_CARD_LITERAL = "0 1px 2px rgba(0, 0, 0, 0.04)"
-SHADOW_CARD_COLOR = "rgba(0, 0, 0, 0.04)"
+# 用户裁定值(D-9-3;2026-09-26 把阴影加重一档为两层值)。字面量写在这里,
+# 是因为本断言的用途正是「运行时读到的值等于用户裁定的那个值」—— 若两侧都从
+# 同一个令牌解析,改坏令牌值也照样 PASS。
+SHADOW_CARD_LITERAL = "0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04)"
+SHADOW_CARD_COLOR = "rgba(0, 0, 0, 0.08)"
 CARD_WHITE = "rgb(255, 255, 255)"
 
 _SHADOW_COLOR_RE = re.compile(r"rgba?\([^)]*\)")
@@ -95,9 +96,11 @@ _SHADOW_COLOR_RE = re.compile(r"rgba?\([^)]*\)")
 def shadow_lengths(raw):
     """把 computed box-shadow 去掉颜色后拆成分量;none / 取不到返回 None。
 
-    Chrome 的 computed 序列化把颜色写在最前(如
-    `rgba(0, 0, 0, 0.04) 0px 1px 2px 0px`),故去掉颜色子串后剩下的就是
-    `[offset-x, offset-y, blur, spread]`。offset-x 是零位移判据的读数。
+    Chrome 的 computed 序列化把**每层**的颜色写在层内最前(如
+    `rgba(0, 0, 0, 0.08) 0px 1px 3px 0px, rgba(0, 0, 0, 0.04) 0px 1px 2px 0px`),
+    故去掉颜色子串后,各层的 `[offset-x, offset-y, blur, spread]` 按层序拼接。
+    本函数只被用来读**首层**的 offset-x(零位移判据),故多层值下 `lengths[0]`
+    仍是首层的 offset-x。
     """
     if not raw or not isinstance(raw, str) or raw.strip() == "none":
         return None

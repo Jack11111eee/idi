@@ -12,7 +12,7 @@
 
 - [x] **CARD-01**: 左栏 4 个面板(会话流 / 本轮批注流 / 自检报告 / AI 工作面板)各自呈现为独立卡片 —— 白底 + 可见边界 + 圆角,彼此间有明确间隙
 - [x] **CARD-02**: 右栏文档区呈现为独立卡片,与左栏卡片视觉同族(同底色 / 同边框语言 / 同圆角 / 同阴影)
-- [ ] **CARD-03**: 页面底色下沉,与白色卡片形成明确的 elevation 层次 —— 卡片视觉上"浮"于页面之上
+- [x] **CARD-03**: 页面底色下沉,与白色卡片形成明确的 elevation 层次 —— 卡片视觉上"浮"于页面之上
 
 ### 视觉令牌
 
@@ -46,7 +46,7 @@
 |-------------|-------|--------|
 | CARD-01 | Phase 9 | Complete |
 | CARD-02 | Phase 9 | Complete |
-| CARD-03 | Phase 9 | Pending |
+| CARD-03 | Phase 9 | Complete |
 | VIS-01 | Phase 9 | Complete |
 | VIS-02 | Phase 9 | Complete |
 | REG-01 | Phase 9 | Complete |

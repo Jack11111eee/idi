@@ -101,11 +101,13 @@
 - **范围蔓延到后续候选** —— 表格重做 / 圆角刻度收敛 / 图标与空状态**不在本阶段**(用户裁定先看效果)。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS;`scripts/check-02-contrast.py` PASS(受影响 PAIR 全部重算并登记,`ORDER` 断言不退化);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`);`node --check frontend/app.js`;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`,环境 `python3` 是 miniconda 会让 4 个 `ai_caller` 测试假失败);`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`。
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 
-- [ ] TBD (run `/gsd-plan-phase 9` to break down)
+- [ ] `idi-09-01-PLAN.md` — 卡片令牌(围栏内 `--color-surface-card` / `--shadow-card`)+ 左栏 4 个 section 与右栏 `#doc-panel` 的卡片语言 + `#doc-panel-header` 底色跟随 + 2 条 PAIR 的地面重新归属(4.77 / 3.32)+ 新建运行时门 `check-09-idi09-validation.py`
+- [ ] `idi-09-02-PLAN.md` — 密度收档(卡片间距 12px / 面板内边距 16px)+ 页面底色下沉到 `--radix-gray-3` + 画在页面上的 6 条 PAIR 逐条重算并登记(不是刷新旧值)+ 三层刻度与滚动契约的运行时门
+- [ ] `idi-09-03-PLAN.md` — 五条浏览器门复跑与失败分诊 + 四个静态门与 pytest 基线复核 + 5 个状态样本的截图(供用户评审)
 
 **UI hint**: yes
 

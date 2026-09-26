@@ -1,7 +1,7 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v1.15",
+  "milestone": "v1.15 — 视觉构图升级",
   "phases": [
     {
       "number": "1",
@@ -47,12 +47,17 @@
       "number": "8",
       "name": "可访问性语义与键盘",
       "status": "complete"
+    },
+    {
+      "number": "9",
+      "name": "卡片容器化与页面底色下沉",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd:discuss-phase",
-    "label": "Discuss the first phase",
-    "reason": "Project initialized — plan your first phase"
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 9 of 1 · 0% · executing"
   },
-  "updated_at": "2026-09-26T09:06:26.165Z"
+  "updated_at": "2026-09-26T12:02:06.838Z"
 }

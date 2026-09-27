@@ -1078,12 +1078,36 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   padding: var(--space-half) var(--space-3);
   color: var(--color-text-muted);
 }
+/* 表格语言(D-10-1):表头浅底 + 仅横向分隔线。五件事逐条记下,缺一会被后来者读成任选或漏改。
+
+   (a) 档位依据:表头底色取 --color-surface,即 Phase 9 建立的三级 elevation 刻度里的
+   「内陷面」档 —— 页面(gray-3) < 内陷面(gray-2) < 白卡片。表格因此读作「白卡片内的
+   一个内陷块」,而不是与卡片语言无关的电子表格式网格。不得改落页面档,也不得改落原语。
+
+   (b) 就地改写:原「四条边取 --color-border」那条声明是就地改写成「四边零宽度 + 一条下边线」,
+   不是追加一条覆盖规则 —— 留下一条已死的声明会让注释与代码互相矛盾(与 Phase 9 对
+   #doc-panel 的左边框同一纪律)。
+
+   (c) 分隔线档位:行间分隔线与表头下边线同取 --color-border-subtle(gray-6,既有的容器
+   边界令牌,#doc-panel 与 .event-list 在用),比原 --color-border(gray-7)浅一档。它是
+   装饰性边界、不标识任何东西,故 SC 1.4.11 不适用、不新增 NON-TEXT 条目 —— 依据是
+   本文件两处既有登记,不是本阶段的判断:role-band 段的「border band 6-8」那一段写明
+   其余三条边界留在 6-8 是因为它们是装饰性的、SC 1.4.11 不适用于不标识任何东西的边界;
+   对比度配对清单头部同样写明装饰性分隔线被刻意略去。
+
+   (d) 零新增配对:表头的文字色从 .markdown-body 继承(即 --color-text),它在新的
+   内陷面绘制面上的配对早已登记在清单里(文字色 on --color-surface 那一条)⇒ 零新增条目。
+
+   (e) 不得碰:padding 与 font-size 两行逐字保留 —— font-size 被 scripts/check-05-ui-uat.py
+   的一条活断言锁死。行间不与相邻行画双线,由上方那条既有的 border-collapse 折叠规则承担。 */
 .markdown-body table { border-collapse: collapse; }
 .markdown-body th, .markdown-body td {
-  border: 1px solid var(--color-border);
+  border: none;
+  border-bottom: 1px solid var(--color-border-subtle);
   padding: var(--space-1) var(--space-2-5);
   font-size: var(--text-base);
 }
+.markdown-body th { background: var(--color-surface); }
 .markdown-body code {
   background: var(--color-surface-sunken);
   border-radius: var(--radius-sm);

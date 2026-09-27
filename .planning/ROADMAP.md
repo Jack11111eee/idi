@@ -153,11 +153,14 @@
 - **只在静态 grep 上验收** —— 每个 `style.css` 计划必须带至少一项运行时验证(真实浏览器的 computed style 读数)。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS(且 `grep -c -- '--radius-lg' frontend/style.css` == 0);`scripts/check-02-contrast.py` PASS(表头新绘制面的配对已证实登记,阈值文件与 HEAD 逐字节相同);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`,全量 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED);`node --check frontend/app.js`;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`);`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`;`idi-09-VERIFICATION.md` 重新验证后 `status: passed`。
-**Plans**: 0 plans
+**Plans**: 4 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 10 to break down)
+- [ ] idi-10-01-PLAN.md — 表格重做(表头 gray-2 浅底 + 仅横向分隔线)+ 新建运行时门 `scripts/check-10-idi10-validation.py`(骨架 + `t1` / `t2` + `--screenshot`)+ 表头新绘制面的对比度登记核实与「零新增 / 零放宽」逐字节证据
+- [ ] idi-10-02-PLAN.md — 圆角刻度收敛为 8 / 10 / 胶囊:删除 `--radius-lg`,`.chat-user` → `--radius-md`、`#chat-input-row input` → `--radius-pill`;给门追加 `r1` / `r2` 与 `--radius-snapshot` 前后并排取证
+- [ ] idi-10-03-PLAN.md — 五条浏览器门复跑 + 失败分诊 + 四个静态门 + pytest 基线 + `node --check` + 仓库卫生 + 供用户评审的截图与逐门原始日志
+- [ ] idi-10-04-PLAN.md — 连带指纹收口:实测「10 份覆盖 / 1 份可执行」并逐份取证;`idi-09-VERIFICATION.md` 以 HEAD 内容重新验证(非刷新),`verification.status` 由 `stale` 回到 `passed`
 
 **UI hint**: yes
 
@@ -175,11 +178,11 @@ Plans:
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete    | 2026-09-26 |
-| 10. 表格重做与圆角刻度收敛 | v1.15 | 0/0 | Not started | — |
+| 10. 表格重做与圆角刻度收敛 | v1.15 | 0/4 | Not started (planned 2026-09-27) | — |
 
 **v1.13 / v1.14 共 9 个阶段已收口。** v1.15 目前有**两个阶段**:Phase 9 **已收口(2026-09-26)** —— 计划 3/3 全部完成:卡片容器化端到端落地、页面底色下沉到 gray-3 与密度收档、五条浏览器门复跑(0 FAIL,零处门改动)、pytest 基线 219 passed / 6 skipped、5 张 1440×900 截图。收口前经用户裁定追加一次强度微调(quick `260926-vaf`:卡片边框 gray-6→gray-7、阴影改为两层 `0 1px 3px rgba(0,0,0,0.08)` + `0 1px 2px rgba(0,0,0,0.04)`),该微调使 `idi-09-VERIFICATION.md` 因**真实内容变更**而 stale,已按「重新验证(以 HEAD 内容重算),不是重算指纹」处置并复验 `passed`(24/24)。
 
-用户看过截图后(2026-09-27)裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 第三项候选(图标与空状态)**未点名,仍留在 Out of Scope**;被点名的两项**另开 Phase 10**(`Not started`,尚未规划),并按用户逐项选定的档位执行:表格取「表头浅底 + 仅横向分隔」,圆角取「严格收敛: 8 / 10 / 胶囊」。Phase 10 会再次改动 `frontend/style.css`,因而触及**10 份**含该文件的 `passed` 报告 —— 但规划期逐份读盘实测后校正:**只有 `idi-09` 的 `covered_files` 全部在盘**(其余 9 份因归档而路径不可解析,属 2026-09-14 登记的已知限制),故**实际要重新验证的只有 1 份**;`idi-08` 不覆盖该文件,且本阶段不得改 `check-05`(改了会把 `idi-08` 也拖进来)。详见其 Deliverables 与 Pitfalls。
+用户看过截图后(2026-09-27)裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 第三项候选(图标与空状态)**未点名,仍留在 Out of Scope**;被点名的两项**另开 Phase 10**(已规划,4 个计划,波次 1→2→3→4),并按用户逐项选定的档位执行:表格取「表头浅底 + 仅横向分隔」,圆角取「严格收敛: 8 / 10 / 胶囊」。Phase 10 会再次改动 `frontend/style.css`,因而触及**10 份**含该文件的 `passed` 报告 —— 但规划期逐份读盘实测后校正:**只有 `idi-09` 的 `covered_files` 全部在盘**(其余 9 份因归档而路径不可解析,属 2026-09-14 登记的已知限制),故**实际要重新验证的只有 1 份**;`idi-08` 不覆盖该文件,且本阶段不得改 `check-05`(改了会把 `idi-08` 也拖进来)。详见其 Deliverables 与 Pitfalls。
 
 ## Backlog
 

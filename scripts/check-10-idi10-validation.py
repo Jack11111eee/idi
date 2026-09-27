@@ -28,6 +28,7 @@
 运行方式
     .venv/bin/python scripts/check-10-idi10-validation.py --item t1
     .venv/bin/python scripts/check-10-idi10-validation.py --item t1,t2
+    .venv/bin/python scripts/check-10-idi10-validation.py --item r1 --item r2
     .venv/bin/python scripts/check-10-idi10-validation.py --item t1 --item t2 --json
     .venv/bin/python scripts/check-10-idi10-validation.py --radius-snapshot before <DIR>
     .venv/bin/python scripts/check-10-idi10-validation.py --screenshot <DIR>
@@ -45,6 +46,12 @@
                                (ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义),
                                下边线 1px solid == --color-border-subtle,外加
                                font-size(被 check-05 锁死的属性)与 padding 两条对照组
+    r1 → RADIUS-01 / RADIUS-02  围栏内零声明残留 + 三档的两侧写死字面量 +
+                                `.chat-user` 的四个**物理角长手**逐角断言(TL / TR / BL
+                                为卡片档、BR 为尖角档;探针气泡由应用自身的
+                                appendChatMessage 造出)
+    r2 → RADIUS-02              `#chat-input-row input` 的计算圆角 == 解析后的胶囊档、
+                                四角长手等值、外加 min-height 与边框两条对照组
     shot                          逐样本整窗截图(供用户评审;计划 03 直接消费)
     radius-snapshot               #chat-input-row input 的单元素前后取证(计划 02):
                                   computed style dump + rect + 元素 PNG + 源码 sha256
@@ -140,6 +147,14 @@ RADIUS_CORNER_PROPS = (
     "border-bottom-left-radius",
     "border-bottom-right-radius",
 )
+
+# 收敛后三档的两侧都写死。理由与 t1 的 TH_BG_LITERAL 同型:本断言的用途正是「运行时读到的
+# 值等于用户裁定 / 刻度声明的那个值」—— 若两侧都从同一个令牌解析,把令牌改坏也照样 PASS。
+RADIUS_LITERALS = {
+    "--radius-sm": "8px",
+    "--radius-md": "10px",
+    "--radius-pill": "999px",
+}
 
 
 def load_check05():
@@ -365,6 +380,135 @@ def t2(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# r1 — 圆角三档 + `.chat-user` 的四个角长手(RADIUS-01 / RADIUS-02)
+# ---------------------------------------------------------------------------
+def r1(page, tmp_root):
+    item = "r1"
+    print("\n=== r1: 圆角三档 + .chat-user 的四个角长手(RADIUS-01 / RADIUS-02)===", flush=True)
+
+    # (a) 源码文本级:围栏内零声明残留。读的是**文件文本**,不是渲染结果 ——
+    #     与下面的运行时断言互补(文本级看不见「消费者是否真的接上了」,运行时看不见
+    #     「围栏里是否还留着一行没人用的声明」)。
+    fenced = fence_text()
+    ok_true(item, "r1 [源码] 围栏内 --radius-lg 声明残留计数 == 0",
+            fenced.count("--radius-lg") == 0, "== 0", str(fenced.count("--radius-lg")),
+            note="读 DESIGN TOKENS 围栏内的文本;围栏内不得留下未消费的令牌声明"
+                 "(D-04 / Hard Rule 5)")
+
+    proj = c05.make_fixture("p1", tmp_root)
+    c05.enter_project(page, proj)
+
+    # (b) 令牌级双侧:解析值 == 写死的字面量(逐条一断言)。
+    tokens = {name: resolve_token(page, name) for name in RADIUS_LITERALS}
+    info("r1 令牌解析", " ".join(f"{name}={tokens[name]}" for name in RADIUS_LITERALS))
+    for name, literal in RADIUS_LITERALS.items():
+        ok(item, f"r1 [令牌] {name} 解析值 == 刻度声明字面量", literal, tokens[name],
+           note="令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿")
+    gone = resolve_token(page, "--radius-lg")
+    ok_true(item, "r1 [令牌] 被删档位已不可解析(解析值 None)",
+            gone is None, "None", str(gone),
+            note="被删档位的探测器:它若还能解析出值,说明删漏了或消费者没搬完")
+
+    # (c) 先造出 `.chat-user` 探针气泡,再读它 —— 这一步不是可选的。
+    #     `scripts/ui-states/p1/` 只有 .gitkeep、无 transcript.md ⇒ p1 的自然状态下
+    #     **不存在** .chat-user,直接 read_style 只会拿到 None。本仓库的既有做法是
+    #     **造出容器再断言**:check-05-ui-uat.py 的 item3 正是先
+    #     `appendChatMessage('user', …)` 再读该元素(真实渲染路径、零网络、零 AI 调用)。
+    def probe_and_read():
+        """造一次探针气泡,然后读四个物理角长手 + 简写(简写仅作诊断)。
+
+        ⚠ 每一次调用都**重新造一次**:该节点是 harness 造的、不在 fixture 里,
+        任何重新导航都会把它清掉 —— 只在开头造一次会让后续读数落空。
+        """
+        page.evaluate("() => { appendChatMessage('user', 'harness: .chat-user 圆角探针'); }")
+        corners = {prop: read_style(page, ".chat-user", prop) for prop in RADIUS_CORNER_PROPS}
+        shorthand = page.evaluate(
+            """() => { const el = document.querySelector('.chat-user');
+                       return el ? getComputedStyle(el).getPropertyValue('border-radius') : null; }"""
+        )
+        return corners, shorthand
+
+    diag_corners, diag_shorthand = probe_and_read()
+    info("r1 .chat-user 四个物理角长手原始读数(诊断)",
+         " / ".join(f"{prop}={diag_corners[prop]}" for prop in RADIUS_CORNER_PROPS))
+    info("r1 .chat-user 简写 border-radius(显式 getPropertyValue,仅诊断、不断言)",
+         f"{diag_shorthand!r} —— 该规则体带 border-bottom-right-radius,Chrome 把简写序列化成"
+         f"**三值**,故「简写 == 卡片档」这条断言不可满足;判据一律取四个物理角长手")
+
+    corners, _shorthand = probe_and_read()
+    if any(corners[prop] is None for prop in RADIUS_CORNER_PROPS):
+        # 探针气泡**已经造出**仍读不到 ⇒ appendChatMessage 没生效、或该类名已改。
+        # 这是 FAIL 而不是 BLOCKED:BLOCKED 的前提(元素本就不存在)已被本步排除。
+        ok_true(item, "r1 [p1] .chat-user 四个物理角长手可读(探针气泡已由应用自身的 "
+                      "appendChatMessage 造出)",
+                False, "四个读数均非 None", str(corners),
+                note="BLOCKED 不适用:探针气泡已造出,读不到即说明构造路径失效")
+        return
+
+    # (d) 逐角读长手、逐角独立断言 —— 不读简写(见上)。标签里写清哪一个角是尖角,
+    #     使「保留尖角」不会被后人误读成「四角统一」。
+    md = resolve_token(page, "--radius-md")
+    sm = resolve_token(page, "--radius-sm")
+    for prop in ("border-top-left-radius", "border-top-right-radius",
+                 "border-bottom-left-radius"):
+        ok(item, f"r1 [p1] .chat-user {prop} == 解析后的 --radius-md(卡片档)",
+           md, corners[prop],
+           note="本阶段**唯一外观真变**的消费者:28px 的大圆角气泡收进卡片档"
+                "(HEAD 上此处为 28px)")
+    ok(item, "r1 [p1] .chat-user border-bottom-right-radius == 解析后的 --radius-sm(尖角保留)",
+       sm, corners["border-bottom-right-radius"],
+       note="气泡尾巴的尖角是本阶段**刻意不动**的形态,逐角独立断言")
+    ok_true(item, "r1 [p1] .chat-user 四角并非统一(BR 是尖角档、TL 是卡片档)",
+            corners["border-bottom-right-radius"] != corners["border-top-left-radius"],
+            "BR != TL",
+            f"TL={corners['border-top-left-radius']} BR={corners['border-bottom-right-radius']}",
+            note="使「四角统一」可失败 —— 否则「保留尖角」这条判据会被等值断言悄悄吃掉")
+
+
+# ---------------------------------------------------------------------------
+# r2 — `#chat-input-row input` 的胶囊归属(RADIUS-02)
+# ---------------------------------------------------------------------------
+def r2(page, tmp_root):
+    item = "r2"
+    print("\n=== r2: #chat-input-row input 的胶囊归属(RADIUS-02)===", flush=True)
+
+    proj = c05.make_fixture("p1", tmp_root)
+    c05.enter_project(page, proj)
+
+    pill = resolve_token(page, "--radius-pill")
+    corners = {prop: read_style(page, RADIUS_SNAPSHOT_SEL, prop) for prop in RADIUS_CORNER_PROPS}
+    shorthand = read_style(page, RADIUS_SNAPSHOT_SEL, "border-radius")
+    min_height = read_style(page, RADIUS_SNAPSHOT_SEL, "min-height")
+    top_width = read_style(page, RADIUS_SNAPSHOT_SEL, "border-top-width")
+    top_style = read_style(page, RADIUS_SNAPSHOT_SEL, "border-top-style")
+    info("r2 令牌解析", f"--radius-pill={pill}")
+    info("r2 原始读数",
+         " / ".join(f"{prop}={corners[prop]}" for prop in RADIUS_CORNER_PROPS)
+         + f" / 简写 border-radius={shorthand} / min-height={min_height}"
+         + f" / border-top={top_width} {top_style}")
+
+    ok(item, f"r2 [p1] {RADIUS_SNAPSHOT_SEL} 计算 border-radius == 解析后的 --radius-pill",
+       pill, shorthand,
+       note="该元素 min-height: 52px,getComputedStyle 返回的是**计算值**,与「外观零变化」"
+            "是两回事 —— 外观判据由 radius-snapshots/ 的收敛前后三份读数承担"
+            "(computed style 键级 diff + getBoundingClientRect() 逐值 + 元素 PNG 逐字节)")
+    for prop in RADIUS_CORNER_PROPS:
+        ok(item, f"r2 [p1] {RADIUS_SNAPSHOT_SEL} {prop} == 解析后的 --radius-pill",
+           pill, corners[prop])
+    ok_true(item, f"r2 [p1] {RADIUS_SNAPSHOT_SEL} 四个角长手彼此等值",
+            len(set(corners.values())) == 1, "四个读数同一个值",
+            str(sorted(set(corners.values()))))
+    # 对照组:证明「28px 被钳制」那条算术的自变量没被顺手改掉。
+    ok(item, f"r2 [p1] {RADIUS_SNAPSHOT_SEL} 计算 min-height == 52px(对照组)",
+       "52px", min_height,
+       note="钳制的落点依赖元素实际高度,故该自变量必须逐字未动")
+    ok(item, f"r2 [p1] {RADIUS_SNAPSHOT_SEL} 计算 border-top-width == 1px(对照组)",
+       "1px", top_width, note="border: 1px solid var(--color-border-strong) 逐字未动")
+    ok(item, f"r2 [p1] {RADIUS_SNAPSHOT_SEL} 计算 border-top-style == solid(对照组)",
+       "solid", top_style, note="同上")
+
+
+# ---------------------------------------------------------------------------
 # shot — 逐样本整窗截图(供用户评审;不参与表格判据)
 # ---------------------------------------------------------------------------
 def run_screenshots(page, out_dir, tmp_root):
@@ -488,13 +632,13 @@ def radius_snapshot(page, label, out_dir, tmp_root):
     info(f"radius-snapshot [{label}] JSON 落盘", str(json_path))
 
 
-ITEMS = {"t1": t1, "t2": t2}
+ITEMS = {"t1": t1, "t2": t2, "r1": r1, "r2": r2}
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(add_help=True, description="Phase 10 表格重做的运行时门")
+    ap = argparse.ArgumentParser(add_help=True, description="Phase 10 表格重做与圆角刻度收敛的运行时门")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:t1 / t2(可重复,或逗号分隔)")
+                    help="只跑指定项:t1 / t2 / r1 / r2(可重复,或逗号分隔)")
     ap.add_argument("--screenshot", default=None, metavar="DIR",
                     help="遍历 check-05 的 5 个样本,每个样本出一张 1440x900 整窗截图到 DIR")
     ap.add_argument("--radius-snapshot", nargs=2, default=None,

@@ -112,7 +112,7 @@ Each task was committed atomically:
 2. **Task 2: 新建运行时门 scripts/check-10-idi10-validation.py** - `b4fe65d` (feat)
 3. **Task 3: 表头新绘制面的对比度登记核实 + 四个静态门逐字节证据(D-10-3)** - **无独立提交**(只跑命令与记录,零文件改动;沿 `idi-09-02` 的零净 diff 先例)
 
-**Plan metadata:** (本 SUMMARY 的 docs 提交,见下方 Self-Check)
+**Plan metadata:** `b94e976` (docs: complete plan) + `5cf6a73` (fix: 校正派生计数)
 
 _Note: TDD tasks may have multiple commits (test → feat → refactor)_
 
@@ -257,7 +257,7 @@ INFO t1 证据分类: 渲染证据 2 个对 / 层叠解析证据 3 个对 ——
 
 - **`gsd-tools windows append` 被拒**(与 STATE.md 已登记的既有不一致相同):`Error: Ledger table in .planning/WINDOWS.md disagrees with the fenced JSON entries … for row id(s): 17`。三条探针缺陷因此**未入账到 WINDOWS.md**(该命令退出码为 0 且 `.planning/WINDOWS.md` **零字节改动**,已用 `git status --porcelain` 核实),改记于本 SUMMARY 与 STATE.md,沿 `idi-08-03` 先例记为已知限制而非回填。
 - **`state.add-blocker` 的 `--text-file` 入参被路径守卫拒绝**(`Path escapes allowed directory: /private/tmp/…`)—— 改用内联 `--text`。**新增事实:凡 `--*-file` 入参,文件必须落在仓库内。**
-- **`state.*` 动词第十二次复现**,本次 `advance-plan` 把 `completed_phases` 1 → 0、`percent` 43 → 0,并把 `state.json` 的 `next.reason` 从 `43%` 改成 `0%`;`update-progress` 仍然零写入。已按 ROADMAP 的 `## Milestones` + `## Progress` 手工校正回 `completed_phases: 1` / `percent: 43` 与 `state.json` 的 `43%`,并把本次形态逐条登记进 STATE.md 的 Blockers 段(`advance-plan` 也会打坏派生计数,此前该症状只记在 `update-progress` / `record-session` / `phase.complete` 名下)。
+- **`state.*` 动词第十二次复现**,本次 `advance-plan` 把 `completed_phases` 1 → 0、`percent` 43 → 0,并把 `state.json` 的 `next.reason` 从 `43%` 改成 `0%`;`update-progress` 仍然零写入。已按 ROADMAP 的 `## Milestones` + `## Progress` 手工校正回 `completed_phases: 1` / `percent: 43` 与 `state.json` 的 `43%`。**随后发现新的失效顺序**:手工校正之后,`state.record-session` **又把它压回 `0` / `0`** ⇒ 该字段的破坏是累加式的、且能跨越一次人工校正。第二次校正落在 `5cf6a73`。⇒ **核盘必须放在收口序列的最后一个动词之后,不能插在中间**;判据仍取 ROADMAP,不采信任何 `state.*` 动词的回显。两次形态都已逐条登记进 STATE.md 的 Blockers 段(`advance-plan` 也会打坏派生计数,此前该症状只记在 `update-progress` / `record-session` / `phase.complete` 名下)。
 - **`roadmap.update-plan-progress idi-10` 的两处确定性格式副作用**已按既有登记手工修复:Progress 行尾格 `| In Progress|  |` → `| In Progress | - |`;`**Plans**: 4 plans` 被改写成 `**Plans**: 0/4 plans executed` ⇒ 改回。该动词本身已按流程运行,其输出结果(Phase 10 表格行 = `1/4 | In Progress`)与磁盘现状一致。
 - **`requirements.mark-complete TABLE-01 TABLE-02` 被共享-ID 门(#2388)按设计拦下**:`requirements.ready-ids` 实测返回 `0/2 ready` —— `idi-10-03-PLAN.md` 的 frontmatter 也声明了这两条。故本计划**不写** REQUIREMENTS.md,勾选由计划 03 的 SUMMARY 触发。这不是缺口。
 

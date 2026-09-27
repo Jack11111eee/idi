@@ -5,16 +5,16 @@ milestone_name: 视觉构图升级
 current_phase: 10
 current_phase_name: 表格重做与圆角刻度收敛
 status: executing
-stopped_at: Completed idi-10-02-PLAN.md
-last_updated: "2026-09-27T11:45:09.630Z"
+stopped_at: Completed idi-10-03-PLAN.md
+last_updated: "2026-09-27T12:12:02.272Z"
 last_activity: 2026-09-27
 last_activity_desc: Phase idi-10 execution started
-state_head: 42397171c7acd1a97e26eb520988933cb5e14f46
+state_head: b3feb483f4c80b2855d14b28e5f87fe3fad93547
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 50
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-26)
 ## Current Position
 
 Phase: idi-10 (表格重做与圆角刻度收敛) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Executing Phase idi-10
 Last activity: 2026-09-27 — Phase idi-10 execution started
 
@@ -105,6 +105,7 @@ Last activity: 2026-09-27 — Phase idi-10 execution started
 | Phase 9 P03 | 17min | 3 tasks | 14 files |
 | Phase idi-10 P01 | 25 min | 3 tasks | 2 files |
 | Phase idi-10 P02 | 9 min | 3 tasks | 6 files |
+| Phase idi-10 P03 | 15 min | 3 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -259,6 +260,11 @@ Recent decisions affecting current work:
 - [Phase 10]: computed style 的迭代名单**包含继承来的自定义属性键**(真实 p1 fixture 实测 599 个,其中 121 个是 --* 自定义属性)⇒ 删除令牌会让它自身的键从 dump 里消失。故「允许差异键集合」必须按计划自己写下的原则覆盖**每一个**预期可变的属性:8 个圆角键 **∪** 被删令牌自身的键 = 9 个。实测集合之外 0 个键变化;这条事实用合成 page.set_content 探针页测不出来(那里没有 :root 继承)
 - [Phase 10]: r1 的 .chat-user 读数必须**先造出探针气泡再断言**,且**每一次读数前都重建一次**:scripts/ui-states/p1/ 只有 .gitkeep、无 transcript.md ⇒ 自然状态下该元素不存在;造出探针后仍读不到按 FAIL 而非 BLOCKED 处置(此时 BLOCKED 的前提已被本步排除)。手法照抄 check-05-ui-uat.py 的 item3(应用自身的 appendChatMessage)
 - [Phase 10]: 【门设计】--radius-snapshot 作为一项进入 === 逐项结论 ===,取证失败必须让门红不能静默;标签校验放在 main() 开头(起浏览器之前)使非法标签 fail-fast。本计划刻意**不**把三项比对写进门脚本(计划把它定为取证协议,由产物 + 独立复核承担),避免越出交付面
+- [Phase 10]: 「门里没有 FAIL」的判据由计划字面的子串搜改为锚行首 verdict 形态 ^FAIL —— 计划字面式会命中 check-05 第 399 行那条标签里带 FAIL 一词的 PASS 行,故在本项目恒非空、无法通过;修正式在五份日志上均为 0,并做阳性对照证明非空转。
+- [Phase 10]: p3 是唯一自然渲染表格的样本(受控探针实测 #round-doc 内恰 3 张表);archive 的轮次文档虽含表,但首屏渲染的是零表格行的 DESIGN.md ⇒ SC1 的「至少两张」指表不指样本。
+- [Phase 10]: .chat-user 的人眼取证图另置 screenshots/chat-user/ 子目录而非平铺 —— 平铺会把顶层 PNG 数从 5 变成 6,违反计划「恰含 5 个 PNG」判据;子目录让「5 张状态样本 + 1 张探针取证」自明。
+- [Phase 10]: 计划的「本阶段零布局改动」措辞比事实更强:同一次 check-05 输出里 #round-doc 高度由 778.640625 变为 775.640625(矮 3px)。成因由同一次导航内的受控 A/B 证明:border-collapse 下表格四边 border 改为只留一条 border-bottom 后每张表矮 1px,p3 恰 3 张表 ⇒ 共 3px。该读数上的断言仍 PASS,无需重新登记。
+- [Phase 10]: 跨阶段门禁基线对照取归一化(剥临时路径)后的逐行 diff,不取「结论块看着一样」—— 这个粒度既确认逐项同形,也捞出了计划未点名的那条 3px 差异。
 
 ### Pending Todos
 
@@ -318,6 +324,8 @@ None yet.
 - **第十二次复现(2026-09-27,`idi-10-01` 收口),形态与第九/十/十一次逐字相同,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 1 of 4 → 2 of 4`,并把 `state_head` 正确重算为 `b4fe65d`(preservation: derive 契约被遵守);但**同时把派生计数打坏** —— `completed_phases` 1 → 0、`percent` 43 → 0。②`state.update-progress` 仍然**零写入**并回显 `{"reason": "no Progress: line found in STATE.md body to update (frontmatter progress data is unaffected)"}` —— 与第九/十/十一次同形,**回显不可作为判据**。③`state.record-metric` 正确追加 `Phase idi-10 P01 | 22 min | 3 tasks | 2 files` ✅。④五条 `state.add-decision` 全部落盘 ✅(**本次没有双前缀** —— 该动词写入 `[Phase 10]:`,与本项目的 `[Phase idi-10]:` 不同但不成双,保留不动)。⑤`state.add-blocker` 的 **`--text-file` 入参被路径守卫拒绝**:`Path escapes allowed directory: /private/tmp/…`,只能改用内联 `--text`(**新增事实**:凡 `--*-file` 入参都必须把文件放在仓库内,`/tmp` 会被拒)。⑥`roadmap.update-plan-progress idi-10` 正确写 `1/4` ✅,但**两处格式副作用与第九/十/十一次逐字相同**:(a) Progress 行的尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 0/4 plans executed`(已手工改回)。⑦**新增事实:`requirements.ready-ids` 的共享-ID 门按设计拦下本次勾选** —— TABLE-01 / TABLE-02 同时被 `idi-10-03-PLAN.md` 声明,故实测返回 `0/2 ready`,本计划不写 REQUIREMENTS.md(这不是缺口,是 #2388 的既定行为)。⑨**新的失效顺序 `advance-plan` → 手工校正 → `record-session`**:我在 `advance-plan` 之后按 ROADMAP 手工写回 `completed_phases: 1` / `percent: 43`,随后 `state.record-session` **又把它压回 `0` / `0`** ⇒ 该字段的破坏是**累加式、且跨越一次人工校正**(与第六次「record-session 的破坏是累加式的」同族,但本次是「人工校正之后仍被压回」)。⇒ **核盘必须放在收口序列的最后一个动词之后,不能插在中间。** ⑧`state.json` 本次**被动词触碰了两处**:`updated_at` 与 `next.reason` 的派生百分比(43% → 0%,与 STATE.md 同源打坏;已按 ROADMAP 权威改回 43%,`updated_at` 保留 —— 它反映的是一次真实写入)。**⇒ 核盘不能只看 STATE.md,`state.json` 的 `next.reason` 是同一批坏值的第二个落点。** **⇒ 与第九/十/十一次的方法论结论逐条一致;本次的增量事实有三条:派生计数被 `advance-plan` 打坏(此前该症状只记在 `update-progress` / `record-session` / `phase.complete` 名下)、`--*-file` 入参的仓库内路径要求、以及共享-ID 门确实按设计工作。**
 - **第十三次复现(2026-09-27,`idi-10-02` 收口),形态与第九/十/十一/十二次一致,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 2 of 4 → 3 of 4` 与 `completed_plans: 4 → 5`,并把 `state_head` 正确重算为 `4239717`(preservation: derive 契约被遵守);**同时再次把派生计数打坏** —— `completed_phases` 1 → 0、`percent` 50 → 0(与第十二次同形)。另:该动词本次**首次**打出 `milestone lock conflict (#3311)` 警告 —— 持 claim 的 session 与执行者是同一个,属自指噪声,不影响写入结果。②`state.update-progress` 仍然**零写入**,回显 `{"updated": false, "percent": 0, "completed": 5, "total": 7, "reason": "no Progress: line found in STATE.md body to update"}` —— 回显不可作为判据。③`state.record-metric` 正确追加,但**计划号写法与既有惯例不一致**(写入 `Phase 10 P02`,而波次 1 与更早各阶段是 `Phase idi-10 P01`),已手工改为 `Phase idi-10 P02`。④`state.add-decision` **七条里只落盘六条**:第七条以 `--radius-snapshot` 开头,被 flag 解析器当成未知 flag 而整条拒绝(`Error: unknown flag "--radius-snapshot …"; accepted: --phase … --summary …`),`--summary=<text>` 的等号形态**同样被拒**(该动词不支持等号语法)。**新增事实:决策正文若以 `-` 开头,必须改写首词(本次加 `【门设计】` 前缀)或用 `--summary-file`;否则该动词**部分成功** —— 退出码 1,但先前的条目已落盘。** ⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-10` 正确写 `2/4` 与两个 `[x]` ✅,但**两处格式副作用与第九/十/十一/十二次逐字相同**:(a) Progress 行尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 2/4 plans executed`(已手工改回)。⑦`requirements.ready-ids` 的共享-ID 门再次按设计拦下 RADIUS-01 / RADIUS-02(`idi-10-03-PLAN.md` 也声明了这两条,实测 `0/2 ready`),本计划不写 REQUIREMENTS.md。⑧`state.json` 本次**被动词触碰了 `next.reason` 的派生百分比**(50% → 0%,与 STATE.md 同源打坏;已按 ROADMAP 权威改回 50%)。**⇒ 与第九…十二次的方法论结论逐条一致;本次的增量事实有两条:决策正文以 `-` 开头会让 `add-decision` 少写一条(部分成功)、以及 `record-metric` 的计划号写法会漂。核盘仍放在收口序列的**最后一个动词之后**。**
 
+- **第十四次复现(2026-09-27,`idi-10-03` 收口),形态与第九…十三次逐条一致,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 3 of 4 → 4 of 4`、`completed_plans: 5 → 6`,并把 `state_head` 正确重算为 `b3feb48`(preservation: derive 契约被遵守);**同时再次把派生计数打坏** —— `completed_phases` 1 → 0、`percent` 50 → 0(与第十二/十三次同形,已按 ROADMAP 的 `## Milestones` + `## Progress` 改回 `1` / `50`)。另:该动词**再次**打出 `milestone lock conflict (#3311)` 自指警告(与第十三次同形,噪声)。②`state.update-progress` 仍然**零写入**,回显 `{"updated": false, "percent": 0, "completed": 6, "total": 7, "reason": "no Progress: line found in STATE.md body to update"}` —— 回显不可作为判据。③`state.record-metric` 正确追加 `Phase idi-10 P03 | 15 min | 3 tasks | 18 files` ✅(**本次计划号写法正确**,未再漂)。④`state.add-decision` **五条全部落盘** ✅ —— 本次按第十三次的教训**预先规避**:决策正文里不出现任何以 `-` 开头的词(`--screenshot` 等一律改写为散文),故未触发 flag 解析器。⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-10` 正确写 `3/4` 与 Wave 3 的 `[x]` ✅,但**两处格式副作用与第九…十三次逐字相同**:(a) Progress 行尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 3/4 plans executed`(已手工改回)。⑦`requirements.ready-ids` 的共享-ID 门**本次按设计放行** —— 实测返回 `ready: [TABLE-01, TABLE-02, RADIUS-01, RADIUS-02]` / `blocked: [REG-03]`,故只勾选 ready 子集(4 复选框 + 4 追溯行),`REG-03` 留给计划 04;`mark-complete` **又在 `**Coverage:**` 后插入一个空行**(**第四次复现**该副作用,已手工回退)。⑧`state.json` 本次**被动词触碰了 `next.reason` 的派生百分比**(50% → 0%,与 STATE.md 同源打坏;已按 ROADMAP 权威改回 50%,`updated_at` 保留 —— 它反映的是一次真实写入)。**⇒ 与第九…十三次的方法论结论逐条一致,无需新增结论;本次的增量事实只有一条:`add-decision` 的「以 `-` 开头会被拒」是**可预先规避**的 —— 只要正文里不出现任何以 `-` 开头的词,五条可一次全落盘。核盘仍放在收口序列的**最后一个动词之后**。**
+
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
@@ -353,9 +361,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-27T11:44:09.523Z
-Stopped at: Completed idi-10-02-PLAN.md
-Resume file: None (next plan: idi-10-03 五条浏览器门复跑与截图)
+Last session: 2026-09-27T12:12:02.210Z
+Stopped at: Completed idi-10-03-PLAN.md
+Resume file: None (next plan: idi-10-04 idi-09 的连带指纹重验)
 
 ## Operator Next Steps
 

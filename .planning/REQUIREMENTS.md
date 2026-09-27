@@ -26,13 +26,13 @@
 
 ### 表格重做（Phase 10）
 
-- [ ] **TABLE-01**: 文档区表格由「每格 1px 全边框」改为「表头浅底 + 仅横向分隔线」—— 去掉全部竖线与外框;`.markdown-body th` 获得 gray-2(`--color-surface`)浅底 + 1px 下边线;`.markdown-body td` 保留行间极浅分隔线。就地改写原 `border` 声明,不追加覆盖规则
-- [ ] **TABLE-02**: 表格涉及的颜色全部落在**既有令牌**上;表头新绘制面(gray-2)的对比度配对经 `check-02` 实际输出证实已登记 —— 零新增颜色值、零新增 primitive、零阈值改动
+- [x] **TABLE-01**: 文档区表格由「每格 1px 全边框」改为「表头浅底 + 仅横向分隔线」—— 去掉全部竖线与外框;`.markdown-body th` 获得 gray-2(`--color-surface`)浅底 + 1px 下边线;`.markdown-body td` 保留行间极浅分隔线。就地改写原 `border` 声明,不追加覆盖规则
+- [x] **TABLE-02**: 表格涉及的颜色全部落在**既有令牌**上;表头新绘制面(gray-2)的对比度配对经 `check-02` 实际输出证实已登记 —— 零新增颜色值、零新增 primitive、零阈值改动
 
 ### 圆角刻度收敛（Phase 10）
 
-- [ ] **RADIUS-01**: 圆角刻度收敛为 **8 / 10 / 胶囊** 三档 —— 删除 `--radius-lg: 28px`(围栏内零声明残留、全文零 `var(--radius-lg)` 引用);其 2 处消费者改归既有档位:`.chat-user` → `--radius-md`、`#chat-input-row input` → `--radius-pill`
-- [ ] **RADIUS-02**: 收敛**零视觉回归** —— `#chat-input-row input` 的计算 `border-radius` 等于 `--radius-pill` 的解析值且外观与收敛前一致(以收敛前后的运行时读数并排为证,不用算术推断);`.chat-user` 为 10px 且尖角(`border-bottom-right-radius: 8px`)保留
+- [x] **RADIUS-01**: 圆角刻度收敛为 **8 / 10 / 胶囊** 三档 —— 删除 `--radius-lg: 28px`(围栏内零声明残留、全文零 `var(--radius-lg)` 引用);其 2 处消费者改归既有档位:`.chat-user` → `--radius-md`、`#chat-input-row input` → `--radius-pill`
+- [x] **RADIUS-02**: 收敛**零视觉回归** —— `#chat-input-row input` 的计算 `border-radius` 等于 `--radius-pill` 的解析值且外观与收敛前一致(以收敛前后的运行时读数并排为证,不用算术推断);`.chat-user` 为 10px 且尖角(`border-bottom-right-radius: 8px`)保留
 
 ### 回归保障（Phase 10）
 
@@ -65,10 +65,10 @@
 | VIS-02 | Phase 9 | Complete |
 | REG-01 | Phase 9 | Complete |
 | REG-02 | Phase 9 | Complete |
-| TABLE-01 | Phase 10 | Pending |
-| TABLE-02 | Phase 10 | Pending |
-| RADIUS-01 | Phase 10 | Pending |
-| RADIUS-02 | Phase 10 | Pending |
+| TABLE-01 | Phase 10 | Complete |
+| TABLE-02 | Phase 10 | Complete |
+| RADIUS-01 | Phase 10 | Complete |
+| RADIUS-02 | Phase 10 | Complete |
 | REG-03 | Phase 10 | Pending |
 
 **Coverage:**

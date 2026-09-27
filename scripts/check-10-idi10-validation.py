@@ -100,6 +100,11 @@ FENCE_END = "===== DESIGN TOKENS: END ====="
 # 令牌被改坏(而消费者仍接着线)也照样 PASS —— 那条接线的价值就消失了。
 TH_BG_LITERAL = "rgb(249, 249, 249)"
 
+# gray-6 的字面量(--color-border-subtle)。同理:只跟令牌比是**自指**的 —— 把该令牌
+# 改成 gray-7 会让两侧一起变、恒过,而注释声称的「不再是原 --color-border(gray-7)的
+# 深线」就无人守。这一条把它钉死在 gray-6,使那句声称可失败。
+TH_BORDER_LITERAL = "rgb(217, 217, 217)"
+
 # 每个 (样本, 宿主) 对。覆盖 check-05 的 MARKDOWN_HOSTS **全部四个** doc 宿主
 # (p1 下四个都在 DOM),外加一对自然渲染样本 (p3, #round-doc) —— 该样本渲染
 # `scripts/ui-states/p3/docs/discuss-round-2.md`,含 SC1 点名的机器可解析表。
@@ -327,7 +332,11 @@ def t1(page, tmp_root):
            read_style(page, f"{host} th", "border-bottom-style"))
         ok(item, f"{pair} .markdown-body th 计算 border-bottom-color == var(--color-border-subtle)",
            tokens["subtle"], read_style(page, f"{host} th", "border-bottom-color"),
-           note="表头下边线与行间分隔线同档,不再是原 --color-border(gray-7)的深线")
+           note="表头下边线与行间分隔线同档")
+        ok(item, f"{pair} .markdown-body th 计算 border-bottom-color == gray-6 字面量",
+           TH_BORDER_LITERAL, read_style(page, f"{host} th", "border-bottom-color"),
+           note="与上一条互补:只跟令牌比是自指的(令牌被改成 gray-7 时两侧一起变、恒过)"
+                " —— 这一条把它钉死在 gray-6,使「不再是原 --color-border(gray-7)的深线」可失败")
         for side in ("left", "right", "top"):
             ok(item, f"{pair} .markdown-body th 计算 border-{side}-width == 0px", "0px",
                read_style(page, f"{host} th", f"border-{side}-width"),
@@ -368,6 +377,10 @@ def t2(page, tmp_root):
         ok(item, f"{pair} .markdown-body td 计算 border-bottom-color == var(--color-border-subtle)",
            tokens["subtle"], read_style(page, f"{host} td", "border-bottom-color"),
            note="行间极浅分隔线(gray-6);border-collapse 把它与上一行折成一条,不出现双线")
+        ok(item, f"{pair} .markdown-body td 计算 border-bottom-color == gray-6 字面量",
+           TH_BORDER_LITERAL, read_style(page, f"{host} td", "border-bottom-color"),
+           note="与上一条互补:只跟令牌比是自指的,令牌被改成 gray-7 时两侧一起变、恒过;"
+                "这一条把「行间线是浅档」钉死在 gray-6")
         # 对照组:font-size 是 check-05-ui-uat.py 活断言锁死的属性,本阶段一字不动。
         ok(item, f"{pair} .markdown-body td font-size == var(--text-base)(对照组,check-05 锁死)",
            tokens["base_size"], read_style(page, f"{host} td", "font-size"),
@@ -402,8 +415,16 @@ def r1(page, tmp_root):
     tokens = {name: resolve_token(page, name) for name in RADIUS_LITERALS}
     info("r1 令牌解析", " ".join(f"{name}={tokens[name]}" for name in RADIUS_LITERALS))
     for name, literal in RADIUS_LITERALS.items():
-        ok(item, f"r1 [令牌] {name} 解析值 == 刻度声明字面量", literal, tokens[name],
-           note="令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿")
+        got = tokens[name]
+        # ⚠ 走 ok_true 而**不是** ok():ok() 在 expected/actual 为 None 时记 BLOCKED,
+        # 而「令牌被删」正是本项要抓的回归 —— 记 BLOCKED 会把它降级成 exit 2(本项目
+        # 把 2 当作「按设计」的良性码)。令牌未声明必须是硬 FAIL,否则删掉 --radius-md
+        # 这条回归在本门里无人拦(实测:check-01/03/04 对此也全 PASS)。
+        ok_true(item, f"r1 [令牌] {name} 解析值 == 刻度声明字面量",
+                got is not None and norm(got) == norm(literal),
+                literal, "<未声明>" if got is None else got,
+                note="令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿;"
+                     "令牌未声明按 FAIL 计,不得降级为 BLOCKED")
     gone = resolve_token(page, "--radius-lg")
     ok_true(item, "r1 [令牌] 被删档位已不可解析(解析值 None)",
             gone is None, "None", str(gone),
@@ -449,6 +470,12 @@ def r1(page, tmp_root):
     #     使「保留尖角」不会被后人误读成「四角统一」。
     md = resolve_token(page, "--radius-md")
     sm = resolve_token(page, "--radius-sm")
+    # 同一条降级路径:令牌被删 ⇒ 下面逐角断言的**期望侧**是 None ⇒ ok() 记 BLOCKED,
+    # 而不是 FAIL,且理由文案会把人指向别处。先把「令牌存在」立成硬 FAIL 堵住它。
+    ok_true(item, "r1 [令牌] 消费者两档(--radius-md / --radius-sm)均已声明",
+            md is not None and sm is not None, "两个均非 None",
+            f"--radius-md={md} --radius-sm={sm}",
+            note="堵住 ok() 的 None-期望侧降级路径:令牌缺失必须是 FAIL,不是 BLOCKED")
     for prop in ("border-top-left-radius", "border-top-right-radius",
                  "border-bottom-left-radius"):
         ok(item, f"r1 [p1] .chat-user {prop} == 解析后的 --radius-md(卡片档)",
@@ -476,6 +503,10 @@ def r2(page, tmp_root):
     c05.enter_project(page, proj)
 
     pill = resolve_token(page, "--radius-pill")
+    # 同 r1:令牌被删 ⇒ 期望侧 None ⇒ ok() 降级为 BLOCKED(exit 2)。立成硬 FAIL。
+    ok_true(item, "r2 [令牌] --radius-pill 已声明",
+            pill is not None, "非 None", str(pill),
+            note="堵住 ok() 的 None-期望侧降级路径:令牌缺失必须是 FAIL,不是 BLOCKED")
     corners = {prop: read_style(page, RADIUS_SNAPSHOT_SEL, prop) for prop in RADIUS_CORNER_PROPS}
     shorthand = read_style(page, RADIUS_SNAPSHOT_SEL, "border-radius")
     min_height = read_style(page, RADIUS_SNAPSHOT_SEL, "min-height")
@@ -515,19 +546,26 @@ def run_screenshots(page, out_dir, tmp_root):
     item = "shot"
     print("\n=== shot: 逐样本整窗截图(1440x900)===", flush=True)
     out_dir.mkdir(parents=True, exist_ok=True)
-    made = []
     for state in c05.STATES:
         proj = c05.make_fixture(state, tmp_root)
         c05.enter_project(page, proj)
         path = out_dir / f"{state}.png"
         page.screenshot(path=str(path))
         width, height = png_size(path)
-        made.append(state)
         info(f"shot {state}", f"{path} {width}x{height}")
         ok_true(item, f"shot [{state}] 截图落盘且为 1440x900",
                 width == 1440 and height == 900, "1440x900", f"{width}x{height}")
-    ok(item, "shot 样本清单逐项一一对应(无缺项、无多余样本)",
-       list(c05.STATES), made, note=f"来源 check-05 的 STATES={c05.STATES}")
+    # 原写法是 `ok(item, …, list(c05.STATES), made)` —— made 由同一个 list 构造,
+    # 恒等、不可能失败。改成落盘检查:每个样本的 PNG 必须存在且非空(截图写失败或
+    # 写出零字节时能红)。
+    sizes = {}
+    for state in c05.STATES:
+        p = out_dir / f"{state}.png"
+        sizes[state] = p.stat().st_size if p.is_file() else None
+    ok_true(item, "shot 每个样本的 PNG 均已落盘且非空",
+            all(v is not None and v > 0 for v in sizes.values()),
+            "每个样本一个非空 PNG", str(sizes),
+            note=f"来源 check-05 的 STATES={c05.STATES}")
     pngs = sorted(p.name for p in out_dir.glob("*.png"))
     ok(item, "shot 输出目录恰含 5 个 PNG",
        sorted(f"{s}.png" for s in c05.STATES), pngs)

@@ -399,10 +399,18 @@
   --lh-reading: 1.625;
   --lh-none: 1;
 
-  /* Radius — four values. */
+  /* Radius — three values. The former fourth step (28px) was hand-tuned in by the
+     temporary visual pass of quick `260918-qrq` and never joined any scale
+     declaration: 04-UI-SPEC's radius ledger still reads 4px / 8px / 999px and never
+     even carried that name. It had exactly two consumers, and they go to DIFFERENT
+     steps — `.chat-user` to the card step (a real appearance change: the
+     large-radius bubble drops to the card radius), `#chat-input-row input` to the
+     pill step (zero visual change: at `min-height: 52px` the 28px radius was already
+     clamped by the UA, so it already WAS a pill, and re-recording it is accurate
+     bookkeeping rather than a visual edit). Deleted rather than kept: Hard Rule 5 —
+     never declare a token you are not consuming. */
   --radius-sm: 8px;
   --radius-md: 10px;
-  --radius-lg: 28px;
   --radius-pill: 999px;
 
   /* z-index ordering assertion (TOKEN-07): --z-badge (10) < --z-banner (20)
@@ -1192,9 +1200,15 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   line-height: var(--lh-reading);
   word-break: break-word;
 }
+/* .chat-user:圆角收敛里**唯一外观真变**的消费者 —— 28px 的大圆角气泡收进卡片档
+   (--radius-md,10px),与 Phase 9 建立的卡片语言同族;气泡尾巴的尖角仍取 --radius-sm
+   (8px 的 border-bottom-right-radius,逐字保留)。
+   ⚠ 不得把它与 #chat-input-row input「统一」成同一个令牌:那一处 min-height: 52px,
+   28px 早已被 UA 钳成胶囊 ⇒ 它的真实形态是胶囊档。两处去向不同是刻意的,是本阶段
+   的承重点。 */
 .chat-user {
   align-self: flex-end;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface-user);
   color: var(--color-text);
   border-bottom-right-radius: var(--radius-sm);
@@ -1218,12 +1232,17 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   gap: var(--space-2);
   margin-top: var(--space-2-5);
 }
+/* #chat-input-row input:改记 --radius-pill 是**如实登记**,不是外观改动 —— 该元素
+   min-height: 52px,28px 的圆角早已被 UA 钳到约一半高度,它实际就是一个胶囊。
+   ⚠ 上面这条算术**不是**本条的判据:外观零变化由 radius-snapshots/ 里收敛前后的三份
+   并排读数承担(computed style 键级 diff + getBoundingClientRect() 逐值比对 + 元素
+   截图逐字节比对)。 */
 #chat-input-row input {
   flex: 1;
   min-height: 52px;
   padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   box-shadow: var(--shadow-composer);
   font-size: var(--text-md);
 }

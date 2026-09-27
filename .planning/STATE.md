@@ -5,16 +5,16 @@ milestone_name: 视觉构图升级
 current_phase: 10
 current_phase_name: 表格重做与圆角刻度收敛
 status: executing
-stopped_at: Completed idi-10-01-PLAN.md
-last_updated: "2026-09-27T11:23:12.784Z"
+stopped_at: Completed idi-10-02-PLAN.md
+last_updated: "2026-09-27T11:45:09.630Z"
 last_activity: 2026-09-27
 last_activity_desc: Phase idi-10 execution started
-state_head: b4fe65d1f241c3f6f0b32efcb11909e2ce19d6d8
+state_head: 42397171c7acd1a97e26eb520988933cb5e14f46
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 50
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-09-26)
 ## Current Position
 
 Phase: idi-10 (表格重做与圆角刻度收敛) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Executing Phase idi-10
 Last activity: 2026-09-27 — Phase idi-10 execution started
 
@@ -104,6 +104,7 @@ Last activity: 2026-09-27 — Phase idi-10 execution started
 | Phase idi-09 P02 | 20min | 3 tasks | 2 files |
 | Phase 9 P03 | 17min | 3 tasks | 14 files |
 | Phase idi-10 P01 | 25 min | 3 tasks | 2 files |
+| Phase idi-10 P02 | 9 min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -251,6 +252,13 @@ Recent decisions affecting current work:
 - [Phase 10]: 运行时门的证据分两类、且分类由运行时实测决定:`TABLE_PROBES` 5 个对里 2 个处于被渲染子树(`(p1, #draft-content)` / `(p3, #round-doc)`)构成渲染证据;另 3 个被祖先 display:none 藏住(`#brainstorm-content`←`#brainstorm-view`、`#round-doc`←`#rounds-placeholder`、`#latest-check`←`#checks-panel`),其读数只作层叠解析证据。`t1` / `t2` 各自含聚合断言「至少 1 个对处于被渲染子树」,使零渲染证据可失败
 - [Phase 10]: 探针首跑暴露两个探针自身缺陷(不是产品缺陷),都已就地修掉:①令牌在进入 fixture **之前**解析(页面仍在 about:blank ⇒ resolve_color / resolve_token 全部返回 None);②「先收集全部读数、再统一断言」跨过了 `enter_project` 的重新导航 ⇒ 注入的 DOM 被丢掉,一次真实的 PASS 退化成满屏 `<MISSING>`。修法:令牌解析挂到「首次进入 fixture 之后」,注入与断言**就地**成对
 - [Phase 10]: TABLE-01 / TABLE-02 的勾选被共享-ID 门拦下:`idi-10-03-PLAN.md` 的 frontmatter 也声明了这两条,按 #2388 的共享-ID 规则,在计划 03 产出 SUMMARY 之前不得标 Complete(`requirements.ready-ids` 实测返回 `0/2 ready`)。这是门前置行为,不是缺口
+- [Phase 10]: 圆角收敛 = 删令牌而非改值:--radius-lg 的 2 处消费者去向**不同**,是本阶段的承重点 —— .chat-user → var(--radius-md)(28px 大圆角气泡收进卡片档,外观真变),#chat-input-row input → var(--radius-pill)(min-height: 52px 下 28px 早已被 UA 钳制,它实际就是胶囊,改记是如实登记)。一律改成 --radius-md 是用户没选的档位
+- [Phase 10]: 围栏内注释不得出现字面量令牌名 --radius-lg —— 它是「围栏内声明数 == 0」与「全文出现数 == 0」两条判据的共同锚点;指代被删档位一律用「28px 那一档 / the former fourth step」
+- [Phase 10]: 圆角判据一律读四个**物理角长手**,绝不读简写 border-radius:.chat-user 的规则体带 border-bottom-right-radius ⇒ Chrome 把简写序列化成**三值**(实测收敛后 '10px 10px 8px'),故「简写 == 卡片档」这条断言不可满足;r1 逐角独立断言并另立一条「四角并非统一」使「保留尖角」可失败
+- [Phase 10]: 「输入框外观零变化」的判据是**测量**不是算术:收敛前后各取一次真实读数(整份 computed style dump + getBoundingClientRect() + 元素级 PNG + 捕获时源码 sha256),再做键级 diff / 矩形逐值 / PNG 逐字节三项并排比对。两张元素 PNG 实测逐字节相同(sha256 均为 190d7d7d…),两份 JSON 的 style_css_sha256 不同(c6c06436… → 4e783086…)即「两次真实读数」的凭据
+- [Phase 10]: computed style 的迭代名单**包含继承来的自定义属性键**(真实 p1 fixture 实测 599 个,其中 121 个是 --* 自定义属性)⇒ 删除令牌会让它自身的键从 dump 里消失。故「允许差异键集合」必须按计划自己写下的原则覆盖**每一个**预期可变的属性:8 个圆角键 **∪** 被删令牌自身的键 = 9 个。实测集合之外 0 个键变化;这条事实用合成 page.set_content 探针页测不出来(那里没有 :root 继承)
+- [Phase 10]: r1 的 .chat-user 读数必须**先造出探针气泡再断言**,且**每一次读数前都重建一次**:scripts/ui-states/p1/ 只有 .gitkeep、无 transcript.md ⇒ 自然状态下该元素不存在;造出探针后仍读不到按 FAIL 而非 BLOCKED 处置(此时 BLOCKED 的前提已被本步排除)。手法照抄 check-05-ui-uat.py 的 item3(应用自身的 appendChatMessage)
+- [Phase 10]: 【门设计】--radius-snapshot 作为一项进入 === 逐项结论 ===,取证失败必须让门红不能静默;标签校验放在 main() 开头(起浏览器之前)使非法标签 fail-fast。本计划刻意**不**把三项比对写进门脚本(计划把它定为取证协议,由产物 + 独立复核承担),避免越出交付面
 
 ### Pending Todos
 
@@ -308,6 +316,7 @@ None yet.
 - [v1.14 P8] **Escape 无法关闭划词菜单 —— 本阶段引入的功能缺陷,已登记、未修复,待用户裁定。** 症状:菜单打开、焦点在 `#btn-annotate`、轮次文档内有非折叠选区时,按 Escape 后菜单**重新弹出**。机制已用 capture 阶段事件日志钉死:`keydown` 的目标是 `btn-annotate` ⇒ 分派器关闭菜单并把焦点交还 `#round-doc`(F1-a)⇒ **`keyup` 到达时目标已变成 `round-doc`**,命中既有的 `roundDoc` keyup 绑定 ⇒ `handleSelectionTrigger` 守卫全过 ⇒ `showSelectionMenu()`。三条判别性对照:T2 焦点在菜单外 ⇒ 保持关闭;T3 选区已折叠 ⇒ 保持关闭;T4 完全不按 Escape、只按任意键 ⇒ 菜单重现。两条腿都是本阶段新增(计划 02 的分派器 + 计划 01 的交还),故为本阶段引入。打破的契约:D-08、`idi-08-UI-SPEC.md` §K-2.6 第 6 步、REQUIREMENTS 的「A11Y-03 键盘划词部分」人工验收项(「Escape 关闭并交还焦点」的后半不成立)。**未修的两个理由**:①计划 03 的计划级 `<verification>` 明写「本计划只改一处文案」,修它就证伪计划级验证;②正确修法是至少三种形态的设计选择(新监听器抑制后续 keyup / 推迟 F1-a 交还 / 把交还搬出共享挂点),而 keyup 落入的 `handleSelectionTrigger` 函数体本身在不得触碰清单上 ⇒ Rule 4。完整证据见 `idi-08-03-SUMMARY.md` §Newly discovered finding。
 - [v1.14 P8] **同一派生计数缺陷第八次复现,但本次的失效形态是新的:不是改错值,而是「静默什么都不做」。** `idi-08-03` 收口序列:`state.advance-plan` 走 `last_plan` 分支返回 `{"advanced": false, "reason": "last_plan", "current_plan": 3, "total_plans": 3, "status": "ready_for_verification", "updated": []}` —— **`updated: []`,它一个字都没写**。根因已定位(`state-transition.cjs:1328-1337`):该分支用 `stateReplaceFieldIfTemplate` 写 `Status: Phase complete — ready for verification`,而该 helper **只在当前值等于模板默认值时才替换**;本项目的 `## Current Position` 早已把 `Status:` 定制成 `Executing Phase idi-08`,于是两次替换都是 no-op,而函数仍返回 `status: ready_for_verification` 让人以为写成功了。⇒ **前七次是「改错值」,本次是「假报成功 + 零写入」;核盘判据必须同时覆盖「值对不对」与「到底写没写」。** 同批写入中正确的部分:`completed_plans` 20 → 21 ✅、`total_plans: 21` 未动 ✅、`state_head` 正确重算为 `fa7813a` ✅、`state.record-metric` 正确追加 `Phase idi-08 P03 | 16min | 3 tasks | 1 files` ✅、六条 `state.add-decision` 全部落盘 ✅、`state.record-session` 正确写 `Stopped at: Completed idi-08-03-PLAN.md` ✅、`roadmap.update-plan-progress idi-08` 正确写 `3/3 | In Progress` ✅、`requirements.mark-complete A11Y-08 REG-03` 只改 4 行(2 复选框 + 2 追溯行)无越权 ✅。**错误的部分:`state.update-progress` 把 `completed_phases` 5 → 0、`percent` 83 → 0、进度条 → `[░░░░░░░░░░] 0%`**(它仍然不重算,直接用被污染的 `completed_phases` 算 0 并回写)。已按 ROADMAP 的 `## Progress` 手工校正为 **5 / 83%**(判据:ROADMAP 表格 v1.14 作用域 6 阶段中 5 个 Complete;Phase 8 在 `roadmap.update-plan-progress` 后是 `3/3 | In Progress`,尚未 Complete),并把 `## Current Position` 的 `Status:` 按该分支的意图手工写成 `Phase complete — ready for verification`。**附:`gsd-tools windows append` 本次被拒**(`Ledger table … disagrees with the fenced JSON entries … for row id(s): 17`,与派发说明预警的既有不一致一致),三条应入账的条目(Escape 缺陷 / 自检视图零高度 Tab 停靠点 / 两条 REG-02 门与六条人工项都不是常驻守卫)已改记于 `idi-08-03-SUMMARY.md` 与 STATE.md,未与该文件相争。
 - **第十二次复现(2026-09-27,`idi-10-01` 收口),形态与第九/十/十一次逐字相同,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 1 of 4 → 2 of 4`,并把 `state_head` 正确重算为 `b4fe65d`(preservation: derive 契约被遵守);但**同时把派生计数打坏** —— `completed_phases` 1 → 0、`percent` 43 → 0。②`state.update-progress` 仍然**零写入**并回显 `{"reason": "no Progress: line found in STATE.md body to update (frontmatter progress data is unaffected)"}` —— 与第九/十/十一次同形,**回显不可作为判据**。③`state.record-metric` 正确追加 `Phase idi-10 P01 | 22 min | 3 tasks | 2 files` ✅。④五条 `state.add-decision` 全部落盘 ✅(**本次没有双前缀** —— 该动词写入 `[Phase 10]:`,与本项目的 `[Phase idi-10]:` 不同但不成双,保留不动)。⑤`state.add-blocker` 的 **`--text-file` 入参被路径守卫拒绝**:`Path escapes allowed directory: /private/tmp/…`,只能改用内联 `--text`(**新增事实**:凡 `--*-file` 入参都必须把文件放在仓库内,`/tmp` 会被拒)。⑥`roadmap.update-plan-progress idi-10` 正确写 `1/4` ✅,但**两处格式副作用与第九/十/十一次逐字相同**:(a) Progress 行的尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 0/4 plans executed`(已手工改回)。⑦**新增事实:`requirements.ready-ids` 的共享-ID 门按设计拦下本次勾选** —— TABLE-01 / TABLE-02 同时被 `idi-10-03-PLAN.md` 声明,故实测返回 `0/2 ready`,本计划不写 REQUIREMENTS.md(这不是缺口,是 #2388 的既定行为)。⑨**新的失效顺序 `advance-plan` → 手工校正 → `record-session`**:我在 `advance-plan` 之后按 ROADMAP 手工写回 `completed_phases: 1` / `percent: 43`,随后 `state.record-session` **又把它压回 `0` / `0`** ⇒ 该字段的破坏是**累加式、且跨越一次人工校正**(与第六次「record-session 的破坏是累加式的」同族,但本次是「人工校正之后仍被压回」)。⇒ **核盘必须放在收口序列的最后一个动词之后,不能插在中间。** ⑧`state.json` 本次**被动词触碰了两处**:`updated_at` 与 `next.reason` 的派生百分比(43% → 0%,与 STATE.md 同源打坏;已按 ROADMAP 权威改回 43%,`updated_at` 保留 —— 它反映的是一次真实写入)。**⇒ 核盘不能只看 STATE.md,`state.json` 的 `next.reason` 是同一批坏值的第二个落点。** **⇒ 与第九/十/十一次的方法论结论逐条一致;本次的增量事实有三条:派生计数被 `advance-plan` 打坏(此前该症状只记在 `update-progress` / `record-session` / `phase.complete` 名下)、`--*-file` 入参的仓库内路径要求、以及共享-ID 门确实按设计工作。**
+- **第十三次复现(2026-09-27,`idi-10-02` 收口),形态与第九/十/十一/十二次一致,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 2 of 4 → 3 of 4` 与 `completed_plans: 4 → 5`,并把 `state_head` 正确重算为 `4239717`(preservation: derive 契约被遵守);**同时再次把派生计数打坏** —— `completed_phases` 1 → 0、`percent` 50 → 0(与第十二次同形)。另:该动词本次**首次**打出 `milestone lock conflict (#3311)` 警告 —— 持 claim 的 session 与执行者是同一个,属自指噪声,不影响写入结果。②`state.update-progress` 仍然**零写入**,回显 `{"updated": false, "percent": 0, "completed": 5, "total": 7, "reason": "no Progress: line found in STATE.md body to update"}` —— 回显不可作为判据。③`state.record-metric` 正确追加,但**计划号写法与既有惯例不一致**(写入 `Phase 10 P02`,而波次 1 与更早各阶段是 `Phase idi-10 P01`),已手工改为 `Phase idi-10 P02`。④`state.add-decision` **七条里只落盘六条**:第七条以 `--radius-snapshot` 开头,被 flag 解析器当成未知 flag 而整条拒绝(`Error: unknown flag "--radius-snapshot …"; accepted: --phase … --summary …`),`--summary=<text>` 的等号形态**同样被拒**(该动词不支持等号语法)。**新增事实:决策正文若以 `-` 开头,必须改写首词(本次加 `【门设计】` 前缀)或用 `--summary-file`;否则该动词**部分成功** —— 退出码 1,但先前的条目已落盘。** ⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-10` 正确写 `2/4` 与两个 `[x]` ✅,但**两处格式副作用与第九/十/十一/十二次逐字相同**:(a) Progress 行尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 2/4 plans executed`(已手工改回)。⑦`requirements.ready-ids` 的共享-ID 门再次按设计拦下 RADIUS-01 / RADIUS-02(`idi-10-03-PLAN.md` 也声明了这两条,实测 `0/2 ready`),本计划不写 REQUIREMENTS.md。⑧`state.json` 本次**被动词触碰了 `next.reason` 的派生百分比**(50% → 0%,与 STATE.md 同源打坏;已按 ROADMAP 权威改回 50%)。**⇒ 与第九…十二次的方法论结论逐条一致;本次的增量事实有两条:决策正文以 `-` 开头会让 `add-decision` 少写一条(部分成功)、以及 `record-metric` 的计划号写法会漂。核盘仍放在收口序列的**最后一个动词之后**。**
 
 ### Quick Tasks Completed
 
@@ -344,9 +353,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-27T11:23:12.682Z
-Stopped at: Completed idi-10-01-PLAN.md
-Resume file: None (next plan: idi-10-02 圆角刻度收敛)
+Last session: 2026-09-27T11:44:09.523Z
+Stopped at: Completed idi-10-02-PLAN.md
+Resume file: None (next plan: idi-10-03 五条浏览器门复跑与截图)
 
 ## Operator Next Steps
 

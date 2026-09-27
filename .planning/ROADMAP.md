@@ -159,11 +159,11 @@
 Plans:
 **Wave 1**
 
-- [ ] idi-10-01-PLAN.md — 表格重做(表头 gray-2 浅底 + 仅横向分隔线)+ 新建运行时门 `scripts/check-10-idi10-validation.py`(骨架 + `t1` / `t2` + `--screenshot`)+ 表头新绘制面的对比度登记核实与「零新增 / 零放宽」逐字节证据
+- [x] idi-10-01-PLAN.md — 表格重做(表头 gray-2 浅底 + 仅横向分隔线)+ 新建运行时门 `scripts/check-10-idi10-validation.py`(骨架 + `t1` / `t2` + `--screenshot`)+ 表头新绘制面的对比度登记核实与「零新增 / 零放宽」逐字节证据
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] idi-10-02-PLAN.md — 圆角刻度收敛为 8 / 10 / 胶囊:删除 `--radius-lg`,`.chat-user` → `--radius-md`、`#chat-input-row input` → `--radius-pill`;给门追加 `r1` / `r2` 与 `--radius-snapshot` 前后并排取证
+- [x] idi-10-02-PLAN.md — 圆角刻度收敛为 8 / 10 / 胶囊:删除 `--radius-lg`,`.chat-user` → `--radius-md`、`#chat-input-row input` → `--radius-pill`;给门追加 `r1` / `r2` 与 `--radius-snapshot` 前后并排取证
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -189,7 +189,7 @@ Plans:
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete    | 2026-09-26 |
-| 10. 表格重做与圆角刻度收敛 | v1.15 | 1/4 | In Progress | - |
+| 10. 表格重做与圆角刻度收敛 | v1.15 | 2/4 | In Progress | - |
 
 **v1.13 / v1.14 共 9 个阶段已收口。** v1.15 目前有**两个阶段**:Phase 9 **已收口(2026-09-26)** —— 计划 3/3 全部完成:卡片容器化端到端落地、页面底色下沉到 gray-3 与密度收档、五条浏览器门复跑(0 FAIL,零处门改动)、pytest 基线 219 passed / 6 skipped、5 张 1440×900 截图。收口前经用户裁定追加一次强度微调(quick `260926-vaf`:卡片边框 gray-6→gray-7、阴影改为两层 `0 1px 3px rgba(0,0,0,0.08)` + `0 1px 2px rgba(0,0,0,0.04)`),该微调使 `idi-09-VERIFICATION.md` 因**真实内容变更**而 stale,已按「重新验证(以 HEAD 内容重算),不是重算指纹」处置并复验 `passed`(24/24)。
 

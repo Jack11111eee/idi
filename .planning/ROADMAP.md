@@ -4,7 +4,7 @@
 
 - ✅ **v1.13 交互式讨论迭代系统 MVP** — Phases 1-3 (shipped 2026-09-13) — 详见 `milestones/v1.13-ROADMAP.md`
 - ✅ **v1.14 前端视觉与可访问性** — Phases 4-8 (shipped 2026-09-26) — 38 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3)全部交付 — 详见 `milestones/v1.14-ROADMAP.md`
-- 🚧 **v1.15 视觉构图升级** — Phase 9 (in progress) — 7 条需求(CARD 3 / VIS 2 / REG 2)**全部映射至唯一阶段 Phase 9**;用户裁定「开一个 phase,先看看效果吧」,后续候选待看过截图后再定
+- 🚧 **v1.15 视觉构图升级** — Phases 9-10 (in progress) — Phase 9 交付卡片容器化与页面底色下沉(7 条需求 CARD 3 / VIS 2 / REG 2 全部完成);用户看过截图后裁定另开 Phase 10 做表格重做与圆角刻度收敛(5 条需求 TABLE 2 / RADIUS 2 / REG 1),第三项候选(图标与空状态)未点名、仍留 Out of Scope
 
 ## Phases
 
@@ -50,7 +50,9 @@
 
 **Milestone Goal:** 把界面的**构图层次**补齐 —— 左栏 4 个面板与右栏文档区成为白底卡片容器(圆角 + 可见边界 + 极轻阴影 + 内边距),页面底色下沉,界面**首次**拥有 elevation 层次。
 
-**范围裁定(用户,2026-09-26):** 「开一个 phase。先看看效果吧」⇒ **本里程碑只有一个阶段(Phase 9)**。后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)已在 `.planning/REQUIREMENTS.md` 的 Out of Scope 表逐条列明,**待用户看过 Phase 9 的截图后再决定是否另开 phase**;本里程碑**不得**为其预建阶段。
+**范围裁定(用户,2026-09-26):** 「开一个 phase。先看看效果吧」⇒ 本里程碑**先只开 Phase 9**。后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)已在 `.planning/REQUIREMENTS.md` 的 Out of Scope 表逐条列明,**待用户看过 Phase 9 的截图后再决定是否另开 phase**;本里程碑**不得**为其预建阶段。
+
+**范围裁定(用户,2026-09-27):** 看过 Phase 9 截图后用户裁定「**表格重做, 圆角刻度收敛。做这两个**」⇒ 两项**另开一个阶段(Phase 10)**,不并入 Phase 9。第三项候选(图标与空状态)**用户未点名,仍留在 Out of Scope,不得预先构建**。两项的具体视觉目标由用户在 `AskUserQuestion` 中选定(见 Phase 10 的 Rationale)。
 
 **为什么是构图而不是配色:** v1.14 的六个范围域(TOKEN / VISUAL / TYPE / A11Y / LAYOUT / INTERACT)全部花在**正确性** —— 颜色、对比度、焦点环;构图(容器层次、视觉重量、组件变体)**从未被任何阶段覆盖**,界面因此仍然"丑"。`shadcn/ui` 的实地核查结论是「不能引入,但可借鉴配方」:配色层面本项目并不落后(已在用 Radix Colors 12 步语义刻度),**缺的是构图**。实测的机械成因(真浏览器探针,非推断):`body` 底色 `rgb(252,252,252)`(gray-1)是**全场最亮**;`#session-panel` / `#annotations-panel` / `#ai-panel` **完全透明**;`#doc-panel` 是更暗的 `rgb(249,249,249)`(gray-2,读作"凹陷")且 **`border-radius: 0px`、零 `box-shadow`**;全应用零 `box-shadow`。
 
@@ -59,6 +61,7 @@
 **回归面(本里程碑最高风险):** 五条浏览器门 —— `scripts/check-05-ui-uat.py`(Playwright UAT)、`scripts/check-06-idi05-validation.py`、`scripts/check-07-idi08-validation.py`、`scripts/probe-05-resolve-color.py`、`scripts/probe-07-focus-composite.py` —— 大量断言绑死具体 DOM 与 computed style(焦点环 2px 与其解析后的 `--color-focus`、sticky 表头、badge 流内机制、滚动容器收敛、命中区 24×24、窄窗口不破版)。**任何 surface 改动都可能打破它们** ⇒ 每次改动必须复跑。环境事实:`check-05` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该机 `channel="chrome"` + headless 会挂死);全量跑 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归。
 
 - [x] **Phase 9: 卡片容器化与页面底色下沉** - 左栏 4 个面板与右栏文档区成为白底卡片;页面底色下沉至 gray-3,形成 gray-3 < gray-2 < 白 三级 elevation 刻度;受影响的对比度对重算并登记;五条 UI 门复跑无新增失败 (completed 2026-09-26)
+- [ ] **Phase 10: 表格重做与圆角刻度收敛** - 文档表格由「每格 1px 全边框」改为「表头浅底 + 仅横向分隔线」;圆角刻度收敛为 8 / 10 / 胶囊三档,删掉未并入刻度的 `--radius-lg: 28px`;两项均不引入新颜色值、不放宽阈值、不新增 `!important`
 
 ## Phase Details
 
@@ -109,6 +112,55 @@
 
 **UI hint**: yes
 
+### Phase 10: 表格重做与圆角刻度收敛
+
+**Goal**: 把 Phase 9 之后**读起来最重**的两处构图残留收掉 —— 文档区表格由「每格 1px 全边框的电子表格式网格」改为「表头浅底 + 仅横向分隔线」;圆角刻度由 `8 / 10 / 28 / 999` 收敛为 `8 / 10 / 999` 三档(删掉从未并入刻度的 `--radius-lg: 28px`)。两项都是**纯构图**改动:零新增颜色值、零新令牌(`--radius-lg` 是**删除**不是新增)、零阈值放宽、零新增 `!important`。
+**Depends on**: Phase 9(本阶段直接改写 Phase 9 落地的卡片规则所在的 `frontend/style.css`;表格与圆角都画在 Phase 9 的白卡片上)
+**Requirements**: TABLE-01, TABLE-02, RADIUS-01, RADIUS-02, REG-03
+
+**Rationale**: 用户 2026-09-27 裁定「表格重做, 圆角刻度收敛。做这两个」,并在 `AskUserQuestion` 中逐项选定目标档位 —— **表格**:「表头浅底 + 仅横向分隔(推荐)」;**圆角**:「严格收敛: 8 / 10 / 胶囊(推荐)」。两项的选型依据同源:Phase 9 已经建立了 `gray-3 页面 < gray-2 内陷面 < 白卡片` 的三级 elevation 刻度,而表格与圆角是**唯二还没被收进这套语言**的构件。
+- **表格**:它是右栏占比最大的内容(`docs/discuss-round-N.md` 几乎全是表格),而现规则(全边框、零表头底色)读起来像电子表格,与白卡片语言冲突。选定的做法把表头底色落在 `--color-surface`(gray-2)——**正是那三级刻度里的"内陷面"档**,于是表格从"与卡片无关的网格"变成"卡片内的一个内陷块"。
+- **圆角**:`--radius-lg: 28px` 是 quick `260918-qrq` 那次临时视觉 pass 手调进来的,连 `04-UI-SPEC.md` 的圆角账本(4/8/pill)都没同步,属"从未并入刻度"的离群值。它只有 **2 处消费者**,且其中 `#chat-input-row input`(`min-height: 52px`)在 28px 下早已被 UA 钳到 26px —— 它**实际就是一个胶囊**,改记 `--radius-pill` 是**如实登记**,外观零变化。真正改变外观的只有 `.chat-user` 气泡一处(28px → 10px,收到卡片档,保留 `border-bottom-right-radius: var(--radius-sm)` 的尖角)。
+
+**Deliverables**:
+
+- `frontend/style.css` 的 `.markdown-body table / th / td` 三条规则改造:去掉 **全部竖线、外框与表行之间的深色线**;`.markdown-body th` 获得 `background: var(--color-surface)`(gray-2 浅底)+ 1px 下边线;`.markdown-body td` 保留行间 1px 极浅分隔线。**就地改写 `border: 1px solid var(--color-border)` 那条声明,不是追加一条覆盖它**(留下一条已死的 border 会让注释与代码互相矛盾 —— Phase 9 对 `#doc-panel` 的 `border-left` 用的是同一手法)。
+- `frontend/style.css` 围栏 `:root` 内的 `--radius-lg: 28px` **删除**;其 2 处消费者改归既有档位 —— `.chat-user` → `var(--radius-md)`、`#chat-input-row input` → `var(--radius-pill)`。**围栏内不得留下未消费的令牌声明**(D-04 / Hard Rule 5),故是删除而非保留。
+- 表格新绘制面(表头 gray-2 底)的对比度**核实与登记**:表头文字色是 `.markdown-body` 继承下来的 `--color-text`,而 `/* PAIR --color-text ON --color-surface TEXT */` **早已登记**(`style.css:554`)⇒ 预期**零新增 PAIR 条目**,但须以 `check-02` 实际输出证实,不得以"我认为已覆盖"结案。行间与表头下的分隔线是**装饰性**边界(SC 1.4.11 不适用 —— 围栏注释已就"装饰性边框"写明这条判据),故不需 NON-TEXT 条目;此判断须在计划里显式论证,不留空白。
+- 圆角收敛后的**运行时**证据:`.chat-user` 与 `#chat-input-row input` 的计算 `border-radius` 读数,证明前者 10px、后者等于解析后的 `--radius-pill` 且**输入框的实测外观与收敛前一致**(逐字节比对收敛前后的 `getComputedStyle` 取值,而不是断言"应该没变")。
+- **六个 VERIFICATION 指纹的连带重验。** `frontend/style.css` 同时出现在 **6 份** `passed` 报告的 `covered_files` 里(`idi-04` / `idi-04.1-radix` / `idi-05` / `idi-06` / `idi-07` / `idi-09`)。本阶段**必然**改动该文件 ⇒ 这 6 份指纹全部作废,须**以 HEAD 内容重新验证**(不是刷新指纹 —— 内容确实变了),与 v1.14 收口期、以及 backlog 999.1/999.2 记录的是同一处置法。`idi-08` **不在**名单内(其 `covered_files` 不含 `frontend/style.css`)。
+- 五条浏览器门的复跑记录(`check-05` / `check-06` / `check-07` / `probe-05` / `probe-07`)与四个静态门结果。
+- 供用户评审的**截图**(与 Phase 9 同规格 1440×900,含至少一个渲染出三种表格的样本)。
+
+**Success Criteria** (what must be TRUE):
+
+1. 文档区表格在浏览器里**不再有竖线与外框**:`.markdown-body td` 的计算 `border-left-width` / `border-right-width` / `border-top-width` 为 `0px`;表头 `.markdown-body th` 的计算 `background-color` 为 gray-2(`rgb(249,249,249)`,即解析后的 `--color-surface`),并带 1px 下边线。行间分隔线为极浅一档。**三个机器可解析表**(批注回应表 / 覆盖维度表 / 未决问题清单)在截图里读数一致 —— 本阶段的表格规则**只有一条**,三张表共用它,该一致性是结构性的,但截图仍须取到至少两张作为证据。
+2. 表格的对比度**经实测无退化**:`scripts/check-02-contrast.py` 通过;表头文字在其新绘制面(gray-2)上的比值已登记(既有条目 `--color-text ON --color-surface` 若确实覆盖,须在 SUMMARY 里贴出 `check-02` 输出为证);**零新增颜色值、零新增 primitive、零阈值改动**(`check-02` 的 `TEXT_MIN` / `NON_TEXT_MIN` 与 HEAD 逐字节相同)。
+3. 圆角刻度**只剩三档**:`grep -c '\-\-radius-lg' frontend/style.css` 为 **0**;围栏内 `--radius-sm: 8px` / `--radius-md: 10px` / `--radius-pill: 999px` 三条声明值未变;零处 `var(--radius-lg)` 残留。**围栏内无未消费的令牌声明**。
+4. 圆角收敛**零视觉回归**:`#chat-input-row input` 的计算 `border-radius` 在收敛后等于 `--radius-pill` 的解析值,且其**外观与收敛前一致**(须以收敛前后的运行时读数并排为证,不得只断言"28px 会被钳成胶囊"这条算术);`.chat-user` 的计算 `border-radius` 为 10px,其 `border-bottom-right-radius` 仍为 8px(尖角保留)。这一条是本阶段**唯一**外观真的变了的消费者,须在截图里可见。
+5. 五条浏览器门复跑**无新增失败**,四个静态门全 PASS,pytest 基线不降(219 passed / 6 skipped),`node --check frontend/app.js` 通过;`.hidden` 唯一性与 `!important` **声明**数恒为 1;**6 份连带指纹**(idi-04 / idi-04.1 / idi-05 / idi-06 / idi-07 / idi-09)已以 HEAD 内容**重新验证**而非刷新。
+
+**Avoids** (Pitfalls):
+
+- **把"重算一下就好"用在圆角上** —— `--radius-lg` 的删除是**改归属**,不是换值。`.chat-user` 的 28px 与 `#chat-input-row input` 的 28px **去向不同**(前者 `--radius-md`、后者 `--radius-pill`),因为前者真的是"大圆角气泡"、后者真的是"胶囊但写错了令牌"。一律改成 `--radius-md` 会让输入框**外观真的变化**(胶囊 → 10px 圆角矩形),那是用户没选的档位。
+- **把"28px 会被钳成胶囊"当结论用** —— 那是算术推断,不是测量。必须取收敛**前后**的真实 `getComputedStyle` 读数并排比对;钳制的落点依赖元素实际高度,而高度受字体与内边距影响,不是常量。
+- **保留一条已死的 `border` 声明** —— 表格改造必须**就地改写**原声明。追加一条 `border: none` 覆盖它,会在文件里留下一条既读不到效果、又与注释矛盾的规则(Phase 9 对 `#doc-panel` 的 `border-left` 明确记录了这条纪律)。
+- **删除令牌却漏掉消费者** —— `--radius-lg` 只有 2 处消费者,但 `grep -c` 会同时数到**围栏内的声明行**与可能的散文注释。判据要锚"围栏内声明数 == 0"**且**"全文 `var(--radius-lg)` == 0"两个独立量,别只数一个(本机 `grep` 是 ugrep,`-` 算词字符,`\b` 对含连字符的令牌名不可靠)。
+- **表头底色选错档** —— 表头必须落 `--color-surface`(gray-2),因为那正是 Phase 9 建立的三级刻度里的"内陷面"档,且它的既有 PAIR 已登记。落 `--color-surface-sunken` 或 `--radix-gray-4` 会同时破坏刻度语言与对比度登记面。
+- **给表格加 `!important` 或令牌化 `display`** —— 明令禁止;`check-04` 数的是 `!important;` **声明**数(恒为 1),散文注释会把 `grep -c` 顶高(本项目已因此红过三次)。
+- **重排规则** —— 至少一对等特异性规则由源码顺序决定;重排即渲染变更,而源码 diff 看起来完全无辜。只追加(需要改写既有声明时就地改写,不搬迁)。
+- **以为改 `style.css` 只作废一份指纹** —— 是 **6 份**(`idi-04` / `idi-04.1` / `idi-05` / `idi-06` / `idi-07` / `idi-09`),且必须以 HEAD 内容**重新验证**;把它当"刷新指纹"会被 v1.14 收口期已记录的判据打回。
+- **只在静态 grep 上验收** —— 每个 `style.css` 计划必须带至少一项运行时验证(真实浏览器的 computed style 读数)。
+
+**Gates**: `scripts/check-01-token-conformance.sh` PASS(且 `grep -c -- '--radius-lg' frontend/style.css` == 0);`scripts/check-02-contrast.py` PASS(表头新绘制面的配对已证实登记,阈值文件与 HEAD 逐字节相同);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`,全量 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED);`node --check frontend/app.js`;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`);`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`;6 份连带指纹重新验证后 `status: passed`。
+**Plans**: 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 10 to break down)
+
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -123,8 +175,11 @@
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete    | 2026-09-26 |
+| 10. 表格重做与圆角刻度收敛 | v1.15 | 0/0 | Not started | — |
 
-**v1.13 / v1.14 共 9 个阶段已收口。** v1.15 为**单一阶段**(Phase 9),**已收口(2026-09-26)** —— 计划 3/3 全部完成:卡片容器化端到端落地、页面底色下沉到 gray-3 与密度收档、五条浏览器门复跑(0 FAIL,零处门改动)、pytest 基线 219 passed / 6 skipped、5 张 1440×900 截图。收口前经用户裁定追加一次强度微调(quick `260926-vaf`:卡片边框 gray-6→gray-7、阴影改为两层 `0 1px 3px rgba(0,0,0,0.08)` + `0 1px 2px rgba(0,0,0,0.04)`),该微调使 `idi-09-VERIFICATION.md` 因**真实内容变更**而 stale,已按「重新验证(以 HEAD 内容重算),不是重算指纹」处置并复验 `passed`(24/24)。用户看过截图后裁定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)**是否另开 phase 待定** —— 三项均未预先构建。
+**v1.13 / v1.14 共 9 个阶段已收口。** v1.15 目前有**两个阶段**:Phase 9 **已收口(2026-09-26)** —— 计划 3/3 全部完成:卡片容器化端到端落地、页面底色下沉到 gray-3 与密度收档、五条浏览器门复跑(0 FAIL,零处门改动)、pytest 基线 219 passed / 6 skipped、5 张 1440×900 截图。收口前经用户裁定追加一次强度微调(quick `260926-vaf`:卡片边框 gray-6→gray-7、阴影改为两层 `0 1px 3px rgba(0,0,0,0.08)` + `0 1px 2px rgba(0,0,0,0.04)`),该微调使 `idi-09-VERIFICATION.md` 因**真实内容变更**而 stale,已按「重新验证(以 HEAD 内容重算),不是重算指纹」处置并复验 `passed`(24/24)。
+
+用户看过截图后(2026-09-27)裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 第三项候选(图标与空状态)**未点名,仍留在 Out of Scope**;被点名的两项**另开 Phase 10**(`Not started`,尚未规划),并按用户逐项选定的档位执行:表格取「表头浅底 + 仅横向分隔」,圆角取「严格收敛: 8 / 10 / 胶囊」。Phase 10 会再次改动 `frontend/style.css`,因而**必然作废 6 份** VERIFICATION 指纹(`idi-04` / `idi-04.1` / `idi-05` / `idi-06` / `idi-07` / `idi-09`),须以 HEAD 内容重新验证 —— 这是该阶段最高的连带成本,已写进其 Deliverables 与 Pitfalls。
 
 ## Backlog
 

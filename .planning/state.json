@@ -52,12 +52,17 @@
       "number": "9",
       "name": "卡片容器化与页面底色下沉",
       "status": "complete"
+    },
+    {
+      "number": "10",
+      "name": "表格重做与圆角刻度收敛",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd:new-milestone",
-    "label": "Start a new milestone",
-    "reason": "All phases complete — start a new milestone"
+    "command": "/gsd:plan-phase 10",
+    "label": "Plan Phase 10",
+    "reason": "Phase 10 added — not planned yet"
   },
-  "updated_at": "2026-09-26T15:22:14.104Z"
+  "updated_at": "2026-09-27T08:43:06.683Z"
 }

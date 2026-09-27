@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.15
 milestone_name: 视觉构图升级
-current_phase: 9
-status: completed
-stopped_at: Phase 9 complete — all phases complete
-last_updated: "2026-09-26T15:22:13.909Z"
-last_activity: 2026-09-26
-last_activity_desc: Phase 9 complete
-state_head: fec9e5c19c8f987d70700de55c385c028fb7643f
+current_phase: 10
+status: in_progress
+stopped_at: Phase 10 added — not planned yet
+last_updated: "2026-09-27T08:50:00.000Z"
+last_activity: 2026-09-27
+last_activity_desc: Phase 10 added (表格重做与圆角刻度收敛)
+state_head: fbccd01b26c65ae5384befd90c2a0766519e779b
 progress:
-  total_phases: 1
+  total_phases: 2
   completed_phases: 1
   total_plans: 3
   completed_plans: 3
-  percent: 100
+  percent: 50
 ---
 
 # Project State
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-26)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** v1.15 视觉构图升级 —— Phase 9 卡片容器化与页面底色下沉(计划 3/3 已完成,待用户看截图裁定后续)
+**Current focus:** v1.15 视觉构图升级 —— Phase 10 表格重做与圆角刻度收敛(已加入路线图,**尚未规划**)
 
 ## Current Position
 
-Phase: 9
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-09-26 — Phase 9 complete
+Phase: 10
+Plan: — of TBD
+Status: Phase not planned — run /gsd-plan-phase 10
+Last activity: 2026-09-27 — Phase 10 added (表格重做与圆角刻度收敛)
 
 ## Performance Metrics
 
@@ -111,6 +111,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - [Roadmap]: **v1.15 阶段边界 = 单一阶段(Phase 9)** —— 用户裁定「开一个 phase,先看看效果吧」,故本里程碑**不**按 v1.14 的「风险面 + 契约依赖」切法展开,而是把构图轴的第一件事(卡片容器化 + 页面底色下沉)单独交付,让用户看过截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase;三者已在 `REQUIREMENTS.md` 的 Out of Scope 表明文排除,**不得预建阶段**
+- [Roadmap]: **v1.15 阶段边界更新 —— 2026-09-27 用户看过 Phase 9 截图后裁定「表格重做, 圆角刻度收敛。做这两个」,两项另开 Phase 10**(`idi-10-tables-and-radius-scale`)。第三项候选(图标与空状态)**用户未点名,仍留 Out of Scope,不得预先构建**。两项的档位由用户在 `AskUserQuestion` 中逐项选定:表格取「**表头浅底 + 仅横向分隔**」(去掉全部竖线与外框;`.markdown-body th` 获得 gray-2 `--color-surface` 浅底 + 1px 下边线;`td` 保留行间极浅分隔线);圆角取「**严格收敛: 8 / 10 / 胶囊**」(删除 `--radius-lg: 28px`,其 2 处消费者分别改归 `--radius-md`(`.chat-user`)与 `--radius-pill`(`#chat-input-row input`))。**Phase 10 的最高连带成本不是改样式本身,而是 `frontend/style.css` 一经改动即作废 6 份 `passed` 指纹**(`idi-04` / `idi-04.1` / `idi-05` / `idi-06` / `idi-07` / `idi-09`),须以 HEAD 内容**重新验证**而非刷新 —— 已写进 ROADMAP 的 Phase 10 Deliverables 与 Pitfalls。`idi-08` 不在名单内(其 `covered_files` 不含 `style.css`)
 - [Roadmap]: v1.15 的 7 条需求(CARD-01..03 / VIS-01..02 / REG-01..02)**全部映射到 Phase 9**,无 orphan、无跨阶段重复。REG-01/REG-02 之所以与 CARD/VIS 同阶段交付,是因为页面换值(`--color-surface-page` → `--radix-gray-3`)与「对比度对重算并登记」「五条浏览器门复跑」是**同一次改动**的两面 —— 拆开会造出「改了值但没人验」的中间态
 - [Roadmap]: v1.14 阶段边界 = 5 阶段(Phases 4-8),按"风险面 + 契约依赖"切,而非按审计报告的六支柱切——P4 设计契约与令牌层(硬前置,唯一纯重构阶段)、P5 排版与视觉层级(承载核心价值修复)、P6 布局稳健性(回归风险最高的 CSS 阶段)、P7 交互状态与焦点样式(纯追加)、P8 可访问性语义与键盘(唯一触碰 app.js/index.html 的阶段)。四份研究的建序分歧按"Architecture 的骨架胜出、Pitfalls 的 Phase E 折入 P8 作收口 gate、STACK 的六步作为 P4 的提交序"调和
 - [Roadmap]: v1.14 压缩裁定——6 阶段压到 5 阶段,采用的唯一合并是研究自陈允许的那一条(交互状态 P3 并入焦点样式 P5,即本路线图 P7);**未**采用"P3 并入 P4"这一被研究明令禁止的合并。焦点规则在 P7 落地、`tabindex` 在 P8 落地,以满足"tabindex 与 :focus 同提交"硬规则的实质(不存在可聚焦而焦点不可见的中间状态)
@@ -315,6 +316,7 @@ None yet.
 
 ### Roadmap Evolution
 
+- Phase 10 added: 表格重做与圆角刻度收敛(用户 2026-09-27 裁定「表格重做, 圆角刻度收敛。做这两个」,逐项档位在 `AskUserQuestion` 中选定)
 - Phase 04.1 inserted after Phase 4: Radix 颜色族重写
 
 ## Deferred Items
@@ -340,9 +342,7 @@ Resume file: None(计划 03 已收口;三个计划全部完成,无进行中的�
 
 ## Operator Next Steps
 
-- **下一步 = 用户评审,不是继续执行。** Phase 9 的三个计划全部收口并提交(`f121a2f` 之后:`32fa653` / `284963d` / `4b83c07` + SUMMARY 元数据提交)。规划与实现已全部就位:`.planning/ROADMAP.md` 的 `### Phase 9:` 详情与 Progress 行现为 `3/3 | In Progress`(阶段本身待 `phase.complete` 收口),`.planning/REQUIREMENTS.md` 的 7 条需求**全部勾选**(REG-02 由计划 03 关闭)。**请向用户呈上截图并请其裁定后续候选是否另开 phase。**
-- **截图已就绪,无需重出**:`.planning/phases/idi-09-card-containers/screenshots/` 下 5 张 1440×900 整窗 PNG(`p1.png` 会话流 / `p12.png` 阶段 1-2 讨论中 / `p3.png` 批注流 / `checking.png` 自检报告 / `archive.png` 归档只读 + 使命完成弹窗)。重出命令:`.venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-09-card-containers/screenshots`。
-- **提请用户裁定的 4 条开放项(每条均已写明「本阶段未构建」及依据,详见 `idi-09-03-SUMMARY.md` 的「供用户裁定的开放项」节)**:①`.overlay-card` 的底色(`frontend/style.css:978` 现为 `--color-surface` gray-2 + `--shadow-overlay`,页面下沉后显得比主界面卡片「内陷一档」);②卡片边界与阴影的**强度**(层次目前主要靠底色差 ΔL≈6%,阴影几乎不可见);③**页面级留白**(本阶段明令未加 `#main-pane` padding、未给卡片加 margin —— 后果在截图里可见:卡片贴着视口上/下边缘);④**输入框在白卡片上画 UA 白填充**(四个文本 input 一律不声明 `background`,实测计算 `background-color` 全为 `rgb(255,255,255)`;三档刻度的**中间档**在屏幕上实际只由三个 `<select>` 与 `.overlay-card` 承载)。
-- **Out of Scope 四项重申(REQUIREMENTS.md 明文,不得预先构建)**:表格重做(全边框 → 只留横向分隔线)/ 圆角刻度收敛(`--radius-lg: 28px` 与其他档不成比例)/ 图标与空状态 / 暗色模式。用户裁定「开一个 phase,先看看效果吧」。
+- **下一步 = 规划 Phase 10**(`/gsd-plan-phase 10`)。用户 2026-09-27 已就两项各选定档位(见 `## Accumulated Context` → `### Decisions` 的第二条 [Roadmap] 条目),规划期**不重开该决策**;`### Phase 10:` 详情段已含 Goal / Deliverables / 5 条 Success Criteria / Pitfalls / Gates,可直接作为规划输入。
+- **Phase 9 的用户评审已闭合(2026-09-27)。** 4 条开放项中,②「卡片边界与阴影强度」已由 quick `260926-vaf` 落地(用户裁定「稍微重一点」);其余三条(①`.overlay-card` 底色 / ③页面级留白 / ④输入框在白卡片上画 UA 白填充)**用户未点名,仍为开放项**。Out of Scope 四项中,表格重做与圆角刻度收敛已转为 Phase 10;图标与空状态、暗色模式仍留 Out of Scope。
 - 候选范围另见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
 - **归档后注意**:阶段报告现位于 `.planning/milestones/v1.14-phases/`,其 `covered_files` 里的 `.planning/phases/...` 路径已不可解析(重算返回 `null`,fail-closed=stale)。这是 v1.13 收口时已登记的**已知限制**,归档后的报告不再被 staleness 机制消费,无需回填重算。

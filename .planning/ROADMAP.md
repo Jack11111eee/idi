@@ -61,7 +61,7 @@
 **回归面(本里程碑最高风险):** 五条浏览器门 —— `scripts/check-05-ui-uat.py`(Playwright UAT)、`scripts/check-06-idi05-validation.py`、`scripts/check-07-idi08-validation.py`、`scripts/probe-05-resolve-color.py`、`scripts/probe-07-focus-composite.py` —— 大量断言绑死具体 DOM 与 computed style(焦点环 2px 与其解析后的 `--color-focus`、sticky 表头、badge 流内机制、滚动容器收敛、命中区 24×24、窄窗口不破版)。**任何 surface 改动都可能打破它们** ⇒ 每次改动必须复跑。环境事实:`check-05` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该机 `channel="chrome"` + headless 会挂死);全量跑 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归。
 
 - [x] **Phase 9: 卡片容器化与页面底色下沉** - 左栏 4 个面板与右栏文档区成为白底卡片;页面底色下沉至 gray-3,形成 gray-3 < gray-2 < 白 三级 elevation 刻度;受影响的对比度对重算并登记;五条 UI 门复跑无新增失败 (completed 2026-09-26)
-- [ ] **Phase 10: 表格重做与圆角刻度收敛** - 文档表格由「每格 1px 全边框」改为「表头浅底 + 仅横向分隔线」;圆角刻度收敛为 8 / 10 / 胶囊三档,删掉未并入刻度的 `--radius-lg: 28px`;两项均不引入新颜色值、不放宽阈值、不新增 `!important`
+- [x] **Phase 10: 表格重做与圆角刻度收敛** - 文档表格由「每格 1px 全边框」改为「表头浅底 + 仅横向分隔线」;圆角刻度收敛为 8 / 10 / 胶囊三档,删掉未并入刻度的 `--radius-lg: 28px`;两项均不引入新颜色值、不放宽阈值、不新增 `!important` (completed 2026-09-27)
 
 ## Phase Details
 
@@ -189,7 +189,7 @@ Plans:
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete    | 2026-09-26 |
-| 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | In Progress | - |
+| 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | Complete    | 2026-09-27 |
 
 **v1.13 / v1.14 共 9 个阶段已收口。** v1.15 目前有**两个阶段**:Phase 9 **已收口(2026-09-26)** —— 计划 3/3 全部完成:卡片容器化端到端落地、页面底色下沉到 gray-3 与密度收档、五条浏览器门复跑(0 FAIL,零处门改动)、pytest 基线 219 passed / 6 skipped、5 张 1440×900 截图。收口前经用户裁定追加一次强度微调(quick `260926-vaf`:卡片边框 gray-6→gray-7、阴影改为两层 `0 1px 3px rgba(0,0,0,0.08)` + `0 1px 2px rgba(0,0,0,0.04)`),该微调使 `idi-09-VERIFICATION.md` 因**真实内容变更**而 stale,已按「重新验证(以 HEAD 内容重算),不是重算指纹」处置并复验 `passed`(24/24)。
 

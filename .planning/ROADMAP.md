@@ -171,7 +171,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] idi-10-04-PLAN.md — 连带指纹收口:实测「10 份覆盖 / 1 份可执行」并逐份取证;`idi-09-VERIFICATION.md` 以 HEAD 内容重新验证(非刷新),`verification.status` 由 `stale` 回到 `passed`
+- [x] idi-10-04-PLAN.md — 连带指纹收口:实测「10 份覆盖 / 1 份可执行」并逐份取证;`idi-09-VERIFICATION.md` 以 HEAD 内容重新验证(非刷新),`verification.status` 由 `stale` 回到 `passed`
 
 **UI hint**: yes
 
@@ -189,7 +189,7 @@ Plans:
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete    | 2026-09-26 |
-| 10. 表格重做与圆角刻度收敛 | v1.15 | 3/4 | In Progress | - |
+| 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | In Progress | - |
 
 **v1.13 / v1.14 共 9 个阶段已收口。** v1.15 目前有**两个阶段**:Phase 9 **已收口(2026-09-26)** —— 计划 3/3 全部完成:卡片容器化端到端落地、页面底色下沉到 gray-3 与密度收档、五条浏览器门复跑(0 FAIL,零处门改动)、pytest 基线 219 passed / 6 skipped、5 张 1440×900 截图。收口前经用户裁定追加一次强度微调(quick `260926-vaf`:卡片边框 gray-6→gray-7、阴影改为两层 `0 1px 3px rgba(0,0,0,0.08)` + `0 1px 2px rgba(0,0,0,0.04)`),该微调使 `idi-09-VERIFICATION.md` 因**真实内容变更**而 stale,已按「重新验证(以 HEAD 内容重算),不是重算指纹」处置并复验 `passed`(24/24)。
 

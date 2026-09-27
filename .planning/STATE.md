@@ -5,16 +5,16 @@ milestone_name: 视觉构图升级
 current_phase: 10
 current_phase_name: 表格重做与圆角刻度收敛
 status: executing
-stopped_at: Completed idi-10-03-PLAN.md
-last_updated: "2026-09-27T12:12:02.272Z"
+stopped_at: Completed idi-10-04-PLAN.md
+last_updated: "2026-09-27T12:39:50.494Z"
 last_activity: 2026-09-27
 last_activity_desc: Phase idi-10 execution started
-state_head: b3feb483f4c80b2855d14b28e5f87fe3fad93547
+state_head: 644ad9cdda42f3c2709757d5bc56ed75cc7fcd16
 progress:
   total_phases: 2
   completed_phases: 1
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 50
 ---
 
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-09-26)
 
 Phase: idi-10 (表格重做与圆角刻度收敛) — EXECUTING
 Plan: 4 of 4
-Status: Executing Phase idi-10
-Last activity: 2026-09-27 — Phase idi-10 execution started
+Status: Phase complete — ready for verification
+Last activity: 2026-09-27 — Completed idi-10-04-PLAN.md(连带指纹收口与 idi-09 的 HEAD 重验)
 
 ## Performance Metrics
 
@@ -106,6 +106,7 @@ Last activity: 2026-09-27 — Phase idi-10 execution started
 | Phase idi-10 P01 | 25 min | 3 tasks | 2 files |
 | Phase idi-10 P02 | 9 min | 3 tasks | 6 files |
 | Phase idi-10 P03 | 15 min | 3 tasks | 18 files |
+| Phase idi-10 P04 | 14 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -265,6 +266,12 @@ Recent decisions affecting current work:
 - [Phase 10]: .chat-user 的人眼取证图另置 screenshots/chat-user/ 子目录而非平铺 —— 平铺会把顶层 PNG 数从 5 变成 6,违反计划「恰含 5 个 PNG」判据;子目录让「5 张状态样本 + 1 张探针取证」自明。
 - [Phase 10]: 计划的「本阶段零布局改动」措辞比事实更强:同一次 check-05 输出里 #round-doc 高度由 778.640625 变为 775.640625(矮 3px)。成因由同一次导航内的受控 A/B 证明:border-collapse 下表格四边 border 改为只留一条 border-bottom 后每张表矮 1px,p3 恰 3 张表 ⇒ 共 3px。该读数上的断言仍 PASS,无需重新登记。
 - [Phase 10]: 跨阶段门禁基线对照取归一化(剥临时路径)后的逐行 diff,不取「结论块看着一样」—— 这个粒度既确认逐项同形,也捞出了计划未点名的那条 3px 差异。
+- [Phase 10]: 连带指纹的覆盖面判据锚报告 frontmatter 的 covered_files 逐行匹配(非全文 grep):实测恰 10 份 passed 报告覆盖该文件,idi-08 是全文 grep 的假阳性(其 frontmatter 命中 0、全文命中 19)
+- [Phase 10]: 真实形状是「10 份覆盖,1 份可执行」:9 份归档/quick 报告的 covered_files 路径归档后不可解析,导致 fingerprint 失败关闭,它们在 Phase 10 之前就已是 stale,属 2026-09-14 登记的已知限制
+- [Phase 10]: 本阶段只重验 idi-09 一份,处置法是「以 HEAD 内容重新验证」而非刷新指纹:该文件确实变了,刷新等于断言「自验证以来覆盖输入无变化」
+- [Phase 10]: idi-09 的 covered_files 10 条逐条未变,只重算 covered_digest(6e811a11 到 7b82f8d1);删条目是让报告假装新鲜的典型手法,故把条数等于 10 写成机器判据
+- [Phase 10]: 两条被本阶段改动移动的历史读数逐条给出机制而非静默重述:truth 5 的 border 消费者计数由 3 变 2、truth 24 的顶层选择器计数由 173 变 174(Phase 10 追加了唯一一条 markdown-body th 规则)
+- [Phase 10]: idi-09 正文对 round-doc 绝对高度的引用为零,故计划 03 登记的 3px 几何变化不触及本报告任何判据;其唯一几何引用 doc-panel 的 scrollHeight 2488 大于 clientHeight 898 在 HEAD 上复测仍为 2488 与 898
 
 ### Pending Todos
 
@@ -326,6 +333,8 @@ None yet.
 
 - **第十四次复现(2026-09-27,`idi-10-03` 收口),形态与第九…十三次逐条一致,已逐条核盘修正。** ①`state.advance-plan` **本次成功**:正确写入 `Plan: 3 of 4 → 4 of 4`、`completed_plans: 5 → 6`,并把 `state_head` 正确重算为 `b3feb48`(preservation: derive 契约被遵守);**同时再次把派生计数打坏** —— `completed_phases` 1 → 0、`percent` 50 → 0(与第十二/十三次同形,已按 ROADMAP 的 `## Milestones` + `## Progress` 改回 `1` / `50`)。另:该动词**再次**打出 `milestone lock conflict (#3311)` 自指警告(与第十三次同形,噪声)。②`state.update-progress` 仍然**零写入**,回显 `{"updated": false, "percent": 0, "completed": 6, "total": 7, "reason": "no Progress: line found in STATE.md body to update"}` —— 回显不可作为判据。③`state.record-metric` 正确追加 `Phase idi-10 P03 | 15 min | 3 tasks | 18 files` ✅(**本次计划号写法正确**,未再漂)。④`state.add-decision` **五条全部落盘** ✅ —— 本次按第十三次的教训**预先规避**:决策正文里不出现任何以 `-` 开头的词(`--screenshot` 等一律改写为散文),故未触发 flag 解析器。⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-10` 正确写 `3/4` 与 Wave 3 的 `[x]` ✅,但**两处格式副作用与第九…十三次逐字相同**:(a) Progress 行尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 3/4 plans executed`(已手工改回)。⑦`requirements.ready-ids` 的共享-ID 门**本次按设计放行** —— 实测返回 `ready: [TABLE-01, TABLE-02, RADIUS-01, RADIUS-02]` / `blocked: [REG-03]`,故只勾选 ready 子集(4 复选框 + 4 追溯行),`REG-03` 留给计划 04;`mark-complete` **又在 `**Coverage:**` 后插入一个空行**(**第四次复现**该副作用,已手工回退)。⑧`state.json` 本次**被动词触碰了 `next.reason` 的派生百分比**(50% → 0%,与 STATE.md 同源打坏;已按 ROADMAP 权威改回 50%,`updated_at` 保留 —— 它反映的是一次真实写入)。**⇒ 与第九…十三次的方法论结论逐条一致,无需新增结论;本次的增量事实只有一条:`add-decision` 的「以 `-` 开头会被拒」是**可预先规避**的 —— 只要正文里不出现任何以 `-` 开头的词,五条可一次全落盘。核盘仍放在收口序列的**最后一个动词之后**。**
 
+- **第十五次复现(2026-09-27,`idi-10-04` 收口)—— 本次**未观察到派生计数损坏**,是九…十四次里第一次。** ①`state.advance-plan` 走 `last_plan` 分支(`Plan` 已是 `4 of 4`),返回 `{"advanced": false, "reason": "last_plan", "current_plan": 4, "total_plans": 4, "status": "ready_for_verification", "updated": []}` —— **零写入**,故**没有**打坏 `completed_phases` / `percent`(与第八次同形的 fail-closed 支);它意图写入的 `Status: Phase complete — ready for verification` 因模板替换 no-op 而未落盘(该分支的既有缺陷),已手工按该意图写入 `## Current Position`。②`state.update-progress` 仍然**零写入**,回显 `{"updated": false, "percent": 50, "completed": 7, "total": 7, "reason": "no Progress: line found in STATE.md body to update"}` —— 回显不可作为判据(它把 `completed: 7` 说成 plan 数,而 frontmatter 的 `completed_phases` 是 1)。③`state.record-metric` 正确追加 `Phase idi-10 P04 | 14 min | 2 tasks | 2 files` ✅(**计划号写法正确**)。④六条 `state.add-decision` **全部落盘** ✅(按第十三/十四次的教训,正文里不出现任何以 `-` 开头的词);但**本次动词写入的前缀是 `[Phase idi-10]:`,而本阶段前三个计划的是 `[Phase 10]:`** —— 已手工统一为 `[Phase 10]:`(**新增事实:该前缀取自 `--phase` 入参的字面值,传 `idi-10` 与传 `10` 会写出不同前缀**)。⑤`state.record-session` 正确写 `Last session` / `Stopped At` / `Resume File` 三行 ✅(长文本仍被压成一行,丰富正文由手工补写)。⑥`roadmap.update-plan-progress idi-10` 正确写 `4/4` 与 Wave 4 的 `[x]` ✅,但**两处格式副作用与第九…十四次逐字相同**:(a) Progress 行尾格掉了内容(`| In Progress|  |`,已手工补为 `| In Progress | - |`);(b) `**Plans**: 4 plans` 被改写成 `**Plans**: 4/4 plans executed`(已手工改回)。**新增事实:该动词在 `4/4` 且本阶段 `verification.status` 仍为 `missing` 时返回 `status: "In Progress", complete: false`** —— 即它**不**把阶段标 `Complete`,直到验证通过;故 ROADMAP 权威给出的派生值仍是 `completed_phases: 1` / `percent: 50`(与第十二…十四次相同,本次无需手工校正)。⑦`requirements.mark-complete REG-03` 只改 2 行(1 复选框 + 1 追溯行)无越权 ✅,但**又在 `**Coverage:**` 后插入一个空行**(**第五次复现**该副作用,已手工回退)。⑧`state.json` **本次零改动**(`next.reason` 的 `50%` 未被触碰,与第十三/十四次不同)。**⇒ 本次的增量事实有三条:(a) `advance-plan` 的 `last_plan` 分支是 fail-closed 的零写入,故不会打坏派生计数 —— 损坏只发生在它**真的推进**位置的那一支;(b) `add-decision` 的 `[Phase …]` 前缀取自 `--phase` 的字面值;(c) `roadmap.update-plan-progress` 在验证未通过时不把阶段标 `Complete`,故「全部计划收口」与「ROADMAP 权威说 Complete」并不等价 —— 核盘必须读 ROADMAP,不能从 SUMMARY 数量推。核盘仍放在收口序列的**最后一个动词之后**。**
+
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
@@ -361,13 +370,13 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-27T12:12:02.210Z
-Stopped at: Completed idi-10-03-PLAN.md
-Resume file: None (next plan: idi-10-04 idi-09 的连带指纹重验)
+Last session: 2026-09-27T12:39:50.429Z
+Stopped at: Completed idi-10-04-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 
-- **下一步 = 规划 Phase 10**(`/gsd-plan-phase 10`)。用户 2026-09-27 已就两项各选定档位(见 `## Accumulated Context` → `### Decisions` 的第二条 [Roadmap] 条目),规划期**不重开该决策**;`### Phase 10:` 详情段已含 Goal / Deliverables / 5 条 Success Criteria / Pitfalls / Gates,可直接作为规划输入。
+- **下一步 = 验证 Phase 10**(`/gsd-verify-work idi-10`)。Phase 10 的 4 个计划全部收口(表格重做 + 圆角刻度收敛 + 五条浏览器门复跑 + 连带指纹收口),`verification.status idi-09` 已由 `stale` 回到 `passed`;本阶段自身的 `verification.status` 仍为 `missing`(尚未跑 verify-work)。Phase 9 的用户评审已闭合(2026-09-27):4 条开放项中②「卡片边界与阴影强度」已由 quick `260926-vaf` 落地,其余三条用户未点名、仍为开放项。
 - **Phase 9 的用户评审已闭合(2026-09-27)。** 4 条开放项中,②「卡片边界与阴影强度」已由 quick `260926-vaf` 落地(用户裁定「稍微重一点」);其余三条(①`.overlay-card` 底色 / ③页面级留白 / ④输入框在白卡片上画 UA 白填充)**用户未点名,仍为开放项**。Out of Scope 四项中,表格重做与圆角刻度收敛已转为 Phase 10;图标与空状态、暗色模式仍留 Out of Scope。
 - 候选范围另见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
 - **归档后注意**:阶段报告现位于 `.planning/milestones/v1.14-phases/`,其 `covered_files` 里的 `.planning/phases/...` 路径已不可解析(重算返回 `null`,fail-closed=stale)。这是 v1.13 收口时已登记的**已知限制**,归档后的报告不再被 staleness 机制消费,无需回填重算。

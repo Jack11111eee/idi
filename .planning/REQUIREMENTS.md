@@ -36,7 +36,7 @@
 
 ### 回归保障（Phase 10）
 
-- [ ] **REG-03**: 五条浏览器门复跑无新增失败、四个静态门全 PASS、pytest 基线不降(219 passed / 6 skipped);`frontend/style.css` 变更所触及的 `passed` 报告已按「可执行性」分诊并逐份给出证据 —— 实测 **10 份**含该文件的报告,其中 **9 份因归档而 `covered_files` 路径不可解析**(2026-09-14 登记的已知限制),**1 份(`idi-09`)全部在盘并已以 HEAD 内容重新验证**(非刷新)。本阶段不得改 `scripts/check-05-ui-uat.py`(改了会把 `idi-08` 也拖进名单)
+- [x] **REG-03**: 五条浏览器门复跑无新增失败、四个静态门全 PASS、pytest 基线不降(219 passed / 6 skipped);`frontend/style.css` 变更所触及的 `passed` 报告已按「可执行性」分诊并逐份给出证据 —— 实测 **10 份**含该文件的报告,其中 **9 份因归档而 `covered_files` 路径不可解析**(2026-09-14 登记的已知限制),**1 份(`idi-09`)全部在盘并已以 HEAD 内容重新验证**(非刷新)。本阶段不得改 `scripts/check-05-ui-uat.py`(改了会把 `idi-08` 也拖进名单)
 
 ## v2 Requirements
 
@@ -69,7 +69,7 @@
 | TABLE-02 | Phase 10 | Complete |
 | RADIUS-01 | Phase 10 | Complete |
 | RADIUS-02 | Phase 10 | Complete |
-| REG-03 | Phase 10 | Pending |
+| REG-03 | Phase 10 | Complete |
 
 **Coverage:**
 - v1.15 requirements: 12 total

@@ -7,6 +7,12 @@
 
 ## 已裁定的设计决策(用户,2026-09-27)
 
+<decisions>
+- **D-10-1:** 表格重做 = 表头 gray-2(`--color-surface`)浅底 + 仅横向分隔线 —— 去掉全部竖线、外框与表行之间的深色线;`.markdown-body th` 获得浅底 + 1px 下边线;`.markdown-body td` 保留行间极浅分隔线;就地改写原 `border` 声明,不追加覆盖规则
+- **D-10-2:** 圆角刻度收敛 = 8 / 10 / 胶囊 —— 删除 `--radius-lg: 28px`;`.chat-user` → `var(--radius-md)`(外观真变 28px→10px),`#chat-input-row input` → `var(--radius-pill)`(外观零变化,52px 高下 28px 早已被 UA 钳成 26px);两处去向不同,不得「统一」
+- **D-10-3:** 两项都不引入新颜色值、不新增 tier-1 primitive、不放宽 `check-02` 阈值(`TEXT_MIN` / `NON_TEXT_MIN` 与 HEAD 逐字节相同);`--radius-lg` 是删除不是新增
+</decisions>
+
 ### D-10-1:表格重做 = 表头浅底 + 仅横向分隔线
 
 用户选定档位:「**表头浅底 + 仅横向分隔(推荐)**」。具体形态:

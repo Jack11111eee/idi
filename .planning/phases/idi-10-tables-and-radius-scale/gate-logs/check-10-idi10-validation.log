@@ -1,0 +1,171 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-10-gate-d1lr07gi(--keep 可保留)
+INFO browser.version: 153.0.8010.12
+
+=== t1: .markdown-body th — 表头浅底 + 1px 下边线(TABLE-01)===
+INFO t1 令牌解析: --color-surface=rgb(249, 249, 249) --color-border-subtle=rgb(217, 217, 217) --text-base=14px
+PASS t1 [令牌] --color-surface 解析值 == gray-2 字面量: expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿
+PASS t1 [令牌] --color-border-subtle 解析值 != --color-surface(两档不塌): expected=!= rgb(249, 249, 249) actual=rgb(217, 217, 217)  # 行间线必须比表头绘制面深一档,否则分隔线消失
+INFO t1 [p1] #draft-content 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=True / 藏住它的祖先=None
+PASS [p1] #draft-content 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #draft-content .markdown-body th 计算 background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 表头浅底落三级刻度的「内陷面」档(D-10-1);HEAD 上 th 无自身底色(透明)
+PASS [p1] #draft-content .markdown-body th 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #draft-content .markdown-body th 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #draft-content .markdown-body th 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 表头下边线与行间分隔线同档,不再是原 --color-border(gray-7)的深线
+PASS [p1] #draft-content .markdown-body th 计算 border-left-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #draft-content .markdown-body th 计算 border-right-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #draft-content .markdown-body th 计算 border-top-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #draft-content .markdown-body th 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+PASS [p1] #draft-content .markdown-body th 计算 font-size == var(--text-base)(对照组): expected=14px actual=14px
+INFO t1 [p1] #brainstorm-content 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=False / 藏住它的祖先=#brainstorm-view
+PASS [p1] #brainstorm-content 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #brainstorm-content .markdown-body th 计算 background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 表头浅底落三级刻度的「内陷面」档(D-10-1);HEAD 上 th 无自身底色(透明)
+PASS [p1] #brainstorm-content .markdown-body th 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #brainstorm-content .markdown-body th 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #brainstorm-content .markdown-body th 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 表头下边线与行间分隔线同档,不再是原 --color-border(gray-7)的深线
+PASS [p1] #brainstorm-content .markdown-body th 计算 border-left-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #brainstorm-content .markdown-body th 计算 border-right-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #brainstorm-content .markdown-body th 计算 border-top-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #brainstorm-content .markdown-body th 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+PASS [p1] #brainstorm-content .markdown-body th 计算 font-size == var(--text-base)(对照组): expected=14px actual=14px
+INFO t1 [p1] #round-doc 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=False / 藏住它的祖先=#rounds-placeholder
+PASS [p1] #round-doc 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #round-doc .markdown-body th 计算 background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 表头浅底落三级刻度的「内陷面」档(D-10-1);HEAD 上 th 无自身底色(透明)
+PASS [p1] #round-doc .markdown-body th 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #round-doc .markdown-body th 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #round-doc .markdown-body th 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 表头下边线与行间分隔线同档,不再是原 --color-border(gray-7)的深线
+PASS [p1] #round-doc .markdown-body th 计算 border-left-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #round-doc .markdown-body th 计算 border-right-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #round-doc .markdown-body th 计算 border-top-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #round-doc .markdown-body th 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+PASS [p1] #round-doc .markdown-body th 计算 font-size == var(--text-base)(对照组): expected=14px actual=14px
+INFO t1 [p1] #latest-check 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=False / 藏住它的祖先=#checks-panel
+PASS [p1] #latest-check 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #latest-check .markdown-body th 计算 background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 表头浅底落三级刻度的「内陷面」档(D-10-1);HEAD 上 th 无自身底色(透明)
+PASS [p1] #latest-check .markdown-body th 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #latest-check .markdown-body th 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #latest-check .markdown-body th 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 表头下边线与行间分隔线同档,不再是原 --color-border(gray-7)的深线
+PASS [p1] #latest-check .markdown-body th 计算 border-left-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #latest-check .markdown-body th 计算 border-right-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #latest-check .markdown-body th 计算 border-top-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p1] #latest-check .markdown-body th 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+PASS [p1] #latest-check .markdown-body th 计算 font-size == var(--text-base)(对照组): expected=14px actual=14px
+INFO t1 [p3] #round-doc 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=True / 藏住它的祖先=None
+PASS [p3] #round-doc 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p3] #round-doc .markdown-body th 计算 background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 表头浅底落三级刻度的「内陷面」档(D-10-1);HEAD 上 th 无自身底色(透明)
+PASS [p3] #round-doc .markdown-body th 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p3] #round-doc .markdown-body th 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p3] #round-doc .markdown-body th 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 表头下边线与行间分隔线同档,不再是原 --color-border(gray-7)的深线
+PASS [p3] #round-doc .markdown-body th 计算 border-left-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p3] #round-doc .markdown-body th 计算 border-right-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p3] #round-doc .markdown-body th 计算 border-top-width == 0px: expected=0px actual=0px  # 去掉竖线与外框(ROADMAP SC1)
+PASS [p3] #round-doc .markdown-body th 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+PASS [p3] #round-doc .markdown-body th 计算 font-size == var(--text-base)(对照组): expected=14px actual=14px
+INFO t1 证据分类: 渲染证据 2 个对 / 层叠解析证据 3 个对 —— rendered=(p1, #draft-content), (p3, #round-doc) / hidden=(p1, #brainstorm-content)<-#brainstorm-view, (p1, #round-doc)<-#rounds-placeholder, (p1, #latest-check)<-#checks-panel
+PASS t1 [聚合] 至少 1 个 (样本, 宿主) 对处于被渲染子树: expected=>= 1 个 rendered=True actual=rendered 2/5 个对;rendered=(p1, #draft-content), (p3, #round-doc) / hidden=(p1, #brainstorm-content)<-#brainstorm-view, (p1, #round-doc)<-#rounds-placeholder, (p1, #latest-check)<-#checks-panel  # 为真 ⇒ 其上的读数构成渲染证据;其余对(被祖先 display:none 藏住)上的读数只能陈述为层叠解析证据,不得当作渲染证据
+
+=== t2: .markdown-body td — 三条边 0px + 行间浅线(TABLE-01)===
+INFO t2 令牌解析: --color-border-subtle=rgb(217, 217, 217) --text-base=14px
+INFO t2 [p1] #draft-content 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=True / 藏住它的祖先=None
+PASS [p1] #draft-content 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #draft-content .markdown-body td 计算 border-left-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #draft-content .markdown-body td 计算 border-right-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #draft-content .markdown-body td 计算 border-top-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #draft-content .markdown-body td 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #draft-content .markdown-body td 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #draft-content .markdown-body td 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 行间极浅分隔线(gray-6);border-collapse 把它与上一行折成一条,不出现双线
+PASS [p1] #draft-content .markdown-body td font-size == var(--text-base)(对照组,check-05 锁死): expected=14px actual=14px  # check-05-ui-uat.py 的 [p1] .markdown-body td font-size 活断言;改它就红
+PASS [p1] #draft-content .markdown-body td 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+INFO t2 [p1] #brainstorm-content 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=False / 藏住它的祖先=#brainstorm-view
+PASS [p1] #brainstorm-content 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #brainstorm-content .markdown-body td 计算 border-left-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #brainstorm-content .markdown-body td 计算 border-right-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #brainstorm-content .markdown-body td 计算 border-top-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #brainstorm-content .markdown-body td 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #brainstorm-content .markdown-body td 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #brainstorm-content .markdown-body td 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 行间极浅分隔线(gray-6);border-collapse 把它与上一行折成一条,不出现双线
+PASS [p1] #brainstorm-content .markdown-body td font-size == var(--text-base)(对照组,check-05 锁死): expected=14px actual=14px  # check-05-ui-uat.py 的 [p1] .markdown-body td font-size 活断言;改它就红
+PASS [p1] #brainstorm-content .markdown-body td 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+INFO t2 [p1] #round-doc 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=False / 藏住它的祖先=#rounds-placeholder
+PASS [p1] #round-doc 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #round-doc .markdown-body td 计算 border-left-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #round-doc .markdown-body td 计算 border-right-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #round-doc .markdown-body td 计算 border-top-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #round-doc .markdown-body td 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #round-doc .markdown-body td 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #round-doc .markdown-body td 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 行间极浅分隔线(gray-6);border-collapse 把它与上一行折成一条,不出现双线
+PASS [p1] #round-doc .markdown-body td font-size == var(--text-base)(对照组,check-05 锁死): expected=14px actual=14px  # check-05-ui-uat.py 的 [p1] .markdown-body td font-size 活断言;改它就红
+PASS [p1] #round-doc .markdown-body td 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+INFO t2 [p1] #latest-check 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=False / 藏住它的祖先=#checks-panel
+PASS [p1] #latest-check 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p1] #latest-check .markdown-body td 计算 border-left-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #latest-check .markdown-body td 计算 border-right-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #latest-check .markdown-body td 计算 border-top-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p1] #latest-check .markdown-body td 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] #latest-check .markdown-body td 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p1] #latest-check .markdown-body td 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 行间极浅分隔线(gray-6);border-collapse 把它与上一行折成一条,不出现双线
+PASS [p1] #latest-check .markdown-body td font-size == var(--text-base)(对照组,check-05 锁死): expected=14px actual=14px  # check-05-ui-uat.py 的 [p1] .markdown-body td font-size 活断言;改它就红
+PASS [p1] #latest-check .markdown-body td 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+INFO t2 [p3] #round-doc 注入与显示读数: 注入后 th=3 td=6 / 处于被渲染子树=True / 藏住它的祖先=None
+PASS [p3] #round-doc 注入成功:注入后 td 计数 > 0: expected=td 计数 > 0 actual=th=3 td=6  # 每个对都在读数前用应用自身的 renderMarkdown 注入过探针表 —— 造出容器再断言,不依赖 fixture 自然渲染
+PASS [p3] #round-doc .markdown-body td 计算 border-left-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p3] #round-doc .markdown-body td 计算 border-right-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p3] #round-doc .markdown-body td 计算 border-top-width == 0px: expected=0px actual=0px  # HEAD 上是 1px —— 这是 ROADMAP SC1 对「不再有竖线与外框」的逐字操作定义
+PASS [p3] #round-doc .markdown-body td 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p3] #round-doc .markdown-body td 计算 border-bottom-style == solid: expected=solid actual=solid
+PASS [p3] #round-doc .markdown-body td 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 行间极浅分隔线(gray-6);border-collapse 把它与上一行折成一条,不出现双线
+PASS [p3] #round-doc .markdown-body td font-size == var(--text-base)(对照组,check-05 锁死): expected=14px actual=14px  # check-05-ui-uat.py 的 [p1] .markdown-body td font-size 活断言;改它就红
+PASS [p3] #round-doc .markdown-body td 计算 padding == 4px 10px(对照组): expected=4px 10px actual=4px 10px
+INFO t2 证据分类: 渲染证据 2 个对 / 层叠解析证据 3 个对 —— rendered=(p1, #draft-content), (p3, #round-doc) / hidden=(p1, #brainstorm-content)<-#brainstorm-view, (p1, #round-doc)<-#rounds-placeholder, (p1, #latest-check)<-#checks-panel
+PASS t2 [聚合] 至少 1 个 (样本, 宿主) 对处于被渲染子树: expected=>= 1 个 rendered=True actual=rendered 2/5 个对;rendered=(p1, #draft-content), (p3, #round-doc) / hidden=(p1, #brainstorm-content)<-#brainstorm-view, (p1, #round-doc)<-#rounds-placeholder, (p1, #latest-check)<-#checks-panel  # 为真 ⇒ 其上的读数构成渲染证据;其余对(被祖先 display:none 藏住)上的读数只能陈述为层叠解析证据,不得当作渲染证据
+
+=== r1: 圆角三档 + .chat-user 的四个角长手(RADIUS-01 / RADIUS-02)===
+PASS r1 [源码] 围栏内 --radius-lg 声明残留计数 == 0: expected=== 0 actual=0  # 读 DESIGN TOKENS 围栏内的文本;围栏内不得留下未消费的令牌声明(D-04 / Hard Rule 5)
+INFO r1 令牌解析: --radius-sm=8px --radius-md=10px --radius-pill=999px
+PASS r1 [令牌] --radius-sm 解析值 == 刻度声明字面量: expected=8px actual=8px  # 令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿
+PASS r1 [令牌] --radius-md 解析值 == 刻度声明字面量: expected=10px actual=10px  # 令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿
+PASS r1 [令牌] --radius-pill 解析值 == 刻度声明字面量: expected=999px actual=999px  # 令牌级断言:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿
+PASS r1 [令牌] 被删档位已不可解析(解析值 None): expected=None actual=None  # 被删档位的探测器:它若还能解析出值,说明删漏了或消费者没搬完
+INFO r1 .chat-user 四个物理角长手原始读数(诊断): border-top-left-radius=10px / border-top-right-radius=10px / border-bottom-left-radius=10px / border-bottom-right-radius=8px
+INFO r1 .chat-user 简写 border-radius(显式 getPropertyValue,仅诊断、不断言): '10px 10px 8px' —— 该规则体带 border-bottom-right-radius,Chrome 把简写序列化成**三值**,故「简写 == 卡片档」这条断言不可满足;判据一律取四个物理角长手
+PASS r1 [p1] .chat-user border-top-left-radius == 解析后的 --radius-md(卡片档): expected=10px actual=10px  # 本阶段**唯一外观真变**的消费者:28px 的大圆角气泡收进卡片档(HEAD 上此处为 28px)
+PASS r1 [p1] .chat-user border-top-right-radius == 解析后的 --radius-md(卡片档): expected=10px actual=10px  # 本阶段**唯一外观真变**的消费者:28px 的大圆角气泡收进卡片档(HEAD 上此处为 28px)
+PASS r1 [p1] .chat-user border-bottom-left-radius == 解析后的 --radius-md(卡片档): expected=10px actual=10px  # 本阶段**唯一外观真变**的消费者:28px 的大圆角气泡收进卡片档(HEAD 上此处为 28px)
+PASS r1 [p1] .chat-user border-bottom-right-radius == 解析后的 --radius-sm(尖角保留): expected=8px actual=8px  # 气泡尾巴的尖角是本阶段**刻意不动**的形态,逐角独立断言
+PASS r1 [p1] .chat-user 四角并非统一(BR 是尖角档、TL 是卡片档): expected=BR != TL actual=TL=10px BR=8px  # 使「四角统一」可失败 —— 否则「保留尖角」这条判据会被等值断言悄悄吃掉
+
+=== r2: #chat-input-row input 的胶囊归属(RADIUS-02)===
+INFO r2 令牌解析: --radius-pill=999px
+INFO r2 原始读数: border-top-left-radius=999px / border-top-right-radius=999px / border-bottom-left-radius=999px / border-bottom-right-radius=999px / 简写 border-radius=999px / min-height=52px / border-top=1px solid
+PASS r2 [p1] #chat-input-row input 计算 border-radius == 解析后的 --radius-pill: expected=999px actual=999px  # 该元素 min-height: 52px,getComputedStyle 返回的是**计算值**,与「外观零变化」是两回事 —— 外观判据由 radius-snapshots/ 的收敛前后三份读数承担(computed style 键级 diff + getBoundingClientRect() 逐值 + 元素 PNG 逐字节)
+PASS r2 [p1] #chat-input-row input border-top-left-radius == 解析后的 --radius-pill: expected=999px actual=999px
+PASS r2 [p1] #chat-input-row input border-top-right-radius == 解析后的 --radius-pill: expected=999px actual=999px
+PASS r2 [p1] #chat-input-row input border-bottom-left-radius == 解析后的 --radius-pill: expected=999px actual=999px
+PASS r2 [p1] #chat-input-row input border-bottom-right-radius == 解析后的 --radius-pill: expected=999px actual=999px
+PASS r2 [p1] #chat-input-row input 四个角长手彼此等值: expected=四个读数同一个值 actual=['999px']
+PASS r2 [p1] #chat-input-row input 计算 min-height == 52px(对照组): expected=52px actual=52px  # 钳制的落点依赖元素实际高度,故该自变量必须逐字未动
+PASS r2 [p1] #chat-input-row input 计算 border-top-width == 1px(对照组): expected=1px actual=1px  # border: 1px solid var(--color-border-strong) 逐字未动
+PASS r2 [p1] #chat-input-row input 计算 border-top-style == solid(对照组): expected=solid actual=solid  # 同上
+
+=== shot: 逐样本整窗截图(1440x900)===
+INFO shot p1: .planning/phases/idi-10-tables-and-radius-scale/screenshots/p1.png 1440x900
+PASS shot [p1] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot p12: .planning/phases/idi-10-tables-and-radius-scale/screenshots/p12.png 1440x900
+PASS shot [p12] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot p3: .planning/phases/idi-10-tables-and-radius-scale/screenshots/p3.png 1440x900
+PASS shot [p3] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot checking: .planning/phases/idi-10-tables-and-radius-scale/screenshots/checking.png 1440x900
+PASS shot [checking] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot archive: .planning/phases/idi-10-tables-and-radius-scale/screenshots/archive.png 1440x900
+PASS shot [archive] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+PASS shot 样本清单逐项一一对应(无缺项、无多余样本): expected=['p1', 'p12', 'p3', 'checking', 'archive'] actual=['p1', 'p12', 'p3', 'checking', 'archive']  # 来源 check-05 的 STATES=['p1', 'p12', 'p3', 'checking', 'archive']
+PASS shot 输出目录恰含 5 个 PNG: expected=['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png'] actual=['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png']
+
+=== 逐项结论 ===
+item t1: PASS  (53 条断言,0 FAIL,0 BLOCKED)
+item t2: PASS  (46 条断言,0 FAIL,0 BLOCKED)
+item r1: PASS  (10 条断言,0 FAIL,0 BLOCKED)
+item r2: PASS  (9 条断言,0 FAIL,0 BLOCKED)
+item shot: PASS  (7 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)

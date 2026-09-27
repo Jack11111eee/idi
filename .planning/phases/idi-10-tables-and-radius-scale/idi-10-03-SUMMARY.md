@@ -475,6 +475,7 @@ None —— 本计划**零产品代码改动、零新增依赖、零新增网络
 ## Self-Check: PASSED
 
 - 三个任务提交均在盘:`git log --oneline` 含 `a98c788`(Task 1)/ `712ef40`(Task 2)/ `c07d973`(Task 3);`commits: 3` 由 `git rev-list --count dd2caaf..HEAD` **实测**(非叙述),`plan_head_before: dd2caafb75d53ae2e3e11b5539193a85d1da5d0d` 取自落盘 ledger
+  - **口径说明(免得被读成漂移):** `commits: 3` 数的是**本计划的三个任务提交**,测量点是 SUMMARY 落盘时(与计划 01 的 `2`、计划 02 的 `3` 同一口径)。其后的两次收口提交(`b3feb48` SUMMARY、`07a34d6` 状态更新)按本项目既有惯例不计入该字段;故 `git rev-list --count dd2caaf..HEAD` 在收口全部完成后返回 **5**。两个数都对,差的是测量时点。
 - 12 份日志文件全部存在于 `gate-logs/`;6 张 PNG 全部存在于 `screenshots/`(顶层 5 + `chat-user/` 1)
 - 五条浏览器门实跑:check-05 `exit=2`(设计如此,零 FAIL,BLOCKED 仅 item 5 的 2 条 `--ai-smoke` 腿)、check-06 / check-07 / probe-05 / probe-07 均 `exit=0`
 - 四个静态门 `PASS`(`check-02` 为 `PASS: 0 failures`);pytest(项目 `.venv`)`219 passed, 6 skipped`;`node --check frontend/app.js` `exit=0` 零输出

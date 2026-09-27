@@ -1,6 +1,6 @@
 ---
 phase: idi-09-card-containers
-verified: 2026-09-26T15:20:00Z
+verified: 2026-09-27T12:33:32Z
 status: passed
 score: 24/24 must-haves verified
 covered_files:
@@ -14,12 +14,12 @@ covered_files:
   - scripts/check-05-ui-uat.py
   - scripts/check-09-idi09-validation.py
   - scripts/probe-card-border-token.py
-covered_digest: "v1:sha256:6e811a1122c2e6d5c63308554a39c5d2d8dce462abef73847f0c7be39e2bb89e"
+covered_digest: "v1:sha256:7b82f8d1c2f5f6e371effbe73c5182a4ed78d49eecbea3ea76cca3e76d6a7031"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
   previous_status: passed
-  previous_score: 21/21
+  previous_score: 24/24
   gaps_closed: []
   gaps_remaining: []
   regressions: []
@@ -29,9 +29,9 @@ human_verification: []
 # Phase 9: 卡片容器化与页面底色下沉 Verification Report
 
 **Phase Goal:** 左栏 4 个面板(会话流 / 本轮批注流 / 自检报告 / AI 工作面板)与右栏文档区各自成为白底卡片容器(白底 + 可见边界 + 圆角 + 极轻阴影 + 内边距),页面底色下沉至 `--radix-gray-3`(#f0f0f0) —— 界面首次拥有 elevation 层次,并与既有 `--color-surface`(gray-2,控件内陷面)接成连贯三级刻度:gray-3(页面)< gray-2(内陷面)< 白(卡片)。
-**Verified:** 2026-09-26T15:20:00Z (HEAD = `27fbf20`)
+**Verified:** 2026-09-27T12:33:32Z (HEAD = `35f046e`)
 **Status:** passed
-**Re-verification:** Yes — after the user-ruled amendment (quick `260926-vaf`), which changed two `covered_files` by real content change
+**Re-verification:** Yes — twice. First after the user-ruled amendment (quick `260926-vaf`); again after Phase 10 (`idi-10-tables-and-radius-scale`), which changed one `covered_file` by real content change
 
 ## Why this is a re-verification, and what changed
 
@@ -59,6 +59,92 @@ differ from the previous report's pinned literals, the difference IS the ruling.
 re-derived from HEAD and the amendment was checked for whether it *holds* or *weakens* the goal —
 conclusion below (it holds).
 
+### Phase 10 re-verification (2026-09-27) — `frontend/style.css` changed again
+
+**This is a re-verification against HEAD content, NOT a fingerprint refresh.** Of this report's ten
+`covered_files`, exactly one was modified by Phase 10 (`idi-10-tables-and-radius-scale`):
+
+- `frontend/style.css`
+
+The other nine (`idi-09-01/02/03` PLAN+SUMMARY pairs, `scripts/check-05-ui-uat.py`,
+`scripts/check-09-idi09-validation.py`, `scripts/probe-card-border-token.py`) are byte-identical to
+the previous verification — `git diff --stat 27fbf20..HEAD -- frontend/app.js frontend/index.html
+scripts/check-05-ui-uat.py` is empty, and `git status --porcelain frontend/ scripts/` is empty.
+
+Because a covered input genuinely changed, refreshing the digest would have asserted "the covered
+inputs are unchanged since verification" — a false statement. The digest below was **recomputed**
+from HEAD; it differs from the previously stored value:
+
+| | `covered_digest` |
+|---|---|
+| stored before this re-verification | `v1:sha256:6e811a1122c2e6d5c63308554a39c5d2d8dce462abef73847f0c7be39e2bb89e` |
+| recomputed on HEAD | `v1:sha256:7b82f8d1c2f5f6e371effbe73c5182a4ed78d49eecbea3ea76cca3e76d6a7031` |
+
+**What Phase 10 changed in `frontend/style.css`** (48 insertions / 5 deletions vs `27fbf20`; the
+report's own line numbers above are pre-Phase-10 coordinates — the file grew, and every cited rule
+resolves to the same selector text on HEAD):
+
+| # | Change | Where (HEAD) |
+|---|--------|--------------|
+| 1 | Table rules rewritten **in place** (D-10-1): `.markdown-body th, .markdown-body td`'s `border: 1px solid var(--color-border)` → `border: none;` + `border-bottom: 1px solid var(--color-border-subtle);`; a new one-line rule `.markdown-body th { background: var(--color-surface); }` appended | `:1112-1118` |
+| 2 | Radius scale converged to `8 / 10 / 999` (D-10-2): the `--radius-lg: 28px;` declaration **deleted**; `.chat-user` → `var(--radius-md)`; `#chat-input-row input` → `var(--radius-pill)` | `:408-410`, `:1211`, `:1245` |
+
+**Why this does not touch any of the 24 must-haves.** The table change lands inside `.markdown-body`
+and the radius change moves two consumers between existing rungs; neither intersects the card-container
+language this report asserts:
+
+- the five card containers' `background` / `border` / `border-radius` / `box-shadow` are untouched —
+  the two card rules still read `border: 1px solid var(--color-border)` (`:755`, `:773`), and the card
+  tokens `--color-surface-card` (`:334`) / `--shadow-card` (`:335`) are unchanged and still inside the
+  fence (`:5` → `:695`);
+- `--radius-md` (10px) is **preserved** — it is what `check-09-idi09-validation.py` dynamically resolves
+  for its card-corner assertions, so deleting it would break c1/c2. Phase 10 kept it; only `--radius-lg`
+  was removed;
+- the four non-card `--color-border-subtle` consumers are the same four rules and untouched
+  (`.event-list` `:929`, `.annotation-item` `:1320`, `.badge-answered` `:1371`, `#latest-check` `:1530`);
+- `check-02`'s threshold constants and pair list are byte-identical (`git diff 27fbf20..HEAD --
+  scripts/check-02-contrast.py` is empty; PAIR = 53, ORDER = 1).
+
+**Gates re-run for this re-verification (raw readings, not citations):**
+
+| Gate | Command | Reading on HEAD |
+|------|---------|-----------------|
+| Phase 9's own runtime gate | `.venv/bin/python scripts/check-09-idi09-validation.py --item c1 --item c2 --item c3 --item c4 --item c5` | `exit=0`; c1:26 / c2:13 / c3:3 / c4:4 / c5:5, **0 FAIL / 0 BLOCKED** |
+| Card border probe | `.venv/bin/python scripts/probe-card-border-token.py` | `exit=0`; 5/5 cards `rgb(206,206,206)`, 2/2 readable non-card controls `rgb(217,217,217)`, token distinguishability PASS |
+| Contrast | `.venv/bin/python scripts/check-02-contrast.py` | `PASS: 0 failures`; 53 PASS + 1 ORDER; the header's drawing surface is covered by the pre-existing `PASS 15.48 --color-text on --color-surface`; the re-attributed pairs read `PASS 4.77 --color-marker-active on --color-surface-card` / `PASS 3.32 --color-border-strong on --color-surface-card` |
+| Static gates | `bash scripts/check-01/03/04-*.sh` | three × `PASS`, `exit=0` |
+| pytest | `.venv/bin/python -m pytest backend/tests -q --tb=short` | `219 passed, 6 skipped` |
+| app.js syntax | `node --check frontend/app.js` | `exit=0`, zero output |
+| Mutation probes | `scripts/probe-05-resolve-color.py` / `scripts/probe-07-focus-composite.py` | both `exit=0`; probe-07 `ratio=3.54 (>= 3.0)`; probe-05 control branch `PASS` |
+| `check-05` / `check-06` / `check-07` | `.venv/bin/python scripts/check-05-ui-uat.py --browser bundled` etc. | cited from `.planning/phases/idi-10-tables-and-radius-scale/gate-logs/` (Phase 10 plan 03). Those logs are still valid for HEAD: `git diff --stat a98c788..HEAD -- frontend/ scripts/` is **empty**, so the inputs those gates read are byte-identical. `check-05` `exit=2` by design, ten items 0 FAIL, BLOCKED only on item 5's two `--ai-smoke` legs |
+
+**Two literal readings in the table above moved, and are explained rather than silently restated:**
+
+1. **Truth 5's `--color-border` consumer count `3 → 2`.** The third consumer was
+   `.markdown-body th, .markdown-body td` — Phase 10's D-10-1 rewrote it in place. It is *not* one of
+   the four non-card `--color-border-subtle` consumers that truth 5 asserts are untouched, and those
+   four are still exactly four. The claim's substance (the amendment's change surface was strictly the
+   two card rules; the four non-card subtle consumers were untouched) holds on HEAD.
+2. **Truth 24's top-level selector count `173 → 174`.** `173 = 173` was the Phase 9 pair
+   (`3ec6558` baseline vs `27fbf20` HEAD) and that pair is still identical. Today's HEAD is `174`
+   because Phase 10 appended exactly one new top-level rule — `.markdown-body th` — which is Phase 10's
+   own sanctioned append, not a Phase 9 reordering. The added selector is the only difference; nothing
+   was removed or moved (`app.js` / `index.html` / `vendor/` remain zero-byte changed).
+
+**The `#round-doc` −3px geometry note (carried forward from Phase 10 plan 03) does not touch any claim
+here.** Phase 10 measured `#round-doc`'s height falling `778.640625 → 775.640625` on the `p3` fixture
+(one collapsed table box loses its top edge per table, three tables ⇒ 3px). This report cites no
+`#round-doc` absolute height. Its only geometry citation is `#doc-panel`'s `scrollHeight 2488 >
+clientHeight 898` (truth 8), re-measured on HEAD as `2488 / 898` — unchanged. The other geometry
+readings it relies on (`check-05 --item 8`'s sticky `header={'top':1,'bottom':35} ⊆ panel={'top':0,
+'bottom':900}`, `L-2` overflow `0px` at 1440/1024/768, `docPanelWidth` 432/340/340) are on `#doc-panel`
+/ `#doc-panel-header` and are byte-identical in Phase 10's `check-05-full.log` versus Phase 9's.
+
+**Nature statement.** This section records a **re-verification against HEAD content**: the criteria
+were re-run, all 24 must-haves were re-derived from HEAD, and `covered_digest` was recomputed. It is
+not a fingerprint refresh — the covered input `frontend/style.css` genuinely changed, so refreshing
+would have been an untrue assertion.
+
 ## Goal Achievement
 
 ### Observable Truths
@@ -69,7 +155,7 @@ conclusion below (it holds).
 | 2 | **SC1** 左栏 4 个 section 计算 `border-top-left-radius` = `--radius-md`(10px)、`border-top` = `1px solid`、`box-shadow` 非 `none` | ✓ VERIFIED | c1 逐 section 读数 `border-top-left-radius=10px` / `border-top=1px solid` / `box-shadow=rgba(0,0,0,0.08) 0px 1px 3px 0px, rgba(0,0,0,0.04) 0px 1px 2px 0px`,全 PASS |
 | 3 | **SC1** 卡片之间有可见间隙(计算 `gap` = 12px),间隙里透出的是页面底色 gray-3 | ✓ VERIFIED | c4 `[p1] #main-pane 计算 gap == 12px` PASS;截图 `p1.png` / `p12.png` 目视:卡片间有灰色竖缝,缝隙颜色与页面底一致 |
 | 4 | **SC1 / CARD-01【修正案】** 卡片边界色在真实浏览器里 = `--color-border`(gray-7,`rgb(206,206,206)`);我本进程重跑新探针 | ✓ VERIFIED | `scripts/probe-card-border-token.py` exit 0:5/5 卡片 `border-top-color=rgb(206, 206, 206)`;前置判据 `--color-border != --color-border-subtle` PASS(206 vs 217) |
-| 5 | **SC1 / 改动面【修正案】** 边界改动面严格是两处卡片:四处非卡片 `--color-border-subtle` 消费者一字未动 | ✓ VERIFIED | `grep -c 'border: 1px solid var(--color-border);'` = **3**(2 卡片 + 既有 `.markdown-body th/td` @`:1083`,相位前即存在);`...--color-border-subtle);` = **4**(`:921` / `:1277` / `:1328` / `:1487`);探针的非卡片对照 `.event-list` / `#latest-check` 均 `rgb(217,217,217)` PASS(另 2 个候选在 p1 样本里不存在,INFO 不计入) |
+| 5 | **SC1 / 改动面【修正案】** 边界改动面严格是两处卡片:四处非卡片 `--color-border-subtle` 消费者一字未动 | ✓ VERIFIED | `grep -c 'border: 1px solid var(--color-border);'` = **3**(2 卡片 + 既有 `.markdown-body th/td` @`:1083`,相位前即存在);`...--color-border-subtle);` = **4**(`:921` / `:1277` / `:1328` / `:1487`);探针的非卡片对照 `.event-list` / `#latest-check` 均 `rgb(217,217,217)` PASS(另 2 个候选在 p1 样本里不存在,INFO 不计入)。**【Phase 10 复核 2026-09-27】** 第一个计数在 HEAD 上已是 **2**(`--color-border` 消费者只剩两处卡片 `:755` / `:773`):Phase 10 的 D-10-1 把第三个消费者 `.markdown-body th, .markdown-body td` 就地改写为 `border: none` + `border-bottom`。该规则**不属于**本行主张的「四处非卡片 `--color-border-subtle` 消费者」,故本行的实质在 HEAD 上仍成立 —— 四处仍是 `.event-list`(`:929`)/ `.annotation-item`(`:1320`)/ `.badge-answered`(`:1371`)/ `#latest-check`(`:1530`),计数仍为 **4**,探针读数仍 `rgb(217,217,217)`;详见「Phase 10 re-verification」一节 |
 | 6 | **SC2** `#doc-panel` 与左栏同族卡片:四边 `1px solid` / 圆角 `--radius-md` / 底色卡片白 / 阴影非 `none`;原 `border-left: 1px` 单边凹陷读感被取代 | ✓ VERIFIED | `check-09 --item c2`(13 条断言 0 FAIL):四边 width `1px` / style `solid`,圆角 `10px`,底色 `rgb(255,255,255)`,`box-shadow` 两层值;`grep -n 'border-left: 1px solid'` 无残留死声明 |
 | 7 | **SC2** `#doc-panel-header` 计算底色 = 卡片白,sticky 遮挡机制保持 | ✓ VERIFIED | `frontend/style.css:808` `background: var(--color-surface-card)`;`check-05 --item 8` 我本进程重跑:`header={'top':1,'bottom':35} ⊆ panel={'top':0,'bottom':900}`,且 `|header.top - panel.top| = 1.000px` PASS;c2 对照组 `#doc-panel-header box-shadow == none` PASS |
 | 8 | **SC2 / REG** `#doc-panel` 计算 `overflow-y` 仍为 `auto`(承重滚动契约,sticky 表头依赖它) | ✓ VERIFIED | c2 与 c5 各一条 `overflow-y == auto` PASS;c5 先在 `scrollHeight 2488 > clientHeight 898` 的可滚前提下再断言表头 ⊆ 面板 |
@@ -88,7 +174,7 @@ conclusion below (it holds).
 | 21 | **REG-02** `check-06` / `check-07` / `probe-05` / `probe-07` 退出码全 0 | ✓ VERIFIED | 我本进程重跑:`check-06` exit 0(g1…g6 = 9/2/12/5/5/7 条 0 FAIL);`check-07` exit 0(g1…g4 = 21/39/10/3 条 0 FAIL);`probe-05` exit 0(`mutated-prefix=PASS` / `mutated-postfix=BLOCKED`(变异对照支)/ `control=PASS`);`probe-07` exit 0(`ground=rgb(255,255,255) ratio=3.54 >= 3.0`) |
 | 22 | **REG-02** 四个静态门 PASS + pytest 基线不降 + `node --check` 通过 | ✓ VERIFIED | 我重跑 `check-01` / `check-03` / `check-04` 全部 `PASS` exit 0;`check-02` `PASS: 0 failures`;`.venv/bin/python -m pytest backend/tests -q --tb=short` = `219 passed, 6 skipped`;`node --check frontend/app.js` exit 0 |
 | 23 | **REG-02** 无一条门被弱化;修正案的两条守卫都是**真守卫**(会红、断言零删除) | ✓ VERIFIED | `git diff 3ec6558..HEAD -- scripts/check-05-ui-uat.py` 仅 6 增 4 删,全在 item5 的 `.hint` 期望侧与注释,`ok(...)` 等值形式一字未变;修正案后 `check-09` 的 `ok|ok_true|blocked` 调用点数(21/6/6)与修正案前**完全相同**(断言零删除);`SHADOW_CARD_LITERAL` 以 `norm(actual) == norm(expected)` **严格等值**比较,旧值 `0 1px 2px rgba(0,0,0,0.04)` ≠ 新值 ⇒ 回退即 FAIL(我在本进程直接跑该比较函数验证判据可区分);探针的前置判据 `--color-border != --color-border-subtle`(206 vs 217)保证回退到 gray-6 时主判据会红 |
-| 24 | 编辑纪律:追加不重排、`app.js` / `index.html` / `vendor/` 零字节改动、截图交付、开放项清单 | ✓ VERIFIED | 我把相位基线(`3ec6558`)与 HEAD 的顶层选择器序列逐行 diff:**173 = 173,完全相同**;`git status --porcelain frontend/` 为空;`ls frontend/vendor/` 仅 `marked.min.js`;两个截图目录各 5 张 PNG,IHDR 全部 `1440x900`,相位 9 的字节数与 HEAD blob 逐字一致(88685/123949/123449/68115/124136);4 条开放项我逐条独立复现(见下) |
+| 24 | 编辑纪律:追加不重排、`app.js` / `index.html` / `vendor/` 零字节改动、截图交付、开放项清单 | ✓ VERIFIED | 我把相位基线(`3ec6558`)与 HEAD 的顶层选择器序列逐行 diff:**173 = 173,完全相同**;`git status --porcelain frontend/` 为空;`ls frontend/vendor/` 仅 `marked.min.js`;两个截图目录各 5 张 PNG,IHDR 全部 `1440x900`,相位 9 的字节数与 HEAD blob 逐字一致(88685/123949/123449/68115/124136);4 条开放项我逐条独立复现(见下)。**【Phase 10 复核 2026-09-27】** 选择器计数在 HEAD 上是 **174** —— 相位基线 vs Phase 9 HEAD 这一对仍是 **173 = 173**(本次以顶层选择器解析复核,逐条相同);多出的 1 条是 Phase 10 自己追加的 `.markdown-body th`(唯一新增,零删除零重排),属 Phase 10 的合规追加而非 Phase 9 的重排。4 条开放项在 HEAD 上仍为开放(静态复核:`.overlay-card` 的 `background: var(--color-surface)` 仍在 `:988`;`#main-pane` 仍只有 `gap`、无 `padding` / `margin`;四个文本 input 的 `background` 声明数仍为 **0**);详见「Phase 10 re-verification」一节 |
 
 **Score:** 24/24 truths verified (0 present-behavior-unverified)
 
@@ -204,9 +290,11 @@ None. 本阶段全部 must-have 均以机器可判定的形式表述(真实浏�
 
 **修正案是否引入新缺口 —— 逐条核过,没有:** 阴影仍零位移(SC4 ✓);边界改动面严格是两处卡片,四处非卡片消费者一字未动(CARD-01/02 范围 ✓);对比度清单零改动(SC5 ✓);断言零删除、门语义零改动;新探针补上了一条此前零覆盖的缝且本身可红。
 
+**Phase 10 重验是否引入新缺口 —— 逐条核过,没有。** 24 条 must-have 全部以 HEAD 内容重新推导,24/24 仍成立;`check-09` 的 c1…c5 在 HEAD 上复跑 `exit=0`、0 FAIL / 0 BLOCKED;四个静态门 + `check-02`(0 failures)+ pytest(219/6)+ `node --check` 全绿;`scripts/check-05-ui-uat.py` 零改动(`git diff` 为空)。两条被本阶段改动移动的历史读数(truth 5 的 `--color-border` 计数 3→2、truth 24 的顶层选择器计数 173→174)均由 Phase 10 自己的合规改动机械解释,主张的实质不受影响;`#round-doc` 的 −3px 不触及本报告任何判据。`gaps_closed` / `gaps_remaining` / `regressions` 三者皆空。
+
 **四条开放项:** 「强度」已由用户裁定落地并复核(Observations 1);其余三条(`.overlay-card` 底色 / 页面级留白 / 输入框 UA 白填充)我逐条独立复现为真,属后续候选的范围裁定。
 
 ---
 
-_Verified: 2026-09-26T15:20:00Z_
+_Verified: 2026-09-27T12:33:32Z (re-verified against HEAD content; previous verification 2026-09-26T15:20:00Z)_
 _Verifier: [CL] (gsd-verifier)_

@@ -35,7 +35,8 @@ must_haves:
     # ---- gates ----
     - "`bash scripts/check-01-token-conformance.sh` 打印 `PASS`;`bash scripts/check-03-hidden-uniqueness.sh` 打印 `PASS`;`bash scripts/check-04-important-count.sh` 打印 `PASS`;`.venv/bin/python scripts/check-02-contrast.py` 打印 `PASS: 0 failures`"
     - "`scripts/check-10-idi10-validation.py` 存在,可用 `.venv/bin/python` 直接运行,退出码语义与 `check-05` 一致(0=全 pass / 1=有 FAIL / 2=有 BLOCKED);`--item`(可重复或逗号分隔)、`--screenshot DIR`、`--keep` 三个参数被 `parse_args` 接受"
-    - "`.venv/bin/python scripts/check-10-idi10-validation.py --item t1` 与 `--item t2` 各自 `exit=0`、0 FAIL、**0 BLOCKED**(任何 BLOCKED 都说明探针没读到元素,不构成 PASS);其 INFO 行可见每个 (样本, 宿主) 对的 `th` / `td` 计数与逐条原始读数"
+    - "`.venv/bin/python scripts/check-10-idi10-validation.py --item t1` 与 `--item t2` 各自 `exit=0`、0 FAIL、**0 BLOCKED**(任何 BLOCKED 都说明探针没读到元素,不构成 PASS);其 INFO 行对每个 (样本, 宿主) 对给出**两个各自独立的事实** —— 注入后的 `th` / `td` 计数,以及**显示性读数**(该宿主是否处于被渲染的子树中;若否,由哪个祖先藏住),再附逐条原始读数"
+    - "证据强度分类**由运行时实测得出、不由计划写死**:至少 **1 个** (样本, 宿主) 对处于被渲染的子树中(`rendered` 为真),其上的 `t1` / `t2` 读数构成**渲染证据**;其余对(被祖先 `display:none` 藏住)上的读数**只能**陈述为**层叠解析**证据 —— 计算样式与 `display` 无关,隐藏子树上的读数照常返回解析值。门输出与 SUMMARY 都按这两类分别陈述,**不得**把全部 5 个对当作等价证据;`t1` / `t2` **各自**含一条聚合断言「至少一个对处于被渲染子树」,使该性质**可失败**"
     - "`.venv/bin/python scripts/check-10-idi10-validation.py --screenshot <DIR>` 出图后 `<DIR>` 下**恰有 5 个 PNG**,与 `scripts/check-05-ui-uat.py` 的样本清单 `STATES = [\"p1\", \"p12\", \"p3\", \"checking\", \"archive\"]` 逐项一一对应,每张为 1440×900;该参数在本计划内即已实现(计划 03 直接消费它,其 `files_modified` 不含本脚本,无法自行补救)"
 
   artifacts:
@@ -43,7 +44,7 @@ must_haves:
       provides: "`.markdown-body th, .markdown-body td` 的 `border` 声明就地改写为 `border: none;` + `border-bottom: 1px solid var(--color-border-subtle);`;紧随其后新增一条 `.markdown-body th { background: var(--color-surface); }` 规则块;规则体上方新增承重注释(档位依据 / 就地改写的理由 / 装饰性边界的既有登记 / 零新增 PAIR 的依据 / 不得碰 `font-size`)"
       contains: ".markdown-body th { background: var(--color-surface); }"
     - path: "scripts/check-10-idi10-validation.py"
-      provides: "Phase 10 的运行时门骨架:docstring 给出「为什么另开一个文件」的实测论证;复用 check-05 的模块级设施(服务生命周期 / fixture / 断言记录器 / 读数器 / 令牌解析 / 样本清单),不重复实现、不改动 check-05 一行;`t1`(表头)/ `t2`(数据格)两个断言集;`--screenshot DIR` 出图;`--json` 报告模式"
+      provides: "Phase 10 的运行时门骨架:docstring 给出「为什么另开一个文件」的实测论证;复用 check-05 的模块级设施(服务生命周期 / fixture / 断言记录器 / 读数器 / 令牌解析 / 样本清单),不重复实现、不改动 check-05 一行;`t1`(表头)/ `t2`(数据格)两个断言集,每个对附带显示性读数(被渲染 vs 被祖先藏住)与「至少一个对处于被渲染子树」的聚合断言;`--screenshot DIR` 出图;`--json` 报告模式"
       contains: "def main"
 
   key_links:
@@ -173,13 +174,13 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
 | 6 | `CHECK05` | 模块常量 | 01 | `scripts/check-05-ui-uat.py` 的路径 |
 | 7 | `STYLE_CSS` | 模块常量 | 01 | `frontend/style.css` 的路径(供源码文本级断言) |
 | 8 | `TH_BG_LITERAL` | 模块常量 | 01 | `"rgb(249, 249, 249)"` —— gray-2 的两侧写死字面量(防止「令牌被改坏而消费者仍接线」时假绿) |
-| 9 | `TABLE_PROBES` | 模块常量 | 01 | `(样本, 宿主)` 对元组;覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(`p1`)加一对自然渲染样本(`p3` / `#round-doc`)。**每个对在读数前都用应用自身的 `renderMarkdown` 注入含表格的探针 markdown**(见 Task 2 第 3 步),故不依赖 fixture 自然渲染 |
+| 9 | `TABLE_PROBES` | 模块常量 | 01 | `(样本, 宿主)` 对元组;覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(`p1`)加一对自然渲染样本(`p3` / `#round-doc`)。**每个对在读数前都用应用自身的 `renderMarkdown` 注入含表格的探针 markdown**(见 Task 2 第 3 步),故不依赖 fixture 自然渲染。注入只保证元素存在;**是否被渲染由每个对当场采集的显示性读数决定**(见 Task 2 第 3 步第 4 项),隐藏子树的对仅构成层叠解析证据 |
 | 10 | `RADIUS_LITERALS` | 模块常量 | 02 | `{"--radius-sm": "8px", "--radius-md": "10px", "--radius-pill": "999px"}` —— 三档的两侧写死字面量 |
 | 11 | `load_check05()` | 函数 | 01 | `importlib.util.spec_from_file_location` 加载 check-05(文件名含连字符,不能用 `import`) |
 | 12 | `fence_text()` | 函数 | 01 | 返回两行 `===== DESIGN TOKENS: START/END` 之间的文本(供「围栏内零声明」断言) |
 | 13 | `png_size(path)` | 函数 | 01 | 读 PNG 的 IHDR 取 `(width, height)` |
-| 14 | `t1(page, tmp_root)` | item 函数 | 01 | `.markdown-body th`:计算底色 == gray-2、下边线 1px solid、色 == `--color-border-subtle` |
-| 15 | `t2(page, tmp_root)` | item 函数 | 01 | `.markdown-body td`:左/右/上边框 `0px`、下边线 1px、色 == `--color-border-subtle`;`font-size` / `padding` 两条对照组 |
+| 14 | `t1(page, tmp_root)` | item 函数 | 01 | `.markdown-body th`:计算底色 == gray-2、下边线 1px solid、色 == `--color-border-subtle`;每个对附显示性读数,末尾聚合断言「至少一个对处于被渲染子树」 |
+| 15 | `t2(page, tmp_root)` | item 函数 | 01 | `.markdown-body td`:左/右/上边框 `0px`、下边线 1px、色 == `--color-border-subtle`;`font-size` / `padding` 两条对照组;显示性读数与聚合断言同 `t1` |
 | 16 | `r1(page, tmp_root)` | item 函数 | 02 | 圆角三档:围栏内 `--radius` 声明数与三档解析值(字面量对照)+ `.chat-user` 的 10px 与 8px 尖角 |
 | 17 | `r2(page, tmp_root)` | item 函数 | 02 | `#chat-input-row input`:计算 `border-radius` == 解析后的 `--radius-pill`,四个角长手等值,`min-height` 仍为 `52px` |
 | 18 | `radius_snapshot(page, label, out_dir, tmp_root)` | 函数 | 02 | 单个元素(`#chat-input-row input`)的整份 computed style dump + 元素截图,写 `<label>` 后缀的 `.json` / `.png` |
@@ -314,7 +315,8 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     - `scripts/check-05-ui-uat.py` 的 `STATES = ["p1", "p12", "p3", "checking", "archive"]` 与 `MARKDOWN_TARGETS` / `MARKDOWN_HOSTS`(4 个 doc 宿主:`#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check`;另有 5 个 embedded 目标)
     - `scripts/check-05-ui-uat.py` 的 item4 注入段(`page.evaluate` 里用 `renderMarkdown(md)` 把含表格的探针 markdown 写进 `list(MARKDOWN_HOSTS)` 的每一个宿主,随后才读 `td` 的 `font-size`)—— **本任务要照抄的注入手法**:用应用自身的渲染函数造出探针节点再读数,零网络、零 AI 调用、真实代码路径
     - `scripts/check-05-ui-uat.py` 的 `[p1] .markdown-body td font-size == var(--text-base)` 断言 —— 它锁死的是 `td` 的 `font-size`(本任务一字不动);注意它的 `#draft-content td` 之所以存在,是因为**同一函数前一段刚注入过含表格的 markdown**,不是 `p1` fixture 的自然渲染。**不得**把那次 PASS 当成「`p1` 的 `#draft-content` 本来就有 `<td>`」的证据
-    - `scripts/check-05-ui-uat.py` 的 `#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check` 四个 doc 宿主在 `p1` 下**全部存在于 DOM**(item4 的注入循环对四个宿主逐一取 `document.querySelector` 而不判空,phase 9 实测通过)—— 这是本任务把四个宿主都纳入 `TABLE_PROBES` 的依据
+    - `scripts/check-05-ui-uat.py` 的 `#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check` 四个 doc 宿主在 `p1` 下**全部存在于 DOM**(item4 的注入循环对四个宿主逐一取 `document.querySelector` 而不判空,phase 9 实测通过)—— 这是本任务把四个宿主都纳入 `TABLE_PROBES` 的依据。**但「存在于 DOM」不等于「被渲染」,本任务必须记录显示状态**:`#brainstorm-content` 的祖先 `#brainstorm-view` 初始即带 `class="hidden"`(以 `id="brainstorm-view"` 在 `frontend/index.html` 定位),而 `renderBrainstorm()` 在 `brainstorm == null || brainstorm === ''` 时主动 `classList.add('hidden')`(以函数名在 `frontend/app.js` 定位);`#round-doc` / `#latest-check` 在 `p1` 下分属轮次视图与自检面板,也不是当前显示的子视图。⇒ 这几个对在 `p1` 下多数处于**隐藏子树**;纳入它们是为覆盖**层叠解析**面,不是为渲染面
+    - `.planning/milestones/v1.14-phases/idi-06-layout-robustness/idi-06-01-SUMMARY.md` 的「三项诊断跑两个样本(p1 + p3 补渲染一条批注)」段与「Deviations from Plan」第 1 条 —— **本仓库已逐字登记的同型陷阱**:「被祖先藏住的元素 `getBoundingClientRect()` 全零,单样本普查会把『被祖先藏住』静默读成『clearance 0 / 命中区 0』」,既有解法是「每行输出都带 `visible` 布尔,隐藏行标 `visible=False`」。同一手法在 `scripts/check-05-ui-uat.py` 的 `HIDDEN_MATRIX` 段注释与 `offsetParent_is_null` 诊断行里也在用(注释逐字写着「`visible` 只断言『自身 `.hidden` 未生效』;元素是否被祖先藏住另由 `offsetParent` 诊断行体现」)。**本任务沿用这条既有登记**,不是重新发明区分
     - `scripts/ui-states/` 的样本内容(规划期实测)—— `p1` 目录下**只有 `.gitkeep`**;`p12/docs/draft.md`、`checking/DESIGN.md`、`checking/docs/DESIGN-check-2.md`、`archive/DESIGN.md`、`archive/docs/DESIGN-check-1.md` 的以 `|` 开头的表格行数**均为 0**;含表的只有 `p3/docs/discuss-round-{1,2}.md`(17 / 15 行)与 `archive/docs/discuss-round-{1,2}.md`(17 / 15 行)。而 `archive` 首屏由 `loadArchiveView()` 渲染的是 `DESIGN.md`(0 行表格),轮次文档只在用户切轮次选择器时才加载 ⇒ **自然首屏只有 `p3` 一个样本有表**。**本任务因此不得靠「哪个宿主本来就有表」选点**
     - `.planning/phases/idi-10-tables-and-radius-scale/idi-10-PATTERNS.md` §`scripts/check-10-idi10-validation.py` —— 模块级设施的复用形态、令牌级「两侧都写死」的形态、BLOCKED 纪律、CLI / 退出码 / 汇总形状、浏览器路线的实测结论(不提供 `--browser`,固定 bundled)
     - `scripts/probe-card-border-token.py` —— 「一次性探针 vs 门」的分野先例(避免把探针的写法误当门的写法)
@@ -339,7 +341,7 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
 
     `TABLE_PROBES = (("p1", "#draft-content"), ("p1", "#brainstorm-content"), ("p1", "#round-doc"), ("p1", "#latest-check"), ("p3", "#round-doc"))`
 
-    —— 覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(在 `p1` 下四个都在 DOM),外加一对**自然渲染**的样本(`p3` / `#round-doc` 渲染 `scripts/ui-states/p3/docs/discuss-round-2.md`,该文件含 SC1 点名的三个机器可解析表)。
+    —— 覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(在 `p1` 下四个都在 DOM,**但多数处于隐藏子树**),外加一对**自然渲染**的样本(`p3` / `#round-doc` 渲染 `scripts/ui-states/p3/docs/discuss-round-2.md`,该文件含 SC1 点名的三个机器可解析表)。**这 5 个对不是等价证据**:覆盖四个宿主是为了让**层叠解析**面在每个 doc 宿主上都成立(注入保证元素存在,层叠照常解析);只有处于被渲染子树中的对,其读数才构成**渲染证据**。哪些对属于后者由第 3 步第 4 项的显示性读数**当场实测**决定,不得预先写死。
 
     **为什么必须「先注入、再读数」而不是依赖 fixture 自然渲染(这条是承重的,不是风格偏好)。** 规划期逐样本实测:`scripts/ui-states/p1/` 只有 `.gitkeep`,`p12` / `checking` / `archive` 的文档表格行数**全部为 0**(`archive` 的两个轮次文档虽含表,但首屏 `loadArchiveView()` 只把 `DESIGN.md` 渲染进 `#round-doc`)⇒ 5 个样本 × 4 个宿主的笛卡尔积里**只有 `(p3, #round-doc)` 一对**自然有表。靠「哪个宿主本来就有表」选点,门就退化成**单点门** —— 本项目已登记过「只探一个宿主」的漏检教训。本仓库对这件事的既有解法是**造出容器再断言**:`scripts/check-05-ui-uat.py:1486` 逐字登记「这五项断言是**造出容器再断言**,不靠『fixture 里本来就有 .chat-bubble』」,其 item4 在 `:1086-1096` 正是用**应用自身的 `renderMarkdown`** 把一段含表格的 markdown 注入全部 doc 宿主后再读数。本任务照抄这一手 —— 注入走的是真实渲染路径(零网络、零 AI 调用),且注入后每个对都真的渲染出表格。
 
@@ -350,12 +352,20 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     1. `c05.make_fixture(样本, tmp_root)` + `c05.enter_project(page, 宿主所在项目)`;
     2. **注入**:`page.evaluate` 里取 `document.querySelector(宿主)`,清空它,再 `host.appendChild(renderMarkdown(TABLE_PROBE_MD))` —— 与 `check-05-ui-uat.py:1086-1096` 同款手法,用的是**应用自身的** `renderMarkdown`(真实渲染路径,零网络、零 AI 调用);
     3. **断言注入成功**:注入后该宿主的 `td` 计数必须 > 0(用 `page.evaluate` 数 `querySelectorAll`)。**注入静默失败时立刻记 FAIL**,否则后面的读数会退化成对空宿主的空转断言(读不到元素只会落 BLOCKED,而 BLOCKED 不是 PASS);
-    4. 打印 `info()` 诊断行,记下该样本 / 宿主名与注入后的 `th` / `td` 计数;
-    5. 逐条断言(见下)。
+    4. **采集显示性读数(本项是本次修订新增的承重项,不得省)。** 在同一次 `page.evaluate` 里沿宿主**自身的祖先链**判 `display`:从宿主走到 `document.documentElement`,任一环节(含宿主自身)的计算 `display == "none"` 即判定「不处于被渲染子树」;返回 `{"rendered": bool, "hidden_by": "<首个 display:none 的祖先的 id 或 class 或标签名,无则 None>"}`。**不得用「元素存在」代替显示性读数** —— `document.querySelectorAll('#brainstorm-content td')` 对隐藏子树照常返回元素,`getComputedStyle(td).borderLeftWidth` 照常返回解析值(计算样式与 `display` 无关),故「注入成功」**完全不能**推出「被渲染」。这正是 `read_first` 里 `idi-06-01-SUMMARY.md` 那条已登记的同型陷阱:被祖先藏住的元素 `getBoundingClientRect()` 全零,而基于存在性的断言照常 PASS;
+    5. 打印 `info()` 诊断行,记下该样本 / 宿主名、注入后的 `th` / `td` 计数、**以及第 4 项的显示性读数**(两个事实必须各自可见,不许合并成一句「已注入」);
+    6. 逐条断言(见下)。
+
+    **两个事实,两类证据(本段是本次修订的核心)。** 第 3 项(注入成功)与第 4 项(是否被渲染)是**互相独立**的事实:注入只保证元素存在,不保证被渲染。因此 `TABLE_PROBES` 的 5 个对分成两类,分类由第 4 项**实测**得出、不由本计划写死:
+
+    - **渲染证据**:宿主处于被渲染子树中(`rendered` 为真)⇒ 其上的 `th` / `td` 计算样式读数构成**渲染证据**(表格是**画出来**的,这正是 TABLE-01 要的那种证据);
+    - **层叠解析证据**:宿主处于隐藏子树中(`rendered` 为假)⇒ 其上的读数只证明**层叠解析**(规则选对了元素、声明按预期解析),**不得**陈述为渲染证据。
+
+    两类对**都保留、都断言**(删点会让门退化成单点门,是本仓库登记过的漏检教训),区别只在**陈述强度**。`t1` 与 `t2` **各自**在遍历结束后追加一条**聚合断言**:`rendered` 为真的对数 ≥ **1**,标签里带实际对数与每个对的显示性读数;对数为 0 时记 FAIL(该门就只剩层叠解析证据、零渲染证据,渲染判据落空),并按第 4 步 (b) 报回。这条聚合断言使「至少一个对处于被渲染子树」**可失败**,而不是只写在散文里。
 
     为省时间,**按样本分组**:同一 `样本` 的多个宿主只 `enter_project` 一次,对该样本的每个宿主各注入一次再读数。不得为了省事只注入一个宿主后把读数复制到其它宿主。
 
-    `t1(page, tmp_root)` — **表头**。按上面 1–5 的固定顺序遍历 `TABLE_PROBES`,对 `th` 逐条断言:
+    `t1(page, tmp_root)` — **表头**。按上面 1–6 的固定顺序遍历 `TABLE_PROBES`,对 `th` 逐条断言:
     - `th` 的计算 `background-color` == `resolve_color("--color-surface")`(标签里带样本名与宿主名);
     - **令牌级两侧写死**:`resolve_color("--color-surface")` == `TH_BG_LITERAL`;
     - `th` 的计算 `border-bottom-width` == `1px` 且 `border-bottom-style` == `solid`;
@@ -363,20 +373,26 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     - `th` 的计算 `border-left-width` / `border-right-width` / `border-top-width` 均为 `0px`;
     - **对照组**(证明没顺手改别的):`th` 的计算 `font-size` == `resolve_token("--text-base")`、计算 `padding` == HEAD 值(`var(--space-1) var(--space-2-5)` 解析后为 `4px 10px`)。
 
-    `t2(page, tmp_root)` — **数据格**。同样按第 3 步 1–5 的固定顺序(含**逐宿主注入**与注入成功断言)遍历 `TABLE_PROBES`,对 `td` 断言:
+    `t2(page, tmp_root)` — **数据格**。同样按第 3 步 1–6 的固定顺序(含**逐宿主注入**、注入成功断言与显示性读数)遍历 `TABLE_PROBES`,对 `td` 断言:
     - 计算 `border-left-width` / `border-right-width` / `border-top-width` 均为 `0px`(HEAD 上是 `1px` —— 这是 SC1 对「不再有竖线与外框」的逐字操作定义,标签注释里引用它);
     - 计算 `border-bottom-width` == `1px`、`border-bottom-style` == `solid`、`border-bottom-color` == `resolve_color("--color-border-subtle")`;
     - **对照组**:计算 `font-size` == `resolve_token("--text-base")`(**这是 `check-05-ui-uat.py:1126` 锁死的属性,本阶段一字不动**)、计算 `padding` == HEAD 值。
 
     每条断言一律走 `ok` / `ok_true`:`read_style` 返回 `None` 或 `resolve_*` 解析不出时自动落进 BLOCKED 分支,**绝不记 PASS**。BLOCKED 的标签要写清是「元素读不到」还是「令牌解析不出」。
 
-    **第 4 步 —— 核实「每一个对都真的渲染出表格」(本步骤是决定性的,不要跳过)。**
+    **第 4 步 —— 核实两件事:每个对都注入成功,且至少一个对处于被渲染子树(本步骤是决定性的,不要跳过)。**
 
-    首次运行 `t1` / `t2` 后读 INFO 行,核对每个 `(样本, 宿主)` 对的**注入后** `th` / `td` 计数:每一个对的 `td` 计数都必须 > 0。
+    首次运行 `t1` / `t2` 后读 INFO 行,核对**两个各自独立**的面:
+
+    **(a) 注入成功面。** 每个 `(样本, 宿主)` 对的**注入后** `td` 计数都必须 > 0。
 
     ⚠ **计数为 0 的处置是「报回」,不是「换点」。** 因为每个对都已按第 3 步注入过,计数为 0 只可能是三种成因之一:注入本身失败(`renderMarkdown` 抛错 / 宿主在 `page.evaluate` 里取不到)、宿主选择器拼错、或 `p1` 下该宿主并不在 DOM。**这三种都是产品缺陷或探针缺陷,必须停下报回**并给出该对的原始读数 —— **不得**悄悄把它从 `TABLE_PROBES` 里删掉(删点会让门退化成单点门,正是本条要防的事),**不得**用「至少一个宿主有表」的弱形式收口。
 
-    `TABLE_PROBES` 的**至少 2 个对**这条判据因此是**结构性成立**的(5 个对里每个都注入了探针表),不再依赖 fixture 里恰好有哪个宿主带表。
+    **(b) 渲染面。** 第 3 步第 4 项的显示性读数里,必须有**至少一个**对为 `rendered` 为真。若**全部 5 个对都不在被渲染子树中**,则该门只有层叠解析证据、**零渲染证据** ⇒ TABLE-01 的「渲染判据」落空,**必须停下报回**,并附上每个对的显示性读数与 `hidden_by` 祖先名。**不得**把隐藏子树上的层叠读数当作渲染证据收口(那正是本条要修的那个失真)。
+
+    **(c) 若某对既未被渲染、注入后 `td` 计数又为 0**,仍按 (a) 的既有处置报回 —— 报回里两个事实都要给出。
+
+    `TABLE_PROBES` 的**至少 2 个对**这条判据因此是**结构性成立**的(5 个对里每个都注入了探针表),不再依赖 fixture 里恰好有哪个宿主带表。**对数是 5,不因证据分类而减** —— 隐藏子树的对承载的是层叠解析覆盖,与渲染证据同样必留。
 
     **第 5 步 —— `--screenshot DIR`。**
 
@@ -411,15 +427,16 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     - 文件头 docstring 含「为什么另开一个文件」的实测论证(指出唯一接触点是 `check-05` 的 `td font-size` 断言、它断言的不是本阶段要改的属性、故 TABLE-01/02 零自动化覆盖)、运行方式、退出码语义三块。
     - `.venv/bin/python scripts/check-10-idi10-validation.py --item t1` 的 `=== 逐项结论 ===` 块里 `t1` 的 FAIL 与 BLOCKED 计数均为 0,末行为 `exit=0`。
     - `.venv/bin/python scripts/check-10-idi10-validation.py --item t2` 的 `=== 逐项结论 ===` 块里 `t2` 的 FAIL 与 BLOCKED 计数均为 0,末行为 `exit=0`。
-    - `t1` 的输出里含一条 INFO 行,逐条列出 `TABLE_PROBES` 中每个 `(样本, 宿主)` 对**注入后**的 `th` / `td` 计数;且**每一个**对的 `td` 计数都 > 0。每一个对在读数前都按第 3 步用应用自身的 `renderMarkdown` 注入过 `TABLE_PROBE_MD`,且注入成功本身有一条断言(注入后 `td` 计数 > 0)—— 判据不是「fixture 里本来就有表」。
-    - `TABLE_PROBES` 含 **5** 个 `(样本, 宿主)` 对(≥ 2 的下界由它满足),覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(`p1` 下四个都在 DOM),另含一对自然渲染样本 `(p3, #round-doc)`;宿主名与样本名都不是凭空写的。**不得**为「凑绿」删减对 —— 计数为 0 的对按第 4 步报回,不换点、不删点。
+    - `t1` 的输出里含一条 INFO 行,逐条列出 `TABLE_PROBES` 中每个 `(样本, 宿主)` 对**注入后**的 `th` / `td` 计数**与该对的显示性读数**(是否处于被渲染子树中;若否,由哪个祖先藏住);且**每一个**对的 `td` 计数都 > 0。每一个对在读数前都按第 3 步用应用自身的 `renderMarkdown` 注入过 `TABLE_PROBE_MD`,且注入成功本身有一条断言(注入后 `td` 计数 > 0)—— 判据不是「fixture 里本来就有表」。
+    - **证据按两类分别陈述(本条是本次修订的核心)。** 至少 **1 个**对处于被渲染子树中(`rendered` 为真),该对上的读数被陈述为**渲染证据**;其余对(`rendered` 为假,即被祖先 `display:none` 藏住)上的读数被陈述为**层叠解析**证据 —— 门输出与 SUMMARY 都**不得**把 5 个对写成等价证据,也**不得**把隐藏子树上的层叠读数称作渲染证据。分类由第 3 步第 4 项的显示性读数**实测**得出,不由计划预先写死;`t1` / `t2` 各自含一条聚合断言「`rendered` 为真的对数 ≥ 1」,故「零渲染证据」会让门 **FAIL** 而不是静默通过;若实测发现全部 5 个对都不在被渲染子树中,按第 4 步 (b) 报回。
+    - `TABLE_PROBES` 含 **5** 个 `(样本, 宿主)` 对(≥ 2 的下界由它满足),覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(`p1` 下四个都在 DOM,但多数处于隐藏子树),另含一对自然渲染样本 `(p3, #round-doc)`;宿主名与样本名都不是凭空写的。**不得**为「凑绿」删减对,也**不得**因证据分类而删减 —— 计数为 0 的对按第 4 步报回,不换点、不删点;隐藏子树的对与渲染子树的对**同等必留**。
     - `t2` 的输出里含 `[p1] .markdown-body td font-size` 的 PASS(或该断言在其探针对上的等价 PASS 行),证明被锁死的属性未被顺手改动 —— **不是 BLOCKED**。
     - `t1` / `t2` 的断言里,`--color-surface` 与 `--color-border-subtle` 的期望侧取自 `resolve_color` **且**另有一条把解析值与写死字面量(`TH_BG_LITERAL`)比对的令牌级断言(两侧都写死,防「令牌被改坏而消费者仍接线」时假绿)。
     - `.venv/bin/python scripts/check-10-idi10-validation.py --screenshot <DIR>` 出图后 `<DIR>` 下**恰有 5 个 PNG**,与 `c05.STATES` 逐项一一对应,每张为 1440×900(逐张断言)。
     - `--json` 模式的 stdout 可被 `json.loads` 解析,且记录条数与人类可读模式的断言条数一致。
     - `git diff -- scripts/check-05-ui-uat.py` 为空;`git status --porcelain scripts/` 仅新增 `scripts/check-10-idi10-validation.py`(无其它改动)。
   </acceptance_criteria>
-  <done>运行时门 `scripts/check-10-idi10-validation.py` 就位:`t1`(表头 gray-2 底 + 1px 下边线)/ `t2`(数据格三条边 0px + 行间浅线 + `font-size` 对照组)在真实浏览器里全 PASS、0 BLOCKED;`--screenshot DIR` 出 5 张 1440×900;`--json` 可机器消费;`check-05-ui-uat.py` 零改动。</done>
+  <done>运行时门 `scripts/check-10-idi10-validation.py` 就位:`t1`(表头 gray-2 底 + 1px 下边线)/ `t2`(数据格三条边 0px + 行间浅线 + `font-size` 对照组)在真实浏览器里全 PASS、0 BLOCKED,每个 (样本, 宿主) 对同时给出「注入成功」与「是否被渲染」两个独立读数,且至少一个对处于被渲染子树(其读数陈述为渲染证据、其余对陈述为层叠解析证据);`--screenshot DIR` 出 5 张 1440×900;`--json` 可机器消费;`check-05-ui-uat.py` 零改动。</done>
 </task>
 
 <task type="auto" tdd="false">
@@ -522,8 +539,8 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
 
 **运行时门(本计划新建):**
 
-- `.venv/bin/python scripts/check-10-idi10-validation.py --item t1` → `exit=0`,0 FAIL / 0 BLOCKED(表头 gray-2 底 + 1px 下边线 + 三条边 0px)
-- `.venv/bin/python scripts/check-10-idi10-validation.py --item t2` → `exit=0`,0 FAIL / 0 BLOCKED(数据格三条边 0px + 行间浅线 + `font-size` 对照组)
+- `.venv/bin/python scripts/check-10-idi10-validation.py --item t1` → `exit=0`,0 FAIL / 0 BLOCKED(表头 gray-2 底 + 1px 下边线 + 三条边 0px);INFO 行对每个对给出「注入成功」与「是否被渲染」两个独立读数,聚合断言「至少 1 个对处于被渲染子树」PASS(其读数为**渲染证据**,其余为**层叠解析**证据)
+- `.venv/bin/python scripts/check-10-idi10-validation.py --item t2` → `exit=0`,0 FAIL / 0 BLOCKED(数据格三条边 0px + 行间浅线 + `font-size` 对照组);显示性读数与聚合断言同 `t1`
 - `.venv/bin/python scripts/check-10-idi10-validation.py --screenshot <TMP>` → `<TMP>` 下恰 5 个 1440×900 PNG
 
 **仓库卫生:**
@@ -538,7 +555,7 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
 - 文档区表格在真实浏览器里不再有竖线与外框(`td` 的 `border-left-width` / `border-right-width` / `border-top-width` == `0px`),`.markdown-body th` 的计算底色 == `--color-surface`(gray-2 = `rgb(249, 249, 249)`),表头下边线与行间分隔线为 `1px solid var(--color-border-subtle)`(gray-6)。
 - 原 `border: 1px solid var(--color-border);` 被**就地改写**,文件里不存在被后续规则覆盖的已死声明;新增的 `.markdown-body th` 规则块追加在其所有者正后方,既有规则块的相对源码顺序逐字未变。
 - 零新增颜色值、零新增 tier-1 primitive、零新增 PAIR / ORDER 条目、零阈值改动;`check-02` 的表头配对以实跑输出行原文登记。
-- 表格的渲染判据首次有了自动化运行时覆盖:`scripts/check-10-idi10-validation.py` 的 `t1` / `t2` 在真实浏览器里全 PASS、0 BLOCKED;`--screenshot` 出 5 张 1440×900。
+- 表格的渲染判据首次有了自动化运行时覆盖:`scripts/check-10-idi10-validation.py` 的 `t1` / `t2` 在真实浏览器里全 PASS、0 BLOCKED;`--screenshot` 出 5 张 1440×900。**且证据强度如实**:每个 (样本, 宿主) 对的显示性读数当场采集并打印,至少一个对处于被渲染子树(其读数作为渲染证据),其余对仅作层叠解析证据 —— 不得把隐藏子树上的读数陈述为渲染证据。
 - `scripts/check-05-ui-uat.py` / `scripts/check-01…04` / `check-06` / `check-07` / `check-09` / `probe-*` 代码零改动;`frontend/app.js` / `index.html` / `vendor/` 零字节改动。
 - `td` 的 `font-size` 与 `padding` 一字未动(被既有活断言锁死的属性)。
 </success_criteria>

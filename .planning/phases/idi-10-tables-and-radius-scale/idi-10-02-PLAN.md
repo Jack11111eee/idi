@@ -28,9 +28,9 @@ must_haves:
     - "`--radius-md` **不得删除** —— `scripts/check-09-idi09-validation.py` 动态解析它做卡片断言(令牌相对,改值不破;**删该令牌会破**)。判据:`.venv/bin/python scripts/check-09-idi09-validation.py --item c1 --item c2` 仍 `exit=0`、0 FAIL / 0 BLOCKED"
     - "围栏内那条 `/* Radius — … values. */` 注释已由 `four values` 改为 `three values` 并记下被删的 28px 档与两处消费者的去向(注释与代码不互相矛盾);**注释里不得出现字面量令牌名 `--radius-lg`**(否则上面那条 `grep == 0` 立刻红),要指代它时用 `28px` 那一档 / 「former fourth step」这类行文"
     # ---- RADIUS-02 — re-attributed, not re-valued; the two destinations DIFFER on purpose ----
-    - "`.chat-user` 的计算 `border-radius` == 运行时解析的 `--radius-md`(**本阶段唯一外观真的变了的消费者**:HEAD 上 28px 大圆角气泡 → 10px 卡片圆角);其计算 `border-bottom-right-radius` 仍为 8px(等于解析后的 `--radius-sm`,气泡尾巴尖角**保留**)。该元素的读数由 harness 用**应用自身的** `appendChatMessage('user', …)` 造出探针气泡后取得(`scripts/ui-states/p1/` 无 `transcript.md` ⇒ 自然状态下 `.chat-user` 不存在;手法与 `scripts/check-05-ui-uat.py:876-879` 同款),每次读数前重建"
+    - "`.chat-user` 的**四个物理角长手**逐角读数:`border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` 三者 == 运行时解析的 `--radius-md`(**本阶段唯一外观真的变了的消费者**:HEAD 上 28px 大圆角气泡 → 10px 卡片圆角),`border-bottom-right-radius` == 解析后的 `--radius-sm`(8px,气泡尾巴尖角**保留**)。**不得断言简写 `border-radius`**:该规则体内另有 `border-bottom-right-radius: var(--radius-sm)`,Chrome 把简写序列化成**三值** —— HEAD 上 `getComputedStyle(el)['border-radius']` 与 `getPropertyValue('border-radius')` 均为 `\"28px 28px 8px\"`、收敛后均为 `\"10px 10px 8px\"`,故 `== \"10px\"` 这条断言**不可满足**;四角长手与 `scripts/check-09-idi09-validation.py:147` 的 `border-top-left-radius` 读法同形。该元素的读数由 harness 用**应用自身的** `appendChatMessage('user', …)` 造出探针气泡后取得(`scripts/ui-states/p1/` 无 `transcript.md` ⇒ 自然状态下 `.chat-user` 不存在;手法与 `scripts/check-05-ui-uat.py:876-879` 同款),每次读数前重建"
     - "`#chat-input-row input` 的计算 `border-radius` == 运行时解析的 `--radius-pill`(`999px`);四个角长手等值;计算 `min-height` 仍为 `52px`。**两处去向不同是承重点,不得「统一」成同一个令牌** —— 一律改成 `--radius-md` 会让输入框外观真的变化(胶囊 → 10px 圆角矩形),那是用户没选的档位"
-    - "`#chat-input-row input` 的**外观与收敛前一致**,以收敛**前后**的运行时读数并排为证:(a) 该元素的整份 computed style 前后差异键集合非空、是五个圆角相关键的子集、且至少含四个角长手 —— 任何**其它**键出现差异即判失败;(b) `getBoundingClientRect()` 前后逐值相同(布局零变化);(c) 该元素的元素级截图前后**逐字节相同**。**不得**用「28px 会被钳成胶囊」这条算术推断替代上述任一条"
+    - "`#chat-input-row input` 的**外观与收敛前一致**,以收敛**前后**的运行时读数并排为证:(a) 该元素的整份 computed style 前后差异键集合非空、是**八个**圆角相关键 —— 四个物理角长手(`border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` / `border-bottom-right-radius`)**加上**四个逻辑别名(`border-start-start-radius` / `border-start-end-radius` / `border-end-start-radius` / `border-end-end-radius`)—— 的**子集**,且**四个物理角长手必须全部**落在差异集合里 —— 任何**其它**键出现差异即判失败(实测:该元素 radius 由 28px → 999px 时,差异键恰为这 8 个;四个逻辑别名与物理角**同步变化**且同在 `getComputedStyle` 的迭代名单里,故允许集合必须覆盖它们);(b) `getBoundingClientRect()` 前后逐值相同(布局零变化);(c) 该元素的元素级截图前后**逐字节相同**。**不得**用「28px 会被钳成胶囊」这条算术推断替代上述任一条"
     - "`.chat-user` 与 `#chat-input-row input` 的规则块位置与选择器文本逐字未变(**就地改归属**,不搬迁、不追加覆盖规则);两条规则体上方各自带一段注释说明「为什么它去这一档」(否则会被后人「统一」掉)"
     # ---- 不得碰 ----
     - "`#doc-panel-header` 的 `border-radius: 0;` **一字未动** —— 它是就地改写过的**显式零值**、不消费任何 `--radius-*` 令牌,带一段 2026-09-26 的论证(溢出容器把后代裁到带圆角的 padding box),与本阶段的收敛无关"
@@ -197,9 +197,9 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 | # | 符号 | 种类 | 用途 |
 |---|---|---|---|
 | 10 | `RADIUS_LITERALS` | 模块常量 | `{"--radius-sm": "8px", "--radius-md": "10px", "--radius-pill": "999px"}` —— 三档的两侧写死字面量(防止「令牌被改坏而消费者仍接线」时假绿) |
-| 16 | `r1(page, tmp_root)` | item 函数 | 圆角刻度:围栏内 `--radius-lg` 声明数 == 0、三档解析值与字面量逐条相符、`.chat-user` 计算 `border-radius` == `--radius-md` 且 `border-bottom-right-radius` == `--radius-sm`。`.chat-user` 的每一次读数前都用应用自身的 `appendChatMessage('user', …)` 造出探针气泡(`p1` fixture 无 `transcript.md`,自然状态下该元素不存在) |
+| 16 | `r1(page, tmp_root)` | item 函数 | 圆角刻度:围栏内 `--radius-lg` 声明数 == 0、三档解析值与字面量逐条相符、`.chat-user` 的**四个物理角长手**逐角断言(TL / TR / BL == `--radius-md`,BR == `--radius-sm`)—— **不读简写 `border-radius`**(该规则体的 `border-bottom-right-radius` 会让 Chrome 把简写序列化成三值)。`.chat-user` 的每一次读数前都用应用自身的 `appendChatMessage('user', …)` 造出探针气泡(`p1` fixture 无 `transcript.md`,自然状态下该元素不存在) |
 | 17 | `r2(page, tmp_root)` | item 函数 | `#chat-input-row input`:计算 `border-radius` == 解析后的 `--radius-pill`、四个角长手等值、`min-height` 仍为 `52px` |
-| 18 | `radius_snapshot(page, label, out_dir, tmp_root)` | 函数 | 对 `#chat-input-row input` 取单元素快照:整份 computed style dump + `getBoundingClientRect()` + 元素级 PNG + 捕获时 `frontend/style.css` 的 sha256;写 `<DIR>/input-radius-<label>.{json,png}` |
+| 18 | `radius_snapshot(page, label, out_dir, tmp_root)` | 函数 | 对 `#chat-input-row input` 取单元素快照:整份 computed style dump(**由属性名迭代构建** —— 实测恰 477 个长手名,含四个物理角长手与四个逻辑别名、**不含** `border-radius` 简写 ⇒ 本计划一切圆角判据一律读四个物理角长手,绝不读 `computed["border-radius"]`)+ `getBoundingClientRect()` + 元素级 PNG + 捕获时 `frontend/style.css` 的 sha256;写 `<DIR>/input-radius-<label>.{json,png}` |
 | 21 | `parse_args()` 的 `--radius-snapshot {before,after} DIR` | CLI 参数 | 单元素前后取证模式(与 `--screenshot` 互斥使用优先;两者同时给出时先跑 item、再跑 snapshot、最后跑 screenshots) |
 | 20 | `ITEMS` 增加 `r1` / `r2` | 模块常量 | 派发表扩充 |
 
@@ -246,6 +246,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     (a) **让元素失焦**:截图前先 `page.evaluate` 把 `document.activeElement` blur 掉(避免焦点环或闪烁的光标进入元素截图,使前后比对失去可比性)。
 
     (b) **整份 computed style dump**:`page.evaluate` 遍历 `getComputedStyle(el)` 的**全部**属性名,返回 `{属性名: 值}` 的普通对象。这是「外观零变化」在键级上的判据 —— 任何与圆角无关的键出现差异都意味着改动溢出。
+    ⚠ **这条迭代不枚举 `border-radius` 简写**(实测迭代名单恰 **477** 个长手名,`names.includes('border-radius')` 为 **false**;四个物理角长手与四个逻辑别名**都在**名单里)。故本计划**所有**圆角判据一律读四个**物理角长手**(`border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` / `border-bottom-right-radius`),**不**读 `computed["border-radius"]` —— 后者在这个字典里**不存在**,读它会抛 `KeyError`。若确要看简写,只能另用 `getPropertyValue('border-radius')` 显式取值;本计划不需要它。
 
     (c) **几何**:`page.evaluate` 取 `el.getBoundingClientRect()` 的 `x / y / width / height / top / right / bottom / left`。布局零变化的判据。
 
@@ -257,7 +258,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 
     (g) **落盘 JSON**:`out_dir / f"input-radius-{label}.json"`,`json.dumps(..., ensure_ascii=False, indent=2)`。`out_dir.mkdir(parents=True, exist_ok=True)`。
 
-    (h) **stdout 可读输出**:用 `info()` 打印 `label`、`out_dir`、`style_css_sha256`、`rect`、`tokens` 与 `computed["border-radius"]` / 四个角长手 —— 使复查者不看 JSON 也能读到关键读数。
+    (h) **stdout 可读输出**:用 `info()` 打印 `label`、`out_dir`、`style_css_sha256`、`rect`、`tokens` 与**四个物理角长手**的读数 —— 使复查者不看 JSON 也能读到关键读数。(若也想看简写,须另用 `getPropertyValue('border-radius')` 显式取,不能从 `computed` 字典取 —— 该字典不含简写键。)
 
     断言纪律:元素读不到(`read_style` / `evaluate` 返回 `None`)或令牌全部解析不出时走 `blocked()`,**绝不记 PASS**。截图落盘失败或宽高为 0 判 FAIL。
 
@@ -269,7 +270,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 
     跑 `.venv/bin/python scripts/check-10-idi10-validation.py --radius-snapshot before .planning/phases/idi-10-tables-and-radius-scale/radius-snapshots`。
 
-    取完后立刻核对三件事并抄进 SUMMARY:(a) `input-radius-before.json` 里 `tokens["--radius-lg"]` == `"28px"`;(b) `computed["border-radius"]` 是 HEAD 的 `28px`(`getComputedStyle` 返回**计算值**,不是被钳制后的**使用值** —— 这一点要写进 SUMMARY,否则读者会以为「外观零变化」是从这个数字本身读出来的);(c) JSON 里 `style_css_sha256` 与 `shasum -a 256 frontend/style.css` 的输出一致,证明确实取自当前盘上版本。
+    取完后立刻核对三件事并抄进 SUMMARY:(a) `input-radius-before.json` 里 `tokens["--radius-lg"]` == `"28px"`;(b) `computed` 的**四个物理角长手**(`border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` / `border-bottom-right-radius`)均为 HEAD 的 `28px`(该元素无逐角覆盖,四角等值;`getComputedStyle` 返回**计算值**,不是被钳制后的**使用值** —— 这一点要写进 SUMMARY,否则读者会以为「外观零变化」是从这个数字本身读出来的);(c) JSON 里 `style_css_sha256` 与 `shasum -a 256 frontend/style.css` 的输出一致,证明确实取自当前盘上版本。
 
     **第 5 步 —— 不触碰范围之外的一切。** 本任务**零 CSS 改动**(`git status --porcelain frontend/` 在本任务后应仍只有计划 01 已改的 `frontend/style.css`;本任务不新增对它的改动)。若第 4 步的快照显示 `tokens["--radius-lg"]` 不是 `28px`,说明 CSS 已被改过 —— **停下,不要继续**,把现状报回。
 
@@ -282,8 +283,8 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     <fails_when>non-zero exit, or any verdict line beginning with "FAIL", or the "=== 逐项结论 ===" block showing a non-zero BLOCKED count, or the trailing "exit=" line not "exit=0"</fails_when>
     <automated>ls .planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/</automated>
     <fails_when>output does not contain both "input-radius-before.json" and "input-radius-before.png"</fails_when>
-    <automated>python3 -c "import json,sys; d=json.load(open('.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-before.json')); print(d['tokens']['--radius-lg'], d['computed']['border-radius'], len(d['computed']), d['style_css_sha256'])"</automated>
-    <fails_when>the printed token value is not exactly "28px", or the printed computed border-radius is not exactly "28px", or the printed computed-style key count is not greater than 100, or the printed sha256 is not a 64-character lowercase hex string</fails_when>
+    <automated>python3 -c "import json; d=json.load(open('.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-before.json')); c=d['computed']; print(d['tokens']['--radius-lg'], c['border-top-left-radius'], c['border-top-right-radius'], c['border-bottom-left-radius'], c['border-bottom-right-radius'], len(c), d['style_css_sha256'])"</automated>
+    <fails_when>the printed token value is not exactly "28px", or any of the four printed corner longhands is not exactly "28px", or the printed computed-style key count is not greater than 100, or the printed sha256 is not a 64-character lowercase hex string</fails_when>
     <automated>git status --porcelain frontend/</automated>
     <fails_when>output contains any path other than "frontend/style.css", or output is empty</fails_when>
   </verify>
@@ -291,14 +292,14 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     - `scripts/check-10-idi10-validation.py` 的 `--radius-snapshot` 参数接受 `before|after` 两个标签与一个目录;标签取其它值时命令行报错并列出可用取值;`--help` 能读到该参数的用途。
     - `.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/` 下存在 `input-radius-before.json` 与 `input-radius-before.png` 两个文件。
     - `input-radius-before.json` 含四个顶层键:`computed`(整份 computed style,键数 > 100)、`rect`(含 `x` / `y` / `width` / `height` / `top` / `right` / `bottom` / `left`)、`tokens`(四个 `--radius-*` 的解析值)、`style_css_sha256`。
-    - `input-radius-before.json` 的 `tokens["--radius-lg"]` == `"28px"`;`computed["border-radius"]` == `"28px"`(HEAD 的计算值)。
+    - `input-radius-before.json` 的 `tokens["--radius-lg"]` == `"28px"`;`computed` 的**四个物理角长手**(`border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` / `border-bottom-right-radius`)均为 `"28px"`(HEAD 的计算值)。
     - `input-radius-before.json` 的 `style_css_sha256` 与 `python3 -c "import hashlib;print(hashlib.sha256(open('frontend/style.css','rb').read()).hexdigest())"` 的输出逐字符相同。
     - `input-radius-before.png` 的宽高均 > 0(用该脚本自己的 `png_size()` 或 `python3` 读 IHDR 验证)。
-    - 该模式的 stdout 上有一组 INFO 行,含 `label`、`out_dir`、`style_css_sha256`、`rect`、四个 `--radius-*` 的解析值,以及 `border-radius` 与四个角长手的读数。
+    - 该模式的 stdout 上有一组 INFO 行,含 `label`、`out_dir`、`style_css_sha256`、`rect`、四个 `--radius-*` 的解析值,以及**四个物理角长手**的读数。
     - `--radius-snapshot` 作为一项进入 `=== 逐项结论 ===` 汇总,其 FAIL / BLOCKED 计数参与退出码判定。
     - 本任务对 `frontend/style.css` 零改动(`git diff -- frontend/style.css` 相对计划 01 的产出为空)。
   </acceptance_criteria>
-  <done>`--radius-snapshot {before,after} DIR` 模式就位并在 HEAD 状态下取到「收敛前」的完整读数:整份 computed style(`border-radius` == `28px`)、矩形、四个圆角令牌的解析值(`--radius-lg` == `28px`)、以及可定位版本的一式源码 sha256;元素截图落盘。</done>
+  <done>`--radius-snapshot {before,after} DIR` 模式就位并在 HEAD 状态下取到「收敛前」的完整读数:整份 computed style(**四个物理角长手**均为 `28px`;该字典不含简写键)、矩形、四个圆角令牌的解析值(`--radius-lg` == `28px`)、以及可定位版本的一式源码 sha256;元素截图落盘。</done>
 </task>
 
 <task type="auto" tdd="false">
@@ -359,12 +360,12 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 
     跑 `.venv/bin/python scripts/check-10-idi10-validation.py --radius-snapshot after .planning/phases/idi-10-tables-and-radius-scale/radius-snapshots`。
 
-    核对并抄进 SUMMARY:`tokens["--radius-lg"]` 现在是 `None`(令牌已不存在)、`tokens["--radius-pill"]` == `"999px"`、`computed["border-radius"]` == `"999px"`、`style_css_sha256` **已变**(与 before 那份不同 —— 这正是「两次真实读数」的凭据)。
+    核对并抄进 SUMMARY:`tokens["--radius-lg"]` 现在是 `None`(令牌已不存在)、`tokens["--radius-pill"]` == `"999px"`、`computed` 的**四个物理角长手**均为 `"999px"`、`style_css_sha256` **已变**(与 before 那份不同 —— 这正是「两次真实读数」的凭据)。
 
     **第 6 步 —— 三项并排比对(全部必须通过;任一项不通过即停下报回,不得放宽)。**
 
-    (a) **computed style 键级 diff**(用 `python3` 读两份 JSON 的 `computed` 字典):差异键集合必须**非空**,必须是 `{border-radius, border-top-left-radius, border-top-right-radius, border-bottom-left-radius, border-bottom-right-radius}` 的**子集**,且**至少含四个角长手**。任何**其它**键出现差异 ⇒ **判失败,停下报回**(说明改动溢出了)。
-      说明:Chrome 的 `getComputedStyle` 迭代是否枚举 `border-radius` 简写因版本而异,故判据写成「子集 + 至少四个角长手」而不是「恰好五个键」;这个放宽只针对「简写是否被枚举」这一实现细节,**不针对**是否允许其它属性变化。
+    (a) **computed style 键级 diff**(用 `python3` 读两份 JSON 的 `computed` 字典):差异键集合必须**非空**,必须是**八个**圆角相关键 —— 四个物理角长手 `border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` / `border-bottom-right-radius`,**加上**四个逻辑别名 `border-start-start-radius` / `border-start-end-radius` / `border-end-start-radius` / `border-end-end-radius` —— 的**子集**,且**四个物理角长手必须全部**出现在差异集合里。任何**其它**键出现差异 ⇒ **判失败,停下报回**(说明改动溢出了)。
+      说明:该元素的 radius 由 28px 变 999px 时,实测差异键**恰为上述 8 个** —— 四个逻辑别名与物理角**同步变化**,且同在 `getComputedStyle` 的迭代名单里(实测名单恰 477 个长手名,含这 8 个、**不含** `border-radius` 简写)。「允许差异键集合」必须覆盖预期改动能改到的**每一个**属性,故必须含这四个别名;这条**不**放宽「其它键不得变化」的意图。
     (b) **矩形逐值比对**:两份 JSON 的 `rect` 必须逐值相同(`x` / `y` / `width` / `height` / `top` / `right` / `bottom` / `left`)⇒ 布局零变化。
     (c) **元素截图逐字节比对**:`cmp -s input-radius-before.png input-radius-after.png` 必须 `exit=0`。逐字节相同即「外观与收敛前一致」的直接测量。
       若两张 PNG 不同:先排查可比性(元素是否在同一滚动位置、是否被失焦、窗口尺寸是否一致、是否有动画/光标),把排查结论与两份 PNG 的路径一起写进 SUMMARY 并**报回**;**不得**改用算术推断替代、**不得**只贴其中一张。
@@ -386,7 +387,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     <fails_when>non-zero exit, or any verdict line beginning with "FAIL", or the "=== 逐项结论 ===" block showing a non-zero BLOCKED count, or the trailing "exit=" line not "exit=0"</fails_when>
     <automated>cmp -s .planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-before.png .planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-after.png</automated>
     <fails_when>non-zero exit (the two element screenshots differ byte-for-byte), or either file missing, or either file empty</fails_when>
-    <automated>python3 -c "import json;b=json.load(open('.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-before.json'));a=json.load(open('.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-after.json'));allow={'border-radius','border-top-left-radius','border-top-right-radius','border-bottom-left-radius','border-bottom-right-radius'};d={k for k in set(b['computed'])|set(a['computed']) if b['computed'].get(k)!=a['computed'].get(k)};print(sorted(d));print('rect_equal',b['rect']==a['rect']) ;print('subset',d<=allow,'corners',len(d&allow)>=4,'sha_changed',b['style_css_sha256']!=a['style_css_sha256'])"</automated>
+    <automated>python3 -c "import json;b=json.load(open('.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-before.json'));a=json.load(open('.planning/phases/idi-10-tables-and-radius-scale/radius-snapshots/input-radius-after.json'));P={'border-top-left-radius','border-top-right-radius','border-bottom-left-radius','border-bottom-right-radius'};L={'border-start-start-radius','border-start-end-radius','border-end-start-radius','border-end-end-radius'};d={k for k in set(b['computed'])|set(a['computed']) if b['computed'].get(k)!=a['computed'].get(k)};print(sorted(d));print('rect_equal',b['rect']==a['rect']);print('subset',d<=P|L,'corners',P<=d,'sha_changed',b['style_css_sha256']!=a['style_css_sha256'])"</automated>
     <fails_when>the printed diff-key list is empty, or "subset" is not True, or "corners" is not True, or "rect_equal" is not True, or "sha_changed" is not True</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh</automated>
     <fails_when>non-zero exit for any of the three, or any of the three not printing exactly "PASS"</fails_when>
@@ -400,8 +401,8 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     - `.chat-user` 与 `#chat-input-row input` 规则体**各自上方**有一段注释说明「为什么去这一档」,并明确写出两处去向不同是刻意的、不得统一。
     - `#doc-panel-header` 的 `border-radius: 0;` 与其上方论证注释逐字未动(`grep -nF -- 'border-radius: 0;' frontend/style.css` 仍命中该行)。
     - `.venv/bin/python scripts/check-09-idi09-validation.py --item c1 --item c2` `exit=0`、0 FAIL / 0 BLOCKED(`--radius-md` 未被删除、卡片圆角断言仍成立)。
-    - `radius-snapshots/` 下四份文件齐全;两份 JSON 的 `style_css_sha256` **不同**(证明是两次真实读数);after 的 `tokens["--radius-lg"]` 为 `None`、`tokens["--radius-pill"]` == `"999px"`、`computed["border-radius"]` == `"999px"`。
-    - computed style 键级 diff:差异键集合非空、是五个圆角相关键的子集、至少含四个角长手;`rect` 前后逐值相同;两张元素 PNG `cmp -s` 返回 0。
+    - `radius-snapshots/` 下四份文件齐全;两份 JSON 的 `style_css_sha256` **不同**(证明是两次真实读数);after 的 `tokens["--radius-lg"]` 为 `None`、`tokens["--radius-pill"]` == `"999px"`、`computed` 的**四个物理角长手**均为 `"999px"`。
+    - computed style 键级 diff:差异键集合非空、是**八个**圆角相关键(四个物理角长手 + 四个逻辑别名)的子集、**四个物理角长手全部**在内;`rect` 前后逐值相同;两张元素 PNG `cmp -s` 返回 0。
     - 四个静态门全绿;`grep -o '/\* PAIR' | wc -l` == 53、`grep -o '/\* ORDER' | wc -l` == 1。
     - `grep -n '@media' frontend/style.css` 命中恰好 1 行(Phase 7 的 prefers-reduced-motion 块;本阶段不得新增媒体查询)。
     - `git diff -U0 -- frontend/style.css` 人工逐行核对:相对计划 01 的产出,新增改动只有「删 1 行声明 + 改 1 段围栏内注释 + 改 2 处 `border-radius` 值 + 新增 2 段围栏外注释」;**没有任何既有规则块被移动**(diff 里不存在「先删后加同一规则块」的形态);零 `--radix-` 增删行。
@@ -434,9 +435,9 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     (a) **源码文本级**:`fence_text()` 取出围栏内文本,断言其中 `--radius-lg` 计数为 `0`(标签写清「围栏内零声明残留」,并注明这一条读的是文件文本而非渲染结果 —— 与渲染断言互补)。
     (b) **令牌级双侧**:对 `RADIUS_LITERALS` 的三个条目,`resolve_token` 的解析值必须等于写死的字面量(逐条一断言)。
     (c) **先造出 `.chat-user` 探针气泡,再读它(这一步不是可选的,跳过它整组断言必落 BLOCKED)。** `.chat-user` 由 `appendChatMessage('user', …)` 产生,气泡源是 `transcript.md` 经 `renderTranscript()` 灌入的;而 `scripts/ui-states/p1/` **只有 `.gitkeep`**、无 `transcript.md` ⇒ `p1` 的自然状态下**不存在** `.chat-user`,直接 `read_style(page, ".chat-user", …)` 只会拿到 `None` 并落 BLOCKED。本仓库对这件事的既有做法同样是**造出容器再断言**:`scripts/check-05-ui-uat.py:876-879` 正是先 `page.evaluate("() => { appendChatMessage('user', 'harness: .chat-user 探针'); }")` 再读该元素的 `background-color`。本任务照抄这一手 —— 用**应用自身的** `appendChatMessage` 造节点(真实渲染路径,零网络、零 AI 调用),断言才读得到元素。
-    ⚠ **每一次读 `.chat-user` 之前都要重新造一次**(不能只在开头造一次):该节点是 harness 造的、不在 fixture 里,任何重新进入样本 / 重新加载都会把它清掉;本步既要读计算 `border-radius` 与四个角长手、又要读一条诊断 `info()`,**每次读之前都重新 `appendChatMessage` 一次**,否则后一次读数会落 BLOCKED。
-    (d) **`.chat-user` 元素级**:在 (c) 造出探针之后,计算 `border-radius` == `resolve_token("--radius-md")`(HEAD 上是 `28px`,收敛后是 `10px` —— 标签里写真值来源);计算 `border-bottom-right-radius` == `resolve_token("--radius-sm")`(8px 尖角保留);另打印一条 `info()` 记下 `border-bottom-left-radius` / `border-top-right-radius` 的原始读数,便于独立诊断「尖角只在一角」这件事。
-    (e) **`.chat-user` 的四个角长手**逐条断言,标签里写清哪一个角是尖角 —— 这样「保留尖角」这一条不会被后人误读成「四角统一」。
+    ⚠ **每一次读 `.chat-user` 之前都要重新造一次**(不能只在开头造一次):该节点是 harness 造的、不在 fixture 里,任何重新进入样本 / 重新加载都会把它清掉;本步既要读**四个物理角长手**、又要读一条诊断 `info()`,**每次读之前都重新 `appendChatMessage` 一次**,否则后一次读数会落 BLOCKED。
+    (d) **`.chat-user` 元素级 —— 逐角读长手,不读简写。** 在 (c) 造出探针之后,读四个**物理角长手**并逐角断言:`border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` 三者均 == `resolve_token("--radius-md")`(HEAD 上是 `28px`,收敛后是 `10px` —— 标签里写真值来源);`border-bottom-right-radius` == `resolve_token("--radius-sm")`(8px 尖角保留)。**不得**断言简写 `border-radius` == `"10px"`:该规则体内另有 `border-bottom-right-radius: var(--radius-sm)`,Chrome 把简写序列化成**三值** —— HEAD 上 `getComputedStyle(el)['border-radius']` 与 `getPropertyValue('border-radius')` 均为 `"28px 28px 8px"`、收敛后均为 `"10px 10px 8px"`;故 `== "10px"` 这条断言**永远不可满足**。四角长手与 `scripts/check-09-idi09-validation.py:147` 的 `border-top-left-radius` 读法同形。另打印一条 `info()` 记下四个角长手的原始读数(可选再加 `getPropertyValue('border-radius')` 的简写值),便于独立诊断「尖角只在一角」这件事。
+    (e) **四个物理角长手逐条独立断言**(不是「四角等值」一条带过),标签里写清哪一个角是尖角 —— 这样「保留尖角」这一条不会被后人误读成「四角统一」。
 
     元素读不到或令牌解析不出时走 `blocked()`,**绝不记 PASS**;但 `.chat-user` 在 (c) 造出探针后**仍**读不到时按 **FAIL** 处理(说明 `appendChatMessage` 没生效、或该类名已改),不得以 BLOCKED 收场。
 
@@ -480,6 +481,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     - `.venv/bin/python scripts/check-10-idi10-validation.py --item r2` 的 `=== 逐项结论 ===` 块里 `r2` 的 FAIL 与 BLOCKED 计数均为 0,末行 `exit=0`。
     - `--item t1 --item t2` 仍全绿(计划 01 的表格断言未被本阶段打破)。
     - `r1` 的断言里含一条读围栏文本的 `--radius-lg` 零计数断言,以及三条「`resolve_token` 解析值 == 写死字面量」的令牌级断言(`RADIUS_LITERALS` 三个条目逐条覆盖)。
+    - `r1` 对 `.chat-user` 的圆角**逐角读四个物理角长手并逐条断言**(TL / TR / BL == `--radius-md` 解析值,BR == `--radius-sm` 解析值),**不含**任何读简写 `border-radius` 的断言(该规则体的 `border-bottom-right-radius` 会让 Chrome 把简写序列化成三值 `10px 10px 8px`,`== "10px"` 不可满足)。
     - `r1` 在读 `.chat-user` 的**每一次**读数之前都用应用自身的 `appendChatMessage('user', …)` 造出探针气泡(与 `check-05-ui-uat.py:876-879` 同款手法),因此该元素的每一条读数都读到了真实元素而非 `None`;`r1` 的 FAIL / BLOCKED 计数为 0 即证明这一点。**不得**依赖 `p1` fixture 自然存在 `.chat-user`(实测不存在:`scripts/ui-states/p1/` 只有 `.gitkeep`)。
     - `r2` 的断言里含「四角长手彼此等值且 == `--radius-pill` 解析值」、「`min-height` == `52px`」、以及「`border-top-width` == `1px` 且 `border-top-style` == `solid`」三组判据。
     - `r1` / `r2` 的标签里点名了外观判据由 `radius-snapshots/` 的前后读数承担,不把 `getComputedStyle` 的计算值直接当作外观判据。
@@ -487,7 +489,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     - 四个静态门全绿(`check-02` 为 `PASS: 0 failures`)。
     - `git diff -- scripts/check-05-ui-uat.py` 为空;`git status --porcelain scripts/` 仅有 `scripts/check-10-idi10-validation.py` 一处改动/新增。
   </acceptance_criteria>
-  <done>圆角刻度的渲染判据首次有了自动化运行时覆盖:`r1`(围栏内零残留 + 三档双侧字面量 + `.chat-user` 的 10px 与 8px 尖角,探针气泡由应用自身的 `appendChatMessage` 造出)/ `r2`(输入框胶囊归属 + 四角等值 + `min-height` 与边框对照组)全 PASS、0 BLOCKED;计划 01 的 `t1` / `t2` 仍绿;四个静态门全绿。</done>
+  <done>圆角刻度的渲染判据首次有了自动化运行时覆盖:`r1`(围栏内零残留 + 三档双侧字面量 + `.chat-user` 的四个角长手逐角断言 —— TL/TR/BL 为 10px、BR 为 8px 尖角,探针气泡由应用自身的 `appendChatMessage` 造出)/ `r2`(输入框胶囊归属 + 四角等值 + `min-height` 与边框对照组)全 PASS、0 BLOCKED;计划 01 的 `t1` / `t2` 仍绿;四个静态门全绿。</done>
 </task>
 
 </tasks>
@@ -540,7 +542,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 **前后并排取证(四份产物):**
 
 - `radius-snapshots/input-radius-before.{json,png}` / `input-radius-after.{json,png}`
-- computed style 键级 diff:非空、是五个圆角相关键的子集、至少含四个角长手
+- computed style 键级 diff:非空、是**八个**圆角相关键(四个物理角长手 + 四个逻辑别名)的子集、**四个物理角长手全部**在内
 - `rect` 前后逐值相同
 - `cmp -s` 两张元素 PNG 返回 0
 - 两份 JSON 的 `style_css_sha256` 不同
@@ -556,7 +558,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 
 <success_criteria>
 - 圆角刻度只剩 `--radius-sm: 8px` / `--radius-md: 10px` / `--radius-pill: 999px` 三档,三行值逐字未变;`--radius-lg` 在围栏内零声明残留、全文零出现、零 `var()` 引用;围栏内无未消费的令牌声明。
-- `.chat-user` 的计算圆角为卡片档(等于解析后的 `--radius-md`),8px 尖角保留;`#chat-input-row input` 的计算圆角等于解析后的 `--radius-pill`(999px),`min-height: 52px` 与 `border` 逐字未动。两处去向不同,且有注释写明这是刻意的。
+- `.chat-user` 的**四个物理角长手**中 TL / TR / BL 等于解析后的 `--radius-md`(卡片档)、BR 等于 `--radius-sm`(8px 尖角保留);`#chat-input-row input` 的计算圆角等于解析后的 `--radius-pill`(999px),`min-height: 52px` 与 `border` 逐字未动。两处去向不同,且有注释写明这是刻意的。
 - 「输入框外观与收敛前一致」以**测量**为证,不是算术:computed style 键级 diff(只有圆角键变)、矩形逐值相同、元素截图逐字节相同;两项 JSON 各带捕获时的源码 sha256 且两份不同。
 - `--radius-md` 未被删除(`check-09` c1/c2 仍 `exit=0`);`#doc-panel-header` 的 `border-radius: 0` 一字未动。
 - 四个静态门全绿;`check-10` 的 `t1` / `t2` / `r1` / `r2` 四个断言集在真实浏览器里全 PASS、0 BLOCKED。

@@ -29,6 +29,7 @@
     .venv/bin/python scripts/check-10-idi10-validation.py --item t1
     .venv/bin/python scripts/check-10-idi10-validation.py --item t1,t2
     .venv/bin/python scripts/check-10-idi10-validation.py --item t1 --item t2 --json
+    .venv/bin/python scripts/check-10-idi10-validation.py --radius-snapshot before <DIR>
     .venv/bin/python scripts/check-10-idi10-validation.py --screenshot <DIR>
     .venv/bin/python scripts/check-10-idi10-validation.py --keep
 
@@ -45,6 +46,8 @@
                                下边线 1px solid == --color-border-subtle,外加
                                font-size(被 check-05 锁死的属性)与 padding 两条对照组
     shot                          逐样本整窗截图(供用户评审;计划 03 直接消费)
+    radius-snapshot               #chat-input-row input 的单元素前后取证(计划 02):
+                                  computed style dump + rect + 元素 PNG + 源码 sha256
 
 「造出容器再断言」+ 两个独立读数(本文件的核心纪律)
     每个 (样本, 宿主) 对在读数前都用**应用自身的 `renderMarkdown`** 把一段含表头与
@@ -70,6 +73,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import shutil
@@ -116,6 +120,26 @@ TABLE_PROBE_MD = (
 
 # 表格规则的 padding 是 `var(--space-1) var(--space-2-5)`,Chrome 序列化为 4px 10px。
 TH_TD_PADDING = "4px 10px"
+
+# ---------------------------------------------------------------------------
+# 圆角收敛的前后取证(计划 02)
+# ---------------------------------------------------------------------------
+# `#chat-input-row input` 是圆角收敛里「外观零变化」的那一处消费者,故它的收敛前后
+# 读数必须**并排留证** —— 不得用「28px 会被钳成胶囊」这条算术推断代替测量。
+RADIUS_SNAPSHOT_SEL = "#chat-input-row input"
+RADIUS_SNAPSHOT_LABELS = ("before", "after")
+RADIUS_TOKENS = ("--radius-sm", "--radius-md", "--radius-lg", "--radius-pill")
+
+# 四个**物理角长手**。为什么不读简写 `border-radius`:同一批圆角判据要同时覆盖
+# `.chat-user`,而那条规则体内另有 `border-bottom-right-radius: var(--radius-sm)`,
+# Chrome 会把那里的简写序列化成**三值**(HEAD 上 `28px 28px 8px`)⇒ `== "10px"`
+# 这种断言不可满足。长手读法在两处消费者上都成立,故一律读长手。
+RADIUS_CORNER_PROPS = (
+    "border-top-left-radius",
+    "border-top-right-radius",
+    "border-bottom-left-radius",
+    "border-bottom-right-radius",
+)
 
 
 def load_check05():
@@ -365,6 +389,105 @@ def run_screenshots(page, out_dir, tmp_root):
        sorted(f"{s}.png" for s in c05.STATES), pngs)
 
 
+# ---------------------------------------------------------------------------
+# radius-snapshot — `#chat-input-row input` 的单元素前后取证(计划 02)
+# ---------------------------------------------------------------------------
+# 迭代 vs 取值:`for (const name of cs)` 走的是 CSSStyleDeclaration 的**迭代名单**
+# (实测在该元素上恰 599 个长手名),其中**不含** `border-radius` 简写 —— 故 dump 里
+# 没有简写键是正常的,读 `computed['border-radius']` 会得到 undefined。需要简写值时
+# 只能另用 `getPropertyValue('border-radius')` 显式取,不能从这个字典取。
+_SNAPSHOT_JS = """(sel) => {
+  const el = document.querySelector(sel);
+  if (!el) return {error: 'element-not-found'};
+  const cs = getComputedStyle(el);
+  const computed = {};
+  for (const name of cs) { computed[name] = cs.getPropertyValue(name); }
+  const r = el.getBoundingClientRect();
+  return {
+    computed: computed,
+    rect: {x: r.x, y: r.y, width: r.width, height: r.height,
+           top: r.top, right: r.right, bottom: r.bottom, left: r.left},
+  };
+}"""
+
+
+def radius_snapshot(page, label, out_dir, tmp_root):
+    """对 RADIUS_SNAPSHOT_SEL 取一次单元素快照,写 <DIR>/input-radius-<label>.{json,png}。
+
+    产物四样:整份 computed style 的 dump(键级「外观零变化」判据)、
+    `getBoundingClientRect()`(布局零变化判据)、元素级 PNG(逐字节比对判据)、
+    以及捕获时 `frontend/style.css` 的 sha256 —— 后者把证据钉到具体版本,两份 sha256
+    不同即是「这是两次真实读数、不是同一次复制两份」的可复核凭据。
+    """
+    item = "radius-snapshot"
+    print(f"\n=== radius-snapshot: {RADIUS_SNAPSHOT_SEL} 单元素取证(label={label})===", flush=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    proj = c05.make_fixture("p1", tmp_root)
+    c05.enter_project(page, proj)
+
+    # 截图前先让元素失焦:焦点环与闪烁的光标都会进入元素截图,使前后比对失去可比性。
+    page.evaluate("() => { const el = document.activeElement; if (el && el.blur) el.blur(); }")
+
+    reading = page.evaluate(_SNAPSHOT_JS, RADIUS_SNAPSHOT_SEL)
+    if not isinstance(reading, dict) or reading.get("error") or "computed" not in reading:
+        reason = reading.get("error") if isinstance(reading, dict) else str(reading)
+        blocked(item, f"[{label}] {RADIUS_SNAPSHOT_SEL} 的 computed + rect 可读",
+                "computed 与 rect 均可读", str(reading),
+                f"元素读不到:{reason} ⇒ 取证跑不起来,绝不记 PASS")
+        return
+
+    computed = reading["computed"]
+    rect = reading["rect"]
+    tokens = {name: resolve_token(page, name) for name in RADIUS_TOKENS}
+    style_sha = hashlib.sha256(STYLE_CSS.read_bytes()).hexdigest()
+
+    info(f"radius-snapshot [{label}] 产物目录与源码指纹",
+         f"out_dir={out_dir} style_css_sha256={style_sha}")
+    info(f"radius-snapshot [{label}] computed style 键数", str(len(computed)))
+    info(f"radius-snapshot [{label}] rect", json.dumps(rect, ensure_ascii=False))
+    info(f"radius-snapshot [{label}] 四个 --radius-* 令牌解析值",
+         " ".join(f"{name}={tokens[name]}" for name in RADIUS_TOKENS))
+    info(f"radius-snapshot [{label}] 四个物理角长手",
+         " ".join(f"{prop}={computed.get(prop)}" for prop in RADIUS_CORNER_PROPS))
+
+    ok_true(item, f"[{label}] computed style dump 键数 > 100(整份 dump 可读)",
+            len(computed) > 100, "> 100", str(len(computed)),
+            note="由属性名迭代构建 —— 该名单不含 border-radius 简写")
+    ok_true(item, f"[{label}] 四个物理角长手都在 dump 的迭代名单里",
+            all(prop in computed for prop in RADIUS_CORNER_PROPS),
+            f"四个都在:{list(RADIUS_CORNER_PROPS)}",
+            str([p for p in RADIUS_CORNER_PROPS if p not in computed]))
+    ok_true(item, f"[{label}] 存续三档 --radius-sm / --radius-md / --radius-pill 都解析出值",
+            all(tokens[name] is not None
+                for name in ("--radius-sm", "--radius-md", "--radius-pill")),
+            "三条都非 None",
+            " ".join(f"{name}={tokens[name]}"
+                     for name in ("--radius-sm", "--radius-md", "--radius-pill")),
+            note="--radius-lg 不在此列:收敛前解析出 28px、收敛后应为 None,这一处前后不同"
+                 "是**预期**的差异,故不作断言")
+
+    png_path = out_dir / f"input-radius-{label}.png"
+    page.locator(RADIUS_SNAPSHOT_SEL).screenshot(path=str(png_path))
+    width, height = png_size(png_path)
+    ok_true(item, f"[{label}] 元素级截图落盘且宽高非零",
+            width is not None and height is not None and width > 0 and height > 0,
+            "width > 0 and height > 0", f"{width}x{height}", note=str(png_path))
+
+    payload = {
+        "label": label,
+        "selector": RADIUS_SNAPSHOT_SEL,
+        "computed": computed,
+        "rect": rect,
+        "tokens": tokens,
+        "style_css_sha256": style_sha,
+    }
+    json_path = out_dir / f"input-radius-{label}.json"
+    json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+                         encoding="utf-8")
+    info(f"radius-snapshot [{label}] JSON 落盘", str(json_path))
+
+
 ITEMS = {"t1": t1, "t2": t2}
 
 
@@ -374,6 +497,11 @@ def parse_args():
                     help="只跑指定项:t1 / t2(可重复,或逗号分隔)")
     ap.add_argument("--screenshot", default=None, metavar="DIR",
                     help="遍历 check-05 的 5 个样本,每个样本出一张 1440x900 整窗截图到 DIR")
+    ap.add_argument("--radius-snapshot", nargs=2, default=None,
+                    metavar=("LABEL", "DIR"),
+                    help="对 #chat-input-row input 取一次单元素快照,写 "
+                         "<DIR>/input-radius-<标签>.{json,png};"
+                         "标签取 before(收敛前)/ after(收敛后)")
     ap.add_argument("--json", action="store_true",
                     help="把断言记录(c05.ROWS)全量序列化为 JSON 打到 stdout,供机器消费")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
@@ -390,6 +518,11 @@ def main():
     bad = [i for i in items if i not in ITEMS]
     if bad:
         raise SystemExit(f"ERROR: 未知项 {bad}(可用:{sorted(ITEMS)})")
+    if args.radius_snapshot and args.radius_snapshot[0] not in RADIUS_SNAPSHOT_LABELS:
+        raise SystemExit(
+            f"ERROR: --radius-snapshot 的标签 {args.radius_snapshot[0]!r} 不可用;"
+            f"可用:{list(RADIUS_SNAPSHOT_LABELS)}"
+        )
 
     # --json 时把人类可读输出改道 stderr,使 stdout 是一份可被 json.loads 解析的纯 JSON。
     real_stdout = sys.stdout
@@ -411,6 +544,9 @@ def main():
         page.set_default_timeout(20000)
         for name in items:
             ITEMS[name](page, tmp_root)
+        if args.radius_snapshot:
+            snap_label, snap_dir = args.radius_snapshot
+            radius_snapshot(page, snap_label, Path(snap_dir), tmp_root)
         if args.screenshot:
             run_screenshots(page, Path(args.screenshot), tmp_root)
     finally:
@@ -428,7 +564,11 @@ def main():
         if not args.keep:
             shutil.rmtree(tmp_root, ignore_errors=True)
 
-    summary = list(items) + (["shot"] if args.screenshot else [])
+    summary = list(items)
+    if args.radius_snapshot:
+        summary.append("radius-snapshot")
+    if args.screenshot:
+        summary.append("shot")
     print("\n=== 逐项结论 ===", flush=True)
     verdicts = {}
     for i in summary:

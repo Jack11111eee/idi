@@ -60,9 +60,9 @@
     }
   ],
   "next": {
-    "command": "/gsd:plan-phase 10",
-    "label": "Plan Phase 10",
-    "reason": "Phase 10 added — not planned yet"
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 10 of 2 · 43% · executing"
   },
-  "updated_at": "2026-09-27T08:43:06.683Z"
+  "updated_at": "2026-09-27T10:57:20.274Z"
 }

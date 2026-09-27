@@ -119,6 +119,7 @@
 **Requirements**: TABLE-01, TABLE-02, RADIUS-01, RADIUS-02, REG-03
 
 **Rationale**: 用户 2026-09-27 裁定「表格重做, 圆角刻度收敛。做这两个」,并在 `AskUserQuestion` 中逐项选定目标档位 —— **表格**:「表头浅底 + 仅横向分隔(推荐)」;**圆角**:「严格收敛: 8 / 10 / 胶囊(推荐)」。两项的选型依据同源:Phase 9 已经建立了 `gray-3 页面 < gray-2 内陷面 < 白卡片` 的三级 elevation 刻度,而表格与圆角是**唯二还没被收进这套语言**的构件。
+
 - **表格**:它是右栏占比最大的内容(`docs/discuss-round-N.md` 几乎全是表格),而现规则(全边框、零表头底色)读起来像电子表格,与白卡片语言冲突。选定的做法把表头底色落在 `--color-surface`(gray-2)——**正是那三级刻度里的"内陷面"档**,于是表格从"与卡片无关的网格"变成"卡片内的一个内陷块"。
 - **圆角**:`--radius-lg: 28px` 是 quick `260918-qrq` 那次临时视觉 pass 手调进来的,连 `04-UI-SPEC.md` 的圆角账本(4/8/pill)都没同步,属"从未并入刻度"的离群值。它只有 **2 处消费者**,且其中 `#chat-input-row input`(`min-height: 52px`)在 28px 下早已被 UA 钳到 26px —— 它**实际就是一个胶囊**,改记 `--radius-pill` 是**如实登记**,外观零变化。真正改变外观的只有 `.chat-user` 气泡一处(28px → 10px,收到卡片档,保留 `border-bottom-right-radius: var(--radius-sm)` 的尖角)。
 
@@ -156,10 +157,20 @@
 **Plans**: 4 plans
 
 Plans:
+**Wave 1**
 
 - [ ] idi-10-01-PLAN.md — 表格重做(表头 gray-2 浅底 + 仅横向分隔线)+ 新建运行时门 `scripts/check-10-idi10-validation.py`(骨架 + `t1` / `t2` + `--screenshot`)+ 表头新绘制面的对比度登记核实与「零新增 / 零放宽」逐字节证据
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] idi-10-02-PLAN.md — 圆角刻度收敛为 8 / 10 / 胶囊:删除 `--radius-lg`,`.chat-user` → `--radius-md`、`#chat-input-row input` → `--radius-pill`;给门追加 `r1` / `r2` 与 `--radius-snapshot` 前后并排取证
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] idi-10-03-PLAN.md — 五条浏览器门复跑 + 失败分诊 + 四个静态门 + pytest 基线 + `node --check` + 仓库卫生 + 供用户评审的截图与逐门原始日志
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] idi-10-04-PLAN.md — 连带指纹收口:实测「10 份覆盖 / 1 份可执行」并逐份取证;`idi-09-VERIFICATION.md` 以 HEAD 内容重新验证(非刷新),`verification.status` 由 `stale` 回到 `passed`
 
 **UI hint**: yes

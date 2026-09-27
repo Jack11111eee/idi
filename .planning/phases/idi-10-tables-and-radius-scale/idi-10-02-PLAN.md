@@ -28,7 +28,7 @@ must_haves:
     - "`--radius-md` **不得删除** —— `scripts/check-09-idi09-validation.py` 动态解析它做卡片断言(令牌相对,改值不破;**删该令牌会破**)。判据:`.venv/bin/python scripts/check-09-idi09-validation.py --item c1 --item c2` 仍 `exit=0`、0 FAIL / 0 BLOCKED"
     - "围栏内那条 `/* Radius — … values. */` 注释已由 `four values` 改为 `three values` 并记下被删的 28px 档与两处消费者的去向(注释与代码不互相矛盾);**注释里不得出现字面量令牌名 `--radius-lg`**(否则上面那条 `grep == 0` 立刻红),要指代它时用 `28px` 那一档 / 「former fourth step」这类行文"
     # ---- RADIUS-02 — re-attributed, not re-valued; the two destinations DIFFER on purpose ----
-    - "`.chat-user` 的计算 `border-radius` == 运行时解析的 `--radius-md`(**本阶段唯一外观真的变了的消费者**:HEAD 上 28px 大圆角气泡 → 10px 卡片圆角);其计算 `border-bottom-right-radius` 仍为 8px(等于解析后的 `--radius-sm`,气泡尾巴尖角**保留**)"
+    - "`.chat-user` 的计算 `border-radius` == 运行时解析的 `--radius-md`(**本阶段唯一外观真的变了的消费者**:HEAD 上 28px 大圆角气泡 → 10px 卡片圆角);其计算 `border-bottom-right-radius` 仍为 8px(等于解析后的 `--radius-sm`,气泡尾巴尖角**保留**)。该元素的读数由 harness 用**应用自身的** `appendChatMessage('user', …)` 造出探针气泡后取得(`scripts/ui-states/p1/` 无 `transcript.md` ⇒ 自然状态下 `.chat-user` 不存在;手法与 `scripts/check-05-ui-uat.py:876-879` 同款),每次读数前重建"
     - "`#chat-input-row input` 的计算 `border-radius` == 运行时解析的 `--radius-pill`(`999px`);四个角长手等值;计算 `min-height` 仍为 `52px`。**两处去向不同是承重点,不得「统一」成同一个令牌** —— 一律改成 `--radius-md` 会让输入框外观真的变化(胶囊 → 10px 圆角矩形),那是用户没选的档位"
     - "`#chat-input-row input` 的**外观与收敛前一致**,以收敛**前后**的运行时读数并排为证:(a) 该元素的整份 computed style 前后差异键集合非空、是五个圆角相关键的子集、且至少含四个角长手 —— 任何**其它**键出现差异即判失败;(b) `getBoundingClientRect()` 前后逐值相同(布局零变化);(c) 该元素的元素级截图前后**逐字节相同**。**不得**用「28px 会被钳成胶囊」这条算术推断替代上述任一条"
     - "`.chat-user` 与 `#chat-input-row input` 的规则块位置与选择器文本逐字未变(**就地改归属**,不搬迁、不追加覆盖规则);两条规则体上方各自带一段注释说明「为什么它去这一档」(否则会被后人「统一」掉)"
@@ -197,7 +197,7 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 | # | 符号 | 种类 | 用途 |
 |---|---|---|---|
 | 10 | `RADIUS_LITERALS` | 模块常量 | `{"--radius-sm": "8px", "--radius-md": "10px", "--radius-pill": "999px"}` —— 三档的两侧写死字面量(防止「令牌被改坏而消费者仍接线」时假绿) |
-| 16 | `r1(page, tmp_root)` | item 函数 | 圆角刻度:围栏内 `--radius-lg` 声明数 == 0、三档解析值与字面量逐条相符、`.chat-user` 计算 `border-radius` == `--radius-md` 且 `border-bottom-right-radius` == `--radius-sm` |
+| 16 | `r1(page, tmp_root)` | item 函数 | 圆角刻度:围栏内 `--radius-lg` 声明数 == 0、三档解析值与字面量逐条相符、`.chat-user` 计算 `border-radius` == `--radius-md` 且 `border-bottom-right-radius` == `--radius-sm`。`.chat-user` 的每一次读数前都用应用自身的 `appendChatMessage('user', …)` 造出探针气泡(`p1` fixture 无 `transcript.md`,自然状态下该元素不存在) |
 | 17 | `r2(page, tmp_root)` | item 函数 | `#chat-input-row input`:计算 `border-radius` == 解析后的 `--radius-pill`、四个角长手等值、`min-height` 仍为 `52px` |
 | 18 | `radius_snapshot(page, label, out_dir, tmp_root)` | 函数 | 对 `#chat-input-row input` 取单元素快照:整份 computed style dump + `getBoundingClientRect()` + 元素级 PNG + 捕获时 `frontend/style.css` 的 sha256;写 `<DIR>/input-radius-<label>.{json,png}` |
 | 21 | `parse_args()` 的 `--radius-snapshot {before,after} DIR` | CLI 参数 | 单元素前后取证模式(与 `--screenshot` 互斥使用优先;两者同时给出时先跑 item、再跑 snapshot、最后跑 screenshots) |
@@ -418,6 +418,8 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     - `scripts/check-10-idi10-validation.py` —— 其 `t1` / `t2` / `fence_text()` / `ITEMS` / `parse_args()` / `main()` 的现有形态(本任务按其同一形态追加)
     - `scripts/check-09-idi09-validation.py` 的 `c1` 段 —— 令牌级「两侧都写死」的断言形态(`SHADOW_CARD_LITERAL` / `CARD_WHITE` 与 `resolve_*` 的双重核对)、元素读不到时 `blocked()` 的处置、`LEFT_SECTIONS` 这类显式清单常量的写法
     - `scripts/check-06-idi05-validation.py` 里读 `borderTopLeftRadius` 的那一段 —— 它只经 `info()` 打印、**不**断言;本任务要补的正是那条「只打印不断言」的缝
+    - `scripts/check-05-ui-uat.py:876-879` 的 `.chat-user` 探针构造段(`page.evaluate` 里调**应用自身的** `appendChatMessage('user', …)` 造出气泡,再读它的 `background-color`)与 `:1486` 的纪律登记「这五项断言是**造出容器再断言**,不靠『fixture 里本来就有 .chat-bubble』」—— **本任务 `r1` 要照抄的手法**:`.chat-user` 在 `p1` 下自然不存在,必须先造出探针节点再读数
+    - `scripts/ui-states/p1/` 的目录内容(实测只有 `.gitkeep`、无 `transcript.md`)—— 证明 `.chat-user` 不是 fixture 自然渲染出来的
     - `frontend/style.css` 的 `.chat-user` / `#chat-input-row input` 规则体(Task 2 之后的最终形态)
   </read_first>
   <action>
@@ -431,10 +433,12 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
 
     (a) **源码文本级**:`fence_text()` 取出围栏内文本,断言其中 `--radius-lg` 计数为 `0`(标签写清「围栏内零声明残留」,并注明这一条读的是文件文本而非渲染结果 —— 与渲染断言互补)。
     (b) **令牌级双侧**:对 `RADIUS_LITERALS` 的三个条目,`resolve_token` 的解析值必须等于写死的字面量(逐条一断言)。
-    (c) **`.chat-user` 元素级**:计算 `border-radius` == `resolve_token("--radius-md")`(HEAD 上是 `28px`,收敛后是 `10px` —— 标签里写真值来源);计算 `border-bottom-right-radius` == `resolve_token("--radius-sm")`(8px 尖角保留);另打印一条 `info()` 记下 `border-bottom-left-radius` / `border-top-right-radius` 的原始读数,便于独立诊断「尖角只在一角」这件事。
-    (d) **`.chat-user` 的四个角长手**逐条断言,标签里写清哪一个角是尖角 —— 这样「保留尖角」这一条不会被后人误读成「四角统一」。
+    (c) **先造出 `.chat-user` 探针气泡,再读它(这一步不是可选的,跳过它整组断言必落 BLOCKED)。** `.chat-user` 由 `appendChatMessage('user', …)` 产生,气泡源是 `transcript.md` 经 `renderTranscript()` 灌入的;而 `scripts/ui-states/p1/` **只有 `.gitkeep`**、无 `transcript.md` ⇒ `p1` 的自然状态下**不存在** `.chat-user`,直接 `read_style(page, ".chat-user", …)` 只会拿到 `None` 并落 BLOCKED。本仓库对这件事的既有做法同样是**造出容器再断言**:`scripts/check-05-ui-uat.py:876-879` 正是先 `page.evaluate("() => { appendChatMessage('user', 'harness: .chat-user 探针'); }")` 再读该元素的 `background-color`。本任务照抄这一手 —— 用**应用自身的** `appendChatMessage` 造节点(真实渲染路径,零网络、零 AI 调用),断言才读得到元素。
+    ⚠ **每一次读 `.chat-user` 之前都要重新造一次**(不能只在开头造一次):该节点是 harness 造的、不在 fixture 里,任何重新进入样本 / 重新加载都会把它清掉;本步既要读计算 `border-radius` 与四个角长手、又要读一条诊断 `info()`,**每次读之前都重新 `appendChatMessage` 一次**,否则后一次读数会落 BLOCKED。
+    (d) **`.chat-user` 元素级**:在 (c) 造出探针之后,计算 `border-radius` == `resolve_token("--radius-md")`(HEAD 上是 `28px`,收敛后是 `10px` —— 标签里写真值来源);计算 `border-bottom-right-radius` == `resolve_token("--radius-sm")`(8px 尖角保留);另打印一条 `info()` 记下 `border-bottom-left-radius` / `border-top-right-radius` 的原始读数,便于独立诊断「尖角只在一角」这件事。
+    (e) **`.chat-user` 的四个角长手**逐条断言,标签里写清哪一个角是尖角 —— 这样「保留尖角」这一条不会被后人误读成「四角统一」。
 
-    元素读不到或令牌解析不出时走 `blocked()`,**绝不记 PASS**。
+    元素读不到或令牌解析不出时走 `blocked()`,**绝不记 PASS**;但 `.chat-user` 在 (c) 造出探针后**仍**读不到时按 **FAIL** 处理(说明 `appendChatMessage` 没生效、或该类名已改),不得以 BLOCKED 收场。
 
     **第 3 步 —— `r2(page, tmp_root)`(`#chat-input-row input` 的胶囊归属)。**
 
@@ -476,13 +480,14 @@ Output: `frontend/style.css` 围栏内删一行 + 注释改写 + 两处消费者
     - `.venv/bin/python scripts/check-10-idi10-validation.py --item r2` 的 `=== 逐项结论 ===` 块里 `r2` 的 FAIL 与 BLOCKED 计数均为 0,末行 `exit=0`。
     - `--item t1 --item t2` 仍全绿(计划 01 的表格断言未被本阶段打破)。
     - `r1` 的断言里含一条读围栏文本的 `--radius-lg` 零计数断言,以及三条「`resolve_token` 解析值 == 写死字面量」的令牌级断言(`RADIUS_LITERALS` 三个条目逐条覆盖)。
+    - `r1` 在读 `.chat-user` 的**每一次**读数之前都用应用自身的 `appendChatMessage('user', …)` 造出探针气泡(与 `check-05-ui-uat.py:876-879` 同款手法),因此该元素的每一条读数都读到了真实元素而非 `None`;`r1` 的 FAIL / BLOCKED 计数为 0 即证明这一点。**不得**依赖 `p1` fixture 自然存在 `.chat-user`(实测不存在:`scripts/ui-states/p1/` 只有 `.gitkeep`)。
     - `r2` 的断言里含「四角长手彼此等值且 == `--radius-pill` 解析值」、「`min-height` == `52px`」、以及「`border-top-width` == `1px` 且 `border-top-style` == `solid`」三组判据。
     - `r1` / `r2` 的标签里点名了外观判据由 `radius-snapshots/` 的前后读数承担,不把 `getComputedStyle` 的计算值直接当作外观判据。
     - `ITEMS` 含四个键(`t1` / `t2` / `r1` / `r2`);`--item` 帮助文本列出四个取值。
     - 四个静态门全绿(`check-02` 为 `PASS: 0 failures`)。
     - `git diff -- scripts/check-05-ui-uat.py` 为空;`git status --porcelain scripts/` 仅有 `scripts/check-10-idi10-validation.py` 一处改动/新增。
   </acceptance_criteria>
-  <done>圆角刻度的渲染判据首次有了自动化运行时覆盖:`r1`(围栏内零残留 + 三档双侧字面量 + `.chat-user` 的 10px 与 8px 尖角)/ `r2`(输入框胶囊归属 + 四角等值 + `min-height` 与边框对照组)全 PASS、0 BLOCKED;计划 01 的 `t1` / `t2` 仍绿;四个静态门全绿。</done>
+  <done>圆角刻度的渲染判据首次有了自动化运行时覆盖:`r1`(围栏内零残留 + 三档双侧字面量 + `.chat-user` 的 10px 与 8px 尖角,探针气泡由应用自身的 `appendChatMessage` 造出)/ `r2`(输入框胶囊归属 + 四角等值 + `min-height` 与边框对照组)全 PASS、0 BLOCKED;计划 01 的 `t1` / `t2` 仍绿;四个静态门全绿。</done>
 </task>
 
 </tasks>

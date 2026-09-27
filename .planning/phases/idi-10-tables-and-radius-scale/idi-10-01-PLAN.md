@@ -173,7 +173,7 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
 | 6 | `CHECK05` | 模块常量 | 01 | `scripts/check-05-ui-uat.py` 的路径 |
 | 7 | `STYLE_CSS` | 模块常量 | 01 | `frontend/style.css` 的路径(供源码文本级断言) |
 | 8 | `TH_BG_LITERAL` | 模块常量 | 01 | `"rgb(249, 249, 249)"` —— gray-2 的两侧写死字面量(防止「令牌被改坏而消费者仍接线」时假绿) |
-| 9 | `TABLE_PROBES` | 模块常量 | 01 | `(样本, 宿主)` 对元组;宿主取自 `c05.MARKDOWN_HOSTS`,取值经实测钉死 |
+| 9 | `TABLE_PROBES` | 模块常量 | 01 | `(样本, 宿主)` 对元组;覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(`p1`)加一对自然渲染样本(`p3` / `#round-doc`)。**每个对在读数前都用应用自身的 `renderMarkdown` 注入含表格的探针 markdown**(见 Task 2 第 3 步),故不依赖 fixture 自然渲染 |
 | 10 | `RADIUS_LITERALS` | 模块常量 | 02 | `{"--radius-sm": "8px", "--radius-md": "10px", "--radius-pill": "999px"}` —— 三档的两侧写死字面量 |
 | 11 | `load_check05()` | 函数 | 01 | `importlib.util.spec_from_file_location` 加载 check-05(文件名含连字符,不能用 `import`) |
 | 12 | `fence_text()` | 函数 | 01 | 返回两行 `===== DESIGN TOKENS: START/END` 之间的文本(供「围栏内零声明」断言) |
@@ -282,12 +282,15 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     <fails_when>non-zero exit, or any line beginning with "FAIL", or the final line not "PASS: 0 failures", or the output containing no line matching "^PASS .*  --color-text on --color-surface$"</fails_when>
     <automated>grep -o '/\* PAIR' frontend/style.css | wc -l; grep -o '/\* ORDER' frontend/style.css | wc -l</automated>
     <fails_when>the two counts are not exactly "53" and "1" respectively (either number changing means a manifest entry was added or removed)</fails_when>
+    <automated>awk '/^\.markdown-body th, \.markdown-body td \{/{f=1} f{print} f&&/^\}/{exit}' frontend/style.css > /tmp/idi-10-thtd-rule.txt; grep -cF -- 'border: none;' /tmp/idi-10-thtd-rule.txt; grep -cF -- 'border-bottom: 1px solid var(--color-border-subtle);' /tmp/idi-10-thtd-rule.txt; grep -cF -- 'border: 1px solid var(--color-border);' /tmp/idi-10-thtd-rule.txt; grep -cF -- 'padding: var(--space-1) var(--space-2-5);' /tmp/idi-10-thtd-rule.txt; grep -cF -- 'font-size: var(--text-base);' /tmp/idi-10-thtd-rule.txt</automated>
+    <fails_when>the five printed counts are not exactly "1", "1", "0", "1", "1" in that order (the awk region must isolate the `.markdown-body th, .markdown-body td` rule body; a wrong region shows up as the wrong counts, so also eyeball the extracted file if any count is off)</fails_when>
     <automated>git status --porcelain frontend/</automated>
     <fails_when>output contains any path other than "frontend/style.css", or output is empty</fails_when>
   </verify>
   <acceptance_criteria>
     - `.markdown-body th, .markdown-body td` 规则体的选择器文本与 HEAD 逐字一致;其声明集 = HEAD 的 3 条 − `border: 1px solid var(--color-border);` + `border: none;` + `border-bottom: 1px solid var(--color-border-subtle);`(共 4 条)。`padding` 与 `font-size` 两行逐字未动。
-    - `grep -nF -- 'border: 1px solid var(--color-border);' frontend/style.css` 在 `.markdown-body` 段内**零命中**(那条声明已被就地改写,不是被覆盖);`grep -nF -- 'border: none;' frontend/style.css` 与 `grep -nF -- 'border-bottom: 1px solid var(--color-border-subtle);' frontend/style.css` 各命中恰好 1 行,且两行同属 `.markdown-body th, .markdown-body td` 规则体。
+    - **规则体域内计数**(用 `awk` 取 `.markdown-body th, .markdown-body td {` 到其闭合 `}` 之间的行域,再在该域内 `grep`):`border: none;` 恰 **1** 行、`border-bottom: 1px solid var(--color-border-subtle);` 恰 **1** 行、`border: 1px solid var(--color-border);` **零**行(那条声明已被就地改写,不是被覆盖);`padding: var(--space-1) var(--space-2-5);` 与 `font-size: var(--text-base);` 各恰 **1** 行。
+    - **全文计数另记,且不得用全文裸计数代替域内计数**(HEAD 现状会让全文计数误报,故两条判据必须分开写):`grep -cF -- 'border: none;' frontend/style.css` == **2**(本任务新增的 1 行 + `#selection-menu button` 规则体内**既有**的 1 行 —— HEAD 上它已是 1);`grep -cF -- 'border: 1px solid var(--color-border);' frontend/style.css` == **2**(`#main-pane > section` 与 `#doc-panel` 两处容器规则,均**不在** `.markdown-body` 内;HEAD 上是 3,第 3 处正是被就地改写的那条);`grep -cF -- 'border-bottom: 1px solid var(--color-border-subtle);' frontend/style.css` == **1**(HEAD 上是 0)。
     - `grep -nF -- '.markdown-body th { background: var(--color-surface); }' frontend/style.css` 命中恰好 1 行。
     - `.markdown-body table { border-collapse: collapse; }` 逐字未动;`.markdown-body` 段的其它规则(`h1` / `h2` / `h3` / `p` / `ul, ol` / `blockquote` / `code`)逐字未动。
     - `git diff -- frontend/style.css` 人工逐行核对:改动**全部**落在 `.markdown-body table` / `th, td` 附近;新增的 `.markdown-body th` 块位于 `th, td` 并集规则之后、`.markdown-body code` 规则之前;**没有任何既有规则块被移动**(diff 里不存在「先删后加同一规则块」的形态)。
@@ -309,8 +312,10 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     - `scripts/check-09-idi09-validation.py` **全文** —— 本任务要照抄的 exact 先例:文件头 docstring 的「为什么另开一个文件」论证形态、`load_check05()`、`png_size()`、令牌级「两侧都写死」的断言形态、元素读不到时走 `blocked()` 绝不记 PASS 的纪律、`ITEMS` 派发表、`parse_args()`、`main()` 的服务生命周期 + Playwright 启动 + `=== 逐项结论 ===` 汇总 + 退出码语义、`run_screenshots()`
     - `scripts/check-05-ui-uat.py` 的 `ensure_server()` / `make_fixture()` / `enter_project()` / `read_style()` / `resolve_color()` / `resolve_token()` / `effective_bg()` / `ok()` / `ok_true()` / `blocked()` / `info()` / `norm()` / `ROWS` / `item_verdict()` —— **本文件复用的全部设施,一行都不改**
     - `scripts/check-05-ui-uat.py` 的 `STATES = ["p1", "p12", "p3", "checking", "archive"]` 与 `MARKDOWN_TARGETS` / `MARKDOWN_HOSTS`(4 个 doc 宿主:`#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check`;另有 5 个 embedded 目标)
-    - `scripts/check-05-ui-uat.py` 的 `[p1] .markdown-body td font-size == var(--text-base)` 断言及其探针宿主 `#draft-content` —— 它是**已知**存在 `<td>` 的那个宿主(phase 9 的 `gate-logs/check-05-full.log` 里该断言实测 PASS:expected=14px actual=14px),故 `#draft-content` 是表格探针的一个有据可依的宿主
-    - `scripts/ui-states/` 的样本内容 —— `scripts/ui-states/p3/docs/discuss-round-2.md` 与 `scripts/ui-states/archive/docs/discuss-round-2.md` 各有 15 行以 `|` 开头的 markdown 表格行;`scripts/ui-states/p12/docs/draft.md` 零行。**本任务用它做宿主实测的依据**
+    - `scripts/check-05-ui-uat.py` 的 item4 注入段(`page.evaluate` 里用 `renderMarkdown(md)` 把含表格的探针 markdown 写进 `list(MARKDOWN_HOSTS)` 的每一个宿主,随后才读 `td` 的 `font-size`)—— **本任务要照抄的注入手法**:用应用自身的渲染函数造出探针节点再读数,零网络、零 AI 调用、真实代码路径
+    - `scripts/check-05-ui-uat.py` 的 `[p1] .markdown-body td font-size == var(--text-base)` 断言 —— 它锁死的是 `td` 的 `font-size`(本任务一字不动);注意它的 `#draft-content td` 之所以存在,是因为**同一函数前一段刚注入过含表格的 markdown**,不是 `p1` fixture 的自然渲染。**不得**把那次 PASS 当成「`p1` 的 `#draft-content` 本来就有 `<td>`」的证据
+    - `scripts/check-05-ui-uat.py` 的 `#draft-content` / `#brainstorm-content` / `#round-doc` / `#latest-check` 四个 doc 宿主在 `p1` 下**全部存在于 DOM**(item4 的注入循环对四个宿主逐一取 `document.querySelector` 而不判空,phase 9 实测通过)—— 这是本任务把四个宿主都纳入 `TABLE_PROBES` 的依据
+    - `scripts/ui-states/` 的样本内容(规划期实测)—— `p1` 目录下**只有 `.gitkeep`**;`p12/docs/draft.md`、`checking/DESIGN.md`、`checking/docs/DESIGN-check-2.md`、`archive/DESIGN.md`、`archive/docs/DESIGN-check-1.md` 的以 `|` 开头的表格行数**均为 0**;含表的只有 `p3/docs/discuss-round-{1,2}.md`(17 / 15 行)与 `archive/docs/discuss-round-{1,2}.md`(17 / 15 行)。而 `archive` 首屏由 `loadArchiveView()` 渲染的是 `DESIGN.md`(0 行表格),轮次文档只在用户切轮次选择器时才加载 ⇒ **自然首屏只有 `p3` 一个样本有表**。**本任务因此不得靠「哪个宿主本来就有表」选点**
     - `.planning/phases/idi-10-tables-and-radius-scale/idi-10-PATTERNS.md` §`scripts/check-10-idi10-validation.py` —— 模块级设施的复用形态、令牌级「两侧都写死」的形态、BLOCKED 纪律、CLI / 退出码 / 汇总形状、浏览器路线的实测结论(不提供 `--browser`,固定 bundled)
     - `scripts/probe-card-border-token.py` —— 「一次性探针 vs 门」的分野先例(避免把探针的写法误当门的写法)
   </read_first>
@@ -330,13 +335,27 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
 
     令牌级「两侧写死」常量:`TH_BG_LITERAL = "rgb(249, 249, 249)"`(gray-2)。注释里写明为什么写死:两侧都从同一个令牌解析时,令牌被改坏也照样 PASS。
 
-    `TABLE_PROBES`:一个 `(样本, 宿主)` 元组。**先按下述初值实现,再用第 4 步的实测输出钉死它**:
-    `TABLE_PROBES = (("p1", "#draft-content"), ("p3", "#round-doc"))`。
-    两个取值的依据:(a) `#draft-content` 在 `p1` 下确有 `<td>` —— phase 9 的 `gate-logs/check-05-full.log` 实测该宿主上的 `td font-size` 断言 PASS;(b) `#round-doc` 在 `p3` 下渲染 `scripts/ui-states/p3/docs/discuss-round-2.md`,该文件有 15 行 markdown 表格行。
+    `TABLE_PROBES`:一个 `(样本, 宿主)` 元组,取值为
+
+    `TABLE_PROBES = (("p1", "#draft-content"), ("p1", "#brainstorm-content"), ("p1", "#round-doc"), ("p1", "#latest-check"), ("p3", "#round-doc"))`
+
+    —— 覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(在 `p1` 下四个都在 DOM),外加一对**自然渲染**的样本(`p3` / `#round-doc` 渲染 `scripts/ui-states/p3/docs/discuss-round-2.md`,该文件含 SC1 点名的三个机器可解析表)。
+
+    **为什么必须「先注入、再读数」而不是依赖 fixture 自然渲染(这条是承重的,不是风格偏好)。** 规划期逐样本实测:`scripts/ui-states/p1/` 只有 `.gitkeep`,`p12` / `checking` / `archive` 的文档表格行数**全部为 0**(`archive` 的两个轮次文档虽含表,但首屏 `loadArchiveView()` 只把 `DESIGN.md` 渲染进 `#round-doc`)⇒ 5 个样本 × 4 个宿主的笛卡尔积里**只有 `(p3, #round-doc)` 一对**自然有表。靠「哪个宿主本来就有表」选点,门就退化成**单点门** —— 本项目已登记过「只探一个宿主」的漏检教训。本仓库对这件事的既有解法是**造出容器再断言**:`scripts/check-05-ui-uat.py:1486` 逐字登记「这五项断言是**造出容器再断言**,不靠『fixture 里本来就有 .chat-bubble』」,其 item4 在 `:1086-1096` 正是用**应用自身的 `renderMarkdown`** 把一段含表格的 markdown 注入全部 doc 宿主后再读数。本任务照抄这一手 —— 注入走的是真实渲染路径(零网络、零 AI 调用),且注入后每个对都真的渲染出表格。
 
     **第 3 步 —— 两个断言集。**
 
-    `t1(page, tmp_root)` — **表头**。对 `TABLE_PROBES` 每一项:进入该样本、取该宿主。先打印一行 `info()` 诊断,记下该宿主的 `th` / `td` 计数(用 `page.evaluate` 数 `querySelectorAll`),再逐条断言:
+    **共用的「造出容器再断言」前置(每个 `(样本, 宿主)` 对都必须走,不许省)。** 定义一个模块级常量 `TABLE_PROBE_MD`,内容是一段**含表头与数据格**的最小 markdown(表头行 + 分隔行 + 至少一行数据,例如三列两行)。对每个 `(样本, 宿主)` 对,顺序固定为:
+
+    1. `c05.make_fixture(样本, tmp_root)` + `c05.enter_project(page, 宿主所在项目)`;
+    2. **注入**:`page.evaluate` 里取 `document.querySelector(宿主)`,清空它,再 `host.appendChild(renderMarkdown(TABLE_PROBE_MD))` —— 与 `check-05-ui-uat.py:1086-1096` 同款手法,用的是**应用自身的** `renderMarkdown`(真实渲染路径,零网络、零 AI 调用);
+    3. **断言注入成功**:注入后该宿主的 `td` 计数必须 > 0(用 `page.evaluate` 数 `querySelectorAll`)。**注入静默失败时立刻记 FAIL**,否则后面的读数会退化成对空宿主的空转断言(读不到元素只会落 BLOCKED,而 BLOCKED 不是 PASS);
+    4. 打印 `info()` 诊断行,记下该样本 / 宿主名与注入后的 `th` / `td` 计数;
+    5. 逐条断言(见下)。
+
+    为省时间,**按样本分组**:同一 `样本` 的多个宿主只 `enter_project` 一次,对该样本的每个宿主各注入一次再读数。不得为了省事只注入一个宿主后把读数复制到其它宿主。
+
+    `t1(page, tmp_root)` — **表头**。按上面 1–5 的固定顺序遍历 `TABLE_PROBES`,对 `th` 逐条断言:
     - `th` 的计算 `background-color` == `resolve_color("--color-surface")`(标签里带样本名与宿主名);
     - **令牌级两侧写死**:`resolve_color("--color-surface")` == `TH_BG_LITERAL`;
     - `th` 的计算 `border-bottom-width` == `1px` 且 `border-bottom-style` == `solid`;
@@ -344,16 +363,20 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     - `th` 的计算 `border-left-width` / `border-right-width` / `border-top-width` 均为 `0px`;
     - **对照组**(证明没顺手改别的):`th` 的计算 `font-size` == `resolve_token("--text-base")`、计算 `padding` == HEAD 值(`var(--space-1) var(--space-2-5)` 解析后为 `4px 10px`)。
 
-    `t2(page, tmp_root)` — **数据格**。同样遍历 `TABLE_PROBES`,对 `td` 断言:
+    `t2(page, tmp_root)` — **数据格**。同样按第 3 步 1–5 的固定顺序(含**逐宿主注入**与注入成功断言)遍历 `TABLE_PROBES`,对 `td` 断言:
     - 计算 `border-left-width` / `border-right-width` / `border-top-width` 均为 `0px`(HEAD 上是 `1px` —— 这是 SC1 对「不再有竖线与外框」的逐字操作定义,标签注释里引用它);
     - 计算 `border-bottom-width` == `1px`、`border-bottom-style` == `solid`、`border-bottom-color` == `resolve_color("--color-border-subtle")`;
     - **对照组**:计算 `font-size` == `resolve_token("--text-base")`(**这是 `check-05-ui-uat.py:1126` 锁死的属性,本阶段一字不动**)、计算 `padding` == HEAD 值。
 
     每条断言一律走 `ok` / `ok_true`:`read_style` 返回 `None` 或 `resolve_*` 解析不出时自动落进 BLOCKED 分支,**绝不记 PASS**。BLOCKED 的标签要写清是「元素读不到」还是「令牌解析不出」。
 
-    **第 4 步 —— 用实测钉死 `TABLE_PROBES`(本步骤是决定性的,不要跳过)。**
+    **第 4 步 —— 核实「每一个对都真的渲染出表格」(本步骤是决定性的,不要跳过)。**
 
-    首次运行 `t1` / `t2` 后读 INFO 行,核对每个 `(样本, 宿主)` 对的 `th` / `td` 计数:**计数为 0 的对必须被替换掉** —— 换到实测渲染出表格的 (样本, 宿主) 对上(可候选的范围:`check-05` 的 `STATES` × `MARKDOWN_HOSTS` 的笛卡尔积中任一组合)。把实测结果写死进 `TABLE_PROBES`,并**至少保留 2 个对**(ROADMAP SC1 要求「三个机器可解析表共用同一条规则…截图仍须取到至少两张作为证据」;2 个有据可依的宿主足以证明规则一致,同时避免单点门 —— 本项目已登记过「只探一个宿主」的漏检教训)。**不得**用「至少一个宿主有表」的弱形式收口。
+    首次运行 `t1` / `t2` 后读 INFO 行,核对每个 `(样本, 宿主)` 对的**注入后** `th` / `td` 计数:每一个对的 `td` 计数都必须 > 0。
+
+    ⚠ **计数为 0 的处置是「报回」,不是「换点」。** 因为每个对都已按第 3 步注入过,计数为 0 只可能是三种成因之一:注入本身失败(`renderMarkdown` 抛错 / 宿主在 `page.evaluate` 里取不到)、宿主选择器拼错、或 `p1` 下该宿主并不在 DOM。**这三种都是产品缺陷或探针缺陷,必须停下报回**并给出该对的原始读数 —— **不得**悄悄把它从 `TABLE_PROBES` 里删掉(删点会让门退化成单点门,正是本条要防的事),**不得**用「至少一个宿主有表」的弱形式收口。
+
+    `TABLE_PROBES` 的**至少 2 个对**这条判据因此是**结构性成立**的(5 个对里每个都注入了探针表),不再依赖 fixture 里恰好有哪个宿主带表。
 
     **第 5 步 —— `--screenshot DIR`。**
 
@@ -388,8 +411,8 @@ Output: `frontend/style.css` 的表格规则改造(就地改写一条 `border` �
     - 文件头 docstring 含「为什么另开一个文件」的实测论证(指出唯一接触点是 `check-05` 的 `td font-size` 断言、它断言的不是本阶段要改的属性、故 TABLE-01/02 零自动化覆盖)、运行方式、退出码语义三块。
     - `.venv/bin/python scripts/check-10-idi10-validation.py --item t1` 的 `=== 逐项结论 ===` 块里 `t1` 的 FAIL 与 BLOCKED 计数均为 0,末行为 `exit=0`。
     - `.venv/bin/python scripts/check-10-idi10-validation.py --item t2` 的 `=== 逐项结论 ===` 块里 `t2` 的 FAIL 与 BLOCKED 计数均为 0,末行为 `exit=0`。
-    - `t1` 的输出里含一条 INFO 行,逐条列出 `TABLE_PROBES` 中每个 `(样本, 宿主)` 对的 `th` / `td` 计数;且 `TABLE_PROBES` 中**每一个**对的 `td` 计数都 > 0(计数为 0 的对说明宿主选错,必须换到实测有表的对上)。
-    - `TABLE_PROBES` 至少含 **2** 个 `(样本, 宿主)` 对,且每一对都有实测依据(宿主名与样本名都不是凭空写的)。
+    - `t1` 的输出里含一条 INFO 行,逐条列出 `TABLE_PROBES` 中每个 `(样本, 宿主)` 对**注入后**的 `th` / `td` 计数;且**每一个**对的 `td` 计数都 > 0。每一个对在读数前都按第 3 步用应用自身的 `renderMarkdown` 注入过 `TABLE_PROBE_MD`,且注入成功本身有一条断言(注入后 `td` 计数 > 0)—— 判据不是「fixture 里本来就有表」。
+    - `TABLE_PROBES` 含 **5** 个 `(样本, 宿主)` 对(≥ 2 的下界由它满足),覆盖 `c05.MARKDOWN_HOSTS` 的**全部四个** doc 宿主(`p1` 下四个都在 DOM),另含一对自然渲染样本 `(p3, #round-doc)`;宿主名与样本名都不是凭空写的。**不得**为「凑绿」删减对 —— 计数为 0 的对按第 4 步报回,不换点、不删点。
     - `t2` 的输出里含 `[p1] .markdown-body td font-size` 的 PASS(或该断言在其探针对上的等价 PASS 行),证明被锁死的属性未被顺手改动 —— **不是 BLOCKED**。
     - `t1` / `t2` 的断言里,`--color-surface` 与 `--color-border-subtle` 的期望侧取自 `resolve_color` **且**另有一条把解析值与写死字面量(`TH_BG_LITERAL`)比对的令牌级断言(两侧都写死,防「令牌被改坏而消费者仍接线」时假绿)。
     - `.venv/bin/python scripts/check-10-idi10-validation.py --screenshot <DIR>` 出图后 `<DIR>` 下**恰有 5 个 PNG**,与 `c05.STATES` 逐项一一对应,每张为 1440×900(逐张断言)。

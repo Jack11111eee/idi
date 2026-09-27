@@ -44,7 +44,7 @@ must_haves:
     - "**本阶段不得改动 `scripts/check-05-ui-uat.py`**(它在 `idi-08` 的 `covered_files` 里,`idi-08` 不含 `frontend/style.css`)—— 改它会把连带指纹的重验面从 1 份变成 2 份。判据:`git diff -- scripts/check-05-ui-uat.py` 相对 HEAD **为空**"
     # ---- 截图(ROADMAP Deliverables)----
     - "`.planning/phases/idi-10-tables-and-radius-scale/screenshots/` 下存在覆盖 5 个状态样本(p1 / p12 / p3 / checking / archive)的 PNG,每张都是 1440×900 的整窗截图"
-    - "截图里可见表格改造的机械后果:文档区表格**没有竖线与外框**、表头有一条浅灰底、行间有极浅的横向分隔线;**至少两张**不同样本的截图各自呈现出机器可解析表(ROADMAP SC1 明写「截图仍须取到至少两张作为证据」)"
+    - "截图里可见表格改造的机械后果:文档区表格**没有竖线与外框**、表头有一条浅灰底、行间有极浅的横向分隔线。ROADMAP SC1 的「截图仍须取到**至少两张**作为证据」指的是**表**、不是**样本** —— 它紧接在「三个机器可解析表(批注回应表 / 覆盖维度表 / 未决问题清单)在截图里读数一致」之后,是在要求这三张表里至少取到两张的可见证据。而这三张表**同属一份文档**:`p3` 的当前轮是第 2 轮,`#round-doc` 首屏渲染 `scripts/ui-states/p3/docs/discuss-round-2.md`,该文件的 §1 / §2 / §3 正是这三张表(实测 `^|` 行 15 行,含三张表的表头与数据行)。⇒ **判据是「`p3` 的截图里同时可见这三张机器可解析表」**(三 ≥ 二,自动满足「至少两张」),**不是**「两个不同样本各自有表」"
     - "截图里可见圆角收敛的机械后果:`.chat-user` 气泡是 10px 卡片圆角(不再是 28px 的大圆角),其右下角仍是 8px 尖角;`#chat-input-row` 的输入框外观与收敛前一致"
     # ---- 原始证据 ----
     - "`.planning/phases/idi-10-tables-and-radius-scale/gate-logs/` 下每个门一个日志文件(文件名即门的名字),内含该门的**完整原文**输出(未被 head / tail 截断),供独立复核 —— 不是只记「绿」"
@@ -369,7 +369,8 @@ pytest.log                          node-check-app.log
   <read_first>
     - `scripts/check-10-idi10-validation.py` 的 `run_screenshots()` 与 `--screenshot DIR`(计划 01 产出)—— 它遍历的样本清单与逐张宽高断言
     - `scripts/check-05-ui-uat.py` 的 `STATES = ["p1", "p12", "p3", "checking", "archive"]` 与 `HIDDEN_MATRIX` / `MARKDOWN_HOSTS` —— 5 个样本各自哪个面板可见、哪个宿主承载文档(这决定每张图能看到哪张表、哪个容器)
-    - `scripts/ui-states/` 的样本内容 —— `scripts/ui-states/p3/docs/discuss-round-2.md` 与 `scripts/ui-states/archive/docs/discuss-round-2.md` 各有 15 行 markdown 表格行;`scripts/ui-states/checking/DESIGN.md` 与 `scripts/ui-states/p12/docs/draft.md` 的表行数需当场实测并记录
+    - `scripts/ui-states/` 的样本内容(规划期实测,执行器须当场复核)—— 含表行的只有 `p3/docs/discuss-round-{1,2}.md`(17 / 15 行以 `|` 开头)与 `archive/docs/discuss-round-{1,2}.md`(17 / 15 行);`p1` 目录**只有 `.gitkeep`**;`p12/docs/draft.md`、`checking/DESIGN.md`、`checking/docs/DESIGN-check-2.md`、`archive/DESIGN.md`、`archive/docs/DESIGN-check-1.md` 的表格行数**均为 0**。⚠ `archive` 的轮次文档虽含表,但 `loadArchiveView()` 首屏只把 `DESIGN.md`(0 行表格)渲染进 `#round-doc`,轮次文档只在用户切轮次选择器时才加载 ⇒ **自然首屏只有 `p3` 一个样本渲染表格**。这是「SC1 的『至少两张』指表不指样本」这条读法的实测依据
+    - `frontend/app.js` 的 `loadRoundsView()` / `loadRoundView()` —— 默认目标轮是 `current_round`(p3 即第 2 轮),故 `#round-doc` 首屏渲染 `docs/discuss-round-2.md`;该文件 §1「批注回应」/ §2「覆盖维度表」/ §3「未决问题清单」正是 DESIGN.md §6.4 点名的三张机器可解析表
     - `.planning/phases/idi-09-card-containers/idi-09-03-PLAN.md` Task 3 —— **同规格的出图与自检流程**(每张图至少能看到哪几件事、不要把「图出了」当「图对了」)
     - `frontend/style.css` 的 `.markdown-body table` / `th, td` 与 `.markdown-body th`(计划 01 的最终形态)、`.chat-user` 与 `#chat-input-row input`(计划 02 的最终形态)—— 截图要能看出这四处的机械后果
     - `.planning/ROADMAP.md` §`### Phase 10:` 的 Deliverables 最后一条与 Success Criteria 1、4
@@ -384,7 +385,7 @@ pytest.log                          node-check-app.log
 
     **第 2 步 —— 逐张自检至少能看到三件事(看不到就重出,不要把「图出了」当「图对了」)。**
 
-    (a) **表格没有竖线与外框**:文档区里的表格只有横向的浅色分隔线,表头有一条浅灰底,旁边没有竖线、没有外框。**至少两张不同样本**的截图各自呈现出机器可解析表(ROADMAP SC1 明写「截图仍须取到至少两张作为证据」)。
+    (a) **表格没有竖线与外框**:文档区里的表格只有横向的浅色分隔线,表头有一条浅灰底,旁边没有竖线、没有外框。**`p3` 的截图里要同时可见三个机器可解析表**(批注回应表 / 覆盖维度表 / 未决问题清单 —— 它们同在 `p3` 当前轮的 `docs/discuss-round-2.md` 的 §1 / §2 / §3),这满足 ROADMAP SC1 的「至少两张作为证据」(三 ≥ 二)。⚠ SC1 的「至少两张」指的是**表**、不是**样本**:自然首屏只有 `p3` 一个样本渲染表格(`p1` 目录只有 `.gitkeep`;`p12` / `checking` / `archive` 的文档零表格行,`archive` 首屏渲染的是零表格行的 `DESIGN.md`),**不得**把它读成「两张不同样本的截图各自有表」。
     (b) **圆角收敛可见**:样本里出现 `.chat-user` 气泡时,它是 10px 卡片圆角(不再是 28px 的大圆角),其右下角仍是 8px 尖角;`#chat-input-row` 的输入框外观与收敛前一致(它就是胶囊)。
     (c) **前序构图未被打破**:页面仍是灰的、容器仍是白卡片、卡片之间有灰色间隙(Phase 9 的成果在本阶段后仍成立)。
 
@@ -422,12 +423,12 @@ pytest.log                          node-check-app.log
     - 每张 PNG 的 IHDR 宽高都恰为 **1440×900**(逐张实测,不是「有文件就算」)。
     - `--screenshot` 命令 `exit=0`、0 FAIL / 0 BLOCKED,其 stdout 原文落在 `gate-logs/check-10-idi10-validation.log`。
     - SUMMARY 里列出全部截图路径,并逐张写明该样本下可见的面板与文档宿主(依 `HIDDEN_MATRIX` 与 `MARKDOWN_HOSTS`)。
-    - SUMMARY 里明确记录:**至少两张**不同样本的截图各自呈现出机器可解析表,且表格里没有竖线与外框、表头有浅灰底、行间有极浅横向分隔线。
+    - SUMMARY 里明确记录:**`p3` 的截图里同时可见三个机器可解析表**(批注回应表 / 覆盖维度表 / 未决问题清单,来自 `p3` 当前轮的 `docs/discuss-round-2.md` 的 §1 / §2 / §3),且表格里没有竖线与外框、表头有浅灰底、行间有极浅横向分隔线。ROADMAP SC1 的「至少两张」指**表**不指**样本**;SUMMARY 里要写明这条读法,并记下 `p3` 是唯一自然渲染表格的样本(其余四个样本的文档零表格行)。
     - SUMMARY 里记录截图里可见的圆角收敛机械后果(10px 气泡圆角 + 8px 尖角 / 输入框外观不变),以及 Phase 9 的构图(灰页面 / 白卡片 / 卡片间间隙)仍成立。
     - SUMMARY 里列出至少 4 条开放项(`.overlay-card` 底色 / 页面级留白 / 输入框 UA 白填充 / 图标与空状态),每条写明「本阶段未构建」及其依据;并重申 Out of Scope 中仍未点名的项不得预先构建。
     - `git status --porcelain frontend/` 仍仅列出 `frontend/style.css`(截图与日志未落进 `frontend/`)。
   </acceptance_criteria>
-  <done>5 个状态样本的 1440×900 截图落在 `.planning/phases/idi-10-tables-and-radius-scale/screenshots/`,其中至少两张呈现出「无竖线、无外框、表头浅灰底」的表格,且圆角收敛的机械后果可见;SUMMARY 列出截图路径、逐张说明、至少 4 条开放项与 Out of Scope 的重申。</done>
+  <done>5 个状态样本的 1440×900 截图落在 `.planning/phases/idi-10-tables-and-radius-scale/screenshots/`,其中 `p3` 的截图同时可见三个机器可解析表(满足 SC1 的「至少两张」,该判据指表不指样本),表格呈「无竖线、无外框、表头浅灰底」,且圆角收敛的机械后果可见;SUMMARY 列出截图路径、逐张说明、至少 4 条开放项与 Out of Scope 的重申。</done>
 </task>
 
 </tasks>
@@ -489,7 +490,7 @@ pytest.log                          node-check-app.log
 - 五条浏览器门复跑**无新增失败**:`check-05` 零 FAIL(退出码 2 系 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED),`check-06` / `check-07` / `probe-05` / `probe-07` 均 `exit=0`;`=== 逐项结论 ===` 块与 phase 9 基线逐项同形。
 - 任何门改动都是「期望侧换指到被本阶段刻意改变的事实」,断言形式与强度一字不变,并在 SUMMARY 里逐条登记;零阈值放宽、零判据弱化、零断言删除。**实测零处门改动**;`check-05` 未被改动一行。
 - 四个静态门全绿;pytest 基线 `219 passed, 6 skipped`;`node --check frontend/app.js` 通过。
-- 5 个状态样本的 1440×900 截图已产出,其中至少两张呈现出「无竖线、无外框、表头浅灰底」的表格;SUMMARY 列出截图路径、逐张说明、至少 4 条开放项与 Out of Scope 的重申。
+- 5 个状态样本的 1440×900 截图已产出,其中 `p3` 的截图同时可见三个机器可解析表(「至少两张」指表不指样本),表格呈「无竖线、无外框、表头浅灰底」;SUMMARY 列出截图路径、逐张说明、至少 4 条开放项与 Out of Scope 的重申。
 - `frontend/style.css` 与 `scripts/` 下全部文件在本计划内零改动;`frontend/app.js` / `index.html` / `vendor/` 零字节改动。
 - 逐门 stdout 原文落在 `gate-logs/`,使「门绿了」这一结论可被独立复核。
 </success_criteria>

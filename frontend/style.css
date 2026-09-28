@@ -565,7 +565,51 @@
      the card as the ground is simply stating where the colour is really drawn.
      Across the whole phase ZERO colour values changed, ZERO tier-1 primitives
      were added, and ZERO thresholds were touched (check-02's TEXT_MIN / NON_TEXT_MIN
-     are byte-identical to HEAD). */
+     are byte-identical to HEAD).
+
+     ---- Phase 11 page-ground RECOMPUTATION ledger (plan 02, SURF-02 / REG-02) ----
+
+     Phase 11 merges the raised ground back into the page ground. The unified
+     surface is now white — the exact value the raised ground carried — so this
+     is the reverse of Phase 9, and the elevation ladder is two rungs again:
+     unified surface white (1.000000) > inset control surface gray-2 (0.947307).
+     EIGHT entries are affected.
+
+     SIX of them were already on the page ground. Each is RECOMPUTED, not
+     refreshed: the ground moved one whole step (gray-3 -> white), so every one
+     of these numbers moved — and all six moved UP, because a brighter ground
+     raises the contrast of a dark foreground.
+
+       pair                              need  gray-3   white   disposition
+       --color-text TEXT                 4.5   14.30   16.29   name unchanged, passes
+       --color-text-secondary TEXT       4.5    5.19    5.92   name unchanged, passes
+       --color-text-muted TEXT           4.5    5.19    5.92   name unchanged, passes
+       --color-focus NON-TEXT            3.0    5.15    5.87   name unchanged, passes
+       --color-border-hover NON-TEXT     3.0    5.19    5.92   name unchanged, passes
+       --color-marker-active NON-TEXT    3.0    4.18    4.77   name unchanged, passes
+
+     The other TWO are RE-ATTRIBUTED, not recomputed. Phase 9 had moved them off
+     the page ground onto the raised ground; Phase 11 moves them back. Both
+     grounds are white, so their ratios are UNCHANGED — the number standing
+     still is a consequence of the two grounds sharing one value, NOT evidence
+     that nothing was recomputed. Read this sentence before concluding the
+     ledger is lazy:
+
+       pair                              need  raised   page   disposition
+       --color-marker-active TEXT        4.5    4.77    4.77   ground label -> page
+       --color-border-strong NON-TEXT    3.0    3.32    3.32   ground label -> page
+
+     The two THINNEST margins of this phase are in that set, and are called out
+     so a later reader does not nudge them: the marker's TEXT half needs 4.5 and
+     measures 4.77 (margin 0.27); the strong-border NON-TEXT half needs 3.0 and
+     measures 3.32 (margin 0.32). Any change to either foreground token, or to
+     the unified surface value itself, breaks them immediately.
+
+     Size ledger unchanged: 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry.
+     The ordering entry's two operands are both drawn on --color-surface (the
+     inset ground), which this phase does NOT touch, so its ratio is unchanged
+     at 0.363. Thresholds unchanged: check-02's TEXT_MIN / NON_TEXT_MIN are
+     byte-identical to HEAD. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */

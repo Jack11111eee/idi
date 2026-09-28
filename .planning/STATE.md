@@ -5,17 +5,17 @@ milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 11
 current_phase_name: 去卡片化与发丝分隔线
 status: executing
-stopped_at: Completed idi-11-01-PLAN.md
-last_updated: "2026-09-28T05:39:23.913Z"
+stopped_at: Completed idi-11-02-PLAN.md
+last_updated: "2026-09-28T06:27:20.929Z"
 last_activity: 2026-09-28
 last_activity_desc: Phase idi-11 execution started
-state_head: ba2ab6ac653a9f6dd5964a3a2f57f4b226570d60
+state_head: b1b4c42df40bbfd7afc3c0085dc662ea2ade4611
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
-  percent: 25
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 ## Current Position
 
 Phase: idi-11 (去卡片化与发丝分隔线) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Executing Phase idi-11
 Last activity: 2026-09-28 — Phase idi-11 execution started
 
-Progress: [███░░░░░░░] 25%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -111,6 +111,7 @@ Progress: [███░░░░░░░] 25%
 | Phase idi-10 P03 | 15 min | 3 tasks | 18 files |
 | Phase idi-10 P04 | 14 min | 2 tasks | 2 files |
 | Phase idi-11 P01 | 17min | 3 tasks | 1 files |
+| Phase idi-11 P02 | 27min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -292,6 +293,8 @@ Recent decisions affecting current work:
 - [Phase 11]: 两条发丝线均取既有语义令牌 --color-border-subtle(gray-6):竖线 = #doc-panel 的 border-left(盒内手段,零新增 DOM、零位移、天然跨满 stretch 高度);横线 = 新增规则块 #main-pane > section + section 的 border-top,恰命中后三个 section(第一个面板顶部不画)
 - [Phase 11]: 发丝线颜色必须双断言(计算色 == 运行时令牌 == 写死字面量 gray-6),只跟令牌比是自指的 —— 把令牌换成 gray-7 会让两侧一起变、恒过,而那正是 D-11-8 显式否决的备选;实测四条读数均为 rgb(217, 217, 217)
 - [Phase 11]: 计划对交互控件对照组的验收措辞经实测证伪 —— .overlay-card 在 HEAD 上从未声明 border(只有 border-radius + box-shadow),其计算 border-top-width 恒为 0px;本计划没有也不可能从它上面移除边界。对照组证据改写为「五个条目均保留非零圆角;其中四个真正承载 resting border 的控件保留 border-top-width = 1px;.overlay-card 保留 10px 圆角 + --shadow-overlay」。这不是放宽判据(没有任何门断言该项),禁止项由实测读数证实成立
+- [Phase 11]: 两个令牌(卡片底色与卡片阴影)删除:援引围栏抬头与 Hard Rule 5 / D-04「只声明被消费的令牌」,与 Phase 10 删 28px 圆角档位同型;新注释块显式写明「这不是通用围栏消费断言(G2 不在本里程碑范围)」
+- [Phase 11]: 2 条卡片地面 PAIR 的地面标签改指 --color-surface-page(只改标签,不改前景与种类);两地面同值(白)⇒比值不变(4.77 / 3.32),注释主动消解「比值不变 ≠ 没重算」;六条页面地面 PAIR 重算并全部上升(16.29 / 5.92 / 5.92 / 5.87 / 5.92 / 4.77)
 
 ### Pending Todos
 
@@ -393,8 +396,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T05:39:23.888Z
-Stopped at: Completed idi-11-01-PLAN.md
+Last session: 2026-09-28T06:27:20.816Z
+Stopped at: Completed idi-11-02-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

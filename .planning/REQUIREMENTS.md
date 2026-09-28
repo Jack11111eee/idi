@@ -25,7 +25,7 @@
 ### 门禁同步(承重)
 
 - [ ] **REG-01**: `check-09` 的 c1 / c2 / c3 / c4 判据**改写为断言新契约**(连续面 + 发丝线 + 留白),并**以变异测试证明改写后的判据会真的失败**;不得删除断言、不得降级为恒真、不得只断言"规则被写下了"
-- [ ] **REG-02**: `check-02` 对比度清单中**归属卡片底色(`--color-surface-card`)的配对**按元素**实际绘制面重新归属并重算**(非刷新旧值、非调色、非放宽阈值)
+- [x] **REG-02**: `check-02` 对比度清单中**归属卡片底色(`--color-surface-card`)的配对**按元素**实际绘制面重新归属并重算**(非刷新旧值、非调色、非放宽阈值)
 - [ ] **REG-03**: `check-05 --item 8` 的 sticky 断言余量(实测恰 `1.000px`,由 Phase 9 给 `#doc-panel` 加的 1px 上边框引入)在 `#doc-panel` 边界改动后**仍成立**;若不成立则判据同步更新并说明改了什么
 - [ ] **REG-04**: 五条浏览器门(`check-05` / `check-06` / `check-07` / `check-09` / `check-10`)+ 四个静态门(`check-01`…`check-04`)+ pytest 基线(**219 passed / 6 skipped**)复跑**零新增失败**;因 `frontend/style.css` 变更而作废的 `passed` 报告按既有「可执行性分诊」口径逐份处置。**门清单以磁盘现状为准** —— `scripts/` 实为 `check-01`…`check-07` + `check-09` + `check-10`,外加探针 `probe-05` / `probe-07`,**没有 `check-08`**(本文件初稿曾误列,2026-09-28 规划期由路线图子代理核盘纠正)
 
@@ -68,7 +68,7 @@
 | DIV-02 | Phase 11 | Complete |
 | DIV-03 | Phase 11 | Complete |
 | REG-01 | Phase 11 | Pending |
-| REG-02 | Phase 11 | Pending |
+| REG-02 | Phase 11 | Complete |
 | REG-03 | Phase 11 | Pending |
 | REG-04 | Phase 12 | Pending |
 | G1-01 | Phase 12 | Pending |

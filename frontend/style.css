@@ -771,6 +771,36 @@ html, body {
   box-shadow: none;
 }
 
+/* 左栏面板之间的发丝分隔线(Phase 11 / DIV-02 / D-11-10)。**新增**的规则块(不是就地
+   改写),按「追加,不重排」纪律紧随其所有者 #main-pane > section 之后(与 Phase 10 把
+   .markdown-body th 的规则放在被改写的 th, td 规则正后方同一手法)。
+
+   为什么只 3 条:#session-panel 是 DOM 第一个 section,相邻兄弟选择器永不匹配它 ⇒
+   恰命中后三个面板,第一个面板顶部不画线(顶部是窗口边缘,画了会读成多一条)。相邻
+   选择器按 **DOM 相邻**判定、不按渲染相邻,故中间两个面板带 .hidden 时 #ai-panel 仍带
+   自己的上边线 —— 两种显隐状态下都恰好 1 条可见分界。
+
+   特异性:本选择器(1-0-2)高于 #main-pane > section(1-0-1),故它对上边框的声明稳定
+   胜出,与源码先后无关 —— 但仍按「追加,不重排」放在其所有者正后方。
+
+   档位取 gray-6:它已是 .event-list / .annotation-item / .badge-answered / #latest-check
+   四处的边界色 ⇒ 零新增令牌、零新增颜色值。D-11-8 显式否决的备选是 gray-7 那一档:
+   它更重,且其两处卡片消费者搬走后只剩 .markdown-body blockquote 一处,语义会从
+   「卡片边界」漂成「引用条」。
+
+   线宽等于**内容列宽**(受 #main-pane > section 的 max-width 约束),不是主区全宽 ——
+   与参照物「分隔线随内容列等宽」一致。
+
+   **不登记 NON-TEXT 对比度对**:这条线不标识任何控件、不标识任何状态 ⇒ SC 1.4.11
+   不适用。这不是本阶段的新判据,而是本文件里**既有**的两处登记:
+   ① role-band 段 —— the other three borders stay in band 6-8: they are decorative,
+      and SC 1.4.11 does not apply to a border that identifies nothing
+   ② PAIR 清单头部 —— Decorative separators are deliberately absent — SC 1.4.11 does
+      not apply to a border that identifies nothing
+   反证:gray-6 在白面上仅 1.412,若按 NON-TEXT 阈值 3.0 判即 FAIL;要让线达标就得换
+   gray-9(3.319),那会把发丝线变成深灰框,与去卡片化的目标相反。 */
+#main-pane > section + section { border-top: 1px solid var(--color-border-subtle); }
+
 /* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条)
 
    Phase 11 反转 Phase 9 的同族卡片语言(D-11-2 / D-11-9):四边边界收成**单边竖线**,
@@ -781,7 +811,12 @@ html, body {
    竖线只落左边,不得留任何顶侧 border/offset:check-05 --item 8 的 sticky 容差
    (`abs(header.top - panel.top) <= 1.0`)今天恰好坐在边界上,残留的顶侧边框会把它顶破。
    `overflow-y: auto` 是**承重的滚动契约**,不得删除:它是右列的滚动者,L-1 的 sticky
-   表头依赖 #doc-panel 仍是最近的可滚祖先。 */
+   表头依赖 #doc-panel 仍是最近的可滚祖先。
+
+   **这条竖线不登记 NON-TEXT 对比度对**:与左栏横线同理,它是装饰性分隔 —— 不标识任何
+   控件、不标识任何状态 ⇒ SC 1.4.11 不适用(依据同上,本文件既有的两处登记:role-band
+   段的「they are decorative, and SC 1.4.11 does not apply to a border that identifies
+   nothing」与 PAIR 清单头部的「Decorative separators are deliberately absent」)。 */
 #doc-panel {
   flex: 0 0 var(--doc-panel-w);
   display: flex;

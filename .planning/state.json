@@ -1,7 +1,7 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v1.16",
+  "milestone": "v1.16 — 界面去卡片化 —— 连续面与发丝分隔线",
   "phases": [
     {
       "number": "1",
@@ -57,12 +57,22 @@
       "number": "10",
       "name": "表格重做与圆角刻度收敛",
       "status": "complete"
+    },
+    {
+      "number": "11",
+      "name": "去卡片化与发丝分隔线",
+      "status": "pending"
+    },
+    {
+      "number": "12",
+      "name": "G1 表头 band 与里程碑收口",
+      "status": "pending"
     }
   ],
   "next": {
-    "command": "/gsd:discuss-phase",
-    "label": "Discuss the first phase",
-    "reason": "Project initialized — plan your first phase"
+    "command": "/gsd:progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 11 of 2 · 0% · executing"
   },
-  "updated_at": "2026-09-28T02:40:54.913Z"
+  "updated_at": "2026-09-28T04:54:36.003Z"
 }

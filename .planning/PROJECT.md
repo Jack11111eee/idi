@@ -8,14 +8,24 @@
 
 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤——总设计文档通过自检、界面提示「使命完成」即为终点(只读归档态)。
 
-## Next Milestone Goals: v1.16 (未启动)
+## Current Milestone: v1.16 界面去卡片化 —— 连续面与发丝分隔线
 
-**状态:** v1.15 已 shipped 并归档(2026-09-28)。下一个里程碑尚未定义 —— 由 `/gsd-new-milestone` 走 提问 → 研究 → 需求 → 路线图 定义。
+**Goal:** 消除分块割裂感。把 v1.15 Phase 9 引入的「独立白卡片 + 12px 灰缝 + 768px 居中侧沟」整体反转为 ChatGPT 式的「连续白面 + 1px 发丝分隔线」。
+
+**状态:** 已启动(2026-09-28),处于需求定义阶段。用户已裁定:视觉方向 = 全站去卡片;落地方式 = 走 GSD 新阶段;范围 = 去卡片化 **连带 G1**(表头 band);跳过领域研究。
+
+**Target features:**
+
+- **连续白面** —— 左栏 4 个 section 与 `#doc-panel` 去掉 `border` / `box-shadow` / `--radius-md`,整页一张白面(控件仍保留圆角)
+- **留白策略反转** —— `#main-pane { gap: 12px }` 灰缝与 `max-width: 768px` 居中露出的左右灰沟归零
+- **发丝分隔线** —— 主区/文档区之间 1px 竖线(跨满高)、左栏面板之间 1px 横线,取既有语义令牌
+- **门禁同步(承重项)** —— `check-09` 的 c1/c2/c3/c4 逐条断言卡片语言、必红,须改写为断言新契约(**不得降级为删除断言**);`check-02` 归属卡片的对比度对重新归属;`check-05 --item 8` 的 sticky 余量为零须处置
+- **连带 G1** —— `#latest-check` 自带的 gray-2 灰底与 `th` 灰底同令牌相撞、表头 band 消失(用户裁定纳入本里程碑)
 
 **候选池(本次未纳入,待用户裁定):**
 
 - **v1.15 审计登记的待裁定项**(`milestones/v1.15-MILESTONE-AUDIT.md`,14 项):
-  - **G1(WARNING)** —— `#latest-check` 自身声明 `background: var(--color-surface)` **且自身是 `.markdown-body` 宿主**(`style.css:1532`),而 Phase 10 用同一令牌画 `th`(`:1118`)⇒ 自检报告里的表头是**灰底压灰底**、band 消失。不是假想:`backend/prompts.py:494-499` 要求每份自检报告都带这张表。仓库上一阶段刚为 `#doc-panel-header` 修过**同形**问题(`style.css:802-803`),Phase 10 又为 `th` 造了一次。仅视觉层级破坏(文字在 gray-2 上 15.48:1,无 a11y 失败)。需要一次决策:去掉 `#latest-check` 自己的灰底 / 给 checks-panel 的表头换一档 / 显式接受那里无 band。
+  - ~~**G1(WARNING)** —— `#latest-check` 自身声明 `background: var(--color-surface)` 与 `th` 灰底同令牌相撞、band 消失~~ ⇒ **已纳入 v1.16 范围**(用户裁定 2026-09-28「连带 G1」)。原判据:`#latest-check` 自身声明 `background: var(--color-surface)` **且自身是 `.markdown-body` 宿主**(`style.css:1532`),而 Phase 10 用同一令牌画 `th`(`:1118`)⇒ 自检报告里的表头是**灰底压灰底**、band 消失。不是假想:`backend/prompts.py:494-499` 要求每份自检报告都带这张表。仅视觉层级破坏(文字在 gray-2 上 15.48:1,无 a11y 失败)。
   - **G2(WARNING)** —— `frontend/style.css:48` 的 `--radix-gray-1: #fcfcfc` 已声明但**全仓库零消费**(Phase 9 把唯一消费者 `--color-surface-page` 改指 gray-3)。围栏自己的抬头(`style.css:42-44`)逐字写着「只声明被消费的令牌」—— Phase 10 正是援引这条规则删掉了 `--radius-lg`,却只给它加了一条**专用**的残留断言,没有一般化。`check-01` 结构上看不见它(它只扫围栏外)。⇒ 应删该 primitive 或重新消费,并补一条**通用的**围栏消费断言。
   - 其余:连带指纹「10 份覆盖 / 1 份可执行」的口径、`check-10` t1/t2 只钉令牌接线而非视觉契约、`WR-03/04/05` 三条加固残项、`IN-05`(`th` 仍渲染 UA 默认字重 700,在文件声明的三档 400/500/600 之外)、`IN-06`(表格语言只到 `.markdown-body`,9 个 markdown 宿主里 4 个覆盖)、`check-05` 一条陈旧 INFO、`check-05 --item 8` 的 sticky 断言余量为零、Nyquist 缺口(`idi-09` / `idi-10` 无 `VALIDATION.md`)。
 - **`999.2`** —— Phase 7 交互态契约暴露的三条既有 affordance 缺陷(仍在 Backlog;执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证)。
@@ -88,7 +98,9 @@ DESIGN.md v1.13 全范围 20 条需求(FLOW 7 + UI 4 + AI 5 + DATA 4)交付并�
 
 ### Active
 
-**无。** 下一个里程碑(v1.16)尚未定义 —— 由 `/gsd-new-milestone` 走 提问 → 研究 → 需求 → 路线图 定义。候选池见上方 `## Next Milestone Goals`。
+**v1.16 界面去卡片化 —— 连续面与发丝分隔线**(定义中,2026-09-28 启动):
+
+逐条 REQ-ID 见 `.planning/REQUIREMENTS.md`。本里程碑的目标是**反转** v1.15 Phase 9 的卡片语言(那是一次已 shipped 的用户裁定),故其中「门禁同步」是承重需求而非附属:现有 `check-09` 的 c1/c2/c3/c4 逐条断言卡片语言,反转后必红,必须改写为断言新契约。候选池见上方 `## Current Milestone` 的「候选池」。
 
 ### Out of Scope
 
@@ -190,4 +202,6 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-28 after v1.15 milestone — 2 阶段 / 7 计划 / 20 任务 / 12 需求全部交付并归档。界面首次拥有 elevation 层次(白卡片 + 页面下沉 + 三级刻度);表格重做与圆角刻度收敛。**后端与 `app.js` / `index.html` 逐字节未改。** 里程碑审计 `status: tech_debt`(12/12 需求满足、无 critical blocker,14 项 tech debt 已登记,其中 G1/G2 两条 WARNING 待下一里程碑裁定)。范围裁定两次均由用户逐项作出。本次同时把 `## Current State` 的旧里程碑内容归档进 `<details>`,并把 `## Next Milestone Goals` 从 v1.15 改写为 v1.16 的候选池。*
+*Last updated: 2026-09-28 — **v1.16「界面去卡片化 —— 连续面与发丝分隔线」已启动**(需求定义阶段)。用户裁定:视觉方向 = 全站去卡片(反转 v1.15 Phase 9 的 D-9-1/D-9-2/D-9-3);范围 = 去卡片化**连带 G1**(`#latest-check` 表头 band 消失,从候选池移入本里程碑);落地方式 = 走 GSD 新阶段;跳过领域研究。承重项是门禁同步:`check-09` 的 c1/c2/c3/c4 反转后必红,须改写为断言新契约。*
+
+*v1.15 收口记录(2026-09-28):2 阶段 / 7 计划 / 20 任务 / 12 需求全部交付并归档。界面首次拥有 elevation 层次(白卡片 + 页面下沉 + 三级刻度);表格重做与圆角刻度收敛。**后端与 `app.js` / `index.html` 逐字节未改。** 里程碑审计 `status: tech_debt`(12/12 需求满足、无 critical blocker,14 项 tech debt 已登记)。范围裁定两次均由用户逐项作出。*

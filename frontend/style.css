@@ -90,7 +90,7 @@
          clears SC 1.4.11's 3:1 on any surface: gray-6 1.34, gray-7 1.49,
          gray-8 1.82 on --color-surface. This border is the control boundary —
          the only thing identifying a text input's edge — so it has to leave the
-         band. gray-9 = 3.24 / 3.15, which restores the intent signed off as S-3
+         band. gray-9 = 3.32 / 3.15, which restores the intent signed off as S-3
          (#8a8a8a, 3.45:1) in Radix terms rather than re-deciding it. The other
          three borders stay in band 6-8: they are decorative, and SC 1.4.11 does
          not apply to a border that identifies nothing.
@@ -133,9 +133,14 @@
      and is still consumed by --color-surface-sunken and --color-surface-hover, so
      changing this value does NOT orphan a primitive.
 
-     This token has exactly ONE consumer (`html, body`'s background), so changing the
-     value here re-colours the whole page and nothing else needs synchronising. What it
-     DOES invalidate is every contrast pair drawn on it: the six entries on this ground
+     This token now has FOUR consumers, not one: `html, body`'s background, plus the
+     three panels Phase 11 merged into this surface — `#main-pane > section`,
+     `#doc-panel` and `#doc-panel-header` all paint it. Changing the value here therefore
+     re-colours the page, all four left-column panels and the sticky document header at
+     once; none of them follows along on its own. (The sentence that used to stand here
+     claimed a single consumer and concluded that nothing else needed synchronising —
+     that half was the more dangerous half, and it is now false.) What the change also
+     invalidates is every contrast pair drawn on it: the six entries on this ground
      must be RECOMPUTED — not refreshed — against white, and the two pairs Phase 9 had
      re-attributed to the raised ground are re-attributed back to this one. Both sets
      are accounted for in this phase's manifest ledger below. "Refreshed" would assert
@@ -182,9 +187,9 @@
      blue-11 rather than a lighter step: blue-2/3 are too light for both a 3px
      bar and a 14px heading. blue-11 is already declared and already consumed
      (it backs --color-action-primary / --color-text-info / --color-kind-say /
-     --color-border-streaming); this phase makes it the fifth. Measured 4.65 on
-     --color-surface-page — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
-     and is this phase's thinnest margin (0.15). Do NOT "play it safe" and step
+     --color-border-streaming); this phase makes it the fifth. Measured 4.77 on
+     the unified white surface — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
+     and is this phase's thinnest margin (0.27). Do NOT "play it safe" and step
      it darker (05-N-2 / Pitfall 4a). Because the step is already declared,
      this phase adds ZERO tier-1 primitives.
 
@@ -778,7 +783,7 @@ html, body {
   flex-direction: column;
   /* Phase 11 反转 Phase 9 / D-9-2 的间距档:灰缝 12px -> 0(SURF-03)。Phase 9 把
      间隙当作卡片层次的载体(间隙里透出页面底色);Phase 11 里面板与页面同色,间隙不再
-     承载任何东西,分区改由相邻兄弟规则的一条 1px 上边线承担。
+     承载任何东西,分区改由**非 DOM 末位面板的一条 1px 下边线**承担。
      `align-items: center` 与 #main-pane > section 的 max-width 是**一对仍在工作**的
      声明(定位置 / 控行长):侧沟在几何上仍在,只是透出的已是同一档白、不可见 —— 不得
      把它们写成「已死声明」,也不得删除(D-11-5)。
@@ -811,8 +816,9 @@ html, body {
       前提已随本阶段把该圆角归零而死,不得再拿它当理由。
    ③ 本容器不再绘制阴影:原阴影依据随 `box-shadow: none` 整段作废。
 
-   `border: none` 与紧随其后的相邻兄弟规则是一对:前者去掉四条边,后者只给后三个
-   section 补回一条上边线(第一个 section 的顶部是窗口边缘,画了会读成多一条)。
+   `border: none` 与紧随其后的发丝线规则是一对:前者去掉四条边,后者只给**前三个**
+   section 补一条**下边线**(可视的第一个面板顶部永不带线 —— 它就在窗口边缘,画了会
+   读成多一条)。
 
    `width` / `max-width` 是**保留**的声明,不是死代码:两条都仍在工作(定位置 / 控行长),
    面板两侧的沟是被「面板与页面同色」消除的,不是被删声明消除的。 */
@@ -825,17 +831,30 @@ html, body {
   box-shadow: none;
 }
 
-/* 左栏面板之间的发丝分隔线(Phase 11 / DIV-02 / D-11-10)。**新增**的规则块(不是就地
-   改写),按「追加,不重排」纪律紧随其所有者 #main-pane > section 之后(与 Phase 10 把
-   .markdown-body th 的规则放在被改写的 th, td 规则正后方同一手法)。
+/* 左栏面板之间的发丝分隔线(Phase 11 / DIV-02 / D-11-10)。**Phase 11 波次 1 新增**的规则块;
+   本次 gap-closure **就地改写**它(选择器与边框侧换向),位置一字未移。规则块按「追加,不重排」
+   纪律紧随其所有者 #main-pane > section 之后(与 Phase 10 把 .markdown-body th 的规则放在被
+   改写的 th, td 规则正后方同一手法)。
 
-   为什么只 3 条:#session-panel 是 DOM 第一个 section,相邻兄弟选择器永不匹配它 ⇒
-   恰命中后三个面板,第一个面板顶部不画线(顶部是窗口边缘,画了会读成多一条)。相邻
-   选择器按 **DOM 相邻**判定、不按渲染相邻,故中间两个面板带 .hidden 时 #ai-panel 仍带
-   自己的上边线 —— 两种显隐状态下都恰好 1 条可见分界。
+   为什么只 3 条:键控于「**非 DOM 末子元素**」。`#main-pane` 的 DOM 末子元素是 `#ai-panel`
+   ⇒ 恰命中**前三个** section,每个带一条**下边线**;末位的 `#ai-panel` 不带线。
 
-   特异性:本选择器(1-0-2)高于 #main-pane > section(1-0-1),故它对上边框的声明稳定
-   胜出,与源码先后无关 —— 但仍按「追加,不重排」放在其所有者正后方。
+   ⚠ **机制前提(承重,不得删除这条登记):** `#ai-panel` 是 `#main-pane` 的 DOM 末子元素,
+   **且 `frontend/app.js` 从不给它加 `.hidden`**(全文只有 `#ai-panel-header` / `#ai-panel-body`
+   两个元素引用,没有任何一处对 `#ai-panel` 自身做 classList 切换)。**正因为这条前提,
+   「除 DOM 末个外都加下边线」才等价于「除最后一个可见 section 外都加下边线」。** 前提一旦被
+   破坏(日后给 `#ai-panel` 加了隐藏切换,或在其后插入新的 section),规则即失效 —— 最后一个
+   可见面板会多画一条下边线。
+
+   契约:可见的发丝线数 == 可见面板数 − 1(每对相邻可见面板之间恰 1 条、窗口边缘 0 条)。可视的
+   第一个面板**顶部永不带线**(它至多带下边线),故**永不**在窗口边缘(`#main-pane` 的 `top == 0`)
+   画线 —— 这正是本规则取**下边线**而非上边线的原因:`#session-panel` 被 `.hidden` 隐藏时
+   (p3 / checking / archive),可视的第一个面板是 `#annotations-panel` / `#checks-panel`,
+   它们就在窗口顶上;上边线会在 y == 0 处画出设计明令禁止的一条线。
+
+   特异性:本选择器现在是 **1-1-2**(`:not(:last-child)` 的参数是一个伪类,贡献 0-1-0),
+   仍高于 #main-pane > section(1-0-1),故它对下边框的声明稳定胜出,与源码先后无关 ——
+   但仍按「追加,不重排」放在其所有者正后方。
 
    档位取 gray-6:它已是 .event-list / .annotation-item / .badge-answered / #latest-check
    四处的边界色 ⇒ 零新增令牌、零新增颜色值。D-11-8 显式否决的备选是 gray-7 那一档:
@@ -853,7 +872,7 @@ html, body {
       not apply to a border that identifies nothing
    反证:gray-6 在白面上仅 1.412,若按 NON-TEXT 阈值 3.0 判即 FAIL;要让线达标就得换
    gray-9(3.319),那会把发丝线变成深灰框,与去卡片化的目标相反。 */
-#main-pane > section + section { border-top: 1px solid var(--color-border-subtle); }
+#main-pane > section:not(:last-child) { border-bottom: 1px solid var(--color-border-subtle); }
 
 /* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条)
 

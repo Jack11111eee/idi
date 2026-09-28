@@ -1,0 +1,32 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+browser.version=153.0.8010.12
+
+--- state=p1 viewport_h=900 ---
+  #session-panel: display=flex top=0.00 bottom=767.00 borderTopWidth=0px borderBottomWidth=0px
+  #annotations-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #checks-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #ai-panel: display=block top=767.00 bottom=900.00 borderTopWidth=1px borderBottomWidth=0px
+
+--- state=p12 viewport_h=900 ---
+  #session-panel: display=flex top=0.00 bottom=767.00 borderTopWidth=0px borderBottomWidth=0px
+  #annotations-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #checks-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #ai-panel: display=block top=767.00 bottom=900.00 borderTopWidth=1px borderBottomWidth=0px
+
+--- state=p3 viewport_h=900 ---
+  #session-panel: display=none top=0.00 bottom=0.00 borderTopWidth=0px borderBottomWidth=0px
+  #annotations-panel: display=flex top=0.00 bottom=121.00 borderTopWidth=1px borderBottomWidth=0px
+  #checks-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #ai-panel: display=block top=121.00 bottom=254.00 borderTopWidth=1px borderBottomWidth=0px
+
+--- state=checking viewport_h=900 ---
+  #session-panel: display=none top=0.00 bottom=0.00 borderTopWidth=0px borderBottomWidth=0px
+  #annotations-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #checks-panel: display=flex top=0.00 bottom=395.91 borderTopWidth=1px borderBottomWidth=0px
+  #ai-panel: display=block top=395.91 bottom=528.91 borderTopWidth=1px borderBottomWidth=0px
+
+--- state=archive viewport_h=900 ---
+  #session-panel: display=none top=0.00 bottom=0.00 borderTopWidth=0px borderBottomWidth=0px
+  #annotations-panel: display=none top=0.00 bottom=0.00 borderTopWidth=1px borderBottomWidth=0px
+  #checks-panel: display=flex top=0.00 bottom=331.16 borderTopWidth=1px borderBottomWidth=0px
+  #ai-panel: display=block top=331.16 bottom=464.16 borderTopWidth=1px borderBottomWidth=0px

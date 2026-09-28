@@ -5,17 +5,17 @@ milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 11
 current_phase_name: 去卡片化与发丝分隔线
 status: executing
-stopped_at: Completed idi-11-02-PLAN.md
-last_updated: "2026-09-28T06:27:20.929Z"
+stopped_at: Completed idi-11-03-PLAN.md
+last_updated: "2026-09-28T07:01:08.585Z"
 last_activity: 2026-09-28
 last_activity_desc: Phase idi-11 execution started
-state_head: b1b4c42df40bbfd7afc3c0085dc662ea2ade4611
+state_head: 315af14e53b58ee7ca8ccda3bc68620edef1dfe0
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 ## Current Position
 
 Phase: idi-11 (去卡片化与发丝分隔线) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Executing Phase idi-11
 Last activity: 2026-09-28 — Phase idi-11 execution started
 
-Progress: [█████░░░░░] 50%
+Progress: [███████░░░] 75%
 
 ## Performance Metrics
 
@@ -112,6 +112,7 @@ Progress: [█████░░░░░] 50%
 | Phase idi-10 P04 | 14 min | 2 tasks | 2 files |
 | Phase idi-11 P01 | 17min | 3 tasks | 1 files |
 | Phase idi-11 P02 | 27min | 3 tasks | 1 files |
+| Phase 11 P03 | 30min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -295,6 +296,16 @@ Recent decisions affecting current work:
 - [Phase 11]: 计划对交互控件对照组的验收措辞经实测证伪 —— .overlay-card 在 HEAD 上从未声明 border(只有 border-radius + box-shadow),其计算 border-top-width 恒为 0px;本计划没有也不可能从它上面移除边界。对照组证据改写为「五个条目均保留非零圆角;其中四个真正承载 resting border 的控件保留 border-top-width = 1px;.overlay-card 保留 10px 圆角 + --shadow-overlay」。这不是放宽判据(没有任何门断言该项),禁止项由实测读数证实成立
 - [Phase 11]: 两个令牌(卡片底色与卡片阴影)删除:援引围栏抬头与 Hard Rule 5 / D-04「只声明被消费的令牌」,与 Phase 10 删 28px 圆角档位同型;新注释块显式写明「这不是通用围栏消费断言(G2 不在本里程碑范围)」
 - [Phase 11]: 2 条卡片地面 PAIR 的地面标签改指 --color-surface-page(只改标签,不改前景与种类);两地面同值(白)⇒比值不变(4.77 / 3.32),注释主动消解「比值不变 ≠ 没重算」;六条页面地面 PAIR 重算并全部上升(16.29 / 5.92 / 5.92 / 5.87 / 5.92 / 4.77)
+- [Phase 11]: check-09 被改写而非删除:它断言的正是本阶段移除的卡片语言,反转后 c1..c4 必红是设计预期(门在正确工作的证据);判据只能改写,不得删除/降级为恒真/只断言「规则被写下了」
+- [Phase 11]: check-09 的 c1..c4 判据取真实浏览器 getComputedStyle 计算读数;令牌解析降为 info() 诊断,且每一处令牌解析断言走 ok_true 并显式处理 None —— ok() 的 None-期望侧会降级成 BLOCKED(exit 2,本项目当良性码)
+- [Phase 11]: 断言总数由 HEAD 的 46 升到 102(c1 59/c2 17/c3 6/c4 20),零条删除、零条降级;六条变异逐条证明改写后的判据真的会失败(m1 c1:4 FAIL/m2 c2:3/m3 c2:1/m4 c3:2/m5 c4:1/m6 c4:9)
+- [Phase 11]: c1 的边界宽度按异形形状断言而非统一循环:#session-panel 是 DOM 第一个 section,section + section 永不匹配它 ⇒ 四边全 0px,其余三个各带一条上边线
+- [Phase 11]: 两条发丝线颜色双断言(令牌 + gray-6 字面量):只跟令牌比是自指的,把令牌换成 --color-border(gray-7)会让两侧一起变、恒过 —— 没有字面量半条,D-11-8 否决的备选对门不可见
+- [Phase 11]: c3 判据取令牌级读数而非 effective_bg:两级刻度里未被任何元素采用的那一档会被祖先链整个跳过,断言就在看不见的那一档上恒真;另加内陷面 == rgb(249,249,249) 字面量(严格小于拦不住「换成更暗的一档」)
+- [Phase 11]: 新增 fence_text() 与两条专用残留断言(围栏内子串计数、含注释),注释里显式写明这不是通用围栏消费断言(G2 不在 v1.16 范围);先例是 Phase 10 删圆角档位时的 check-10 r1
+- [Phase 11]: 交互控件对照组按逐条声明证据形态:四个承载 resting border 的控件断言 border-top-width != 0px,.overlay-card(从未声明过 border,计算值恒 0px)断言 box-shadow != none;五个条目一律断言圆角非零。这不是放宽 —— 对 .overlay-card 断言非零边框宽度是把一条恒假命题写成门
+- [Phase 11]: 变异 1 用字面量阴影而非 var(--shadow-card):后者在波次 2 已删除,computed-value 阶段失效解析成 none,恰好等于 c1 断言值 ⇒ 那条路线不会变红,是空转的变异
+- [Phase 11]: 六条变异全部在已提交的树上做,定向 git checkout -- frontend/style.css 还原;还原判据是 git diff --exit-code 为空 + git hash-object 与变异前记录值逐字符相同(cfcaef098d957abc885413793cd8b1a9dc12193f,六次一致);全程未使用 git stash
 
 ### Pending Todos
 
@@ -396,8 +407,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T06:27:20.816Z
-Stopped at: Completed idi-11-02-PLAN.md
+Last session: 2026-09-28T07:01:08.552Z
+Stopped at: Completed idi-11-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

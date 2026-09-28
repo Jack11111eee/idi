@@ -81,6 +81,48 @@ must_haves:
     - statement: "不得为了让门绿、或为了让某个旧读数继续成立,而删除 / 降级 / 放宽任何断言、阈值或判据,也不得回退已裁定的产品改动。本阶段 `check-09` 的 c1..c4 反转后**必红** —— 那正是门在正确工作的证据;判据只能改写为断言新契约(计划 03),不得删除、不得降级为恒真、不得只断言「规则被写下了」。同理,`check-05 --item 8` 的 sticky 余量若因本阶段移除 1px 上边框而变化,只更新读数与成因登记,**不得为了让旧数字成立而把 1px 加回去**(D-11-16)"
       status: active
       verification: flagged
+
+  assumptions:
+    # spec-less probe fallback(§7.95,EDGE_ABSENT=1 / PROHIB_ABSENT=1):探针在 9 条阶段需求上产出
+    # 11 行,全部 unresolved —— 8 条需求被英文 cue 判为 unclassified(中文散文 ⇒ 分类漏判,
+    # 不是「无边界」的裁定),REG-03 另有 3 行已分类但未决(adjacency / empty / ordering)。
+    # 按 §A/§C:unclassified 行**永不**用 backstop 自动消解 ⇒ 每一行在此显式登记为 flagged assumption。
+    # 无静默丢弃的等式:11 = 0(authored into must_haves.truths)+ 11(此处显式登记)。
+    # 编排器给出的原始行载荷是未展开的占位符,故下面的逐行枚举由它给出的摘要重建;
+    # 若下游需要原始行文本,须重跑该探针,不得把本枚举当作原始输出。
+    - statement: "SURF-01 的边界探针行判为 `unclassified — review manually`(英文 cue 对中文需求散文的分类漏判)。它**未**被消解:该需求的判据由本计划的 must_haves.truths 与计划 03 的 c1 改写独立承载,但那是**计划的覆盖**,不是探针对该行的分类结论"
+      status: flagged
+      verification: flagged
+    - statement: "SURF-02 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由本计划 must_haves.truths(统一面 == 面板底色、内陷面仍更暗)与计划 03 的 c3 改写承载"
+      status: flagged
+      verification: flagged
+    - statement: "SURF-03 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由本计划 must_haves.truths(灰缝归零、侧沟由同色消除)与计划 03 的 c4 改写承载"
+      status: flagged
+      verification: flagged
+    - statement: "DIV-01 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由本计划 must_haves.truths(竖线跨满面板可视高度)与计划 03 的 c4 几何断言承载"
+      status: flagged
+      verification: flagged
+    - statement: "DIV-02 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由本计划 must_haves.truths(左栏面板之间恰 3 条横线、第一个面板顶部不画)与计划 03 的 c4 承载"
+      status: flagged
+      verification: flagged
+    - statement: "DIV-03 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由本计划 must_haves.truths(线宽 1px、取既有语义令牌、零新增颜色值)与计划 03 的双断言承载"
+      status: flagged
+      verification: flagged
+    - statement: "REG-01 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由计划 03 的「断言总数 >= 46 + 六条变异各有一条真实 FAIL 读数」承载"
+      status: flagged
+      verification: flagged
+    - statement: "REG-02 的边界探针行判为 `unclassified — review manually`(同上)。未被消解;其判据由计划 02 的「重归属而非刷新 + 53 对规模不变 + 阈值逐字节相同」承载"
+      status: flagged
+      verification: flagged
+    - statement: "REG-03 的探针行 #1(edge kind `adjacency`,已分类但 unresolved)。未被消解:探针问的是「相邻/邻接关系」在判据里是否被穷尽,而 REG-03 的判据是单条容差断言(`abs(header.top - panel.top) <= 1.0`)加一次读数登记。计划 04 只做「复测 + 登记」,不新增邻接类断言 —— 若评审者认为需要,那是范围扩张,须先裁定"
+      status: flagged
+      verification: flagged
+    - statement: "REG-03 的探针行 #2(edge kind `empty`,已分类但 unresolved)。未被消解:探针问的是「空集/空输入」边界,而 REG-03 的断言在 `#doc-panel` / `#doc-panel-header` 都存在时才有对象。计划 04 未新增「元素缺失时如何处置」的断言;`check-05` 既有的 `blocked()` 分支在元素缺失时记 BLOCKED(不记 PASS),这是既有行为而非本阶段新增的保证"
+      status: flagged
+      verification: flagged
+    - statement: "REG-03 的探针行 #3(edge kind `ordering`,已分类但 unresolved)。未被消解:探针问的是「顺序关系」是否被断言,而 REG-03 不涉及任何序关系断言(`check-02` 的 `ORDER` 条目归 REG-02,且本阶段不改它)。计划 04 未新增序关系断言"
+      status: flagged
+      verification: flagged
 ---
 
 <objective>
@@ -188,6 +230,22 @@ Output: `frontend/style.css` 的统一面换值 + 五容器就地去边界 + 灰
 | 14 | `.panel-header` 的 `border-radius` | `.panel-header` 规则体 | `var(--radius-md)` → `0` |
 
 **明确不产生的新符号:** 零新增 CSS 自定义属性、零新增颜色值、零新增 tier-1 primitive、零新增 PAIR / ORDER 条目、零新依赖、零构建步骤、零新应用文件、`frontend/app.js` / `index.html` / `vendor/` / `backend/**` 零字节改动。
+
+## 探针未决边界的显式登记(spec-less probe fallback §7.95)
+
+本阶段无 `*-SPEC.md`(`EDGE_ABSENT=1` / `PROHIB_ABSENT=1`),故走 §7.95 的降级协议。确定性边界探针在 9 条阶段需求上产出 **11 行,全部 unresolved**:
+
+- **8 行**来自 8 条需求被英文 cue 判为 `unclassified — review manually`(SURF-01/02/03、DIV-01/02/03、REG-01、REG-02)。**这是分类漏判,不是「无边界」的裁定** —— 探针的 cue 是英文,而这些需求是中文散文(本项目已记录的同型失真:英文 cue 对中文散文分类不可靠)。
+- **3 行**来自 `REG-03`,已分类但未决,edge kind 分别为 `adjacency` / `empty` / `ordering`。
+
+按 §A/§C:`unclassified` 行**永不**用 backstop 自动消解。**11 行全部**已作为 `must_haves.assumptions` 的 **11 条 flagged assumption** 显式登记(descriptor-less,故各自处置为 `{status:'unverified', flagged:true}`)。**无静默丢弃的等式:11 = 0(写进 `must_haves.truths`)+ 11(显式登记为 flagged assumption)。**
+
+**⚠ 两处诚实性声明:**
+
+1. 编排器提供的原始行载荷是**未展开的占位符**,故 `must_haves.assumptions` 里的逐行枚举由它给出的**摘要**重建(8 条 unclassified 逐需求一条 + REG-03 三条按 edge kind)。若下游需要**原始行文本**,须重跑该探针 —— **不得**把本枚举当作原始输出。
+2. 本计划与计划 03/04 的 `must_haves` **独立覆盖**了这些需求的可观测判据(那是**计划的覆盖**),但**那不是**探针对该行的分类结论 —— 两者不得混为一谈,也不得据此把任一行标为 resolved。
+
+`PROHIB_ABSENT=1` 另触发 §B 的禁令回忆(散文通过,无引擎)。幸存项已写进各计划的 `must_haves.prohibitions`(descriptor-less,3 条):**不得把「去卡片」做成「删掉全站所有边界」**、**不得把统一面做成「压平所有层次」**、**不得为了让门绿或让旧读数成立而删除/降级/放宽判据或回退已裁定的产品改动**。按 §B 的口径,常规工程项与既定安全/合规项已被丢弃(后者只留一行面包屑:本阶段零安装、零新增依赖,`frontend/vendor/` 仍只有 `marked.min.js`)。
 
 ## 波次与依赖形状(本阶段的真实约束,不是保守)
 

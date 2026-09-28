@@ -119,24 +119,28 @@
   --color-text: var(--radix-gray-12);
   --color-text-secondary: var(--radix-gray-11);
   --color-text-muted: var(--radix-gray-11);
-  /* Phase 9 sinks the page one step (CARD-03 / user decision D-9-1): gray-1 #fcfcfc ->
-     gray-3 #f0f0f0. Reason: gray-1 was the LIGHTEST value on the whole screen, so the
-     white cards Phase 9 plan 01 introduced had almost nothing to sit against. gray-3
-     completes the three-tier elevation scale — page gray-3 < --color-surface gray-2
-     (the inset control surface) < --color-surface-card white (raised) — which is
-     shadcn's canvas / inset / raised ladder. Zero new tokens and zero new tier-1
-     primitives: gray-3 is already declared above and already consumed by
-     --color-surface-sunken and --color-surface-hover.
+  /* Phase 11 reverses the Phase 9 page-sink (SURF-02 / user decision D-11-1):
+     gray-3 #f0f0f0 -> white #ffffff. This is an IN-PLACE VALUE REWRITE, not a new
+     token — the declaration name and its position in the fence are unchanged. Reason:
+     Phase 9 pushed the page one step DOWN so the white cards it introduced had
+     something to sit against; Phase 11 removes those cards, so the page and the panels
+     must read as ONE continuous white surface. The elevation story therefore goes from
+     three tiers to two: the unified surface white (relative luminance 1.000000) > the
+     inset control surface gray-2 (0.947307). The inset tier SURVIVES — controls and
+     #latest-check still read as recessed.
+
+     Zero new tokens and zero new tier-1 primitives: gray-3 is already declared above
+     and is still consumed by --color-surface-sunken and --color-surface-hover, so
+     changing this value does NOT orphan a primitive.
 
      This token has exactly ONE consumer (`html, body`'s background), so changing the
      value here re-colours the whole page and nothing else needs synchronising. What it
-     DOES invalidate is every contrast pair drawn on it: eight entries were on this
-     ground. Two of them (the mid-tone blue-11 and gray-9 foregrounds) could not clear
-     their thresholds on gray-3 and were re-attributed to the card ground by plan 01;
-     the remaining six were RECOMPUTED — not refreshed — against gray-3 and registered
-     in the manifest's Phase 9 ledger below. "Refreshed" would assert nothing changed
-     since verification, which is false here. */
-  --color-surface-page: var(--radix-gray-3);
+     DOES invalidate is every contrast pair drawn on it: the six entries on this ground
+     must be RECOMPUTED — not refreshed — against white, and the two pairs Phase 9 had
+     re-attributed to the raised ground are re-attributed back to this one. Both sets
+     are accounted for in this phase's manifest ledger below. "Refreshed" would assert
+     nothing changed since verification, which is false here. */
+  --color-surface-page: var(--white);
   --color-surface-sunken: var(--radix-gray-3);
   --color-kind-default: var(--radix-gray-11);
   --color-kind-result: var(--radix-gray-11);
@@ -733,28 +737,34 @@ html, body {
   min-width: 0;
 }
 
-/* 左栏四个面板的卡片语言(Phase 9 / CARD-01 / CARD-02)。就地扩写既有规则体,
-   选择器文本与源码顺序逐字不变 —— 硬规则 3「追加,不重排」的落地形态。
+/* 左栏四个面板的连续面(Phase 11 反转 Phase 9 的卡片语言 / SURF-01 / SURF-02)。
+   就地改写既有规则体,选择器文本与源码顺序逐字不变 —— 硬规则 3「追加,不重排」
+   的落地形态。
 
-   ① 边界色取 --color-border(gray-7),比 --color-border-subtle(gray-6)深一档 ——
-      依据是用户 2026-09-26 的裁定「边框与阴影强度:现在太轻了,稍微重一点」,即
-      Phase 9 自己 parked 的强度决策的落地。取的是既有令牌 ⇒ 仍是零新增令牌;
-      --color-border-subtle 仍是 .event-list / .annotation-item / .badge-answered /
-      #latest-check 四处的边界色 —— 那四处不是卡片,本次不动。
+   ① 本容器不再绘制边界:原边界色依据(取 gray-7 那一档,落地用户 2026-09-26 的
+      「边框与阴影强度」裁定)随 `border: none` 整段作废。那个浅档令牌仍是
+      .event-list / .annotation-item / .badge-answered / #latest-check 四处的边界色
+      —— 那四处不是本阶段的对象,本次不动。
    ② 本规则体内**禁止**出现 transform / filter / will-change / contain / perspective /
       opacity / position / z-index / overflow 任何一项。#stream-banner 是 #doc-panel 的
       后代且 position: fixed,前六个属性会建立「fixed 定位包含块」或新层叠上下文,把它
-      钉到卡片上而不是视口;overflow: hidden 会裁剪 :focus-visible 的 2px 焦点环 ——
-      左栏卡片**不需要**它,因为 .panel-header 自身的 border-radius 已是 --radius-md,
-      不会把卡片四角顶成方角。
-   ③ 阴影取 --shadow-card,零位移,不参与布局。 */
+      钉到面板上而不是视口;overflow: hidden 会裁剪 :focus-visible 的 2px 焦点环。
+      Phase 9 曾以「.panel-header 自带中等档圆角」为左栏免掉 overflow: hidden —— 那个
+      前提已随本阶段把该圆角归零而死,不得再拿它当理由。
+   ③ 本容器不再绘制阴影:原阴影依据随 `box-shadow: none` 整段作废。
+
+   `border: none` 与紧随其后的相邻兄弟规则是一对:前者去掉四条边,后者只给后三个
+   section 补回一条上边线(第一个 section 的顶部是窗口边缘,画了会读成多一条)。
+
+   `width` / `max-width` 是**保留**的声明,不是死代码:两条都仍在工作(定位置 / 控行长),
+   面板两侧的沟是被「面板与页面同色」消除的,不是被删声明消除的。 */
 #main-pane > section {
   width: 100%;
   max-width: 768px;
-  background: var(--color-surface-card);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  background: var(--color-surface-page);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条)

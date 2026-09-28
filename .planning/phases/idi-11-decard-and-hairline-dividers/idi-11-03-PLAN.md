@@ -366,14 +366,16 @@ Output: 改写后的 `scripts/check-09-idi09-validation.py`(`c1..c4` 新契约 +
 
     | # | 变异(最小改动) | 必须变红的判据 |
     |---|---|---|
-    | 1 | 给 `#main-pane > section` 加回一条 `border: 1px solid var(--color-border);`(或加回 `box-shadow: var(--shadow-card);`) | `c1` 的 `box-shadow == "none"` / 边界宽度断言 |
+    | 1 | 给 `#main-pane > section` 加回一条 `border: 1px solid var(--color-border);`,**或**加回一条**字面量**阴影 `box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);`(**不是** `var(--shadow-card)`) | `c1` 的 `box-shadow == "none"` / 边界宽度断言 |
     | 2 | 给 `#doc-panel` 加回四边边界(把 `border-left: 1px solid var(--color-border-subtle);` 换成 `border: 1px solid var(--color-border-subtle);`) | `c2` 的「仅 `border-left-width == "1px"`」 |
     | 3 | 删掉 `#doc-panel` 的 `overflow-y: auto;` | `c2` 的 `overflow-y == "auto"`(承重滚动契约) |
     | 4 | 把围栏内 `--color-surface-page` 的值改回 `var(--color-surface)`(统一面与内陷面塌成同一档) | `c3` 的「内陷面亮度严格低于统一面」 |
     | 5 | 把 `#main-pane` 的 `gap: 0;` 改回 `gap: var(--space-3);` | `c4` 的 `gap == "0px"` |
     | 6 | 删掉 `#main-pane > section + section { border-top: … }` 整条规则块 | `c4` 的横线宽度/颜色断言 |
 
-    每条完成后都要确认「还原 → 基线复绿」:还原后重跑同一项,`exit=0`。**若某条变异没有让对应判据变红,那不是「变异没生效」就是「判据在空转」—— 停下判因**,把该条的原始读数写进 SUMMARY 报回,不要改判据去迁就。
+    > **第 1 条为什么用字面量阴影而不是 `var(--shadow-card)`(本表唯一的改写点):** 波次 2(计划 02)已从围栏里**删掉 `--shadow-card` 声明**,而本计划(波次 3)`depends_on: [idi-11-01, idi-11-02]`。到波次 3 该令牌已不存在 ⇒ `box-shadow: var(--shadow-card)` 在 computed-value 时无效(IACVT)、解析成初始值 `none` —— **恰好等于 `c1` 断言的那个值** ⇒ 那条路线**不会变红**,是条空转的变异。加回一条**字面量**阴影才是真实回归的忠实模拟:令牌已不存在,没人能真的「重新提交一次加回令牌」;而 `box-shadow` 非 `none` ⇒ `c1` 的 `box-shadow == "none"` 断言**真的变红**。第 2–6 条的路线已逐条复核,各自的落点都指向表中指定的判据、且都能让该判据变红,无同型缺陷(它们的落点都是波次 2 **未删除**的令牌或属性:`--color-border` / `--color-border-subtle` / `overflow-y` / `--color-surface-page` / `--color-surface` / `gap`)。
+
+每条完成后都要确认「还原 → 基线复绿」:还原后重跑同一项,`exit=0`。**若某条变异没有让对应判据变红,那不是「变异没生效」就是「判据在空转」—— 停下判因**,把该条的原始读数写进 SUMMARY 报回,不要改判据去迁就。
 
     **第 3 步 —— `c5` 复跑。**
 

@@ -387,7 +387,7 @@ Output: `frontend/style.css` 的统一面换值 + 五容器就地去边界 + 灰
 
     **第 3 步 —— `.panel-header`:圆角归零。**
 
-    `border-radius: var(--radius-md);` → `border-radius: 0;`(**只改这一行**,规则体其余五行逐字不动)。
+    `border-radius: var(--radius-md);` → `border-radius: 0;`(**只改这一行**,规则体其余七行逐字不动)。
 
     理由(写进注释):活动面板标记是 `inset 3px 0 0 var(--color-marker-active)` 的竖条,10px 圆角会把竖条上下端剪成收尖的弧 —— 它今天不可见**只是因为 `.panel-header` 无背景色**,那是巧合,不是设计。
 

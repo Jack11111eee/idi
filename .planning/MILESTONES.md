@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.15 视觉构图升级 (Shipped: 2026-09-28)
+
+**Phases completed:** 2 phases, 7 plans, 20 tasks
+
+**Key accomplishments:**
+
+- 界面首次拥有 elevation 层次 —— 左栏 4 个 section 与右栏 #doc-panel 由「完全透明 / 比页面更暗的 gray-2」变为同族白卡片(白底 + 1px 既有容器边界 + 10px 既有圆角 + 零位移极轻阴影),并接进一个真实浏览器 computed-style 运行时门(c1/c2),两条中间调 PAIR 的地面重新归属到卡片底色(4.77 / 3.32)。
+- 页面底色从 gray-1(#fcfcfc,全场最亮)下沉到 gray-3(#f0f0f0),使「白卡片浮在灰页面之上」在屏幕上真的成立 —— 三档 elevation(gray-3 页面 < gray-2 控件内陷面 < 白卡片)由真实浏览器读数证明严格递增;同时把左栏密度收到用户裁定的紧凑档(间距 12px / 内边距 16px),并把页面换值作废的 6 条对比度配对以 gray-3 逐条重算登记(不是刷新旧值)。
+- 本阶段是纯 CSS 的构图改动,本计划用本仓库唯一能证明「渲染语义仍然成立」的机器复核它:五条真实浏览器门 + 四个静态门 + pytest 基线全部复跑,零 FAIL、零处门改动、断言强度零降低;并产出 5 张 1440×900 整窗截图,补上 SC3 一直缺的「屏幕级」半边证据(gray-2 内陷面与白卡片在 5/5 样本里同帧共存)。
+- 文档区表格从「每格 1px 全边框的电子表格式网格」改为「gray-2 表头浅底 + 仅横向分隔线」,并新建运行时门 `scripts/check-10-idi10-validation.py`,在真实浏览器里以 computed style 读出 99 条断言、0 FAIL / 0 BLOCKED
+- 圆角刻度由 8 / 10 / 28 / 999 收敛为 8 / 10 / 999:删掉从未并入刻度的 `--radius-lg: 28px`,两处消费者按各自真实形态就地改归属(`.chat-user` → 卡片档 10px、`#chat-input-row input` → 胶囊档 999px),并以收敛前后的真实运行时读数(键级 computed style diff + 矩形逐值 + 元素 PNG 逐字节)证明输入框外观零变化
+- 本阶段两处纯 CSS 改动(表格重做 + 圆角收敛)在五条真实浏览器门上复跑零 FAIL、与 phase 9 基线逐项结论块逐项同形、门改动实测零处;5 张 1440×900 整窗截图落盘(p3 一张同时可见三个机器可解析表),另出一张 `.chat-user` 10px 圆角的人眼取证图
+- 实测落定连带指纹的真实形状是「10 份覆盖 `frontend/style.css`,1 份可执行」—— 9 份归档/quick 报告因 `covered_files` 路径归档后不可解析而 fail-closed stale(与本次改动无关,属 2026-09-14 登记的已知限制),唯一可执行的 `idi-09` 以 HEAD 内容重新验证(非刷新指纹):24 条 must-have 逐条复核 24/24 成立,`covered_digest` 由 `6e811a11…` 重算为 `7b82f8d1…`,`verification.status` 由 `stale` 回到 `passed`
+
+---
+
 ## v1.14 前端视觉与可访问性 (Shipped: 2026-09-26)
 
 **Phases completed:** 6 phases, 21 plans, 60 tasks

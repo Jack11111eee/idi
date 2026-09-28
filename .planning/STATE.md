@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.15
 milestone_name: 视觉构图升级
-current_phase: 10
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase idi-10 complete — all phases complete
-last_updated: "2026-09-27T14:39:06.019Z"
-last_activity: 2026-09-27
-last_activity_desc: Phase idi-10 complete
-state_head: 7170fa56493087781308fd9583a19757689736bf
+last_updated: "2026-09-28T02:05:09.172Z"
+last_activity: 2026-09-28
+last_activity_desc: Milestone v1.15 completed and archived
+state_head: acd0e71f41e3818a8cbe54431240e87b700971b5
 progress:
   total_phases: 2
   completed_phases: 2
   total_plans: 7
   completed_plans: 7
   percent: 100
+current_phase: 10
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-09-26)
 
 ## Current Position
 
-Phase: idi-10
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-09-27 — Phase idi-10 complete
+Phase: Milestone v1.15 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-28 — Milestone v1.15 completed and archived
 
 ## Performance Metrics
 
@@ -376,7 +376,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- **下一步 = 验证 Phase 10**(`/gsd-verify-work idi-10`)。Phase 10 的 4 个计划全部收口(表格重做 + 圆角刻度收敛 + 五条浏览器门复跑 + 连带指纹收口),`verification.status idi-09` 已由 `stale` 回到 `passed`;本阶段自身的 `verification.status` 仍为 `missing`(尚未跑 verify-work)。Phase 9 的用户评审已闭合(2026-09-27):4 条开放项中②「卡片边界与阴影强度」已由 quick `260926-vaf` 落地,其余三条用户未点名、仍为开放项。
-- **Phase 9 的用户评审已闭合(2026-09-27)。** 4 条开放项中,②「卡片边界与阴影强度」已由 quick `260926-vaf` 落地(用户裁定「稍微重一点」);其余三条(①`.overlay-card` 底色 / ③页面级留白 / ④输入框在白卡片上画 UA 白填充)**用户未点名,仍为开放项**。Out of Scope 四项中,表格重做与圆角刻度收敛已转为 Phase 10;图标与空状态、暗色模式仍留 Out of Scope。
-- 候选范围另见 `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 Backlog(`999.2` 仍开;`999.1` 已关闭)。
-- **归档后注意**:阶段报告现位于 `.planning/milestones/v1.14-phases/`,其 `covered_files` 里的 `.planning/phases/...` 路径已不可解析(重算返回 `null`,fail-closed=stale)。这是 v1.13 收口时已登记的**已知限制**,归档后的报告不再被 staleness 机制消费,无需回填重算。
+- Start the next milestone with /gsd-new-milestone

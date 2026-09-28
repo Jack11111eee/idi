@@ -8,18 +8,38 @@
 
 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤——总设计文档通过自检、界面提示「使命完成」即为终点(只读归档态)。
 
-## Current Milestone: v1.15 视觉构图升级
+## Next Milestone Goals: v1.16 (未启动)
 
-**Goal:** 把界面的**构图层次**补齐。v1.14 的设计纪律全部花在了**正确性**(颜色 / 对比度 / 焦点环),**构图**(容器层次、视觉重量、组件变体)从未被任何阶段覆盖 —— 界面因此仍然"丑"。本里程碑按 shadcn/ui 的**配方**(不引入其依赖,见 Context 的可行性结论)逐层收敛。
+**状态:** v1.15 已 shipped 并归档(2026-09-28)。下一个里程碑尚未定义 —— 由 `/gsd-new-milestone` 走 提问 → 研究 → 需求 → 路线图 定义。
 
-**Target features:**
+**候选池(本次未纳入,待用户裁定):**
 
-- **Phase 9(首个,先看效果):** 卡片化 —— 左栏 4 个 section 与右栏文档区从裸贴页面底色(`--color-surface-page`)改为卡片容器(圆角 + 边框 + 极轻阴影 + 内边距),让界面首次拥有 elevation 层次
-- **后续 phase 待 Phase 9 效果确认后再定**(用户裁定「先看看效果」):表格重做(全边框 → 只留横向分隔线)/ 圆角刻度收敛 / 图标与空状态
+- **v1.15 审计登记的待裁定项**(`milestones/v1.15-MILESTONE-AUDIT.md`,14 项):
+  - **G1(WARNING)** —— `#latest-check` 自身声明 `background: var(--color-surface)` **且自身是 `.markdown-body` 宿主**(`style.css:1532`),而 Phase 10 用同一令牌画 `th`(`:1118`)⇒ 自检报告里的表头是**灰底压灰底**、band 消失。不是假想:`backend/prompts.py:494-499` 要求每份自检报告都带这张表。仓库上一阶段刚为 `#doc-panel-header` 修过**同形**问题(`style.css:802-803`),Phase 10 又为 `th` 造了一次。仅视觉层级破坏(文字在 gray-2 上 15.48:1,无 a11y 失败)。需要一次决策:去掉 `#latest-check` 自己的灰底 / 给 checks-panel 的表头换一档 / 显式接受那里无 band。
+  - **G2(WARNING)** —— `frontend/style.css:48` 的 `--radix-gray-1: #fcfcfc` 已声明但**全仓库零消费**(Phase 9 把唯一消费者 `--color-surface-page` 改指 gray-3)。围栏自己的抬头(`style.css:42-44`)逐字写着「只声明被消费的令牌」—— Phase 10 正是援引这条规则删掉了 `--radius-lg`,却只给它加了一条**专用**的残留断言,没有一般化。`check-01` 结构上看不见它(它只扫围栏外)。⇒ 应删该 primitive 或重新消费,并补一条**通用的**围栏消费断言。
+  - 其余:连带指纹「10 份覆盖 / 1 份可执行」的口径、`check-10` t1/t2 只钉令牌接线而非视觉契约、`WR-03/04/05` 三条加固残项、`IN-05`(`th` 仍渲染 UA 默认字重 700,在文件声明的三档 400/500/600 之外)、`IN-06`(表格语言只到 `.markdown-body`,9 个 markdown 宿主里 4 个覆盖)、`check-05` 一条陈旧 INFO、`check-05 --item 8` 的 sticky 断言余量为零、Nyquist 缺口(`idi-09` / `idi-10` 无 `VALIDATION.md`)。
+- **`999.2`** —— Phase 7 交互态契约暴露的三条既有 affordance 缺陷(仍在 Backlog;执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证)。
+- **`A11Y-V2-01/02`**(焦点陷阱、其余非阻塞弹窗的 `role` / `aria-modal`)、**`FLOW-V2-01`**(替换两处 `window.prompt`)、**`TOKEN-V2-01`**(暗色模式)、**`FLOW-V2-02`**(`#probe-controls` 的移除或重定位)。
+- **构图轴上的其余候选(用户 2026-09-27 未点名,仍留 Out of Scope):** 图标与空状态。
 
-**硬约束:** 遵守 `scripts/check-01-token-conformance.sh`(令牌块外零裸 `#hex`、零 tier-1 原语引用)与 `check-02` 对比度门禁;复用现有 `--color-*` 语义令牌,**不新增 tier-1 原语**;零新增运行时依赖、零构建步骤(DESIGN.md D-06)。
+**硬约束(任何后续 phase 都适用):** 遵守 `scripts/check-01-token-conformance.sh`(令牌块外零裸 `#hex`、零 tier-1 原语引用)与 `check-02` 对比度门禁;复用现有 `--color-*` 语义令牌,**不新增 tier-1 原语**;零新增运行时依赖、零构建步骤(DESIGN.md D-06);`frontend/style.css` 的编辑纪律见下方 Constraints 末条。
 
 ## Current State
+
+**v1.15 视觉构图升级 — ✅ SHIPPED 2026-09-28**(归档 2026-09-28)
+
+把界面的**构图层次**补齐。v1.14 的设计纪律全部花在**正确性**(颜色 / 对比度 / 焦点环),**构图**(容器层次、视觉重量、组件变体)从未被任何阶段覆盖 —— 界面因此仍然"丑"。本里程碑按 shadcn/ui 的**配方**(不引入其依赖,见 Context 的可行性结论)逐层收敛。2 个阶段(9 / 10)、7 个计划、20 个任务,12 条需求全部交付。**零新增运行时依赖、零构建步骤**(DESIGN.md D-06 守住):两个阶段都是纯 `frontend/style.css` 改动,**后端与 `app.js` / `index.html` 逐字节未改**。
+
+**界面首次拥有 elevation 层次:** 左栏 4 个面板与右栏文档区从「完全透明 / 比页面更暗的 gray-2」变为同族白卡片(白底 + 1px 既有容器边界 + 10px 既有圆角 + 零位移极轻阴影),页面底色从 gray-1(全场最亮)下沉到 gray-3,三档刻度 `gray-3 页面 < gray-2 内陷面 < 白卡片` 由真实浏览器读数证明严格递增 —— 这正是 shadcn 的 canvas / inset / raised 三档。
+
+**第二次交付:** 文档区表格由「每格 1px 全边框的电子表格式网格」改为「gray-2 表头浅底 + 仅横向分隔线」;圆角刻度由 `8 / 10 / 28 / 999` 收敛为 `8 / 10 / 999`(删掉从未并入刻度的 `--radius-lg: 28px`,两处消费者按各自真实形态就地改归属)。两项均零新增颜色值、零新增 primitive、零阈值放宽、零新增 `!important`。
+
+**两次范围裁定均由用户逐项作出:** Phase 9 先只做卡片化(「开一个 phase,先看看效果吧」),用户看过 5 张截图后裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 另开 Phase 10;第三项候选(图标与空状态)**未点名,仍留 Out of Scope**。
+
+**里程碑审计:** `status: tech_debt` —— 12/12 需求满足、无 critical blocker,14 项 tech debt 已登记(其中 3 项 WARNING 级结构发现:上方的 G1 / G2 与伴随 G1 的门盲区)。
+
+<details>
+<summary>历史:已 shipped 的里程碑</summary>
 
 **v1.14 前端视觉与可访问性 — ✅ SHIPPED 2026-09-25**(归档 2026-09-26)
 
@@ -27,7 +47,11 @@
 
 **核心价值首次被前端兑现:** 不可逆的 G3 授权动作现在有独立的视觉处理(实心填充 + 白字 + 16px + 600,四个强调通道用满),不再与例行「继续自检」逐字节相同——工具此前在对自己说谎,现在不再。
 
-**Next Milestone Goals:** v1.15 视觉构图升级(见上方 `## Current Milestone`)。
+**v1.13 交互式讨论迭代系统 MVP — ✅ SHIPPED 2026-09-13**
+
+DESIGN.md v1.13 全范围 20 条需求(FLOW 7 + UI 4 + AI 5 + DATA 4)交付并验证。3 个阶段、13 个计划、28 个任务。详见 `.planning/milestones/v1.13-ROADMAP.md`。
+
+</details>
 
 ## Requirements
 
@@ -53,17 +77,18 @@
 - ✓ **CHECK 4 条** — 四条零依赖契约校验命令(`check-01`…`check-04`),每条失败方向经变异证明 — Phase 4 + 4.1
 - ✓ **REG 3 条** — `.hidden` 注释的错误理由修正、`showInlineError` 结构性修复、`b9664e0` 五条修复人工验收项全量重跑 — quick `260917-fqh` + Phase 8
 
+**v1.15 视觉构图升级**(12 条,2026-09-28 收口;逐条状态与验证记录见 `.planning/milestones/v1.15-REQUIREMENTS.md`):
+
+- ✓ **CARD 3 条** — 左栏 4 个面板与右栏文档区各自成为独立卡片(白底 + 可见边界 + 圆角);页面底色下沉,与卡片形成明确 elevation 层次 — Phase 9
+- ✓ **VIS 2 条** — 卡片底色与阴影作为新令牌进围栏 `:root`(`check-01` 绿);圆角取现有刻度,阴影零位移 — Phase 9
+- ✓ **REG 2 条** — 页面换值后对比度对**重算并登记**(非刷新旧值);五条 UI 门复跑无新增失败 — Phase 9
+- ✓ **TABLE 2 条** — 文档表格改为「表头浅底 + 仅横向分隔线」,就地改写原 `border` 声明;表头新绘制面的配对经 `check-02` 实际输出证实已登记,零新增颜色值 / primitive / 阈值改动 — Phase 10
+- ✓ **RADIUS 2 条** — 圆角刻度收敛为 8 / 10 / 胶囊三档(删 `--radius-lg`,两处消费者按各自真实形态改归属);收敛零视觉回归,以收敛前后运行时读数并排为证 — Phase 10
+- ✓ **REG-03** — 五条浏览器门 + 四个静态门 + pytest 基线复跑无新增失败;连带指纹按「可执行性」分诊(实测 10 份覆盖 / 1 份可执行),唯一可执行的 `idi-09` 以 HEAD 内容**重新验证** — Phase 10
+
 ### Active
 
-**v1.15 视觉构图升级**(7 条,2026-09-26 定义;逐条状态见 `.planning/REQUIREMENTS.md`):
-
-- [ ] **CARD 3 条** — 左栏 4 个面板与右栏文档区各自成为独立卡片(白底 + 可见边界 + 圆角);页面底色下沉,与卡片形成明确 elevation
-- [ ] **VIS 2 条** — 卡片底色与阴影作为新令牌进围栏 `:root`;圆角取现有刻度,阴影零位移
-- [ ] **REG 2 条** — 页面换值后对比度对**重算并登记**(非刷新旧值);五条 UI 门复跑无新增失败
-
-**后续候选(待 Phase 9 效果确认后再定,用户裁定「先看看效果」):** 表格重做 / 圆角刻度收敛 / 图标与空状态。
-
-**其余既有候选(本次未纳入,仍待裁定):** `999.2`(Phase 7 交互态契约暴露的三条既有 affordance 缺陷,仍在 Backlog)、`A11Y-V2-01/02`(焦点陷阱、其余非阻塞弹窗的 `role` / `aria-modal`)、`FLOW-V2-01`(替换两处 `window.prompt`)、`TOKEN-V2-01`(暗色模式)、`FLOW-V2-02`(`#probe-controls` 的移除或重定位)、本里程碑审计登记的 4 条门标签宽于实测(见下方 Context 的技术债)。`999.1` 已在 quick `260925-iin` 处置完毕,条目可关闭。
+**无。** 下一个里程碑(v1.16)尚未定义 —— 由 `/gsd-new-milestone` 走 提问 → 研究 → 需求 → 路线图 定义。候选池见上方 `## Next Milestone Goals`。
 
 ### Out of Scope
 
@@ -74,8 +99,8 @@
 - **设计已完成:** DESIGN.md v1.13,由 22 条已确认决策(D-01~D-22)、4 轮讨论(docs/discuss-round-0~4.md)、14 轮自检核查(docs/DESIGN-check-1~14.md)收敛而来。第 14 轮为 PASS 收口。
 - **为什么存在:** 用 AI 做项目最大的浪费是"开工前没对齐"。本工具把对齐流程产品化。
 - **唯一权威:** 一切入 implement 细节以 DESIGN.md 为准;`.planning/` 文档若与 DESIGN.md 冲突,DESIGN.md 胜出。
-- **当前代码状态(v1.14 shipped, 2026-09-25):** 后端 10,887 LOC(含测试;15 个测试文件,219 passed / 6 skipped)、前端 3,831 LOC(`style.css` 1708 / `app.js` 1854 / `index.html` 269);Python + FastAPI,原生 HTML/JS,仅 vendored `marked.min.js`。纯模块 `grammar.py` / `annotations.py` / `g3.py` / `checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
-- **v1.14 建立的设计契约面:** `frontend/style.css` 顶部单一围栏 `:root` 令牌块(8 档字号 / 5 条行高 / 4 个 `z-index` / 25 个 Radix primitive / 47 个 `--color-*`),外加 7 条零依赖校验命令(`scripts/check-01`…`check-07`)与 3 个一次性探针(`probe-05` / `probe-07` / `probe-menu-modal-reachability`)。**设计契约现在是可执行的,不是文档承诺。**
+- **当前代码状态(v1.15 shipped, 2026-09-28):** 后端 10,887 LOC(含测试;15 个测试文件,219 passed / 6 skipped;**v1.15 零后端改动**)、前端 4,035 LOC(`style.css` 1912 / `app.js` 1854 / `index.html` 269);Python + FastAPI,原生 HTML/JS,仅 vendored `marked.min.js`。纯模块 `grammar.py` / `annotations.py` / `g3.py` / `checks.py` 承载全部 §6.4 文法与磁盘签名逻辑。
+- **设计契约面(v1.14 建立,v1.15 扩展):** `frontend/style.css` 顶部单一围栏 `:root` 令牌块(8 档字号 / 5 条行高 / 4 个 `z-index` / 25 个 Radix primitive / 47+ 个 `--color-*`,含 v1.15 新增的 `--color-surface-card` 与 `--shadow-card`),外加 7 条零依赖校验命令(`scripts/check-01`…`check-07`)与 v1.15 新增的两条运行时门(`check-09-idi09-validation.py` / `check-10-idi10-validation.py`)+ 1 个探针(`probe-card-border-token.py`)。**设计契约现在是可执行的,不是文档承诺。**
 - **v1.15 范围裁定依据(shadcn/ui 可行性结论,2026-09-26 实地核查):** 已克隆 `shadcn-ui/ui` 并逐层核对,结论是**不能引入,但可借鉴配方**。
   ①**不能引入:** 组件是 `.tsx`(React + Tailwind + Radix primitives,`apps/v4/registry/new-york-v4/ui/` 共 61 个),与「原生 HTML/JS、零构建」(D-06)直接冲突;`npx shadcn init` 会装 npm 依赖并改写 tsconfig。
   ②**但配色层面本项目并不落后** —— `frontend/style.css` 已在用 Radix Colors 12 步语义刻度(`--radix-gray-1` 等,Phase 4.1 的成果),与 shadcn 同源。**缺的是构图,不是颜色。**
@@ -85,9 +110,11 @@
 - **已知技术债:**
   ①`SdkAICaller.abort` 在 CLI 已挂死时无法杀掉孤儿 SDK 子进程(磁盘侧"无脏状态"语义仍成立);
   ②`annotations` append 与 writeback 存在毫秒级交错窗口(模块级锁可收口);
-  ③**`phase.complete` 的 STATE.md 进度计数器已四次复现异常**(`completed_phases` / `percent` 被往回改),不自愈;判据一律取 ROADMAP 的 `## Milestones` + `## Progress` 或 `gsd_run query progress.bar --raw`,不得从 `state.json` 推;
+  ③**`state.*` 写入动词全部不可信**(已复现 **15 次**,不自愈)。失效形态不止一种:改错值(`completed_phases` → 1 或 0)、改分母(数阶段编号)、删字段、**假报成功 + 零写入**、**部分成功**(`add-decision` 遇以 `-` 开头的正文会少写一条)、以及**格式副作用**(`add-decision` 双前缀 / `roadmap.update-plan-progress` 掉空格与插入重复复选框列表 / `mark-complete` 在 `**Coverage:**` 后插空行 —— 后三处**连续六次复现**,是确定性的)。判据一律取 ROADMAP 的 `## Milestones` + `## Progress`(或 `gsd_run query progress.bar --raw`),不得从 `state.json` 推;**核盘必须放在收口序列的最后一个动词之后**(`record-session` 会把人工校正过的值再次压回 0);**`update-progress` 会用坏值重算,不可作为修正手段**。第十五次(2026-09-27)首次未观察到派生计数损坏 —— 因为 `advance-plan` 走了 `last_plan` 的 fail-closed 零写入分支,损坏只发生在它真的推进位置的那一支;
   ④**4 条门标签宽于实测**(v1.14 审计 §7):L-5 称「每个」实为 9/10 行、L-6 只测可见行、`check-05` item 10 的 SC4 用固定 12 次 Tab 窗口、`check-07` g1 措辞与实测不符。四条都**不影响已通过的结论**,但门文本与其真实覆盖面不一致,是同一类「门绿但没在看」缺陷的温床;
-  ⑤`idi-04` 与 `idi-06` 缺 `VALIDATION.md`(Nyquist 覆盖缺口),已登记待补。
+  ⑤`idi-04` 与 `idi-06` 缺 `VALIDATION.md`(Nyquist 覆盖缺口),已登记待补。**v1.15 新增两处同型缺口:`idi-09` / `idi-10` 也无 `VALIDATION.md`**(Nyquist 能力是开着的,只是 `validate-phase` 从未对它们跑过);
+  ⑥**v1.15 审计登记的 G1 / G2**(详见上方 `## Next Milestone Goals`):G1 = `#latest-check` 的灰底与 Phase 10 的表头灰底同令牌相撞、band 消失;G2 = `--radix-gray-1` 已声明零消费,围栏的「每个声明的令牌都被消费」性质已不成立而 `check-01` 结构上看不见。两者都是 WARNING,无 a11y 失败、无需求不满足;
+  ⑦**`check-10` t1/t2 只钉令牌接线,不钉视觉契约** —— 58/58 PASS 与 G1 可以共存:它回答「`th` 是不是画了 `--color-surface`?」(是),从不回答「表头读起来是不是一条独立的 band?」(在 `#latest-check` 里不是)。`WR-04` 残项同源:`check-10` 里没有任何 `read_style(..., 'table', ...)`,重新加回表级边框或改 `border-collapse` 都会让 t1/t2 保持绿。
 - **方法论教训:** 真浏览器 UAT 抓出了机器级验证漏掉的真实缺陷(v1.13 六处、v1.14 一处跨阶段回归)。**文本级 gate 通过不等于运行时语义成立**,且**一条不能失败的门比没有门更糟**——v1.14 的 `check-05 --item 9` 不但漏掉 AI 事件自动跟随的回归,还正面断言了该回归的前提。变异测试是唯一能证明门真的会失败的手段。
 - **UAT 环境事实(省得重踩):** `check-05-ui-uat.py` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该路线的 `channel="chrome"` + headless 会挂死);Node 路线才用 `channel: 'chrome'`。键盘文本选区**无法自动化**(连 `contenteditable` 都选不中),依赖 Shift+方向键的验收项必须标注为人工检查。`check-05` 全量跑 exit=2 是因为 item 5 的两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归。
 
@@ -100,7 +127,7 @@
 - **语言**: 讨论文档以中文为主;面向用户的输出遵守 DESIGN.md §3.8 语言红线(简洁精准、大白话定义术语)
 - **Scope**: 代码实施不在本工具职责范围内(工具产出设计文档后归档;本仓库的"实施"是把这个工具本身建起来)
 - **Git**: 实施分支活动按仓库 CLAUDE.md 第 5 条纪律执行
-- **v1.14 遗留的编辑纪律(`style.css` / `app.js`,每个改动都必须遵守)** — 来源 `.planning/milestones/v1.14-ROADMAP.md` §全局硬规则:`grep -c '^\.hidden {' frontend/style.css` 恒为 1;`!important` **声明**数恒为 1(按声明计数,不能数命中行);**追加,不重排**(至少一对等特异性规则由源码顺序决定);不得新增 `!important`、不得令牌化 `display`、不得引入 `@layer` / `@property` / `var(--x, #fallback)`;零新增运行时依赖、零构建步骤;每个 `style.css` 计划必须带至少一项运行时验证
+- **`style.css` / `app.js` 的编辑纪律(v1.14 建立,v1.15 沿用,每个改动都必须遵守)** — 来源 `.planning/milestones/v1.14-ROADMAP.md` §全局硬规则:`grep -c '^\.hidden {' frontend/style.css` 恒为 1;`!important` **声明**数恒为 1(按声明计数,不能数命中行);**追加,不重排**(至少一对等特异性规则由源码顺序决定;需要改写既有声明时就地改写,不搬迁);不得新增 `!important`、不得令牌化 `display`、不得引入 `@layer` / `@property` / `var(--x, #fallback)`;零新增运行时依赖、零构建步骤;每个 `style.css` 计划必须带至少一项运行时验证(真实浏览器的 computed style 读数 —— `grep -c 'var(--'` 对渲染结果零证明力)
 
 ## Key Decisions
 
@@ -138,7 +165,12 @@
 | **v1.14 收口:一条不能失败的门比没有门更糟 —— 新门必须用变异证明会 FAIL** | `check-05 --item 9` 不但零覆盖该回归,**还正面断言了回归的前提**(`#ai-events 计算 max-height == none # L-4:套娃第一层(55vh 限高 + 内滚动)已原地删除`),其唯一的滚动行为断言「末条内容可达」自己设 `c.scrollTop = scrollHeight` —— 那是「显式滚动下的可达性」,与「自动跟随」是两个性质 | ✓ Good(新断言驱动 app 自己的 `renderEvent` 路径追加 N 条,断言最新条目落在 `#main-pane` 可视盒内且**不动 `scrollTop`**;变异证明 `after=0 last=[2569,2621] pane=[0,900]` 转 FAIL。**本里程碑反复出现的缺陷类就是这一类**) |
 | **v1.14 收口:`.collapse-indicator` 的 20px 走「加第 8 档」而非重映射** | backlog `999.1` 的三条候选(加档 / 重映射到 18-24 / 加 L-6 例外)中,加档是唯一**保持字形渲染尺寸不变**的;重映射会改已出货的 ▾/▸ 视觉,加例外则让 `20px` 永久留在出货 chrome 里 | ⚠️ Revisit(新增 `--text-lg-plus: 20px` + `--lh-none: 1`,字号刻度 7 → 8 档;**命名阶梯因此非单调**(xl=24 > 2xl=22),属已登记的 D-07 冲突,不得"顺手修正") |
 | **v1.14 收口:收口类型 = `verified_closeout`** | 6/6 阶段在 `0b6283a` 全部复验 `passed`,`all_phases_verified = true`;不再需要 `override_closeout`。前提是先把被本次修复作废的 6 份指纹**全部重算并重新验证**,而不是刷新旧指纹(刷新等于断言"自验证以来什么都没变",而这里是假的) | ✓ Good(6 份报告逐份以 HEAD 内容重算 digest;`REQUIREMENTS.md` 同时移出全部 `covered_files` 以吸收收口自身的 `git rm`) |
-| **v1.15:卡片化的底色关系取「页面下沉 + 白卡片」**(用户裁定 2026-09-26) | 实测发现现有层次是**反的**:页面 `#fcfcfc`(gray-1)是全场最亮,左栏 3 个面板**完全透明**,`#doc-panel` 是更暗的 gray-2(读起来像"凹陷")且**零圆角零阴影** —— 这是"平 / 丑"的机械成因,不是配色问题。三选项中此项层次最强(ΔL≈6%),且顺带把现有三层接成连贯刻度:gray-3(页面)< gray-2(`--color-surface`,控件内陷面)< 白(卡片),正好是 shadcn 的 canvas / inset / raised 三档 | — Pending(代价:`--color-surface-page` 换值 ⇒ 其全部 PAIR 需**重算并登记**,不是刷新旧值) |
+| **v1.15:卡片化的底色关系取「页面下沉 + 白卡片」**(用户裁定 2026-09-26) | 实测发现现有层次是**反的**:页面 `#fcfcfc`(gray-1)是全场最亮,左栏 3 个面板**完全透明**,`#doc-panel` 是更暗的 gray-2(读起来像"凹陷")且**零圆角零阴影** —— 这是"平 / 丑"的机械成因,不是配色问题。三选项中此项层次最强(ΔL≈6%),且顺带把现有三层接成连贯刻度:gray-3(页面)< gray-2(`--color-surface`,控件内陷面)< 白(卡片),正好是 shadcn 的 canvas / inset / raised 三档 | ✓ Good(Phase 9 落地;页面换值作废的 8 条 PAIR 逐条以 HEAD 内容重算登记,其中 2 条按**元素实际绘制面**重新归属到卡片底色 —— 不是调色、不是放宽阈值) |
+| **v1.15:两条中间调 PAIR 的解法是「重新归属」而非调色或放宽阈值** | 页面变暗会让深色前景对比度**上升**、中间调**下降**(与直觉相反):`--color-marker-active` TEXT 重算后 4.18 < 4.5、`--color-border-strong` NON-TEXT 2.91 < 3.0,双双 FAIL。但这两族的元素**全部画在面板内部**,卡片化本身确实改变了它们的绘制面 ⇒ 改记为卡片底色后在白底实测 4.77 / 3.32 双双达标 | ✓ Good(**全程未改动任何颜色值、未新增 primitive、未放宽阈值**;`marker-active` 的 NON-TEXT 半条刻意保留在页面地面 —— 4.18 < 4.77,那是更严的一侧) |
+| **v1.15:表格改「表头浅底 + 仅横向分隔线」,表头底色落 `--color-surface`(gray-2)** | gray-2 正是 Phase 9 建立的三级刻度里的「内陷面」档,于是表格从「与卡片无关的网格」变成「卡片内的一个内陷块」;且它的既有 PAIR(`--color-text ON --color-surface` 15.48)已登记 ⇒ 零新增配对 | ✓ Good(`check-02` 实跑输出含该条为证;零新增颜色值 / primitive / 阈值改动) |
+| **v1.15:圆角收敛 = 删令牌而非改值,两处消费者去向**不同** | `--radius-lg: 28px` 是 quick `260918-qrq` 临时视觉 pass 手调进来的,连 UI-SPEC 的圆角账本都没同步。两处消费者**形态不同**:`.chat-user` 真的是"大圆角气泡"(→ `--radius-md`,外观真变)、`#chat-input-row input`(`min-height: 52px`)在 28px 下早已被 UA 钳到 26px,它**实际就是一个胶囊**(→ `--radius-pill`,如实登记、外观零变化) | ✓ Good(一律改成 `--radius-md` 会让输入框外观真的变化 —— 那是用户没选的档位;"零变化"的判据是**测量**不是算术:收敛前后整份 computed style dump + 矩形逐值 + 元素 PNG **逐字节相同**三项并排) |
+| **v1.15:连带指纹的真实形状是「10 份覆盖,1 份可执行」** | `frontend/style.css` 出现在 10 份 `passed` 报告的 `covered_files` 里,但其中 9 份的路径因归档而**不可解析**(`.planning/phases/<id>/…` → `.planning/milestones/<ver>-phases/…`),属 2026-09-14 登记的已知限制 ⇒ 它们在本次改动**之前**就已是 fail-closed stale。规划期初稿写「6 份」是错的(只扫了两个 phases 目录,漏了 `v1.13-phases/` 与 `quick/`) | ✓ Good(逐份读 frontmatter 实测校正;判据锚 `covered_files` 逐行匹配**而非**全文 grep —— 全文 grep 会把只在正文提及的 `idi-08` 算进来。`idi-09` 以 HEAD 内容**重新验证**而非刷新指纹) |
+| **v1.15:门的创建动机是「七个门里零条断言覆盖表格的边框/底色」** | `check-10` 的抬头逐字记录了这条 grep 结果。它的存在本身是诚实工程 —— 但它的判据是**令牌接线**,不是视觉契约 | ⚠️ Revisit(58/58 PASS 与 G1 共存:它回答「`th` 画了 `--color-surface` 吗」(是),从不回答「表头读起来是一条独立的 band 吗」(在 `#latest-check` 里不是)。下一里程碑应决定 G1 的处置) |
 
 ## Evolution
 
@@ -158,4 +190,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-26 after v1.14 milestone — 6 阶段 / 21 计划 / 81 任务 / 38 需求全部交付并归档;预收口审计抓到并修复一处跨阶段回归(Phase 6 的 L-4 静默杀掉 AI 事件自动跟随),6 个阶段的指纹因此全部作废并逐份重新验证;`check-05` 新增一条经变异证明的自动跟随门、`check-07` 新增 `FOCUSABLE_SELECTOR` ↔ `:focus-visible` 对齐门;`.collapse-indicator` 的 20px 加为第 8 档字号。**v1.15 视觉构图升级已启动(见上方 `## Current Milestone`),首个 phase 为卡片化;本次同时回填了 `## Evolution` 结构段(本项目建于该特性之前)***
+*Last updated: 2026-09-28 after v1.15 milestone — 2 阶段 / 7 计划 / 20 任务 / 12 需求全部交付并归档。界面首次拥有 elevation 层次(白卡片 + 页面下沉 + 三级刻度);表格重做与圆角刻度收敛。**后端与 `app.js` / `index.html` 逐字节未改。** 里程碑审计 `status: tech_debt`(12/12 需求满足、无 critical blocker,14 项 tech debt 已登记,其中 G1/G2 两条 WARNING 待下一里程碑裁定)。范围裁定两次均由用户逐项作出。本次同时把 `## Current State` 的旧里程碑内容归档进 `<details>`,并把 `## Next Milestone Goals` 从 v1.15 改写为 v1.16 的候选池。*

@@ -40,22 +40,26 @@ Phase 11「去卡片化与发丝分隔线」把它**改写**为断言去卡片�
 断言与需求的映射(Phase 11 改写后)
     c1 → REG-01 / SURF-01 / SURF-02   左栏 4 个 section 的**连续面**:box-shadow == none、
                                      四个物理角长手 == 0px、计算底色 == 统一面、边界宽度按
-                                     **异形**形状断言(第一个 section 四边全 0px,其余三个
-                                     各带一条 1px 上边线);外加交互控件对照组(证明
+                                     **异形**形状断言(DOM 末位的 #ai-panel 四边全 0px,其余
+                                     三个各带一条 1px **下**边线);外加交互控件对照组(证明
                                      「移除边界」严格限于五个容器)、活动标记的正面断言、
                                      两条**专用**残留断言与两条「被删令牌已不可解析」探测器
     c2 → REG-01 / DIV-01              #doc-panel 的**单边竖线**:box-shadow == none、四角 0px、
                                      四条边中**仅** border-left-width == 1px、border-left 的
                                      颜色双断言(令牌 + gray-6 字面量)、overflow-y == auto
-                                     (承重的滚动契约),外加 #doc-panel-header 的 sticky /
-                                     top / 背景三条断言(背景已随统一面改归属)
+                                     (承重的滚动契约)、自身底色 == 统一面(令牌 + 字面量
+                                     双断言),外加 #doc-panel-header 的 sticky / top / 背景
+                                     三条断言(背景已随统一面改归属)
     c3 → REG-01 / SURF-02             **两级**刻度:body 计算底色 == 统一面令牌解析值 **且**
                                      == 写死字面量白 **且** != 旧的 gray-3 页面档;
                                      内陷面令牌解析值的相对亮度**严格低于**统一面
                                      (判据取令牌级读数,不取 effective_bg)
     c4 → REG-01 / SURF-03 / DIV-01..03 灰缝归零(#main-pane gap == 0px)+ 两条发丝线的宽度与
-                                     颜色**双断言**(令牌 + gray-6 字面量)+ 第一个面板顶部
-                                     不画线 + 竖线宿主跨满视口的真实几何,外加三条对照组
+                                     颜色**双断言**(令牌 + gray-6 字面量)+ DOM 末位面板不带
+                                     线 + **逐状态发丝线普查**(5 个样本状态各断三条:可视的
+                                     第一个面板顶部无发丝线 / 可见发丝线数 == 可见面板数 − 1 /
+                                     无线落窗口边缘)+ 竖线宿主跨满视口的真实几何,外加三条
+                                     对照组
     c5 → REG-02                      滚动契约保持:#doc-panel / #chat-messages 的
                                      overflow-y == auto,sticky 表头在**已证明可滚**的
                                      前提下滚到底仍可见
@@ -104,9 +108,11 @@ resolve_token = c05.resolve_token
 # 左栏 4 个 section(index.html 的 main#main-pane 的 4 个直接子 section)。
 LEFT_SECTIONS = ["#session-panel", "#annotations-panel", "#checks-panel", "#ai-panel"]
 
-# 横线的宿主:只有后三个。`#session-panel` 是 DOM 第一个 section,
-# `#main-pane > section + section` 永不匹配它 ⇒ 第一个面板顶部不画线(D-11-10)。
-HAIRLINE_SECTIONS = ["#annotations-panel", "#checks-panel", "#ai-panel"]
+# 横线的宿主:**前三个**(Phase 11 gap-closure 换向,D-11-10)。规则由「除 DOM 首个子元素外
+# 都加上边线」改为「除 DOM 末个子元素外都加下边线」⇒ 线记在非末位 section 的**下边线**上,
+# 末位的 `#ai-panel` 不带线。这依赖「`#ai-panel` 是 DOM 末子元素且恒可见」这条前提
+# (frontend/app.js 从不给它加 `.hidden`)—— 前提一旦被破坏,最后一个可见面板会多画一条下边线。
+HAIRLINE_SECTIONS = ["#session-panel", "#annotations-panel", "#checks-panel"]
 
 # 四个**物理角长手**。为什么不读简写 `border-radius`:简写在多值规则体上会被 Chrome
 # 序列化成三值,`== "0px"` 这种断言不可满足。长手读法在任何规则体上都成立。
@@ -250,19 +256,21 @@ def c1(page, tmp_root):
         ok(item, f"[p1] {sel} 计算底色 == rgb(255, 255, 255)(写死字面量)",
            SURFACE_PAGE_LITERAL, bg,
            note="与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白")
-        # 边界宽度是**异形**的,不是一条统一循环:#session-panel 是 DOM 第一个 section,
-        # `#main-pane > section + section` 永不匹配它 ⇒ 它的四条边全 0px;其余三个各带
-        # 一条上边线(横线),另三条边 0px。把四个 section 塞进一条统一循环会写错第一个。
-        if sel == "#session-panel":
+        # 边界宽度是**异形**的,不是一条统一循环:线现在记在**非 DOM 末位** section 的
+        # **下边线**上(Phase 11 gap-closure 换向,D-11-10)。#ai-panel 是 DOM 末子元素
+        # ⇒ 它的四条边全 0px;前三个各带一条下边线(横线),另三条边 0px。把四个 section
+        # 塞进一条统一循环会写错末位那一个。这依赖「#ai-panel 恒可见」这条前提
+        # (frontend/app.js 从不给它加 `.hidden`)—— 与 style.css 里那条规则注释同一口径。
+        if sel == "#ai-panel":
             for side in BORDER_SIDES:
-                ok(item, f"[p1] {sel} 计算 border-{side}-width == 0px(DOM 第一个 section 无横线)",
+                ok(item, f"[p1] {sel} 计算 border-{side}-width == 0px(DOM 末位 section 无横线)",
                    "0px", widths[side],
-                   note="相邻兄弟选择器按 **DOM 相邻**判定,第一个 section 顶部不画线")
+                   note="规则键控于非 DOM 末子元素 ⇒ 末位 section 四条边全 0px")
         else:
-            ok(item, f"[p1] {sel} 计算 border-top-width == 1px(横线)", "1px",
-               widths["top"])
-            for side in ("right", "bottom", "left"):
-                ok(item, f"[p1] {sel} 计算 border-{side}-width == 0px(横线只落上边)",
+            ok(item, f"[p1] {sel} 计算 border-bottom-width == 1px(横线)", "1px",
+               widths["bottom"])
+            for side in ("top", "right", "left"):
+                ok(item, f"[p1] {sel} 计算 border-{side}-width == 0px(横线只落下边)",
                    "0px", widths[side])
 
     # ---- (d) 交互控件对照组(SC1 明文要求的反向证据)----
@@ -386,6 +394,16 @@ def c2(page, tmp_root):
        body_bg, header_bg,
        note="Phase 11 只改它的归属令牌:表头底色与统一面同值,不再取卡片令牌")
 
+    # #doc-panel **自身**的底色(BINDING-3)。本项原先只在上面把它的底色读进 bg,却从无断言
+    # 消费它 ⇒ 面板被重新上色成任何颜色时本门全绿(表头自绘背景,c2 的 header 断言仍会过;
+    # check-05 也不断言 #doc-panel 的底色)⇒ 本阶段头号交付物的五分之一没有门。
+    ok(item, "[p1] #doc-panel 计算底色 == body 计算底色(统一面)",
+       body_bg, bg,
+       note="五个容器统一面的一部分;面板被重新上色时这一条必须能失败")
+    ok(item, "[p1] #doc-panel 计算底色 == rgb(255, 255, 255)(写死字面量)",
+       SURFACE_PAGE_LITERAL, bg,
+       note="与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白")
+
 
 # ---------------------------------------------------------------------------
 # c4 — 灰缝归零 + 两条发丝线 + 竖线跨满几何(REG-01 / SURF-03 / DIV-01..03)
@@ -401,6 +419,29 @@ def c2(page, tmp_root):
 #     #doc-panel-body」这件事在本文件里也能当场变红,而不必等 check-05。
 #   · .panel-header padding-top —— 表头是 36px 固定高的 chrome 条,它的内边距不在裁定
 #     范围内,故刻意未随卡片内边距一起改。
+#
+# 逐状态发丝线普查探针(Phase 11 gap-closure / BINDING-1)。**为什么必须逐状态**:旧 c4 只在
+# p1 上断言「第一个面板顶部不画线」,而 p1 下 `#session-panel` 恰是**可视的第一个面板** ⇒
+# 那条断言在唯一不可能出缺陷的状态里恒真,对本缺陷结构性失明。p3 / checking / archive 下
+# `#session-panel` 被 `.hidden` 隐藏,可视的第一个面板是 `#annotations-panel` /
+# `#checks-panel`,它们当时带 `border-top` 且 `rect.top == 0.00` ⇒ 窗口边缘多一条线。
+# 返回 4 个 section 的 display / rect.top / rect.bottom / 两个边框宽度;元素缺失记 missing。
+HAIRLINE_CENSUS_JS = """(sels) => sels.map((sel) => {
+  const el = document.querySelector(sel);
+  if (!el) return {sel: sel, missing: true};
+  const cs = getComputedStyle(el);
+  const r = el.getBoundingClientRect();
+  return {
+    sel: sel,
+    display: cs.display,
+    top: r.top,
+    bottom: r.bottom,
+    borderTop: cs.borderTopWidth,
+    borderBottom: cs.borderBottomWidth,
+  };
+})"""
+
+
 def c4(page, tmp_root):
     item = "c4"
     print("\n=== c4: 灰缝归零 + 两条发丝线 + 竖线跨满几何 ===", flush=True)
@@ -429,21 +470,28 @@ def c4(page, tmp_root):
             "这一条把「线是浅档」钉死在 gray-6。**没有它,D-11-8 显式否决的那个备选"
             "(gray-7)对门是不可见的。**")
 
-    # ---- 横线:#main-pane > section + section 的 border-top(恰 3 条)----
+    # ---- 横线:非 DOM 末位 section 的 border-bottom(恰 3 条)----
+    # Phase 11 gap-closure 换向:线由「后三个面板的上边线」改为「前三个面板的下边线」
+    # (D-11-10)。宿主清单 HAIRLINE_SECTIONS 已同步改为前三个。
     for sel in HAIRLINE_SECTIONS:
-        w = read_style(page, sel, "border-top-width")
-        c = read_style(page, sel, "border-top-color")
-        info(f"c4 横线 {sel} border-top 原始读数", f"{w} {c}")
-        ok(item, f"[p1] 横线 {sel} 计算 border-top-width == 1px", "1px", w)
-        ok(item, f"[p1] 横线 {sel} 计算 border-top-color == var(--color-border-subtle)",
+        w = read_style(page, sel, "border-bottom-width")
+        c = read_style(page, sel, "border-bottom-color")
+        top_w = read_style(page, sel, "border-top-width")
+        info(f"c4 横线 {sel} border-bottom 原始读数", f"{w} {c}")
+        ok(item, f"[p1] 横线 {sel} 计算 border-bottom-width == 1px", "1px", w)
+        ok(item, f"[p1] 横线 {sel} 计算 border-bottom-color == var(--color-border-subtle)",
            subtle, c)
-        ok(item, f"[p1] 横线 {sel} 计算 border-top-color == gray-6 字面量",
+        ok(item, f"[p1] 横线 {sel} 计算 border-bottom-color == gray-6 字面量",
            HAIRLINE_LITERAL, c,
            note="字面量半条是承重的:使 D-11-8 否决的 gray-7 备选对本门可见")
-    ok(item, "[p1] 横线 #session-panel 计算 border-top-width == 0px(第一个面板顶部不画线)",
-       "0px", read_style(page, "#session-panel", "border-top-width"),
-       note="#session-panel 是 DOM 第一个 section,相邻兄弟选择器永不匹配它 ⇒ 恰 3 条线;"
-            "顶部是窗口边缘,画了会读成多一条(D-11-10)")
+        ok(item, f"[p1] 横线 {sel} 计算 border-top-width == 0px(线只落下边)",
+           "0px", top_w,
+           note="换向后的形状:线落在非末位 section 的**下**边线,上边永不带线")
+    for side in ("top", "bottom"):
+        ok(item, f"[p1] 横线 #ai-panel 计算 border-{side}-width == 0px(DOM 末位不带线)",
+           "0px", read_style(page, "#ai-panel", f"border-{side}-width"),
+           note="#ai-panel 是 DOM 末子元素 ⇒ 规则不匹配它;这也依赖「它恒可见」这条前提"
+                "(frontend/app.js 从不给它加 .hidden)")
 
     # ---- 竖线跨满:#doc-panel 的 rect 覆盖整个视口高 ----
     # 这一条是**承重的**:没有它,「跨满面板可视高度」就退化成一条恒真的
@@ -488,6 +536,47 @@ def c4(page, tmp_root):
                     "<MISSING>", "元素/选择器不存在")
             continue
         ok(item, f"[p1] {sel} 计算 {prop} == {expected}(对照组)", expected, actual, note=note)
+
+    # ---- 逐状态发丝线普查(Phase 11 gap-closure 的核心新增 / BINDING-1)----
+    # 契约不是「恒 1 条」,而是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」。旧 c4 只在 p1
+    # 上跑,故对本 gap 结构性失明 —— 本项在 `#session-panel` 被隐藏的 p3 / checking / archive
+    # 上也运行。探针不可读 / 判定集为空一律记 blocked,绝不记 PASS。
+    for state in c05.STATES:
+        proj = c05.make_fixture(state, tmp_root)
+        c05.enter_project(page, proj)
+        rows = page.evaluate(HAIRLINE_CENSUS_JS, LEFT_SECTIONS)
+        if not isinstance(rows, list) or any(r.get("missing") for r in rows):
+            blocked(item, f"[{state}] 发丝线普查可读", "4 个 section 的完整读数",
+                    str(rows), "元素缺失或探针返回非 list ⇒ 不记 PASS")
+            continue
+        visible = [r for r in rows if r["display"] != "none"]
+        if not visible:
+            blocked(item, f"[{state}] 存在可见面板", "至少 1 个可见 section",
+                    f"display={[r['display'] for r in rows]}", "判定集为空 ⇒ 不记 PASS")
+            continue
+        info(f"c4 [{state}] 发丝线普查原始读数",
+             " / ".join(f"{r['sel']}:display={r['display']},top={r['top']:.2f},"
+                        f"bt={r['borderTop']},bb={r['borderBottom']}" for r in rows))
+        first = visible[0]
+        ok_true(item,
+                f"[{state}] 可视的第一个面板({first['sel']})计算 border-top-width == 0px",
+                first["borderTop"] == "0px", "0px", str(first["borderTop"]),
+                note="本 gap 的回归判据:旧 c4 只在 p1 上跑,而 p1 下可视的第一个面板恰是"
+                     "#session-panel ⇒ 那条断言在唯一不可能出缺陷的状态里恒真。本项在 "
+                     "#session-panel 被隐藏的 p3 / checking / archive 上也运行")
+        lines = [r for r in visible if r["borderTop"] != "0px" or r["borderBottom"] != "0px"]
+        ok_true(item,
+                f"[{state}] 可见发丝线数 == 可见面板数 − 1({len(visible) - 1})",
+                len(lines) == len(visible) - 1, str(len(visible) - 1), str(len(lines)),
+                note="契约是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」,不是「恒 1 条」"
+                     f"(可见={[r['sel'] for r in visible]} 带线={[r['sel'] for r in lines]})")
+        edge = [r for r in visible if r["borderTop"] != "0px" and r["top"] <= 0.5]
+        ok_true(item,
+                f"[{state}] 没有发丝线落在窗口边缘(border-top != 0 且 top <= 0.5px)",
+                len(edge) == 0, "0 条", f"{len(edge)} 条 {[r['sel'] for r in edge]}",
+                note="判据落在**线**的位置上,不是面板的位置:可视的第一个面板自身的 rect.top "
+                     "在 5 个状态里**恒为 0**(它就在窗口顶,这是合法的 —— 它只带下边线),"
+                     "故不得写成「面板 rect.top > 0」那样不可满足的形式")
 
 
 # ---------------------------------------------------------------------------

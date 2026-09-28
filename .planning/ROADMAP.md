@@ -127,12 +127,12 @@ SURF 与 DIV **必须同阶段落地**:只去卡片不留线,等于把 4 个面�
 - **以为后端 / `app.js` 会需要改动** —— 预期本阶段是**纯 CSS + 门脚本**改动,`frontend/app.js` 与 `frontend/index.html` 逐字节不改、后端零改动(v1.15 两个阶段都是这样,且两处都以此为证据)。**偏离这个预期是一个信号** —— 例如「必须加 DOM 元素才能画出跨满高的竖线」说明选的实现方式错了(应改用零 DOM 的盒内手段),须先停下来判因,不要顺着改下去。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS(令牌块外零裸 `#hex`、零 tier-1 原语引用);`scripts/check-02-contrast.py` PASS(2 条卡片地面 PAIR 已重新归属并重算、六条页面地面 PAIR 已重算、`ORDER` 不退化、阈值与 HEAD 逐字节相同);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` **声明**数 = 1);`scripts/check-09-idi09-validation.py` 改写后 c1..c5 全 PASS **且四条改写判据各有一条变异 FAIL 的读数**;`scripts/check-05-ui-uat.py --item 8` 复跑(sticky 余量读数已登记);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`;全量 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归);`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`);`node --check frontend/app.js`;`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`。
-**Plans**: 4 plans
+**Plans**: 1/4 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] idi-11-01-PLAN.md — 反转本体(纯 CSS):统一面 `--color-surface-page` 换值为 `var(--white)` + 左栏 4 个 `section` 与 `#doc-panel` 就地去掉 `border` / `border-radius` / `box-shadow` + `#main-pane` 灰缝归零 + 两条 1px 发丝线(竖线 = `#doc-panel` 的 `border-left`、横线 = `#main-pane > section + section`)+ 四段承重注释改写;三份真实浏览器运行时读数取证
+- [x] idi-11-01-PLAN.md — 反转本体(纯 CSS):统一面 `--color-surface-page` 换值为 `var(--white)` + 左栏 4 个 `section` 与 `#doc-panel` 就地去掉 `border` / `border-radius` / `box-shadow` + `#main-pane` 灰缝归零 + 两条 1px 发丝线(竖线 = `#doc-panel` 的 `border-left`、横线 = `#main-pane > section + section`)+ 四段承重注释改写;三份真实浏览器运行时读数取证
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -205,7 +205,7 @@ Plans:
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete | 2026-09-26 |
 | 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | Complete | 2026-09-27 |
-| 11. 去卡片化与发丝分隔线 | v1.16 | 0/4 | Not started | - |
+| 11. 去卡片化与发丝分隔线 | v1.16 | 1/4 | In Progress|  |
 | 12. G1 表头 band 与里程碑收口 | v1.16 | TBD | Not started | - |
 
 **三个里程碑共 11 个阶段全部收口。** v1.15(视觉构图升级)已 shipped 并归档于 2026-09-28 —— Phase 9 交付卡片容器化与页面底色下沉(7 条需求 CARD 3 / VIS 2 / REG 2),Phase 10 交付表格重做与圆角刻度收敛(5 条需求 TABLE 2 / RADIUS 2 / REG-03);12/12 需求满足,里程碑审计 `status: tech_debt`(无 critical blocker,14 项 tech debt 已登记待裁定)。

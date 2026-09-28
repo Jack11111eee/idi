@@ -5,17 +5,17 @@ milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 11
 current_phase_name: 去卡片化与发丝分隔线
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-09-28T04:54:35.001Z"
+stopped_at: Completed idi-11-01-PLAN.md
+last_updated: "2026-09-28T05:39:23.913Z"
 last_activity: 2026-09-28
-last_activity_desc: v1.16 路线图创建完成(2 阶段 / 12 条需求 100% 映射)
-state_head: 6e99d726d0f44d889eab5e964f976a21ebd2c388
+last_activity_desc: Phase idi-11 execution started
+state_head: ba2ab6ac653a9f6dd5964a3a2f57f4b226570d60
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-28)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase 11 — 去卡片化与发丝分隔线(v1.16 第 1/2 阶段,Ready to plan)
+**Current focus:** Phase idi-11 — 去卡片化与发丝分隔线
 
 ## Current Position
 
-Phase: idi-11 (去卡片化与发丝分隔线) — READY TO EXECUTE
-Plan: — of TBD
-Status: Ready to execute
-Last activity: 2026-09-28 — Milestone v1.16 roadmap created (2 phases, 12/12 requirements mapped)
+Phase: idi-11 (去卡片化与发丝分隔线) — EXECUTING
+Plan: 2 of 4
+Status: Executing Phase idi-11
+Last activity: 2026-09-28 — Phase idi-11 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -110,6 +110,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-10 P02 | 9 min | 3 tasks | 6 files |
 | Phase idi-10 P03 | 15 min | 3 tasks | 18 files |
 | Phase idi-10 P04 | 14 min | 2 tasks | 2 files |
+| Phase idi-11 P01 | 17min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -286,6 +287,11 @@ Recent decisions affecting current work:
 - [Phase 10]: idi-09 的 covered_files 10 条逐条未变,只重算 covered_digest(6e811a11 到 7b82f8d1);删条目是让报告假装新鲜的典型手法,故把条数等于 10 写成机器判据
 - [Phase 10]: 两条被本阶段改动移动的历史读数逐条给出机制而非静默重述:truth 5 的 border 消费者计数由 3 变 2、truth 24 的顶层选择器计数由 173 变 174(Phase 10 追加了唯一一条 markdown-body th 规则)
 - [Phase 10]: idi-09 正文对 round-doc 绝对高度的引用为零,故计划 03 登记的 3px 几何变化不触及本报告任何判据;其唯一几何引用 doc-panel 的 scrollHeight 2488 大于 clientHeight 898 在 HEAD 上复测仍为 2488 与 898
+- [Phase 11]: 统一面就地换值 var(--radix-gray-3) -> var(--white),声明名与位置不动;三档 elevation 叙事改写为两级(统一面白 1.000000 > 内陷面 gray-2 0.947307)。--radix-gray-3 仍有 --color-surface-sunken / --color-surface-hover 两个消费者 ⇒ 未造出新的零消费 primitive(D-11-3 复核成立)
+- [Phase 11]: 五个容器的四条旧声明是被就地改写掉的(border -> none / border-radius -> 0 / box-shadow -> none / background 改指统一面),不是被后续规则覆盖 —— 规则体内已不再出现 --color-surface-card / --color-border / --radius-md / --shadow-card
+- [Phase 11]: 两条发丝线均取既有语义令牌 --color-border-subtle(gray-6):竖线 = #doc-panel 的 border-left(盒内手段,零新增 DOM、零位移、天然跨满 stretch 高度);横线 = 新增规则块 #main-pane > section + section 的 border-top,恰命中后三个 section(第一个面板顶部不画)
+- [Phase 11]: 发丝线颜色必须双断言(计算色 == 运行时令牌 == 写死字面量 gray-6),只跟令牌比是自指的 —— 把令牌换成 gray-7 会让两侧一起变、恒过,而那正是 D-11-8 显式否决的备选;实测四条读数均为 rgb(217, 217, 217)
+- [Phase 11]: 计划对交互控件对照组的验收措辞经实测证伪 —— .overlay-card 在 HEAD 上从未声明 border(只有 border-radius + box-shadow),其计算 border-top-width 恒为 0px;本计划没有也不可能从它上面移除边界。对照组证据改写为「五个条目均保留非零圆角;其中四个真正承载 resting border 的控件保留 border-top-width = 1px;.overlay-card 保留 10px 圆角 + --shadow-overlay」。这不是放宽判据(没有任何门断言该项),禁止项由实测读数证实成立
 
 ### Pending Todos
 
@@ -387,9 +393,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T03:30:05.280Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/idi-11-decard-and-hairline-dividers/11-CONTEXT.md
+Last session: 2026-09-28T05:39:23.888Z
+Stopped at: Completed idi-11-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

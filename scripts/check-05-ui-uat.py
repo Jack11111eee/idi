@@ -1299,12 +1299,21 @@ def item5(page, tmp_root, ai_smoke):
     ok(item, "[p1] .hint color == var(--color-text-muted)",
        resolve_color(page, "--color-text-muted"), read_style(page, ".hint", "color"))
     # .hint 自身无背景,沿祖先链取到的实际底色。实测:命中的是 index.html 里
-    # #doc-panel-body → #doc-panel 内的那条。Phase 9 卡片化之后 #doc-panel 画的是
-    # --color-surface-card(卡片白),故实际地面是卡片表面,不再是 --color-surface。
-    # 这是**重新登记**(期望侧换指到本阶段刻意改变的那条事实),断言形式一字未变 ——
-    # 仍是「实测 computed 值 == 运行时解析的令牌值」的精确等值,不是放宽。
-    ok(item, "[p1] .hint 实际背景 == var(--color-surface-card)",
-       resolve_color(page, "--color-surface-card"), effective_bg(page, ".hint"),
+    # #doc-panel-body → #doc-panel 内的那条。地面被搬过两次,期望侧跟着换了两次,
+    # 而断言形式**一字未变**:
+    #   ① Phase 9 卡片化:#doc-panel 改画卡片底色(白),故实际地面是卡片表面,
+    #      不再是内陷面 —— 期望侧由内陷面令牌换指卡片令牌;
+    #   ② Phase 11 去卡片化:卡片档并回统一面,#doc-panel 改画统一面令牌(仍是白),
+    #      故期望侧**再次**换指统一面令牌。
+    # 两次都只是把期望侧换指到**本阶段刻意改变的那条事实**上。
+    # 这是**重新登记**:断言形式一字未变 —— 仍是「实测 computed 值 == 运行时解析的
+    # 令牌值」的精确等值,不是放宽(禁止 ok_contains / 非透明判据 / 硬编码 rgb / or 分支)。
+    # ⚠ 为什么必须改而不是放着:被删的卡片底色令牌一旦不再声明,resolve_color 返回
+    # None,而 ok() 在**期望侧为 None** 时记 BLOCKED(不是 FAIL)⇒ 该断言会静默地从
+    # 「在检查」退化成「不知道」。本门整体退出码本来就因两条 --ai-smoke 腿为 2,
+    # **门不会变红**,没人会注意到这条断言已经死了(本仓库反复付过代价的「门绿着在看」形态)。
+    ok(item, "[p1] .hint 实际背景 == var(--color-surface-page)",
+       resolve_color(page, "--color-surface-page"), effective_bg(page, ".hint"),
        note=".hint 自身无背景,沿祖先链取到的实际底色")
     ok(item, "[p1] #stream-banner border-top-color == var(--color-action-warning)",
        resolve_color(page, "--color-action-warning"),

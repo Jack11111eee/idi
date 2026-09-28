@@ -421,7 +421,7 @@ Output: `frontend/style.css` 的统一面换值 + 五容器就地去边界 + 灰
     <automated>awk '/^#doc-panel-header \{/{f=1} f{print} f&&/^\}/{exit}' frontend/style.css</automated>
     <fails_when>the printed rule body is not exactly the four declarations `position: sticky;`, `top: 0;`, `background: var(--color-surface-page);`, `border-radius: 0;` in that order (the background declaration must still exist — only its token changed)</fails_when>
     <automated>awk '/^\.panel-header \{/{f=1} f{print} f&&/^\}/{exit}' frontend/style.css</automated>
-    <fails_when>the printed rule body does not contain `border-radius: 0;` or still contains `border-radius: var(--radius-md);`, or its other five declarations (`display` / `justify-content` / `align-items` / `height` / `padding` / `cursor` / `user-select`) differ from HEAD</fails_when>
+    <fails_when>the printed rule body does not contain `border-radius: 0;` or still contains `border-radius: var(--radius-md);`, or its other seven declarations (`display` / `justify-content` / `align-items` / `height` / `padding` / `cursor` / `user-select`) differ from HEAD</fails_when>
     <automated>awk '/^#main-pane \{/{f=1} f{print} f&&/^\}/{exit}' frontend/style.css</automated>
     <fails_when>the printed rule body does not contain `gap: 0;` and `align-items: center;` and `overflow-y: auto;` and `min-width: 0;`, or still contains `gap: var(--space-3);`</fails_when>
     <automated>.venv/bin/python scripts/check-09-idi09-validation.py --item c2 --item c4 2>&1 | grep -E 'INFO c2 #doc-panel (原始读数|四条边框宽度原始读数)|INFO c4 #main-pane gap 原始读数|INFO c4 \.panel-header padding-top 原始读数'</automated>

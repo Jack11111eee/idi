@@ -188,13 +188,16 @@
      it darker (05-N-2 / Pitfall 4a). Because the step is already declared,
      this phase adds ZERO tier-1 primitives.
 
-     Phase 9 update (the value above is unchanged — only the ground moved): both
-     consumers live in .panel-header, and the three panels are now opaque white
-     cards, so the colour is drawn on --color-surface-card, measured 4.77 there.
-     Once Phase 9 plan 02 sinks the page to gray-3 the page-ground reading is
-     4.18 — still >= NON-TEXT (3.0), but below TEXT (4.5). That is precisely why
-     the TEXT half of the manifest entry had to be re-attributed to the card
-     ground rather than the value being darkened. */
+     Phase 11 update (the value above is unchanged — only the ground moved
+     back): both consumers live in .panel-header, and the three panels that
+     carry the marker now paint the SAME surface as the page itself, so the
+     colour is drawn on the unified surface — measured 4.77 there. The history
+     is worth keeping: Phase 9 sank the page to gray-3, which dropped the
+     page-ground reading to 4.18 — still >= NON-TEXT (3.0) but below TEXT (4.5)
+     — and that is precisely why the TEXT half of the manifest entry was
+     re-attributed to the raised ground rather than the value being darkened.
+     Phase 11 merged that raised ground back into the page ground, so both
+     halves are drawn on one surface again. The value itself was never touched. */
   --color-marker-active: var(--radix-blue-11);
 
   /* Tier 2 — event-kind vocabulary (its own closed group) */
@@ -313,30 +316,27 @@
   --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
   --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
 
-  /* Tier 2 — the card container language (Phase 9 / VIS-01 / VIS-02 / CARD-01 /
-     CARD-02). Five load-bearing facts, so that a later reader does not "fix"
-     either token away.
+  /* Tier 2 — the retired card container language (Phase 9 / VIS-01 / VIS-02 /
+     CARD-01 / CARD-02).
 
-     1. The SURFACE RELATIONSHIP is a three-step ladder the user adjudicated
-        (D-9-1, PROJECT.md Key Decisions — do NOT reopen it): page
-        (--radix-gray-3 after Phase 9 plan 02) < --color-surface (gray-2, the
-        inset ground of controls) < white (the card). It is the shadcn
-        canvas / inset / raised trio.
+     Phase 9 declared two tokens here for the card language: an alias of white
+     for the card ground, and the card's elevation shadow. Phase 11 reversed that
+     language — the four left-hand panels and the document panel now paint the
+     same surface token as the page itself — so both tokens lost their last
+     consumer.
 
-     2. The shadow value is the user's adjudicated one (D-9-3). It is almost
-        invisible on purpose: the elevation reads mainly from the boundary plus
-        the ground difference (delta L ~ 6%), not from the shadow.
+     They are DELETED rather than kept, for the reason this fence's own header
+     already states (D-04 / Hard Rule 5): never declare a token you are not
+     consuming. Phase 10 deleted a radius step under exactly this rule and
+     recorded the same disposition; this is that precedent applied to the two
+     tokens this reversal itself orphaned.
 
-     3. The shadow MUST be zero-displacement — it is an ordinary box-shadow,
-        never a margin / position trick that fakes a lift and costs layout.
-
-     4. The card RADIUS is deliberately NOT declared here: cards take the
-        existing --radius-md (VIS-02 — zero new radius values).
-
-     5. --color-surface-card is an alias of --white, which is already declared
-        at the top of this fence => Phase 9 adds ZERO tier-1 primitives. */
-  --color-surface-card: var(--white);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+     ⚠ This is NOT a generic fence-consumption assertion. Adding one — "every
+     declared token must have a consumer" — is G2, which the user explicitly
+     left OUT of this milestone's scope. Phase 11 disposes only of the tokens
+     its own change orphaned, each with its own dedicated residue assertion
+     (Phase 11 plan 03, mirroring Phase 10's dedicated radius-step assertion).
+     Do NOT generalise this. */
 
   /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
@@ -513,14 +513,15 @@
      "enumerate the combinations that actually render", and each successive value
      layer changes which combinations occur.
 
-     Phase 9 (card containers) changes no SIZE, so it adds no seventh number:
-     the manifest is still 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry.
-     What it changes is the GROUND of one group — two entries move from
-     --color-surface-page to --color-surface-card, because the four left-hand
-     panels and #doc-panel stopped being transparent / gray-2 and became white
-     cards, so the elements those two entries describe are now painted on the
-     card. The six numbers above stay a SIZE ledger; 53 is both the Phase 7 and
-     the Phase 9 size.
+     Phase 9 (card containers) changed no SIZE, so it added no seventh number:
+     the manifest was still 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry.
+     What it changed was the GROUND of one group — two entries moved from
+     --color-surface-page to the raised ground, because the four left-hand panels
+     and #doc-panel stopped being transparent / gray-2 and became white cards.
+     Phase 11 reverses that: the raised ground is merged back into the page
+     ground, so those two entries return to --color-surface-page and the six
+     entries already on it are recomputed. The six numbers above stay a SIZE
+     ledger; 53 is the Phase 7, Phase 9 and Phase 11 size.
 
      ---- Phase 9 page-ground RECOMPUTATION ledger (plan 02, CARD-03 / REG-01) ----
 
@@ -540,12 +541,17 @@
        --color-marker-active TEXT        4.5    4.65    4.18    4.77   re-attributed to card
        --color-border-strong NON-TEXT    3.0    3.24    2.91    3.32   re-attributed to card
 
+     (The `white` column above was Phase 9's RAISED-GROUND column. Phase 11 makes
+     white the unified surface itself, so that column is now simply the page
+     ground's own value — which is why the Phase 11 ledger below can re-use it as
+     the "after" reading.)
+
      The last two are the complete chain, not a refresh: their old PAGE value
      (4.65 / 3.24 on gray-1) was passing, their new PAGE value (4.18 / 2.91 on
-     gray-3) FAILS, and plan 01 had already re-attributed them to
-     --color-surface-card, where they pass (4.77 / 3.32). The re-attribution
-     happened first, in plan 01, precisely so that check-02 was never red in the
-     intermediate state.
+     gray-3) FAILS, and plan 01 had already re-attributed them to the raised
+     ground, where they pass (4.77 / 3.32). The re-attribution happened first,
+     in plan 01, precisely so that check-02 was never red in the intermediate
+     state.
 
      Counter-intuitive, and measured rather than assumed: darkening the page does
      NOT improve every pair. Dark foregrounds gain contrast on a darker ground,
@@ -625,26 +631,29 @@
   /* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */
 
   /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
-     heading switches to the marker colour (SC 1.4.5). Phase 9 RE-ATTRIBUTES the
-     ground: all three panels now declare a card background (#main-pane > section
-     takes the card token), so the heading really is painted on the white card —
-     measured 4.77 >= 4.5 there. The previous --color-surface-page ground only
-     held while those panels were fully transparent, which is exactly what HEAD
-     was; the old entry was right then and is wrong now. The value is untouched —
-     re-attribution, not recolouring. The non-text half — the 3px inset bar, a
-     state indicator under SC 1.4.11 — sits with the other NON-TEXT pairs below. */
-  /* PAIR --color-marker-active ON --color-surface-card TEXT */
+     heading switches to the marker colour (SC 1.4.5). Phase 9 re-attributed this
+     ground to the raised card; Phase 11 reverses that — the three panels that
+     carry the marker now paint the same surface as the page, so the heading is
+     painted on the unified surface, measured 4.77 >= 4.5 there. The entry
+     therefore names the page ground again. The value is untouched —
+     re-attribution, not recolouring.
+     The non-text half — the 3px inset bar, a state indicator under SC 1.4.11 —
+     sits with the other NON-TEXT pairs below. */
+  /* PAIR --color-marker-active ON --color-surface-page TEXT */
 
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
-  /* the resting input / select boundary, ground re-attributed (Phase 9). This
-     token has ten consumers and every one of them is a resting input / select
-     border. The selects carry their own gray-2 background and are covered by the
-     entry just below. The inputs declare NO background, so Chrome paints the UA
-     field fill white and the border is drawn on white — a fact this file already
-     registered verbatim in the hover-boundary note further down, together with
-     the measured resting ratio 3.32 on white. So this is the honest re-location
-     of an ALREADY-RECORDED fact, not a new claim invented for Phase 9. */
-  /* PAIR --color-border-strong ON --color-surface-card NON-TEXT */
+  /* the resting input / select boundary. This token has ten consumers and every
+     one of them is a resting input / select border. The selects carry their own
+     gray-2 background and are covered by the entry just below. The inputs
+     declare NO background, so Chrome paints the UA field fill white and the
+     border is drawn on white — a fact this file already registered verbatim in
+     the hover-boundary note further down, together with the measured resting
+     ratio 3.32 on white. Phase 9 re-attributed this ground to the raised card;
+     Phase 11 merges that card back into the unified page surface, which is also
+     white, so the entry names the page ground again and the ratio is unchanged.
+     This is the honest re-location of an ALREADY-RECORDED fact, not a new
+     claim. */
+  /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
   /* PAIR --color-border-strong ON --color-surface NON-TEXT */
   /* the input controls' hover boundary (INTERACT-01 / D-10): a state indicator
      under SC 1.4.11, drawn on three grounds — every input / select sits either on
@@ -679,17 +688,18 @@
 
   /* the active sidebar panel marker, non-text half: the 3px inset bar is a state
      indicator (SC 1.4.11). Two facts, so that this entry is not read as an
-     oversight now that its TEXT half above moved to the card ground.
+     oversight.
 
-     (a) The bar is drawn by the SAME element family as that TEXT half — both are
-     .panel-header inside the three panels — so its physical ground is also the
-     white card, and its card-ground ratio is 4.77.
+     (a) The bar is drawn by the SAME element family as the TEXT half above —
+     both are .panel-header inside the three panels that carry the marker — so
+     its physical ground is the unified surface, and its ratio there is 4.77.
 
-     (b) It deliberately STAYS on --color-surface-page, because that is the
-     stricter side: the page ground measures 4.65 on HEAD's gray-1 and 4.18 once
-     Phase 9 plan 02 sinks the page to gray-3 — both strictly BELOW the card's
-     4.77. Keeping the lower of the two ratios is a conservative reading, not a
-     missing update. */
+     (b) It names --color-surface-page, and that is now simply the truth rather
+     than a conservative choice. Phase 9 kept this entry on the page ground
+     because the page was the STRICTER of the two (4.18 on gray-3, against the
+     raised ground's 4.77). Phase 11 merged the raised ground into the page, so
+     both halves now sit on one surface at 4.77 and the "stricter side" argument
+     is retired — not overridden, and not a reason to move the entry. */
   /* PAIR --color-marker-active ON --color-surface-page NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than

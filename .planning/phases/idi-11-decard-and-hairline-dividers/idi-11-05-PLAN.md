@@ -36,7 +36,7 @@ must_haves:
     - "**5 个样本状态里,任何一条**被画出来的**发丝线都不落在窗口边缘**(`#main-pane` 的 `top == 0` 处)。独立验证的原始缺陷是:p3 / checking / archive 下可视的第一个面板(`#annotations-panel` / `#checks-panel`)带 `border-top` 且 `rect.top == 0.00` ⇒ 5 个样本里 3 个在窗口边缘多画一条设计明令禁止的线(像素级:y=0 内容列 `rgb(217,217,217)`)。修法由用户逐项裁定:**纯 CSS 下边线** —— 规则由「除 DOM 首个外都加上边线」改为「除 DOM 末个外都加下边线」(`D-11-10` 的实现路线裁定,2026-09-28,不得改选)"
     - "**每个样本状态里,可见的发丝线数恰等于「可见面板数 − 1」**(5 个样本里可见面板恒 2 个 ⇒ 恒 1 条可见发丝线)。契约不是「恒 1 条」而是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」;`#ai-panel` 是 DOM 末子元素且恒可见,故「除 DOM 末个外都加下边线」≡「除最后一个**可见** section 外都加下边线」"
     - "`frontend/style.css` 第 856 行**就地改写**(不是追加覆盖):选择器改为 `#main-pane > section:not(:last-child)`,声明由 `border-top` 改为 `border-bottom`,线色与线宽逐字不变(仍 `1px solid var(--color-border-subtle)`,取既有语义令牌 gray-6,`D-11-8`)。规则的**源码位置一字未移**(「追加,不重排」纪律)"
-    - "`frontend/style.css` 第 828-855 行那段**承重注释**已如实改写:新机制键控于「非 DOM 末子元素」而非「非 DOM 首子元素」;**该机制成立的前提被显式登记** —— `#ai-panel` 是 `#main-pane` 的 DOM 末子元素,且 `frontend/app.js` 从不给它加 `.hidden`(前提一旦被破坏,规则即失效)。**不得**留下与代码矛盾的注释(本项目反复为此付过代价);`#main-pane > section` 规则体内那句「后者只给后三个 section 补回一条上边线」的旧机制描述一并改写"
+    - "`frontend/style.css` 第 828-855 行那段**承重注释**已如实改写:新机制键控于「非 DOM 末子元素」而非「非 DOM 首子元素」;**该机制成立的前提被显式登记** —— `#ai-panel` 是 `#main-pane` 的 DOM 末子元素,且 `frontend/app.js` 从不给它加 `.hidden`(前提一旦被破坏,规则即失效)。**不得**留下与代码矛盾的注释(本项目反复为此付过代价);`#main-pane > section` 规则体内那句「后者只给后三个 section 补回一条上边线」的旧机制描述一并改写,`#main-pane` 规则体**自身**注释(`:781`)里那句旧机制描述(分区机制由相邻兄弟规则的一条上边线承担)同样一并改写 —— **描述发丝线机制的三处注释必须全部与代码一致**"
     # ---- BINDING-1 —— 判据扩写与变异证明 ----
     - "`scripts/check-09-idi09-validation.py` 的 **c4 已扩写**:在**至少一个 `#session-panel` 被隐藏的状态**上断言「可视的第一个面板顶部无发丝线」。采用**更强的做法**:对 `c05.STATES` 全部 5 个样本状态**逐状态**断言 ——(i) 可视的第一个面板 `border-top-width == 0px`;(ii) 可见发丝线数 == 可见面板数 − 1;(iii) 没有发丝线落在窗口边缘。**不得**降级为「只断言规则被写下了」"
     - "**c1 / c4 的边框宽度断言已随规则换向**(`border-top` → `border-bottom`,宿主由后三个改为前三个)—— 这是 BINDING-1 第 1 条改写的**机械后果**,不是范围扩张:规则从「后三个面板的上边线」变成「前三个面板的下边线」后,仍在断言 `border-top-width == 1px` 的旧判据会**变红**,而那不是门在正确工作,是判据仍在断言一条已被裁定改变的事实(`REG-01`)。c1 / c4 的断言**零条删除、零条降级**,只换向"
@@ -197,6 +197,7 @@ must_haves:
   <read_first>
     - `frontend/style.css` 的 **第 828-856 行全文** —— 逐字读那段承重注释的每一句,尤其是断言「相邻选择器按 **DOM 相邻**判定、不按渲染相邻,故中间两个面板带 .hidden 时 #ai-panel 仍带自己的上边线 —— 两种显隐状态下都恰好 1 条可见分界」那一句(**与实测矛盾,本任务要改写的核心**)与「特异性:本选择器(1-0-2)高于 #main-pane > section(1-0-1)」那一句(**:not(:last-child) 的参数贡献一个伪类,特异性变 1-1-2**)
     - `frontend/style.css` 的 **第 806-826 行全文** —— `#main-pane > section` 规则体上方的注释,其中「`border: none` 与紧随其后的相邻兄弟规则是一对:前者去掉四条边,后者只给后三个 section 补回一条上边线(第一个 section 的顶部是窗口边缘,画了会读成多一条)」那句描述的旧机制同样作废,须一并改写
+    - `frontend/style.css` 的 **第 775-796 行全文**(`#main-pane` 规则体**自身**的注释块)—— 其中第 **781** 行那句把分区机制说成由「相邻兄弟规则」的一条「1px 上边线」承担,描述的是**旧机制**,改动后即与代码矛盾,**须一并就地改写**(第三处机制注释);同一注释块里 `align-items: center` 与 `#main-pane > section` 的 `max-width` 是「一对仍在工作」的声明那段、以及「卡片本身不得加 margin」那条纪律段与本次改动无关,**逐字保留**(D-11-5)
     - `frontend/style.css` 的 **第 136-142 行**(「exactly ONE consumer」那句)、**第 182-200 行**(「Measured 4.65 … thinnest margin (0.15)」那句与紧随其后的 Phase 11 update 段)、**第 89-96 行**(「gray-9 = 3.24 / 3.15」那句)—— 本任务要改写的三处现在时陈述
     - `.planning/phases/idi-11-decard-and-hairline-dividers/idi-11-VERIFICATION.md` 的 `gaps:` 段与 §「Gaps Summary」—— **缺陷的原始判据与实测读数**(p3 / checking / archive 三态的可视首个面板 `border-top=1px` 且 `top=0.00`;像素级 y=0 = `rgb(217,217,217)`)
     - `.planning/phases/idi-11-decard-and-hairline-dividers/idi-11-REVIEW.md` 的 §`CR-01` 与 §`WR-02` —— 缺陷原文与三处陈旧陈述的逐条事实对照(四个消费者行号、4.77 / 0.27、3.32)
@@ -234,6 +235,8 @@ must_haves:
 
     同时改写 `#main-pane > section` 注释里那句「`border: none` 与紧随其后的相邻兄弟规则是一对:前者去掉四条边,后者只给后三个 section 补回一条上边线(第一个 section 的顶部是窗口边缘,画了会读成多一条)」—— 它描述的是旧机制,须改为新机制(去掉四条边 + 给前三个 section 补一条**下边线**;可视的第一个面板顶部永不带线)。
 
+    并改写 `#main-pane` 规则体**自身**注释块里第 **781** 行那句(现文把分区机制说成由「相邻兄弟规则」的一条「1px 上边线」承担)—— 它同样描述**旧机制**,改动后即与代码矛盾,须按同一口径就地改写为新机制(分区改由**非 DOM 末位面板的下边线**承担)。**保留**同一注释块里仍然成立的两段:①「`align-items: center` 与 #main-pane > section 的 max-width 是一对仍在工作的声明」那段;②「卡片本身不得加 margin」那条纪律段 —— 两者与本次改动无关,逐字保留(D-11-5)。
+
     **第 4 步 —— 改写围栏内三处现在时陈述(BINDING-2)。只改现在时,不删历史段落。**
 
     1. **第 136-142 行**:那句现在时陈述断言 `--color-surface-page` **只有一个消费者**(`html, body` 的 background),并由此推出「改这个值只需重绘页面、别处无需同步」。**该断言已被本阶段推翻** —— 它现在有**四个**消费者(`html, body` 的 background、`#main-pane > section`、`#doc-panel`、`#doc-panel-header`)。改写为四个消费者的事实,并写明改这个值会**同时**重绘页面、四个左栏面板与 sticky 表头。**旧句里「别处无需同步」那半句是更危险的一半**(它会让读者以为改这个值只动页面),必须被替换掉。
@@ -247,7 +250,9 @@ must_haves:
 
     **第 5 步 —— 顺带核正同类陈旧表述(零额外文件面,范围严格有界)。**
 
-    `grep -n 'exactly ONE\|ONE consumer\|consumers' frontend/style.css` 一次,逐行核对**是否还有**关于 `--color-surface-page` **消费者清单**的现在时陈述被推翻。若还有,按同一口径核正;把扫描结果(命中行号 + 判定)写进 SUMMARY。
+    ① **消费者清单:** `grep -n 'exactly ONE\|ONE consumer\|consumers' frontend/style.css` 一次,逐行核对**是否还有**关于 `--color-surface-page` **消费者清单**的现在时陈述被推翻。若还有,按同一口径核正;把扫描结果(命中行号 + 判定)写进 SUMMARY。
+
+    ② **发丝线机制短语:** `grep -n '相邻兄弟规则\|上边线' frontend/style.css` 一次,逐行核对每一处是否仍在描述**旧机制**。HEAD 实测命中 **4 行**:`781`(`#main-pane` 自身注释)、`814-815`(`#main-pane > section` 注释)、`835`(第 828-855 行承重注释)—— **三处全部落在本任务的改写范围内**,改写后这三处对旧机制的描述必须全部消失;若扫描发现另有命中,按同一口径核正。把扫描结果(命中行号 + 判定)写进 SUMMARY。
 
     ⚠ **明确不在本步范围的一项(记为观察,不要改):** 第 727-729 行那句「`#doc-panel` declares background: var(--color-surface).」在本阶段之后同样不成立,但它**不是** `--color-surface-page` 的消费者陈述,而且改它必须连带把紧随的两条 `PAIR … ON --color-surface` 重新归属 —— **那正是 BINDING-2 明令不得动的 PAIR 清单**(且 `idi-11-PATTERNS.md` 已把它登记为「范围决定,交 planner 裁定,不得单方面扩张」)。**只在 SUMMARY 的观察区记一行,不建任务、不修改。**
 
@@ -277,12 +282,14 @@ must_haves:
     <fails_when>the count is not exactly 1 (the base rule must survive untouched, so the hairline rule's specificity still needs to beat it)</fails_when>
     <automated>grep -cE '1-1-2' frontend/style.css</automated>
     <fails_when>the count is 0 (the specificity note in the rewritten comment must state the new 1-1-2, not the stale 1-0-2)</fails_when>
+    <automated>grep -cE '分区改由相邻兄弟规则' frontend/style.css</automated>
+    <fails_when>the count is not exactly 0 (the `#main-pane` rule's own comment at :781 still carries the OLD mechanism sentence — adjacent-sibling rule plus a top border — which contradicts the code after this change; it must be rewritten in place). HEAD reading: 1 (line 781) — red before the rewrite, 0 after</fails_when>
     <automated>grep -cE 'exactly ONE consumer' frontend/style.css</automated>
     <fails_when>the count is not exactly 0 (the one-consumer claim is the stale sentence BINDING-2 requires corrected)</fails_when>
-    <automated>grep -cE '4\.65|thinnest margin \(0\.15\)' frontend/style.css</automated>
-    <fails_when>the count is not exactly 0 (both the 4.65 reading and the 0.15 margin are stale on the unified white surface)</fails_when>
-    <automated>grep -cE '3\.24' frontend/style.css</automated>
-    <fails_when>the count is not exactly 0 (the white-ground gray-9 reading must become 3.32; the 3.15 half stays)</fails_when>
+    <automated>grep -cE 'Measured 4\.65|thinnest margin \(0\.15\)' frontend/style.css</automated>
+    <fails_when>the count is not exactly 0 (the present-tense sentence being rewritten — its 4.65 reading and its 0.15 margin are both stale on the unified white surface). The scan is deliberately ANCHORED to that sentence: 4.65 also occurs on line 100 (green-1's contrast — a different fact) and on the 540-559 ledger rows, all of which BINDING-2 orders preserved verbatim, so a whole-file count of 4.65 can never reach 0 on a correct tree. HEAD reading of this anchored form: 2 (line 185 + line 187) — red before the rewrite, 0 after</fails_when>
+    <automated>grep -cE '3\.24 / 3\.15' frontend/style.css</automated>
+    <fails_when>the count is not exactly 0 (the pattern is the stale reading PAIR in the gray-9 white-ground present-tense sentence — `3.24 / 3.15`; the white-ground half must become `3.32 / 3.15`). Anchored to that pair because the 542 / 550 / 559 ledger rows keep 3.24 verbatim by BINDING-2, so a whole-file 3.24 count can never reach 0 on a correct tree. HEAD reading: 1 (line 93) — red before the rewrite, 0 after</fails_when>
     <automated>grep -c '^--color-surface-card\|--shadow-card' frontend/style.css; grep -o '/\* PAIR' frontend/style.css | wc -l; grep -o '/\* ORDER' frontend/style.css | wc -l</automated>
     <fails_when>the first count is non-zero, or the PAIR count is not 53, or the ORDER count is not 1 (the fence rewrite must not reintroduce a deleted token name or disturb the manifest)</fails_when>
     <automated>bash scripts/check-01-token-conformance.sh && bash scripts/check-03-hidden-uniqueness.sh && bash scripts/check-04-important-count.sh && .venv/bin/python scripts/check-02-contrast.py</automated>
@@ -297,7 +304,8 @@ must_haves:
     - `#main-pane > section` 规则体(四条声明 `width` / `max-width` / `background` / `border` / `border-radius` / `box-shadow`)逐字未改;规则行**位置未移动**(就地改写)。
     - 第 828-855 行的注释已改写为新机制(键控于「非 DOM 末子元素」),并**显式登记前提**:`#ai-panel` 是 `#main-pane` 的 DOM 末子元素且 `frontend/app.js` 从不给它加 `.hidden`;注释里不再出现「两种显隐状态下都恰好 1 条可见分界」这句与实测矛盾的断言;特异性数字已更正为 **1-1-2**。
     - `#main-pane > section` 注释里描述旧机制的那句(「只给后三个 section 补回一条上边线」)已改写。
-    - 围栏内三处现在时陈述已改写:`exactly ONE consumer` 出现 0 次;`4.65` / `thinnest margin (0.15)` 出现 0 次;`3.24` 出现 0 次;消费者清单已写明四个。历史段落(Phase 9 / Phase 11 的账目段)逐字保留。
+    - 围栏内三处现在时陈述已改写:`exactly ONE consumer` 出现 0 次;`Measured 4.65` / `thinnest margin (0.15)` 出现 0 次;gray-9 白面读数那句里的 `3.24 / 3.15` 这一对出现 0 次(改为 `3.32 / 3.15`);消费者清单已写明四个。历史段落(Phase 9 / Phase 11 的账目段)逐字保留 —— 三条判据均**按句锚定**,**不**要求清空围栏内 `4.65` / `3.24` 的全部出现:第 100 行 green-1 的 `4.65` 与第 540-559 行账目段里的 `4.65` / `3.24` 是**不同事实 / 历史**,BINDING-2 明令逐字保留,整文件计数永远到不了 0。
+    - 描述发丝线机制的注释**三处全部**与代码一致:`#main-pane` 规则体自身注释第 **781** 行那句旧机制描述(把分区机制说成由相邻兄弟规则的一条 1px 上边线承担)已就地改写为下边线机制,该句的旧短语出现 0 次;同一注释里 `align-items: center` / `max-width` 那段与「卡片不得加 margin」那条纪律段逐字保留(D-11-5)。
     - 围栏内零「令牌名 + 冒号」写法;`--color-surface-card` / `--shadow-card` 在围栏内出现 0 次;`/* PAIR` 计数仍 53、`/* ORDER` 计数仍 1;零值改动、零新增令牌。
     - 四条静态门(check-01…check-04)全 `PASS`。
     - `geometry-before.log` 与 `geometry-after.log` 均已落盘,SUMMARY 里给出并排两列 + 机制说明(`#ai-panel` `rect.top` 767→768;p3 / checking / archive 可视首个面板 `borderTopWidth` 1px→0px)。
@@ -386,8 +394,8 @@ must_haves:
   <verify>
     <automated>.venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2,c3,c4,c5</automated>
     <fails_when>the exit code is not 0, or any item line in "=== 逐项结论 ===" reports a non-zero FAIL or BLOCKED count</fails_when>
-    <automated>grep -cE '#main-pane > section:not\(:last-child\)' scripts/check-09-idi09-validation.py; grep -cE 'HAIRLINE_CENSUS_JS' scripts/check-09-idi09-validation.py</automated>
-    <fails_when>either count is 0 (the reoriented selector expectation and the new census probe constant must both be present)</fails_when>
+    <automated>grep -cE 'border-bottom-width' scripts/check-09-idi09-validation.py; grep -cE 'HAIRLINE_CENSUS_JS' scripts/check-09-idi09-validation.py</automated>
+    <fails_when>either count is 0 (the reoriented border-side expectation must be expressed as reads of border-bottom-width — c1's three non-last sections and c4's three hosts; and the new census probe constant must be present). HEAD readings: border-bottom-width = 0, HAIRLINE_CENSUS_JS = 0 — both red before the edit. NOTE: the CSS rule selector literal is deliberately NOT grepped here — check-09 asserts computed styles, not source text, so a correct implementation has no reason to embed that selector</fails_when>
     <automated>grep -nE 'c05\.STATES' scripts/check-09-idi09-validation.py</automated>
     <fails_when>no match appears inside c4 (the census must iterate all five sample states, not just p1)</fails_when>
     <automated>grep -cE '#doc-panel 计算底色 == body 计算底色' scripts/check-09-idi09-validation.py</automated>
@@ -542,7 +550,8 @@ must_haves:
 
 **承重证据(BINDING-2):**
 
-- `grep -cE 'exactly ONE consumer' frontend/style.css` == 0;`grep -cE '4\.65|thinnest margin \(0\.15\)' frontend/style.css` == 0;`grep -cE '3\.24' frontend/style.css` == 0
+- `grep -cE 'exactly ONE consumer' frontend/style.css` == 0;`grep -cE 'Measured 4\.65|thinnest margin \(0\.15\)' frontend/style.css` == 0;`grep -cE '3\.24 / 3\.15' frontend/style.css` == 0 —— 三条均**按句锚定**:围栏内 `4.65` 另有 5 处(第 100 行 green-1 的读数 + 第 540 / 541 / 550 / 558 行的账目段)、`3.24` 另有 3 处(第 542 / 550 / 559 行的账目段)属**不同事实或历史**,BINDING-2 明令逐字保留,整文件计数永远到不了 0
+- `grep -cE '分区改由相邻兄弟规则' frontend/style.css` == 0 —— `#main-pane` 规则体**自身**注释(`:781`)里的旧机制描述已就地改写;描述发丝线机制的注释**三处全部**与代码一致(`:781` / `:814-815` / `:828-855`)
 - 围栏内零「令牌名 + 冒号」;`--color-surface-card` / `--shadow-card` 计数为 0;`/* PAIR` == 53、`/* ORDER` == 1
 - `check-01`…`check-04` 全 PASS
 

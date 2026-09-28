@@ -21,10 +21,10 @@ current_phase: 10
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-26)
+See: .planning/PROJECT.md (updated 2026-09-28)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-10 — 表格重做与圆角刻度收敛
+**Current focus:** Planning next milestone(v1.16)— `/gsd-new-milestone`
 
 ## Current Position
 
@@ -114,6 +114,10 @@ Last activity: 2026-09-28 — Milestone v1.15 completed and archived
 
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
+
+- [Milestone v1.15 close]: **收口类型 = `verified_closeout`** —— 2/2 阶段 `phase_complete === true` 且 `verification_status === 'passed'`(Phase 9 24/24、Phase 10 62/62),`all_phases_verified = true`;预收口 artifact audit 全清。12/12 需求满足,审计 `status: tech_debt`(**无 critical blocker、无 unsatisfied 需求**,14 项 tech debt 登记待裁定)。归档产物:`milestones/v1.15-ROADMAP.md` / `v1.15-REQUIREMENTS.md` / `v1.15-MILESTONE-AUDIT.md` / `v1.15-phases/`;ROADMAP.md 折叠为三行里程碑列表 + 三个阶段 `<details>` 块,Backlog 逐字保留。**`REQUIREMENTS.md` 的 `git rm` 被权限系统拒绝,需人工执行**(与 `.musthaves_rest.txt` 同一原因)
+- [Milestone v1.15 close]: **quick 任务不归档**(用户裁定)—— `.planning/quick/` 的 8 个目录全部保留原地。理由:其中 7 个属 v1.14(其收口时未归档),而归档器无来源记录、会把它们一并算进 v1.15 的桶里(工具侧已知限制)
+- [Milestone v1.15 close]: **审计的 2 项抑制为沿用,非新登记** —— `uat_gaps idi-05/05-UAT.md` 与 `quick_tasks 260917-fqh` 是 v1.14 收口时登记的,本次 audit 报 `acknowledged.total: 2` / `counts.total: 0`,故 `## Deferred Items` 表**未新增行**,MILESTONES.md 记 `Known verification overrides: 0 newly acknowledged, 2 carried forward from a prior close`
 
 - [Roadmap]: **v1.15 阶段边界 = 单一阶段(Phase 9)** —— 用户裁定「开一个 phase,先看看效果吧」,故本里程碑**不**按 v1.14 的「风险面 + 契约依赖」切法展开,而是把构图轴的第一件事(卡片容器化 + 页面底色下沉)单独交付,让用户看过截图后再决定后续候选(表格重做 / 圆角刻度收敛 / 图标与空状态)是否另开 phase;三者已在 `REQUIREMENTS.md` 的 Out of Scope 表明文排除,**不得预建阶段**
 - [Roadmap]: **v1.15 阶段边界更新 —— 2026-09-27 用户看过 Phase 9 截图后裁定「表格重做, 圆角刻度收敛。做这两个」,两项另开 Phase 10**(`idi-10-tables-and-radius-scale`)。第三项候选(图标与空状态)**用户未点名,仍留 Out of Scope,不得预先构建**。两项的档位由用户在 `AskUserQuestion` 中逐项选定:表格取「**表头浅底 + 仅横向分隔**」(去掉全部竖线与外框;`.markdown-body th` 获得 gray-2 `--color-surface` 浅底 + 1px 下边线;`td` 保留行间极浅分隔线);圆角取「**严格收敛: 8 / 10 / 胶囊**」(删除 `--radius-lg: 28px`,其 2 处消费者分别改归 `--radius-md`(`.chat-user`)与 `--radius-pill`(`#chat-input-row input`))。**Phase 10 的连带指纹面已实测校正为「10 份覆盖,1 份可执行」** —— 规划期逐份读盘发现**初稿的「6 份」是错的**(只扫了 `.planning/phases/` 与 `v1.14-phases/`,漏了 `v1.13-phases/` 与 `quick/`):含 `frontend/style.css` 的 `passed` 报告实为 **10 份**,但其中 **9 份的 `covered_files` 路径因归档而不可解析**(实测缺失 12/41、11/26、13/31、8/13、8/12、8/11、8/10、6/9、2/7),按 **2026-09-14 登记的已知限制**「归档后的报告不再被 staleness 机制消费」,它们在本阶段之前就已是 fail-closed stale;⇒ **实际只重验 `idi-09`**(10 个 `covered_files` 全部在盘),仍按「以 HEAD 内容重新验证,不是刷新指纹」处置。`idi-08` 不覆盖 `style.css`,且本阶段**不得改 `scripts/check-05-ui-uat.py`**(改了会把 `idi-08` 也拖进名单)。该校正已同步进 ROADMAP / REQUIREMENTS / `10-CONTEXT.md` / `idi-10-PATTERNS.md`
@@ -370,10 +374,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-27T12:39:50.429Z
-Stopped at: Phase idi-10 complete — all phases complete
+Last session: 2026-09-28 — milestone close
+Stopped at: Milestone v1.15 视觉构图升级 shipped and archived (2026-09-28)
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- **下一步 = 启动 v1.16 里程碑**(`/clear` 然后 `/gsd-new-milestone`)。v1.15 已 shipped 并归档(2026-09-28):2 阶段 / 7 计划 / 20 任务 / 12 需求全部交付,两阶段 `passed`(24/24 与 62/62),审计 `status: tech_debt`(12/12 需求满足、无 critical blocker)。
+- **收口类型 = `verified_closeout`**(`all_phases_verified = true`)。预收口 artifact audit 全清;**0 项新登记**,2 项沿用早前收口的抑制(`uat_gaps idi-05/05-UAT.md` 与 `quick_tasks 260917-fqh`),两者都已在 `## Deferred Items` 表内 —— 本次**未新增行**。
+- **v1.15 审计登记的 14 项 tech debt 待裁定**(见 `milestones/v1.15-MILESTONE-AUDIT.md` 与 PROJECT.md 的 `## Next Milestone Goals`)。最值得先决策的两条是 **G1**(`#latest-check` 的灰底与 Phase 10 的表头灰底同令牌相撞 ⇒ 自检报告表头 band 消失;视觉层级破坏,非 a11y 失败)与 **G2**(`--radix-gray-1` 已声明零消费,围栏的「每个声明的令牌都被消费」性质已不成立,而 `check-01` 只扫围栏外、结构上看不见)。
+- **两条待用户裁决的残留**:①未跟踪文件 `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(33KB,VERIFIER 前端解析工具残留;用户已裁定删除,但 `rm` / `git rm` 均被权限系统拒绝 ⇒ **需要人工执行**);②`.planning/.gsd-allow-shrink`(ROADMAP 重写的单次哨兵,15 分钟内有效,过期无害)。
+- **Backlog `999.2` 仍开**(Phase 7 三条既有 affordance 缺陷);执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证。
+- **候选范围另见** `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 `## Backlog`(`999.1` 已关闭)。

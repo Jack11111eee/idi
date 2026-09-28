@@ -14,6 +14,25 @@
 - 本阶段两处纯 CSS 改动(表格重做 + 圆角收敛)在五条真实浏览器门上复跑零 FAIL、与 phase 9 基线逐项结论块逐项同形、门改动实测零处;5 张 1440×900 整窗截图落盘(p3 一张同时可见三个机器可解析表),另出一张 `.chat-user` 10px 圆角的人眼取证图
 - 实测落定连带指纹的真实形状是「10 份覆盖 `frontend/style.css`,1 份可执行」—— 9 份归档/quick 报告因 `covered_files` 路径归档后不可解析而 fail-closed stale(与本次改动无关,属 2026-09-14 登记的已知限制),唯一可执行的 `idi-09` 以 HEAD 内容重新验证(非刷新指纹):24 条 must-have 逐条复核 24/24 成立,`covered_digest` 由 `6e811a11…` 重算为 `7b82f8d1…`,`verification.status` 由 `stale` 回到 `passed`
 
+**Range:** `5a4faff` (2026-09-26 17:09) → `acd0e71` (2026-09-27 22:40) — 61 commits, 2 days
+**Product surface:** 5 files, +1713 / −31 (`frontend/style.css` +258, `scripts/check-05-ui-uat.py` +10, 新 `check-09` +552 / `check-10` +776 / `probe-card-border-token.py` +148). Frontend at close: `style.css` 1912 / `app.js` 1854 / `index.html` 269 = 4,035 LOC. Backend unchanged by this milestone (219 passed / 6 skipped); `app.js` / `index.html` 逐字节未改.
+**Closeout type:** `verified_closeout` — 2/2 phases `phase_complete === true` and `verification_status === 'passed'` (Phase 9 24/24, Phase 10 62/62).
+**Known verification overrides:** 0 newly acknowledged, 2 carried forward from a prior close (see STATE.md Deferred Items). Both are ledger-lag artifacts, not verdict overrides: `uat_gaps idi-05/05-UAT.md` (a `status: failed` never written back after plan 04 fixed it) and `quick_tasks 260917-fqh` (its SUMMARY has no `status:` field, so the scanner reads `unknown`).
+
+**Milestone audit:** `status: tech_debt` — 12/12 requirements satisfied, no critical blocker, no unsatisfied requirement. 14 deferred items registered, of which 3 are WARNING-class structural findings (**G1** — `#latest-check` 自身声明 `background: var(--color-surface)` 且自身是 `.markdown-body` 宿主,Phase 10 用同一令牌画 `th` ⇒ 自检报告表头灰底压灰底、band 消失,视觉层级破坏而非 a11y 失败;仓库上一阶段刚为 `#doc-panel-header` 修过同形。**G2** — `--radix-gray-1` 已声明零消费,围栏的「每个声明的令牌都被消费」性质已不成立,而 `check-01` 只扫围栏外、结构上看不见。以及伴随 G1 的门盲区 —— `check-10` 的 58/58 PASS 与 G1 完全相容,它回答「`th` 是否画了 `--color-surface`」而非「表头是否读作独立 band」).
+
+**Scope adjudications (both by the user, per item):** Phase 9 先只做卡片化(「开一个 phase,先看看效果吧」);看过 5 张截图后裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 另开 Phase 10,两项档位由用户在 `AskUserQuestion` 中选定(表格「表头浅底 + 仅横向分隔」,圆角「严格收敛 8 / 10 / 胶囊」)。第三项候选(图标与空状态)**未点名,仍留 Out of Scope**。
+
+**Deferred to the next milestone:**
+
+- **G1 / G2 的处置决策**(见上)。两者都不阻塞收口,但都值得在下一里程碑开一个明确决策。
+- **`check-10` 的判据粒度** —— 只钉令牌接线,不钉视觉契约;`WR-04` 残项同源(无任何 `read_style(..., 'table', ...)`,重新加回表级边框或改 `border-collapse` 都会让 t1/t2 保持绿)。
+- **`WR-03` / `WR-05` 两条加固残项** —— `r1`/`r2` 缺「至少一对被渲染」守卫;圆角快照 diff 的计划字面判据写「8 个键」而实测 9 个(实质已由测量验证,错的是计划文本,但归档里留下了一条按字面跑会失败的命令)。
+- **`IN-05`** —— `th` 仍渲染 UA 默认字重 700,在文件声明的三档 400/500/600 之外(既有问题,但 Phase 10 让表头成为唯一带底色的单元格,该字重值得一次显式决策)。**`IN-06`** —— 表格语言只到 `.markdown-body`,9 个 markdown 宿主里 4 个覆盖(既有作用域,但它界定了「表格被重做了」的含义)。
+- **Nyquist 缺口** —— `idi-09` / `idi-10` 均无 `VALIDATION.md`(能力开着,`validate-phase` 从未对它们跑过)。连同 v1.14 遗留的 `idi-04` / `idi-06` 一起,建议 `/gsd-validate-phase`。
+- **`check-05` 一条陈旧 INFO**(`scripts/check-05-ui-uat.py:827` 仍打印页面为 gray-1 的旧比值;`info()` only,无门假绿)与 **`check-05 --item 8` 的 sticky 断言余量为零**(实测恰 `1.000px`,由 Phase 9 给 `#doc-panel` 加的 1px 上边框引入;事实未变,但任何 1px 级改动都会顶破)。
+- **仓库卫生** —— `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(VERIFIER 工具残留,用户已裁定删除,`rm` / `git rm` 被权限系统拒绝 ⇒ 待人工执行)。
+
 ---
 
 ## v1.14 前端视觉与可访问性 (Shipped: 2026-09-26)

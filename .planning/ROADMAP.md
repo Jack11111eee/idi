@@ -127,7 +127,7 @@ SURF 与 DIV **必须同阶段落地**:只去卡片不留线,等于把 4 个面�
 - **以为后端 / `app.js` 会需要改动** —— 预期本阶段是**纯 CSS + 门脚本**改动,`frontend/app.js` 与 `frontend/index.html` 逐字节不改、后端零改动(v1.15 两个阶段都是这样,且两处都以此为证据)。**偏离这个预期是一个信号** —— 例如「必须加 DOM 元素才能画出跨满高的竖线」说明选的实现方式错了(应改用零 DOM 的盒内手段),须先停下来判因,不要顺着改下去。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS(令牌块外零裸 `#hex`、零 tier-1 原语引用);`scripts/check-02-contrast.py` PASS(2 条卡片地面 PAIR 已重新归属并重算、六条页面地面 PAIR 已重算、`ORDER` 不退化、阈值与 HEAD 逐字节相同);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` **声明**数 = 1);`scripts/check-09-idi09-validation.py` 改写后 c1..c5 全 PASS **且四条改写判据各有一条变异 FAIL 的读数**;`scripts/check-05-ui-uat.py --item 8` 复跑(sticky 余量读数已登记);五条浏览器门复跑无新增失败(`check-05` 走 `.venv/bin/python` + `--browser bundled`;全量 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归);`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(**219 passed / 6 skipped** —— 必须用项目 `.venv`);`node --check frontend/app.js`;`git status --porcelain frontend/` 仅预期文件、`frontend/vendor/` 仍只有 `marked.min.js`。
-**Plans**: 4/4 plans executed
+**Plans**: 5 plans (4 executed + 1 gap-closure pending)
 
 Plans:
 **Wave 1**
@@ -145,6 +145,10 @@ Plans:
 **Wave 4** *(blocked on Wave 3 completion)*
 
 - [x] idi-11-04-PLAN.md — 门禁收口:`check-05` 的 `.hint` 期望侧重登记到统一面令牌(断言形式一字未变,消除「期望侧为 `None` → BLOCKED」的静默退化)+ `--item 8` 的 sticky 余量复测与成因登记(REG-03)+ 五条浏览器门 / 两探针 / 四静态门 / pytest 基线复跑并把原始输出落盘 `gate-logs/` + 连带指纹面逐份实测登记
+
+**Wave 5** *(gap closure — blocked on Wave 4 completion)*
+
+- [ ] idi-11-05-PLAN.md — 收口独立验证报出的 1 个 BLOCKER 与 2 条 Warning:发丝线规则就地改写为「除 DOM 末个外都加下边线」(窗口边缘线缺陷,DIV-02 / D-11-10)+ 承重注释如实改写并登记机制前提 + `check-09` 的 c1/c4 断言换向与 c4 逐状态发丝线普查(5 个样本状态)+ c2 补 `#doc-panel` 底色断言 + 三条变异证明 + 围栏内三处现在时陈述改写 + 全门复跑落盘 `gate-logs/idi-11-05/`
 
 **UI hint**: yes
 

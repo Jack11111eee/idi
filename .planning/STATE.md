@@ -5,17 +5,17 @@ milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 11
 current_phase_name: 去卡片化与发丝分隔线
 status: executing
-stopped_at: Completed idi-11-03-PLAN.md
-last_updated: "2026-09-28T07:01:08.585Z"
+stopped_at: Completed idi-11-04-PLAN.md
+last_updated: "2026-09-28T07:49:52.662Z"
 last_activity: 2026-09-28
 last_activity_desc: Phase idi-11 execution started
-state_head: 315af14e53b58ee7ca8ccda3bc68620edef1dfe0
+state_head: 56d62bf771a98fe16a6094f0003485eb6d29fc0f
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -34,7 +34,7 @@ Plan: 4 of 4
 Status: Executing Phase idi-11
 Last activity: 2026-09-28 — Phase idi-11 execution started
 
-Progress: [███████░░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -113,6 +113,7 @@ Progress: [███████░░░] 75%
 | Phase idi-11 P01 | 17min | 3 tasks | 1 files |
 | Phase idi-11 P02 | 27min | 3 tasks | 1 files |
 | Phase 11 P03 | 30min | 3 tasks | 1 files |
+| Phase idi-11 P04 | 30min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -306,6 +307,12 @@ Recent decisions affecting current work:
 - [Phase 11]: 交互控件对照组按逐条声明证据形态:四个承载 resting border 的控件断言 border-top-width != 0px,.overlay-card(从未声明过 border,计算值恒 0px)断言 box-shadow != none;五个条目一律断言圆角非零。这不是放宽 —— 对 .overlay-card 断言非零边框宽度是把一条恒假命题写成门
 - [Phase 11]: 变异 1 用字面量阴影而非 var(--shadow-card):后者在波次 2 已删除,computed-value 阶段失效解析成 none,恰好等于 c1 断言值 ⇒ 那条路线不会变红,是空转的变异
 - [Phase 11]: 六条变异全部在已提交的树上做,定向 git checkout -- frontend/style.css 还原;还原判据是 git diff --exit-code 为空 + git hash-object 与变异前记录值逐字符相同(cfcaef098d957abc885413793cd8b1a9dc12193f,六次一致);全程未使用 git stash
+- [Phase 11]: [Phase 11]: 采用本计划主路线(改 check-05 的期望侧)而非编排器指令 C-2 的「不得触碰」:先复现退化(期望侧 <UNRESOLVED>,item 5 由 2 变 3 BLOCKED,exit 仍 2),再换指统一面令牌;C-2 的成本理由经磁盘实测已失效 —— 7 份覆盖者全部 fail-closed stale ⇒ 边际重验成本为零
+- [Phase 11]: [Phase 11]: 「重新登记」的完整形态 = 先复现退化 + 换指到仍存在的令牌 + 断言形式一字未变(仍是 ok() 的精确等值,禁止 ok_contains / 非透明判据 / 硬编码 rgb / or 分支)+ 相邻注释写清为什么必须改(ok() 期望侧为 None 记 BLOCKED ⇒ 门不会变红 ⇒ 断言静默死亡)
+- [Phase 11]: [Phase 11]: REG-03 的分诊结论:该断言描述的事实(sticky 表头遮挡滚动正文)未被改变 ⇒ 只更新余量读数(1.000px → 0.000px)与成因登记,判据不动;容差 <= 1.0 与 frontend/style.css 均逐字未动,未回退任何产品改动(D-11-16)
+- [Phase 11]: [Phase 11]: 13 条门复跑零新增失败:五条浏览器门 ^FAIL 计数均为 0;check-05 全量 exit=2 的成因集合仍只是 item 5 的两条 --ai-smoke 腿(item 5 的 BLOCKED 由 3 回到 2);pytest 219 passed / 6 skipped;原始输出与退出码落盘 gate-logs/(13 份)
+- [Phase 11]: [Phase 11]: 连带指纹面磁盘实测:frontend/style.css 11 份 / check-09 1 份 / check-05 7 份,全部 fail-closed stale ⇒ 本阶段零新增作废;只登记不处置,REG-04 归 Phase 12
+- [Phase 11]: [Phase 11]: 跨阶段门禁对照取归一化后的逐行 diff,不取「结论块看着一样」—— 该粒度捞出了计划未点名的 check-06 几何位移(radiusTL 10px→0px、scrollW/clientW 766→768、bodyClientW 338→339)与 check-05 的 56 行 1px 级 L-5/L-6 读数位移
 
 ### Pending Todos
 
@@ -407,8 +414,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T07:01:08.552Z
-Stopped at: Completed idi-11-03-PLAN.md
+Last session: 2026-09-28T07:49:52.624Z
+Stopped at: Completed idi-11-04-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

@@ -19,8 +19,15 @@ affects: [idi-12-02, idi-12-03, check-05, check-06, check-07, check-09, check-10
 actuals:
   tokens: 2581
   tasks: 3
-  commits: 4
+  commits: 5
   plan_head_before: a1c3a4d1168f8590fa806e429eab60dc590db908
+
+# #3968 ledger fields, repeated at top level: verify-work extracts them with column-0
+# anchored greps (`^commits:` / `^plan_head_before:`), which the nested `actuals:` block
+# above does not satisfy. Both record the count measured immediately before this closing
+# commit, so verify-work's same-instrument check sees ACTUAL == CLAIMED + 1.
+commits: 5
+plan_head_before: a1c3a4d1168f8590fa806e429eab60dc590db908
 
 tech-stack:
   added: []
@@ -100,7 +107,7 @@ status: complete
 - **Completed:** 2026-09-29T15:30+08:00
 - **Tasks:** 3/3
 - **Files modified:** 3
-- **Commits:** 4(measured:`git rev-list --count a1c3a4d..HEAD`,取本计划全部提交落定后的读数 —— 2 条任务提交 + 1 条元数据提交 + 1 条 SUMMARY 标题修正提交)
+- **Commits:** 5(measured:`git rev-list --count a1c3a4d..HEAD`,取本计划收口提交落定前的读数 —— 2 条任务提交 + 1 条元数据提交 + 2 条 SUMMARY 修正提交;收口提交本身构成 verify-work 容许的 +1)
 
 ## Accomplishments
 

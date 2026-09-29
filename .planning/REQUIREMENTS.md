@@ -31,7 +31,7 @@
 
 ### 表头 band(承接 v1.15 审计 G1)
 
-- [ ] **G1-01**: `#latest-check` 内的表格表头读作**一条独立的 band** —— 表头底色与其宿主绘制面不再同令牌相撞、band 不再消失;以运行时读数或人眼截图取证(不是只断言"`th` 画了某个令牌")
+- [x] **G1-01**: `#latest-check` 内的表格表头读作**一条独立的 band** —— 表头底色与其宿主绘制面不再同令牌相撞、band 不再消失;以运行时读数或人眼截图取证(不是只断言"`th` 画了某个令牌")
 
 ### 视觉取证
 
@@ -71,7 +71,7 @@
 | REG-02 | Phase 11 | Complete |
 | REG-03 | Phase 11 | Complete |
 | REG-04 | Phase 12 | Pending |
-| G1-01 | Phase 12 | Pending |
+| G1-01 | Phase 12 | Complete |
 | VIS-01 | Phase 12 | Pending |
 
 **Coverage:**

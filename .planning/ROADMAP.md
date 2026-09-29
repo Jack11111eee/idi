@@ -190,12 +190,12 @@ Plans:
 - **顺手做未裁定项** —— G2、`999.2`、`A11Y-V2` / `FLOW-V2` / `TOKEN-V2`、Nyquist 缺口、图标与空状态全部在 Out of Scope。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS;`scripts/check-02-contrast.py` PASS(表头新绘制面已登记,零阈值改动);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);`scripts/check-05-ui-uat.py`(全量,`.venv/bin/python` + `--browser bundled`)/ `check-06` / `check-07` / `check-09` / `check-10` / `probe-05` / `probe-07` 复跑无新增失败;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(219 passed / 6 skipped);`node --check frontend/app.js`;5 张 `<state>.png` 在盘(1440×900);连带指纹逐份处置的记录。
-**Plans**: 3 plans
+**Plans**: 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] idi-12-01-PLAN.md — G1 定点修复(fixture 补 `## 问题分级` 表含 P0/P1 + `#latest-check` 宿主绘制面就地改归统一面白 + 围栏 `:129-130` 承重注释就地改写)+ `check-09` 新增运行时项 `c6`(「两者不同」与「宿主 == 白」两侧钉死 + fixture 模式不变量)+ 两条变异证明(M1 改回内陷面 / M2 改 gray-3 证明两侧钉死不冗余)
+- [x] idi-12-01-PLAN.md — G1 定点修复(fixture 补 `## 问题分级` 表含 P0/P1 + `#latest-check` 宿主绘制面就地改归统一面白 + 围栏 `:129-130` 承重注释就地改写)+ `check-09` 新增运行时项 `c6`(「两者不同」与「宿主 == 白」两侧钉死 + fixture 模式不变量)+ 两条变异证明(M1 改回内陷面 / M2 改 gray-3 证明两侧钉死不冗余)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -223,7 +223,7 @@ Plans:
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete | 2026-09-26 |
 | 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | Complete | 2026-09-27 |
 | 11. 去卡片化与发丝分隔线 | v1.16 | 5/5 | Complete    | 2026-09-29 |
-| 12. G1 表头 band 与里程碑收口 | v1.16 | TBD | Not started | - |
+| 12. G1 表头 band 与里程碑收口 | v1.16 | 1/3 | In Progress|  |
 
 **三个里程碑共 11 个阶段全部收口。** v1.15(视觉构图升级)已 shipped 并归档于 2026-09-28 —— Phase 9 交付卡片容器化与页面底色下沉(7 条需求 CARD 3 / VIS 2 / REG 2),Phase 10 交付表格重做与圆角刻度收敛(5 条需求 TABLE 2 / RADIUS 2 / REG-03);12/12 需求满足,里程碑审计 `status: tech_debt`(无 critical blocker,14 项 tech debt 已登记待裁定)。
 

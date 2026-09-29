@@ -5,17 +5,17 @@ milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 12
 current_phase_name: G1 表头 band 与里程碑收口
 status: executing
-stopped_at: Phase 12 planned (3 plans), ready to execute
-last_updated: "2026-09-29T06:20:40.104Z"
+stopped_at: Completed idi-12-g1-band-01-PLAN.md
+last_updated: "2026-09-29T07:34:01.488Z"
 last_activity: 2026-09-29
-last_activity_desc: Phase idi-11 complete, transitioned to Phase 12
-state_head: b6a60aecd5073517f2e4ce06766bdcbe6a4265c1
+last_activity_desc: Phase 12 execution started
+state_head: 39bce0b4e84391c9847eda0537525077043272d7
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 8
-  completed_plans: 5
-  percent: 50
+  completed_plans: 6
+  percent: 0
 ---
 
 # Project State
@@ -25,16 +25,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-28)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase idi-11 — 去卡片化与发丝分隔线
+**Current focus:** Phase 12 — G1 表头 band 与里程碑收口
 
 ## Current Position
 
-Phase: 12 (G1 表头 band 与里程碑收口) — READY TO EXECUTE
-Plan: Not started
+Phase: 12 (G1 表头 band 与里程碑收口) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-09-29 — Phase idi-11 complete, transitioned to Phase 12
+Last activity: 2026-09-29 — Phase 12 execution started
 
-Progress: [█████░░░░░] 50%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -115,6 +115,7 @@ Progress: [█████░░░░░] 50%
 | Phase idi-11 P02 | 27min | 3 tasks | 1 files |
 | Phase 11 P03 | 30min | 3 tasks | 1 files |
 | Phase idi-11 P04 | 30min | 3 tasks | 14 files |
+| Phase idi-12-g1-band P01 | 82min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -314,6 +315,9 @@ Recent decisions affecting current work:
 - [Phase 11]: [Phase 11]: 13 条门复跑零新增失败:五条浏览器门 ^FAIL 计数均为 0;check-05 全量 exit=2 的成因集合仍只是 item 5 的两条 --ai-smoke 腿(item 5 的 BLOCKED 由 3 回到 2);pytest 219 passed / 6 skipped;原始输出与退出码落盘 gate-logs/(13 份)
 - [Phase 11]: [Phase 11]: 连带指纹面磁盘实测:frontend/style.css 11 份 / check-09 1 份 / check-05 7 份,全部 fail-closed stale ⇒ 本阶段零新增作废;只登记不处置,REG-04 归 Phase 12
 - [Phase 11]: [Phase 11]: 跨阶段门禁对照取归一化后的逐行 diff,不取「结论块看着一样」—— 该粒度捞出了计划未点名的 check-06 几何位移(radiusTL 10px→0px、scrollW/clientW 766→768、bodyClientW 338→339)与 check-05 的 56 行 1px 级 L-5/L-6 读数位移
+- [Phase 12]: G1 修法沿用 D-12-1 路线:改宿主(#latest-check 的 background 由 var(--color-surface) 就地改写为 var(--color-surface-page)),不改全局 .markdown-body th、也不做局部覆盖
+- [Phase 12]: G1 的新运行时判据另立 check-09 的 c6(不并进 c1..c5,因后者是 Phase 11 的 REG-01 契约载体),两侧钉死:宿主 == --color-surface-page 解析值 == rgb(255,255,255) 且宿主 != 表头,并配两条变异证明
+- [Phase 12]: checking fixture 报告补 ## 问题分级 二级标题 + 逐字表头 + 至少一行 P1:后端 _extract_table 只认二级标题下的表,且全 P2 会让 is_pure_p2 为真使 mode 翻成 p2
 
 ### Pending Todos
 
@@ -415,9 +419,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-29T05:08:30.626Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/idi-12-g1-band/12-CONTEXT.md
+Last session: 2026-09-29T07:34:01.260Z
+Stopped at: Completed idi-12-g1-band-01-PLAN.md
+Resume file: None
 
 ## Operator Next Steps
 

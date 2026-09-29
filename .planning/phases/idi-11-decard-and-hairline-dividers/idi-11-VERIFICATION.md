@@ -1,6 +1,6 @@
 ---
 phase: idi-11-decard-and-hairline-dividers
-verified: 2026-09-29T02:41:48Z
+verified: 2026-09-29T08:31:23Z
 status: passed
 score: 12/12 must-haves verified
 covered_files:
@@ -20,7 +20,7 @@ covered_files:
   - frontend/style.css
   - scripts/check-05-ui-uat.py
   - scripts/check-09-idi09-validation.py
-covered_digest: "v1:sha256:9bdba54b0ca74f730d9810492aa04543a110eaa9bbc14793fe4c369a32f6d550"
+covered_digest: "v1:sha256:c5d1e3380ea515fcf59894c2b688cb7d864df77aece46055e7284ad895adca33"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
@@ -63,6 +63,58 @@ re_verification:
       - "check-05 --item 8 --browser bundled → PASS(13 条,0 FAIL,0 BLOCKED)exit=0"
       - "承重前提:#ai-panel 为 #main-pane DOM 末元素子(index.html:56-78,</main> 在 :79);frontend/app.js 无 ai-panel 隐藏路径(仅 :10-11 引用 header/body)"
       - "node --check frontend/app.js OK;git status --porcelain frontend/ 为空;frontend/vendor/ 仅 marked.min.js"
+  content_reverification:
+    round: 3
+    trigger: "内容真变(非记账)—— 本阶段(Phase 12)改写了 frontend/style.css(G1-01:宿主绘制面就地改归统一面白)与 scripts/check-09-idi09-validation.py(新增运行时项 c6 + 专用参数 --g1-snapshot),两者都在本报告的 covered_files 里 ⇒ digest 必然作废。按 ROADMAP SC4 的字面口径处置:以 HEAD 内容重新验证,不是刷新指纹"
+    previous_report_commit: "fed6cab"
+    verified_head: "40db421"
+    previous_digest: "v1:sha256:9bdba54b0ca74f730d9810492aa04543a110eaa9bbc14793fe4c369a32f6d550"
+    current_digest: "v1:sha256:c5d1e3380ea515fcf59894c2b688cb7d864df77aece46055e7284ad895adca33"
+    commits_since_previous_report:
+      - "f4603ef docs(12): capture phase context"
+      - "d005d99 docs(state): record phase 12 context session"
+      - "45e6358 docs(12): correct D-12-8 (heading required) + D-12-9 (dedicated screenshot flag) from pattern-mapping findings"
+      - "16d4504 docs(12): create phase plan"
+      - "b6a60ae docs(12): make git-status predicates satisfiable (exclude untracked scripts/.check09-old.py)"
+      - "9a73913 docs(idi-12): create phase plan"
+      - "a1c3a4d docs(idi-12): commit state.json + plan-checker probe evidence (percent restored 0->50)"
+      - "00bf51b fix(idi-12-01): G1 band — host ground to unified surface + c6 pin + fixture problem-grade table"
+      - "39bce0b docs(idi-12-01): rewrite the falsified fence clause for #latest-check's host ground"
+      - "bfb32d2 docs(idi-12-01): complete G1 header-band plan"
+      - "eab5ca1 docs(idi-12-01): rename SUMMARY gate-evidence heading so verify-summary reads PASSED"
+      - "7b4bbed docs(idi-12-01): record measured commit count (4) in SUMMARY actuals"
+      - "04f1461 docs(idi-12-01): add column-0 commits/plan_head_before so verify-work can reconcile"
+      - "6e9e43d feat(idi-12-02): add --g1-snapshot element close-up flag to check-09"
+      - "351be8f docs(idi-12-02): add VIS-01 5 whole-window screenshots + G1 close-up"
+      - "8baf330 docs(idi-12-02): complete VIS-01 screenshots and G1 close-up plan"
+      - "e701062 docs(idi-12-03): 五条浏览器门 + 两探针在最终态复跑原始日志落盘(7 份,含退出码)"
+      - "40db421 docs(idi-12-03): 四静态门 + pytest 基线 + node --check 复跑原始日志落盘(6 份)"
+    changed_files_total: 4
+    changed_covered_files:
+      - path: "frontend/style.css"
+        blob: "b6c492808757ad8be35fe23d4ab887d8c1e8d8d6 -> 6dd19801494f4f02b261884bb251247723527345"
+        change: "实质变更(G1-01 / 波次 1):#latest-check 的 background 就地改写 var(--color-surface) -> var(--color-surface-page)(单条声明换值,非追加覆盖);围栏 :126-135 的承重注释就地改写 —— 原句「The inset tier SURVIVES — controls and #latest-check still read as recessed」的后半被本次改动证伪,按仓库纪律就地更正并记下旧说法为何错。净增 3 行(全部在该注释段内),故其后所有行号 +3"
+      - path: "scripts/check-09-idi09-validation.py"
+        blob: "c8e82ecdf000f490791f0d80a36c05ffbce36785 -> 33b7bf556a5d7d1d8adad749d1bb46f0b1a2bd03"
+        change: "纯增量(波次 1 + 波次 2):新增运行时项 c6(G1 表头 band,7 条断言)+ 新增第四个 CLI 参数 --g1-snapshot DIR(局部特写)。c1..c5 的断言代码与断言计数逐项未变(59 / 19 / 6 / 39 / 5),零条删除、零条降级"
+      - path: ".planning/ROADMAP.md"
+        blob: "4929d1d0 -> 06960869"
+        change: "Phase 12 规划记账:Phase 12 段补 **Plans** 波次块(1/2 已完成、3 待执行)+ Progress 表行由 `TBD | Not started` 改为 `2/3 | In Progress`。Goal / Success Criteria / Phase Details 三节零改动"
+      - path: ".planning/REQUIREMENTS.md"
+        blob: "71387f44 -> a762e547"
+        change: "记账:G1-01 与 VIS-01 的复选框 [ ] -> [x],traceability 表两行 Pending -> Complete(由 bfb32d2 / 8baf330 两笔计划收口提交写入)。其余需求行零改动"
+    digest_delta_attribution: "以 FINGERPRINT_VERSION=1 算法(verification.cjs:266-273:path 排序 → 逐文件 sha256(bytes) → sha256(\"v1\\n\" + Σ\"path\\nfilehash\\n\"))独立复算两遍:①当前工作树 → c5d1e338…(与 gsd-tools query verification.fingerprint 输出逐字相同 ⇒ 复算忠实);②仅把上述 4 个 changed_covered_files 换回 fed6cab 内容、其余 12 份不动 → 9bdba54b…,精确复现记录中的旧 digest ⇒ 整个 digest 位移 100% 由这 4 个文件造成,无任何隐藏的实质变更"
+    checks_rerun:
+      - "check-09 --item c1,c2,c3,c4,c5 → exit=0(c1 59 / c2 19 / c3 6 / c4 39 / c5 5,0 FAIL 0 BLOCKED);本阶段另跑 --item c1..c6 → c6 PASS(7 条)"
+      - "check-01 / check-03 / check-04(bash)→ PASS rc=0"
+      - "check-02(.venv python)→ PASS: 0 failures(PAIR 53 / ORDER 1,ORDER 行逐字为 `ORDER 0.363  --color-text-muted before --color-text on --color-surface`)"
+      - "check-05 全量 --browser bundled → item 8 PASS(13 条,0 FAIL,0 BLOCKED);全量 rc=2 的成因仅 item 5 两条 --ai-smoke 腿 BLOCKED(与 Phase 11 一致)"
+      - "check-06 / check-07 / check-10 / probe-05 / probe-07 → 各 rc=0;^FAIL 计数全为 0"
+      - ".venv/bin/python -m pytest backend/tests -q --tb=short → 219 passed, 6 skipped, 1 warning"
+      - "node --check frontend/app.js OK;git status --porcelain frontend/ 为空;frontend/vendor/ 仅 marked.min.js"
+      - "变异 M1(#main-pane > section:not(:last-child) 还原为 + section { border-top })→ c4 FAIL(39 条,21 FAIL,0 BLOCKED)exit=1 —— 与上一轮读数逐字相同;还原 git checkout -- frontend/style.css,git hash-object == 6dd19801494f4f02b261884bb251247723527345(逐字节相同)"
+      - "变异 M3(#doc-panel 底色改归 var(--color-surface))→ c2 FAIL(19 条,2 FAIL,0 BLOCKED)exit=1 —— 与上一轮读数逐字相同;同样定向还原、逐字节相同。两条变异本轮**在已变的载体上重跑**(上一轮的「载体哈希未变 ⇒ 承前有效」理由随 style.css / check-09 的改动而失效,故不承前);全程未用 git stash"
+    line_anchor_drift: "本报告正文里的 style.css 行号锚点相对 HEAD 偏移 +3(gap:0 792→795 / align-items:center 794→797 / max-width:768px 827→830 / :not(:last-child) 876→879 / #doc-panel border-left 899→902)。成因全部是**在该注释段之前插入的行**:波次 1 的围栏注释改写 39bce0b 净增 3 行。正文的历史段落是当时的真实读数,按「留证不改写」保留;规则体本身逐字在盘(见 (3))"
 gaps: []
 deferred: []
 advisory: []
@@ -133,6 +185,66 @@ SAME  idi-11-01..05 PLAN ×5 / SUMMARY ×5 / REVIEW(11 份逐字节相同)
 
 **12 条真值在当前 HEAD 上全部重新成立,且读数与上一版登记逐字一致(无漂移)。** 变异读数(M1 → c4 21 FAIL / M3 → c2 2 FAIL)未在本轮重跑:其判据载体 `scripts/check-09-idi09-validation.py` 与 `frontend/style.css` 均经哈希证明逐字节未变,故承前有效(见下 Truth 10 行)。
 
+## Content Re-Verification(第三轮,Phase 12 收口)
+
+第三轮与第二轮的**性质不同**。第二轮是**记账**触发的 digest 位移(ROADMAP 的复选框与 Progress 行),承重产物逐字节未变;本轮是**内容真变** —— 本阶段(Phase 12)确实改写了 `frontend/style.css` 与 `scripts/check-09-idi09-validation.py`,两者都在本报告的 `covered_files` 里。故本轮**不得**以「重算 digest」收尾(那等于断言「自验证以来覆盖输入无变化」,而它不成立),必须**在 HEAD 上重立全部 12 条承重真值**。
+
+### (1) Delta 逐文件测量
+
+`git diff --name-only fed6cab..HEAD` 命中 `covered_files` 的恰 **4** 个文件(其余 12 个逐字节未动):
+
+| 文件 | 改动性质 | blob(fed6cab → HEAD) |
+| ---- | -------- | --------------------- |
+| `frontend/style.css` | **实质**:`#latest-check` 的 `background` 就地改写 `var(--color-surface)` → `var(--color-surface-page)`;围栏承重注释就地更正(原句「controls and `#latest-check` still read as recessed」被证伪)。净 +3 行 | `b6c49280` → `6dd19801` |
+| `scripts/check-09-idi09-validation.py` | **纯增量**:新增 `c6`(G1 band,7 条断言)+ 第四个 CLI 参数 `--g1-snapshot DIR`。`c1..c5` 的断言代码与计数逐项未变 | `c8e82ecd` → `33b7bf55` |
+| `.planning/ROADMAP.md` | 记账:Phase 12 段补 `**Plans**` 波次块 + Progress 行 `TBD \| Not started` → `2/3 \| In Progress` | `4929d1d0` → `06960869` |
+| `.planning/REQUIREMENTS.md` | 记账:`G1-01` / `VIS-01` 复选框 `[ ]`→`[x]`,traceability 两行 `Pending`→`Complete` | `71387f44` → `a762e547` |
+
+**该 4 个文件即全部位移来源**(归因证明见 frontmatter 的 `digest_delta_attribution`):仅把这 4 份换回 `fed6cab` 内容即精确复现旧 digest `9bdba54b…`,无隐藏变更。
+
+### (2) 行号锚点漂移(+3)及其成因
+
+本报告正文引用的 `style.css` 行号相对 HEAD 统一偏移 **+3**,成因是**在其之前插入的行** —— 波次 1 的围栏注释改写(`39bce0b`)净增 3 行:
+
+| 正文引用的锚点 | HEAD 实测行 | 规则体是否逐字在盘 |
+| -------------- | ----------- | ------------------ |
+| `:792` `gap: 0` | `:795` | ✓ |
+| `:794` `align-items: center` | `:797` | ✓ |
+| `:827` `max-width: 768px` | `:830` | ✓ |
+| `:876` `#main-pane > section:not(:last-child)` 下边线 | `:879` | ✓ 规则体逐字相同 |
+| `:899` `#doc-panel` 的 `border-left` | `:902` | ✓ |
+
+正文的历史段落是当时的真实读数,按仓库「留证不改写」的纪律**保留原样**;漂移只在本节登记。规则体本身(而非行号)才是承重对象,已逐条在盘复核。
+
+### (3) 在当前 HEAD(`40db421`)上重立 12/12
+
+| 检查 | 命令 | 本轮读数 |
+| ---- | ---- | -------- |
+| `check-09` c1..c5 | `.venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2,c3,c4,c5` | **exit=0**;c1 59 / c2 19 / c3 6 / c4 39 / c5 5,**0 FAIL 0 BLOCKED**(计数与上一版逐项相同) |
+| 静态门 check-01 / 03 / 04 | `bash scripts/check-0{1,3,4}-*.sh` | 全部 **PASS** rc=0 |
+| `check-02` 对比度 | `.venv/bin/python scripts/check-02-contrast.py` | **PASS: 0 failures**;`ORDER 0.363  --color-text-muted before --color-text on --color-surface` 逐字不变;PAIR 53 |
+| `check-05 --item 8`(全量跑内) | `.venv/bin/python scripts/check-05-ui-uat.py --browser bundled` | **item 8: PASS(13 条,0 FAIL,0 BLOCKED)**;全量 rc=2 的成因仍只是 item 5 两条 `--ai-smoke` 腿 |
+| 其余门 | check-06 / check-07 / check-10 / probe-05 / probe-07 | 各 rc=0;`^FAIL` 计数全为 0 |
+| pytest 基线 | `.venv/bin/python -m pytest backend/tests -q --tb=short` | **219 passed, 6 skipped, 1 warning** |
+| 承重前提(横线机制的 `#ai-panel` 末位形态) | 逐行读盘 | `index.html` `#ai-panel` :56-78 / `</main>` :79;`app.js` 无 `#ai-panel` 自身隐藏路径 ⇒ 前提仍为真 |
+| 前端卫生 | `node --check frontend/app.js` / `git status --porcelain frontend/` / `ls frontend/vendor/` | OK;空;仅 `marked.min.js` |
+| 孤儿令牌 | `grep -c` | `--color-surface-card` **0** / `--shadow-card` **0** / `1-1-2` **0** |
+
+### (4) Truth 10(变异证明)本轮**重跑**,不承前
+
+上一轮不重跑变异的唯一理由是「判据载体 `check-09` 与 `style.css` 经哈希证明逐字节未变」。**该理由在本轮已失效** —— 两个载体都真的变了。故本轮在**已提交的树**上重跑两条,读数与上一轮逐字相同:
+
+```
+变异 M1(#main-pane > section:not(:last-child) 还原为 + section { border-top })
+  → item c4: FAIL  (39 条断言,21 FAIL,0 BLOCKED)   exit=1
+变异 M3(#doc-panel 底色改归 var(--color-surface))
+  → item c2: FAIL  (19 条断言,2 FAIL,0 BLOCKED)    exit=1
+```
+
+两次均 `git checkout -- frontend/style.css` 定向还原,`git hash-object == 6dd19801494f4f02b261884bb251247723527345`(与变异前逐字节相同);**全程未使用 `git stash`**(它跨工作树共享,本项目明令禁止)。
+
+**12 条真值在当前 HEAD 上全部重新成立。**
+
 ## Goal Achievement
 
 ### Observable Truths
@@ -148,7 +260,7 @@ SAME  idi-11-01..05 PLAN ×5 / SUMMARY ×5 / REVIEW(11 份逐字节相同)
 | 7 | DIV-02 / D-11-10 — **可视的第一个**面板顶部不画线;5 个样本状态无一条线落在窗口边缘 | ✓ VERIFIED | **独立复现(非采信 SUMMARY)**:自建探针逐状态读 computed style —— p1/p12 首个可视 `#session-panel`、p3 `#annotations-panel`、checking/archive `#checks-panel`,五态均 `bt=0px`、`top=0.00`;像素级复核 y=0 内容列为白(p1/p12/p3/checking)/ 遮罩白 `rgb(140,140,140)`(archive),**无一处为线色**。恰一条可见发丝线落在两可视面板交界(767 / 120 / 395 / 330 行,`rgb(217,217,217)`)= 可见面板数 − 1。本轮 c4 五状态普查重跑逐态 PASS(`[checking]`/`[archive]` 原始读数:首个可视 `#checks-panel` `bt=0px`、`top=0.00`;可见线数 1 == 可见面板数 − 1;窗口边缘线 0 条) |
 | 8 | DIV-03 — 两条线取既有语义令牌 `--color-border-subtle`(gray-6)、1px、零新增颜色值 | ✓ VERIFIED | c2/c4 双断言(令牌 + 字面量 `rgb(217,217,217)`)PASS;本轮 `check-01` 重跑 PASS(围栏外零裸 hex / 零 tier-1);:876/:899 规则体逐字在盘 |
 | 9 | REG-01 — `check-09` 的 c1..c4 已改写为断言新契约,零条删除、零条降级为恒真 | ✓ VERIFIED | 实跑旧版(`315af14`)与 HEAD 并排:旧 c1 59 / c2 17 / c3 6 / c4 20 / c5 5;HEAD c1 59 / c2 19 / c3 6 / c4 39 / c5 5。**零项下降**;plan-05 diff 中 7 条被删断言行均为**就地换向**(上边线→下边线),计数逐项证实等价替换。本轮 HEAD 计数重跑逐项复现(59/19/6/39/5);`check-09` 脚本哈希与已核验态逐字节相同 |
-| 10 | REG-01 — 以变异测试证明改写后的判据会真的失败 | ✓ VERIFIED | **上一轮独立复跑两条**:M1(规则还原为相邻兄弟 + `border-top`)→ `c4` **21 FAIL**, exit=1;M3(`#doc-panel` 底色改归 `--color-surface`)→ `c2` **2 FAIL**, exit=1。两次均 `git checkout -- frontend/style.css` 还原,`git diff --exit-code` rc=0 且 `git hash-object == b6c492808757ad8be35fe23d4ab887d8c1e8d8d6`。**本轮未重跑**:判据载体 `check-09-idi09-validation.py`(c8e82ecd…)与 `frontend/style.css`(b6c49280…)经哈希证明逐字节未变 ⇒ 变异读数承前有效 |
+| 10 | REG-01 — 以变异测试证明改写后的判据会真的失败 | ✓ VERIFIED | **上一轮独立复跑两条**:M1(规则还原为相邻兄弟 + `border-top`)→ `c4` **21 FAIL**, exit=1;M3(`#doc-panel` 底色改归 `--color-surface`)→ `c2` **2 FAIL**, exit=1。两次均 `git checkout -- frontend/style.css` 还原,`git diff --exit-code` rc=0 且 `git hash-object` 与变异前逐字节相同。**第三轮(Phase 12 收口)在已变的载体上重跑两条,读数逐字相同**(c4 21 FAIL / c2 2 FAIL,exit=1;还原后 `git hash-object == 6dd19801494f4f02b261884bb251247723527345`)。第二轮的「载体哈希未变 ⇒ 承前有效」理由随载体**真变**而失效,故第三轮**不承前、重跑**,详见「Content Re-Verification(第三轮)」第 (4) 节 |
 | 11 | REG-02 — `check-02` 两条卡片地面 PAIR 重新归属并重算;阈值与清单规模逐字不变 | ✓ VERIFIED | 本轮重跑 `check-02` → `PASS: 0 failures`;`PAIR 53 / ORDER 1`(与上一版逐数相同);`TEXT_MIN=4.5` / `NON_TEXT_MIN=3.0` 与 base 逐字相同;两条 PAIR 由 `--color-surface-card` 改记 `--color-surface-page`;`check-02-contrast.py` 零 diff(哈希 c3615209…) |
 | 12 | REG-03 — `check-05 --item 8` 的 sticky 余量在 `#doc-panel` 边界改动后复测并登记 | ✓ VERIFIED | 本轮重跑 `.venv/bin/python scripts/check-05-ui-uat.py --item 8 --browser bundled` → `item 8: PASS (13 条,0 FAIL,0 BLOCKED)`,exit=0;容差字面量 `abs(...) <= 1.0` 与 base 逐字节相同(check-05 本阶段仅 plan 04 改 `.hint`,未触本项,哈希 d6f8265b… 与已核验态相同);余量 `1.000 → 0.000` 已登记 |
 
@@ -265,5 +377,5 @@ state=archive  首个可视=#checks-panel       bt=0px  top=0.00   y=0 内容列
 
 ---
 
-_Verified: 2026-09-29T02:41:48Z_
+_Verified: 2026-09-29T08:31:23Z_
 _Verifier: Claude (gsd-verifier)_

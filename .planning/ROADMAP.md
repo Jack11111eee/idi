@@ -77,7 +77,7 @@
 **回归面(本里程碑最高风险):** 五条浏览器门大量断言绑死具体 DOM 与 computed style(焦点环 2px 与其解析后的 `--color-focus`、sticky 表头、badge 流内机制、滚动容器收敛、命中区 24×24、窄窗口不破版、表格令牌接线),而本里程碑改的正是容器绘制面 ⇒ 每次改动必须复跑。**门环境事实(省得重探):** `check-05` 走 `.venv/bin/python` 且**必须** `--browser bundled`(该机 `channel="chrome"` + headless 会挂死);`check-05` 全量 exit=2 是 item 5 两条 `--ai-smoke` 腿按设计 BLOCKED,不是回归;pytest 基线 **219 passed / 6 skipped**,必须用项目 `.venv`(环境 `python3` 是 miniconda,会让 4 个 `ai_caller` 测试假失败)。**`check-05 --item 8` 的 sticky 断言余量实测恰 `1.000px`**(由 Phase 9 给 `#doc-panel` 加的 1px 上边框引入)⇒ 任何 1px 级改动都会顶破,由 `REG-03` 指名处置。
 
 - [x] **Phase 11: 去卡片化与发丝分隔线** - 左栏 4 个 section 与 `#doc-panel` 移除边框/阴影/圆角、面板与页面统一为同一档底色、12px 灰缝与 768px 居中侧沟归零;分区改由 1px 发丝线承担(主区↔文档区竖线跨满高、左栏面板间横线);同步改写 `check-09` 的 c1..c4 并以变异证明其会失败、重新归属 `check-02` 的卡片地面配对、复测 `check-05 --item 8` 的 sticky 余量 (completed 2026-09-29)
-- [ ] **Phase 12: G1 表头 band 与里程碑收口** - `#latest-check` 内表头读作独立 band(宿主绘制面与表头底色不再同令牌相撞,以运行时读数 + 截图取证);五条浏览器门 + 四个静态门 + pytest 基线复跑零新增失败;连带作废的 `passed` 报告按既有口径逐份处置;5 张 1440×900 整窗截图
+- [x] **Phase 12: G1 表头 band 与里程碑收口** - `#latest-check` 内表头读作独立 band(宿主绘制面与表头底色不再同令牌相撞,以运行时读数 + 截图取证);五条浏览器门 + 四个静态门 + pytest 基线复跑零新增失败;连带作废的 `passed` 报告按既有口径逐份处置;5 张 1440×900 整窗截图 (completed 2026-09-29)
 
 ## Phase Details
 
@@ -223,7 +223,7 @@ Plans:
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete | 2026-09-26 |
 | 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | Complete | 2026-09-27 |
 | 11. 去卡片化与发丝分隔线 | v1.16 | 5/5 | Complete    | 2026-09-29 |
-| 12. G1 表头 band 与里程碑收口 | v1.16 | 3/3 | In Progress|  |
+| 12. G1 表头 band 与里程碑收口 | v1.16 | 3/3 | Complete    | 2026-09-29 |
 
 **三个里程碑共 11 个阶段全部收口。** v1.15(视觉构图升级)已 shipped 并归档于 2026-09-28 —— Phase 9 交付卡片容器化与页面底色下沉(7 条需求 CARD 3 / VIS 2 / REG 2),Phase 10 交付表格重做与圆角刻度收敛(5 条需求 TABLE 2 / RADIUS 2 / REG-03);12/12 需求满足,里程碑审计 `status: tech_debt`(无 critical blocker,14 项 tech debt 已登记待裁定)。
 

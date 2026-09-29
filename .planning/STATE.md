@@ -3,19 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.16
 milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 12
-current_phase_name: G1 表头 band 与里程碑收口
-status: verifying
-stopped_at: Completed idi-12-g1-band-03-PLAN.md
-last_updated: "2026-09-29T08:43:42.750Z"
+status: completed
+stopped_at: Phase 12 complete — all phases complete
+last_updated: "2026-09-29T13:05:55.281Z"
 last_activity: 2026-09-29
-last_activity_desc: Phase 12 execution started
-state_head: 3a0b7f2a2b283297900b4a1875f4b5b751e41cb1
+last_activity_desc: Phase 12 complete
+state_head: 3fb5cb9813fa9c6b75aa62503fc672a3dd8b6896
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
   completed_plans: 8
-  percent: 50
+  percent: 100
 ---
 
 # Project State
@@ -25,22 +24,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-28)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** Phase 12 — G1 表头 band 与里程碑收口
+**Current focus:** v1.16 里程碑收口 —— Phases 11-12 全部完成,待里程碑审计(`/gsd-audit-milestone`)
 
 ## Current Position
 
-Phase: 12 (G1 表头 band 与里程碑收口) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-09-29 — Phase 12 execution started
+Phase: 12
+Plan: Not started
+Status: All phases complete
+Last activity: 2026-09-29 — Phase 12 complete
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 49
+- Total plans completed: 52
 - Average duration: -
 - Total execution time: 0 hours
 
@@ -61,6 +60,7 @@ Progress: [█████░░░░░] 50%
 | 9 | 3 | - | - |
 | idi-10 | 4 | - | - |
 | idi-11 | 5 | - | - |
+| 12 | 3 | - | - |
 
 **Recent Trend:**
 
@@ -428,14 +428,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-29T08:43:42.618Z
-Stopped at: Completed idi-12-g1-band-03-PLAN.md
+Last session: 2026-09-29T13:11:51Z
+Stopped at: Phase 12 complete — v1.16 的 2/2 阶段全部收口,待里程碑审计
 Resume file: None
 
 ## Operator Next Steps
 
-- **下一步 = `/gsd-plan-phase 11`**(去卡片化与发丝分隔线,9 条需求 SURF-01/02/03 + DIV-01/02/03 + REG-01/02/03)。规划期必须把三件事写进计划的 Pitfalls:`check-09` 的 c1..c4 **反转后必红是门在正确工作**(改写而非删除,并以变异证明)、`check-02` 的 2 条卡片地面 PAIR 要**重新归属**而非刷新、`check-05 --item 8` 的 sticky 余量 `1.000px` 的成因正是本阶段要移除的那条 1px 上边框。
-- **Phase 11 之后 = `/gsd-plan-phase 12`**(G1 表头 band + 里程碑收口)。`REG-04` 的全量复跑必须落在最后一次 `style.css` 改动之后;**门清单以磁盘现状为准(没有 `check-08`)**,已修正。
-- **两条待用户裁决的残留**:①未跟踪文件 `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(33KB,VERIFIER 前端解析工具残留;用户已裁定删除,但 `rm` / `git rm` 均被权限系统拒绝 ⇒ **需要人工执行**);②`.planning/.gsd-allow-shrink`(ROADMAP / STATE 重写的单次哨兵,15 分钟内有效,过期无害)。
+- **下一步 = `/gsd-audit-milestone`**(v1.16 里程碑审计)。Phase 11 与 Phase 12 均已收口(`phase_complete === true` 且 `verification_status === 'passed'`),满足审计前提。**里程碑审计不在 Phase 12 范围内**(D-12-12),Phase 12 只承载 `G1-01` / `REG-04` / `VIS-01`。
+- **审计前已知的两条登记项**(均非阻塞,审计会看到):①`ui.safety-gate` 对本阶段的**前端改动结构性失明** —— 它用 `git diff HEAD~1..HEAD` 单提交窗口,而 GSD 协议要求每个计划以 SUMMARY 提交收尾 ⇒ 窗口按设计只含记账文件;`block` 恒为 false。本阶段前端改动由 `check-09 c6`(7 条断言 + 两条变异证明)、`check-02`、`check-01` 与局部特写覆盖。②Wave 1 的 fixture 表使 `#latest-check` 溢出 `max-height: 30vh`(scrollHeight 383 > clientHeight 268),Chrome 因而把它暴露为可聚焦滚动容器 ⇒ `check-05` 的定长 Tab 驱动末元素位移,SC1 探针首控件由 `#btn-abort` 变为 `#btn-continue-check`;读数自洽且 item 10 PASS(42 条),但 item 10 的普查是**固定 29 选择器清单、不含 `#latest-check`** ⇒ 门对该新增停靠点失明。
+- **`check-10` 的 t1 过期注释**(`scripts/check-10-idi10-validation.py:328`,仍写「HEAD 上 th 无自身底色(透明)」)与 **报告区表头 sticky** 均为**未裁定项**,本阶段明确未做(D-12-4)。
+- **两条待用户裁决的残留**:①未跟踪文件 `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(33KB,VERIFIER 前端解析工具残留;用户已裁定删除,但 `rm` / `git rm` 均被权限系统拒绝 ⇒ **需要人工执行**);②`.planning/.gsd-allow-shrink`(ROADMAP / STATE 重写的单次哨兵,过期无害)。另有一条 `scripts/.check09-old.py` 同为既存未跟踪残留,本阶段全程未动。
 - **Backlog `999.2` 仍开**(Phase 7 三条既有 affordance 缺陷);执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证。
 - **候选范围另见** `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 `## Backlog`(`999.1` 已关闭)。

@@ -63,6 +63,11 @@ Phase 11「去卡片化与发丝分隔线」把它**改写**为断言去卡片�
     c5 → REG-02                      滚动契约保持:#doc-panel / #chat-messages 的
                                      overflow-y == auto,sticky 表头在**已证明可滚**的
                                      前提下滚到底仍可见
+    c6 → G1-01                       #latest-check 内表头读作**独立 band** 的两侧钉死
+                                     (宿主计算底色 != 表头计算底色 **且** 宿主 == 统一面
+                                     令牌解析值 == 写死白字面量)+ fixture 模式不变量。
+                                     **不是** Phase 11 的 REG-01 契约:它是 Phase 12 的 G1
+                                     判据,另立一项才让「哪条判据钉哪一次改动」可分辨
     shot                             逐样本整窗截图,供用户评审(不参与卡片判据)
 
 断言写法纪律(Phase 11 / D-11-12 的机器形态)
@@ -102,6 +107,7 @@ ok_true = c05.ok_true
 blocked = c05.blocked
 info = c05.info
 read_style = c05.read_style
+read_classlist = c05.read_classlist
 resolve_color = c05.resolve_color
 resolve_token = c05.resolve_token
 
@@ -769,6 +775,86 @@ def c5(page, tmp_root):
 
 
 # ---------------------------------------------------------------------------
+# c6 — G1 表头 band:#latest-check 内的表头读作一条独立 band(G1-01)
+# ---------------------------------------------------------------------------
+# 判据是真实浏览器里的**计算底色**读数,不是源码文本匹配 —— band 是**画出来**的,文本里
+# 写着两个不同的令牌不等于它真的生效。判据**两侧钉死**(D-12-7):
+#   ①「两者不同」:宿主底色 != 表头底色 —— 这是 G1 的准确含义(不再是「灰底压灰底」);
+#   ②「宿主 == 白」:宿主底色 == 统一面令牌解析值 == 写死白字面量 —— 只钉①的话,将来有人
+#     把宿主改成 gray-4 之类仍然绿,那条判据的判别力接近「只断言规则被写下了」。
+# 两侧都写死的理由与 c3 / c1 同型:两侧都从同一个令牌解析时,令牌被改坏(而消费者仍接着
+# 线)也照样 PASS,那条接线的价值就消失了。
+#
+# 样本固定取 `checking`:`#latest-check` **只在该样本可见**(p1 下祖先 `#checks-panel` 带
+# `.hidden`),而本项要在运行时读到它内部的表头(表头来自 fixture 报告里的「问题分级」表)。
+def c6(page, tmp_root):
+    item = "c6"
+    print("\n=== c6: G1 表头 band —— #latest-check 内的表头读作独立 band ===", flush=True)
+    proj = c05.make_fixture("checking", tmp_root)
+    c05.enter_project(page, proj)
+
+    host_bg = read_style(page, "#latest-check", "background-color")
+    th_bg = read_style(page, "#latest-check th", "background-color")
+    page_token = resolve_color(page, "--color-surface-page")
+    info("c6 #latest-check 计算 background-color 原始读数", f"{host_bg}")
+    info("c6 #latest-check th 计算 background-color 原始读数", f"{th_bg}")
+    info("c6 统一面 --color-surface-page 解析值", f"{page_token}")
+
+    # ⚠ 「表头可读」是一条**硬 FAIL**(走 ok_true),不是 BLOCKED:表头消失正是本项要抓的
+    # 回归 —— fixture 的「问题分级」表被删掉,样本里就没有可消失的 band 了。它也是 D-12-5
+    # 「先补 fixture 的表」的前提。
+    ok_true(item, "[checking] #latest-check th 的计算底色可读(表头存在于 DOM)",
+            th_bg is not None, "非 None", str(th_bg),
+            note="硬 FAIL 而不是 BLOCKED:表头消失正是本项要抓的回归。前置是 fixture 报告"
+                 "带「问题分级」表(D-12-5 / D-12-8)")
+    # ⚠ 令牌解析断言一律走 ok_true 并显式处理 None:ok() 在期望侧为 None 时记 BLOCKED
+    # (exit 2,本项目把 2 当作良性码),而「令牌被删」必须是 FAIL。
+    ok_true(item, "[checking] #latest-check 计算底色 != #latest-check th 计算底色"
+                  "(表头读作一条独立 band)",
+            host_bg is not None and th_bg is not None
+            and c05.norm(host_bg) != c05.norm(th_bg),
+            "host != th", f"host={host_bg} th={th_bg}",
+            note="G1 的准确含义是「灰底压灰底」:th 的下边线一直在(th, td 共享 gray-6 下边"
+                 "线),消失的是表头那一档底色 —— 表头行因此与数据行读起来一样")
+    ok_true(item, "[checking] #latest-check 计算底色 == --color-surface-page 解析值"
+                  "(底色来自令牌)",
+            host_bg is not None and page_token is not None
+            and c05.norm(host_bg) == c05.norm(page_token),
+            f"== {page_token}", str(host_bg),
+            note="等值复核:证明底色来自令牌而不是硬编码的 rgb()。少了这条,把宿主写成字面"
+                 "量再删掉令牌声明也能全绿")
+    ok(item, "[checking] #latest-check 计算底色 == rgb(255, 255, 255)(统一面写死字面量)",
+       SURFACE_PAGE_LITERAL, host_bg,
+       note="两侧钉死的第二半(D-12-7):只钉「两者不同」的话,将来有人把宿主改成 gray-4"
+            " 之类仍然绿 —— 这一条把「改白」这件事本身也锁住。与上一条互补:只跟令牌比是"
+            "**自指**的")
+    ok(item, "[checking] #latest-check th 计算底色 == rgb(249, 249, 249)(gray-2,th 未动)",
+       SURFACE_SUNKEN_LITERAL, th_bg,
+       note="路线 (a) 的反向证据:改的是**宿主**、不是表头。check-10 的 t1 把 th 钉死在同一"
+            "个 gray-2 字面量上(本项不动 th,故 t1 保持全绿)")
+
+    # ---- fixture 模式不变量(守 D-12-8 的防翻转前提)----
+    # 样本必须仍是 `running`:对照 frontend/app.js:684-706 的四路 mode 分支,paused / p2 都会
+    # 隐藏「继续自检」并把裁决卡注入 #verdict-cards。该形态一旦出现,fixture 的「问题分级」
+    # 表很可能被做成全 P2(⇒ is_pure_p2 为真 ⇒ mode 翻成 p2),涟漪波及五条浏览器门与全部
+    # 截图 —— 两者同时成立即 mode === 'running' 的可观测形态。
+    classes = read_classlist(page, "#btn-continue-check")
+    cards = page.evaluate(
+        "() => document.querySelectorAll('#verdict-cards .verdict-card').length")
+    info("c6 #btn-continue-check classList 原始读数", f"{classes}")
+    info("c6 #verdict-cards 内 .verdict-card 计数原始读数", f"{cards}")
+    ok_true(item, "[checking] #btn-continue-check 不带 .hidden(样本未翻成 paused / p2)",
+            classes is not None and "hidden" not in classes,
+            "classList 非 None 且不含 hidden", str(classes),
+            note="D-12-8 的防翻转前提:问题分级表若被做成全 P2,is_pure_p2 为真 ⇒ mode 翻成"
+                 " p2 ⇒ 该按钮被隐藏")
+    ok_true(item, "[checking] #verdict-cards 内 .verdict-card 计数 == 0(裁决卡未注入)",
+            cards == 0, "0", str(cards),
+            note="与上一条同时成立即 mode === 'running';裁决卡注入会在 #latest-check 下方"
+                 "多出一棵子树,涟漪波及五条浏览器门与全部截图")
+
+
+# ---------------------------------------------------------------------------
 # shot — 逐样本整窗截图(供用户评审;不参与卡片判据)
 # ---------------------------------------------------------------------------
 def run_screenshots(page, out_dir, tmp_root):
@@ -793,7 +879,7 @@ def run_screenshots(page, out_dir, tmp_root):
        sorted(f"{s}.png" for s in c05.STATES), pngs)
 
 
-ITEMS = {"c1": c1, "c2": c2, "c3": c3, "c4": c4, "c5": c5}
+ITEMS = {"c1": c1, "c2": c2, "c3": c3, "c4": c4, "c5": c5, "c6": c6}
 
 
 def parse_args():

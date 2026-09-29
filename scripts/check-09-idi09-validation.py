@@ -32,6 +32,7 @@ Phase 11「去卡片化与发丝分隔线」把它**改写**为断言去卡片�
     .venv/bin/python scripts/check-09-idi09-validation.py --item c1
     .venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2
     .venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-09-card-containers/screenshots
+    .venv/bin/python scripts/check-09-idi09-validation.py --g1-snapshot .planning/phases/idi-12-g1-band/screenshots/latest-check
     .venv/bin/python scripts/check-09-idi09-validation.py --keep
 
 退出码语义(与 check-05 一致)
@@ -68,6 +69,11 @@ Phase 11「去卡片化与发丝分隔线」把它**改写**为断言去卡片�
                                      令牌解析值 == 写死白字面量)+ fixture 模式不变量。
                                      **不是** Phase 11 的 REG-01 契约:它是 Phase 12 的 G1
                                      判据,另立一项才让「哪条判据钉哪一次改动」可分辨
+    g1-snapshot → VIS-01 / G1-01     #latest-check 的**元素级局部特写**(checking 样本):
+                                     断言表头存在、表头落在 30vh 可视区内、元素截图落盘且
+                                     宽高非零。**独立落点**(专用参数 + 子目录),故**不参与**
+                                     run_screenshots 的「恰含 5 个 PNG」判据 —— band 在
+                                     1440x900 整窗图里只占几十像素,局部图才是直接证据
     shot                             逐样本整窗截图,供用户评审(不参与卡片判据)
 
 断言写法纪律(Phase 11 / D-11-12 的机器形态)
@@ -879,6 +885,72 @@ def run_screenshots(page, out_dir, tmp_root):
        sorted(f"{s}.png" for s in c05.STATES), pngs)
 
 
+# ---------------------------------------------------------------------------
+# g1-snapshot — #latest-check 的元素级局部特写(checking 样本;G1-01 / VIS-01)
+# ---------------------------------------------------------------------------
+# **独立落点是硬约束(D-12-9):** `run_screenshots()` 断言 `--screenshot` 的输出目录**恰含
+# 5 个 PNG**。把第 6 张图丢进同一个目录会让那条既有断言变红,而放宽它属仓库明令禁止的
+# 「把门改小」。故照 `check-10` 的 `--radius-snapshot LABEL DIR` 先例给局部图一个**专用参数
+# + 独立子目录**;`--screenshot` 的行为与那条断言一字不动。本项只有一张图,故不需要标签。
+#
+# 三条断言把「拍到了 band」变成**可失败**的(D-12-10 的机械形态):band 在 1440x900 整窗图里
+# 只占几十像素,而 `max-height: 30vh` 使 `#latest-check` 是**滚动区** —— 表落在可视区外时
+# 截图照样「成功落盘」。故:①表头存在;②表头矩形落在宿主矩形**之内**;③PNG 宽高非零。
+def g1_snapshot(page, out_dir, tmp_root):
+    item = "g1-snapshot"
+    print("\n=== g1-snapshot: #latest-check 元素级特写(checking)===", flush=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # `checking` 是**唯一** `#latest-check` 可见的样本(p1 下祖先 `#checks-panel` 带
+    # `.hidden`)—— 局部特写必须落在该样本上,而表头来自 fixture 报告的「问题分级」表。
+    proj = c05.make_fixture("checking", tmp_root)
+    c05.enter_project(page, proj)
+
+    host_bg = read_style(page, "#latest-check", "background-color")
+    th_bg = read_style(page, "#latest-check th", "background-color")
+    info("g1-snapshot #latest-check 计算 background-color 原始读数", f"{host_bg}")
+    info("g1-snapshot #latest-check th 计算 background-color 原始读数", f"{th_bg}")
+
+    # ---- 断言 1:表头存在 ----
+    # 没有表头就没有可看的 band,这张图会拍成一张空壳。走 ok_true(期望侧是布尔条件),
+    # 失败即 FAIL —— 表头消失正是本项要抓的回归。
+    th_count = page.locator("#latest-check th").count()
+    info("g1-snapshot #latest-check th 元素计数原始读数", f"{th_count}")
+    ok_true(item, "[checking] #latest-check th 元素数 >= 1(画面里有表头可看)",
+            th_count >= 1, ">= 1", str(th_count),
+            note="没有表头就没有可看的 band。前置是 fixture 报告带「问题分级」表"
+                 "(D-12-5 / D-12-8)")
+
+    # ---- 断言 2:表头落在宿主的可视区内 ----
+    # `max-height: 30vh` 使 #latest-check 是滚动区,表落在可视区外时整窗图与元素截图**都
+    # 拍不到 band**,而截图会「成功落盘」—— 这条判据把「拍到了 band」变成可失败。
+    # 0.5px 是浮点读数容差,不是几何放宽。
+    host_rect = page.locator("#latest-check").bounding_box()
+    th_rect = page.locator("#latest-check th").first.bounding_box()
+    info("g1-snapshot #latest-check bounding_box", f"{host_rect}")
+    info("g1-snapshot #latest-check th.first bounding_box", f"{th_rect}")
+    inside = (
+        host_rect is not None and th_rect is not None
+        and th_rect["y"] >= host_rect["y"] - 0.5
+        and th_rect["y"] + th_rect["height"] <= host_rect["y"] + host_rect["height"] + 0.5
+    )
+    ok_true(item, "[checking] 表头落在 #latest-check 的可视区内(30vh 滚动区)",
+            inside, "th 的上下边落在宿主矩形内(各留 0.5px 浮点容差)",
+            f"host=[{host_rect}] th=[{th_rect}]",
+            note="max-height: 30vh 使它是滚动区,表落在可视区外时截图照样落盘 —— 这条判据"
+                 "使「拍到了 band」可失败")
+
+    # ---- 断言 3:元素截图落盘且宽高非零 ----
+    # 走 `page.locator(...).screenshot(...)` 的**元素截图**路径(照 check-10:653 的先例),
+    # 并以既有的 `png_size()` 断言宽高非零 —— 不新增读图工具。
+    png_path = out_dir / "latest-check.png"
+    page.locator("#latest-check").screenshot(path=str(png_path))
+    width, height = png_size(png_path)
+    ok_true(item, "[checking] #latest-check 元素截图落盘且宽高非零",
+            width is not None and height is not None and width > 0 and height > 0,
+            "width > 0 and height > 0", f"{width}x{height}", note=str(png_path))
+
+
 ITEMS = {"c1": c1, "c2": c2, "c3": c3, "c4": c4, "c5": c5, "c6": c6}
 
 
@@ -888,6 +960,9 @@ def parse_args():
                     help="只跑指定项:c1 / c2 / c3 / c4 / c5(可重复,或逗号分隔)")
     ap.add_argument("--screenshot", default=None, metavar="DIR",
                     help="遍历 check-05 的 5 个样本,每个样本出一张 1440x900 整窗截图到 DIR")
+    ap.add_argument("--g1-snapshot", default=None, metavar="DIR",
+                    help="在 checking 样本上对 #latest-check 取一张元素级特写,写 "
+                         "<DIR>/latest-check.png(独立落点:不得写进 --screenshot 的目录顶层)")
     ap.add_argument("--keep", action="store_true", help="保留临时工作目录供排查")
     return ap.parse_args()
 
@@ -918,6 +993,8 @@ def main():
         page.set_default_timeout(20000)
         for name in items:
             ITEMS[name](page, tmp_root)
+        if args.g1_snapshot:
+            g1_snapshot(page, Path(args.g1_snapshot), tmp_root)
         if args.screenshot:
             run_screenshots(page, Path(args.screenshot), tmp_root)
     finally:
@@ -935,7 +1012,11 @@ def main():
         if not args.keep:
             shutil.rmtree(tmp_root, ignore_errors=True)
 
-    summary = list(items) + (["shot"] if args.screenshot else [])
+    summary = list(items)
+    if args.g1_snapshot:
+        summary.append("g1-snapshot")
+    if args.screenshot:
+        summary.append("shot")
     print("\n=== 逐项结论 ===", flush=True)
     verdicts = {}
     for i in summary:

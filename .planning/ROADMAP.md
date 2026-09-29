@@ -190,7 +190,20 @@ Plans:
 - **顺手做未裁定项** —— G2、`999.2`、`A11Y-V2` / `FLOW-V2` / `TOKEN-V2`、Nyquist 缺口、图标与空状态全部在 Out of Scope。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS;`scripts/check-02-contrast.py` PASS(表头新绘制面已登记,零阈值改动);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);`scripts/check-05-ui-uat.py`(全量,`.venv/bin/python` + `--browser bundled`)/ `check-06` / `check-07` / `check-09` / `check-10` / `probe-05` / `probe-07` 复跑无新增失败;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(219 passed / 6 skipped);`node --check frontend/app.js`;5 张 `<state>.png` 在盘(1440×900);连带指纹逐份处置的记录。
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+**Wave 1**
+
+- [ ] idi-12-01-PLAN.md — G1 定点修复(fixture 补 `## 问题分级` 表含 P0/P1 + `#latest-check` 宿主绘制面就地改归统一面白 + 围栏 `:129-130` 承重注释就地改写)+ `check-09` 新增运行时项 `c6`(「两者不同」与「宿主 == 白」两侧钉死 + fixture 模式不变量)+ 两条变异证明(M1 改回内陷面 / M2 改 gray-3 证明两侧钉死不冗余)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] idi-12-02-PLAN.md — `check-09` 新增专用参数 `--g1-snapshot DIR`(照 `check-10` 的 `--radius-snapshot` 先例)+ 产出 5 张 1440×900 整窗截图(p1 / p12 / p3 / checking / archive)与 1 张 `#latest-check` 元素级局部特写(独立子目录,不动「恰含 5 个 PNG」断言)(VIS-01)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] idi-12-03-PLAN.md — 整里程碑复跑(五条浏览器门 + 两探针 + 四静态门 + pytest 基线)原始输出与退出码逐门落盘 `gate-logs/idi-12-03/` + 连带指纹面逐份实测处置(11 份归档登记为已知限制、1 份在盘报告以 HEAD 内容重新验证)(REG-04)
 
 **UI hint**: yes
 

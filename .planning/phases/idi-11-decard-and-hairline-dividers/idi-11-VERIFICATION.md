@@ -4,6 +4,7 @@ verified: 2026-09-29T08:31:23Z
 status: passed
 score: 12/12 must-haves verified
 covered_files:
+
   - .planning/REQUIREMENTS.md
   - .planning/ROADMAP.md
   - .planning/phases/idi-11-decard-and-hairline-dividers/idi-11-01-PLAN.md
@@ -20,7 +21,8 @@ covered_files:
   - frontend/style.css
   - scripts/check-05-ui-uat.py
   - scripts/check-09-idi09-validation.py
-covered_digest: "v1:sha256:c5d1e3380ea515fcf59894c2b688cb7d864df77aece46055e7284ad895adca33"
+
+covered_digest: "v1:sha256:d48e1e85249b36bdd674e42f89929f4d2a69d0fb4ba71b92a4fbfd48d3edb915"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
@@ -115,6 +117,37 @@ re_verification:
       - "变异 M1(#main-pane > section:not(:last-child) 还原为 + section { border-top })→ c4 FAIL(39 条,21 FAIL,0 BLOCKED)exit=1 —— 与上一轮读数逐字相同;还原 git checkout -- frontend/style.css,git hash-object == 6dd19801494f4f02b261884bb251247723527345(逐字节相同)"
       - "变异 M3(#doc-panel 底色改归 var(--color-surface))→ c2 FAIL(19 条,2 FAIL,0 BLOCKED)exit=1 —— 与上一轮读数逐字相同;同样定向还原、逐字节相同。两条变异本轮**在已变的载体上重跑**(上一轮的「载体哈希未变 ⇒ 承前有效」理由随 style.css / check-09 的改动而失效,故不承前);全程未用 git stash"
     line_anchor_drift: "本报告正文里的 style.css 行号锚点相对 HEAD 偏移 +3(gap:0 792→795 / align-items:center 794→797 / max-width:768px 827→830 / :not(:last-child) 876→879 / #doc-panel border-left 899→902)。成因全部是**在该注释段之前插入的行**:波次 1 的围栏注释改写 39bce0b 净增 3 行。正文的历史段落是当时的真实读数,按「留证不改写」保留;规则体本身逐字在盘(见 (3))"
+  content_reverification_round_4:
+    round: 4
+    trigger: "复合 re-staling(记账型 + 整改型)—— ①Phase 12 的**代码评审整改** cecfe9c 改动了 frontend/style.css(围栏台账由 FOUR 更正为 FIVE)与 scripts/check-09-idi09-validation.py(g1-snapshot 断言 3 由「宽高非零」加强为「== 宿主矩形」,另修 IN-01 注释与 IN-02 help);②注释描述更正 707f023 再改一次 style.css(台账的左右栏描述);③Phase 12 的**收口动词**改写了 .planning/ROADMAP.md(Phase 12 行 2/3 → 3/3 | Complete | 2026-09-29)与 .planning/REQUIREMENTS.md(REG-04 Pending → Complete)。四者**全部**在 covered_files 内 ⇒ digest 必然作废。按 ROADMAP SC4 的字面口径处置:以 HEAD 内容**重新验证**,不是刷新指纹(内容确实变了,刷新等于断言「自验证以来什么都没变」)"
+    previous_report_commit: "3a0b7f2"
+    verified_head: "23a8efc"
+    previous_digest: "v1:sha256:c5d1e3380ea515fcf59894c2b688cb7d864df77aece46055e7284ad895adca33"
+    current_digest: "v1:sha256:d48e1e85249b36bdd674e42f89929f4d2a69d0fb4ba71b92a4fbfd48d3edb915"
+    changed_files_total: 4
+    changed_covered_files:
+      - path: "frontend/style.css"
+        blob: "6dd19801494f4f02b261884bb251247723527345 -> 34f47ed862aee52ed2ad2598f6d3ecf5abdc3042"
+        change: "**纯注释**(两笔):cecfe9c 修 WR-01 —— 围栏消费者台账由「FOUR consumers」更正为「FIVE」并点名 `#latest-check` 为第五个消费者(该台账被本次 G1 改动证伪:base 4 处 → HEAD 5 处);707f023 更正该台账的布局描述(原文「all three left-column panels」错 —— `#doc-panel` 是带 `border-left` 的 `<aside>`,属右栏)。**零声明改动**:围栏声明数 119(去重 119)不变、PAIR 53 不变、`#latest-check` 规则体与 `th` 规则体逐字节未动"
+      - path: "scripts/check-09-idi09-validation.py"
+        blob: "33b7bf556a5d7d1d8adad749d1bb46f0b1a2bd03 -> 789062f3"
+        change: "**增量 + 一处加强**:IN-03 —— `g1-snapshot` 断言 3 由恒真的「PNG 宽高非零」改为「截图尺寸 == 宿主矩形(各留 1px 舍入容差)」,使该条**可失败**;IN-01 —— `c6` 与 `g1_snapshot` 的样本前提注释更正(`archive` 样本同样可见 `#latest-check`,真正的窄前提是只有 `checking` 的报告带「问题分级」表);IN-02 —— `--item` help 补 `c6`。**零断言删除、零阈值放宽**;`c1..c6` 断言计数 59/19/6/39/5/7 逐项不变"
+      - path: ".planning/ROADMAP.md"
+        blob: "06960869 -> 0166c237"
+        change: "记账(Phase 12 收口):Phase 12 行 `2/3 | In Progress` → `3/3 | Complete | 2026-09-29`;`## Milestones` 的 v1.16 行仍为 🚧(里程碑审计走 /gsd-audit-milestone,不在 Phase 12 内 —— D-12-12)。Goal / Success Criteria 零改动"
+      - path: ".planning/REQUIREMENTS.md"
+        blob: "a762e547 -> e81a23e1"
+        change: "记账:REG-04 复选框 [ ] → [x],traceability 行 Pending → Complete。其余需求行零改动"
+    digest_delta_attribution: "以 FINGERPRINT_VERSION=1 算法独立复算两遍:①当前工作树(16 个 covered 文件)→ `64e0be48…`(与 `gsd-tools query verification.fingerprint` 输出逐字相同 ⇒ 复算忠实);②**仅**把上述 4 个 changed_covered_files 换回 `3a0b7f2` 内容、其余 12 份不动 → `c5d1e338…`,**精确复现第三轮记录值** ⇒ 整个 digest 位移 100% 由这 4 个文件造成,无任何隐藏的实质变更"
+    checks_rerun:
+      - "check-01 / check-03 / check-04(bash)→ PASS rc=0(在最终 HEAD 上复跑)"
+      - "check-02(.venv python)→ PASS: 0 failures;PAIR 53;围栏声明 119(去重 119);ORDER 行逐字不变"
+      - "check-09 --item c1..c6 → exit=0;c1 59 / c2 19 / c3 6 / c4 39 / c5 5 / c6 7,0 FAIL 0 BLOCKED;--g1-snapshot → g1-snapshot PASS(3 条,断言 3 读数 `736x270 vs host=736x270`)"
+      - "check-05 全量 --browser bundled → rc=2 且成因仅 item 5 两条 --ai-smoke 腿 BLOCKED(^BLOCKED 恰 2 条);十项中九项 PASS、item 5 BLOCKED(0 FAIL)"
+      - "check-06 / check-07 / check-10 / probe-05 / probe-07 → 各 rc=0;^FAIL 计数全为 0"
+      - ".venv/bin/python -m pytest backend/tests -q --tb=short → 219 passed, 6 skipped, 1 warning"
+    truth_reestablishment: "12 条承重真值在 HEAD 上逐条复核**全部仍成立**:两条计算底色不同(rgb(255,255,255) vs rgb(249,249,249));`.markdown-body th` 绘制面未动;`#main-pane > section` 的 `:not(:last-child)` 1px 下边线与 `#doc-panel` 的 1px `border-left` 均在盘;`--color-surface-card` / `--shadow-card` 全文 0 次;`1-1-1` 5 次 / `1-1-2` 0 次。本轮两次改动(注释 + 一条本阶段新增断言的加强)不使本报告任何一条真值失效"
+    note: "本轮的 4 个 changed_covered_files 与第三轮**同形**(同为 style.css / check-09 / ROADMAP / REQUIREMENTS),但成因不同:第三轮是 Phase 12 的**实现**改动,本轮是 Phase 12 的**整改与收口**改动"
 gaps: []
 deferred: []
 advisory: []

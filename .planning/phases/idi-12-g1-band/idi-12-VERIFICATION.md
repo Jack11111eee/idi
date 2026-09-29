@@ -1,9 +1,10 @@
 ---
 phase: idi-12-g1-band
 verified: 2026-09-29T12:52:00Z
-status: human_needed
+status: passed
 score: 15/15 must-haves verified
 covered_files:
+
   - .planning/REQUIREMENTS.md
   - .planning/ROADMAP.md
   - .planning/phases/idi-12-g1-band/12-CONTEXT.md
@@ -17,12 +18,28 @@ covered_files:
   - frontend/style.css
   - scripts/check-09-idi09-validation.py
   - scripts/ui-states/checking/docs/DESIGN-check-2.md
-covered_digest: "v1:sha256:7590cdfe099573da8f6235ec20850bea0cfe6406ff90afef92d46b097df8a001"
+
+covered_digest: "v1:sha256:d2377864406b200ade063f1ed6adea81af18e09eee0345f8e50039811a67af47"
+content_reverification:
+  round: 1
+  kind: "bookkeeping"
+  trigger: "Phase 12 的**收口动词**改写了 .planning/ROADMAP.md(Phase 12 行 `2/3 | In Progress` → `3/3 | Complete | 2026-09-29`),该文件在 covered_files 内 ⇒ digest 必然作废。这是**记账型 stale**(非缺陷):收口序列合法改写被覆盖文件,信号按设计工作。按 Phase 11 先例处置 —— 在收口序列的**最后一个动词之后**复算,以 HEAD 内容重新验证,不是刷新指纹"
+  previous_digest: "v1:sha256:7590cdfe099573da8f6235ec20850bea0cfe6406ff90afef92d46b097df8a001"
+  current_digest: "v1:sha256:d2377864406b200ade063f1ed6adea81af18e09eee0345f8e50039811a67af47"
+  verified_head: "23a8efc"
+  changed_files_total: 1
+  changed_covered_files:
+    - path: ".planning/ROADMAP.md"
+      change: "记账(phase.complete 12):Phase 12 行 `2/3 | In Progress` → `3/3 | Complete | 2026-09-29`;Phase 12 段的三条计划复选框置 [x]。`## Milestones` 的 v1.16 行仍为 🚧(里程碑审计走 /gsd-audit-milestone,不在本阶段内 —— D-12-12)。Goal / Success Criteria / Deliverables 零改动"
+  digest_delta_attribution: "以 FINGERPRINT_VERSION=1 算法独立复算两遍:①当前工作树(13 个 covered 文件)→ `d2377864…`(与 `gsd-tools query verification.fingerprint` 输出逐字相同);②**仅**把 `.planning/ROADMAP.md` 换回 `21d4267` 内容、其余 12 份不动 → `7590cdfe…`,**精确复现记录值** ⇒ 整个 digest 位移 100% 由这一份记账文件造成,无任何隐藏的实质变更。**本轮未删除、未放宽、未改写任何断言或阈值**"
+  truth_reestablishment: "15 条 must-have 真值**逐条仍成立** —— 本轮唯一变动是记账(Phase 12 状态翻转),它不触及任何一条判据的载体:`frontend/style.css`(band 的两条计算底色)、`scripts/check-09-idi09-validation.py`(`c6` 7 条断言 + `--g1-snapshot` 3 条)、fixture 表、5 张截图与局部特写、13 份门日志,全部逐字节未动。门禁证据在 `gate-logs/idi-12-03/` 且 `^FAIL` 全为 0"
+  note: "**人类验收已由用户完成**:`idi-12-UAT.md` 两项(局部特写的 band 观感、5 张整窗图的「分块割裂感已消除」)均 `result: pass`;`status` 由 `human_needed` 规范化为 `passed` 是本轮之前的合法动作(见 `phase uat-passed` 谓词 → `passed: true`)"
 behavior_unverified: 0
 overrides_applied: 0
 gaps: []
 deferred: []
 human_verification:
+
   - test: "打开 .planning/phases/idi-12-g1-band/screenshots/latest-check/latest-check.png,确认表头行(`编号 | 级别 | 位置 | 问题 | 建议修法`)在其宿主内读作一条**独立的 band**"
     expected: "表头行呈现为一档浅灰底,与周围白色报告面可辨;不再与数据行读感相同"
     why_human: "「读作一条独立 band」是屏幕级观感判断。机械判据只证明两者的计算底色不同(rgb(255,255,255) vs rgb(249,249,249)),证明不了 1.053 的色差在真实显示条件下**看得出**"

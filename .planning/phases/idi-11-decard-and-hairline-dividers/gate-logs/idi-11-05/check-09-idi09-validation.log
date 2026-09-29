@@ -1,5 +1,5 @@
 INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
-INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-09-gate-rptvfua_(--keep 可保留)
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-09-gate-h96mmqyw(--keep 可保留)
 INFO browser.version: 153.0.8010.12
 
 === c1: 左栏 4 个 section 的连续面(REG-01 / SURF-01 / SURF-02)===
@@ -189,5 +189,3 @@ item c4: PASS  (39 条断言,0 FAIL,0 BLOCKED)
 item c5: PASS  (5 条断言,0 FAIL,0 BLOCKED)
 
 exit=0  (0=全 pass,1=有 fail,2=有 blocked)
-
-[exit=0]

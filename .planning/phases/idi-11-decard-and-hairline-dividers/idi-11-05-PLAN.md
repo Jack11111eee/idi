@@ -280,8 +280,8 @@ must_haves:
     <fails_when>the count is not exactly 0 (the adjacent-sibling form must be gone from both the rule and the surrounding prose)</fails_when>
     <automated>grep -cE '^#main-pane > section \{' frontend/style.css</automated>
     <fails_when>the count is not exactly 1 (the base rule must survive untouched, so the hairline rule's specificity still needs to beat it)</fails_when>
-    <automated>grep -cE '1-1-2' frontend/style.css</automated>
-    <fails_when>the count is 0 (the specificity note in the rewritten comment must state the new 1-1-2, not the stale 1-0-2)</fails_when>
+    <automated>grep -cF '本选择器现在是 **1-1-1**' frontend/style.css</automated>
+    <fails_when>the count is not exactly 1 (the specificity note in the rewritten comment must state the new 1-1-1, not the stale 1-0-2). POST-REVIEW CORRECTION (2026-09-29): this command originally read `grep -cE '1-1-2'`, which is WRONG — `:not()` takes the specificity of its most specific argument, so `:not(:last-child)` contributes 0-1-0 and the selector is 1-1-1, not 1-1-2. Falsified empirically in Chromium: with a later equal-specificity `div#a.x` rule the later rule wins, proving 1-1-1. The pattern is anchored to the full phrase, NOT the bare `1-1-1` token: this file already carries four legitimate pre-existing `1-1-1` specificity notes (lines 1878 / 1909 / 1954 / 1957), so a bare-token count would return 5 and could never fail for the right reason — the same "gate that cannot fail" defect class the revision loop fixed three of.</fails_when>
     <automated>grep -cE '分区改由相邻兄弟规则' frontend/style.css</automated>
     <fails_when>the count is not exactly 0 (the `#main-pane` rule's own comment at :781 still carries the OLD mechanism sentence — adjacent-sibling rule plus a top border — which contradicts the code after this change; it must be rewritten in place). HEAD reading: 1 (line 781) — red before the rewrite, 0 after</fails_when>
     <automated>grep -cE 'exactly ONE consumer' frontend/style.css</automated>

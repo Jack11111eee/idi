@@ -17,7 +17,7 @@ covered_files:
   - frontend/style.css
   - scripts/check-09-idi09-validation.py
   - scripts/ui-states/checking/docs/DESIGN-check-2.md
-covered_digest: "v1:sha256:cafe9b5f93bf0d09d35754300db3e1381e16f03cdb799b94a692065f35843d0d"
+covered_digest: "v1:sha256:7590cdfe099573da8f6235ec20850bea0cfe6406ff90afef92d46b097df8a001"
 behavior_unverified: 0
 overrides_applied: 0
 gaps: []

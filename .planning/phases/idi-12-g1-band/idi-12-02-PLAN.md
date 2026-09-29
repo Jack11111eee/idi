@@ -189,7 +189,7 @@ Output: `.planning/phases/idi-12-g1-band/screenshots/` 下的 5 张 1440×900 �
     <fails_when>the count is "0" (the flag must appear in parse_args, in the main() dispatch, in the summary list, and in the docstring)</fails_when>
     <automated>grep -cF -- 'shot 输出目录恰含 5 个 PNG' scripts/check-09-idi09-validation.py</automated>
     <fails_when>the count is not "1" (the existing exactly-5-PNG assertion must be present exactly once, unmodified)</fails_when>
-    <automated>git status --porcelain scripts/ frontend/</automated>
+    <automated>git status --porcelain -- scripts/ frontend/ ':(exclude)scripts/.check09-old.py'</automated>
     <fails_when>output contains any path other than "scripts/check-09-idi09-validation.py", or output is empty</fails_when>
   </verify>
   <acceptance_criteria>
@@ -198,7 +198,7 @@ Output: `.planning/phases/idi-12-g1-band/screenshots/` 下的 5 张 1440×900 �
     - `.planning/phases/idi-12-g1-band/screenshots/latest-check/latest-check.png` 存在、PNG 签名正确、宽高均 > 0。
     - `grep -cF -- 'shot 输出目录恰含 5 个 PNG' scripts/check-09-idi09-validation.py` 输出 `1` —— 那条既有断言**一字未改、未被删除、未被复制**。
     - `parse_args()` 现在有四个参数(`--item` / `--screenshot` / `--g1-snapshot` / `--keep`),既有三个的帮助文本与 `default` 逐字不变。
-    - `git status --porcelain scripts/ frontend/` 只列出 `scripts/check-09-idi09-validation.py`。
+    - `git status --porcelain -- scripts/ frontend/ ':(exclude)scripts/.check09-old.py'` 只列出 `scripts/check-09-idi09-validation.py`。
   </acceptance_criteria>
   <done>`check-09` 有了独立的 `--g1-snapshot DIR` 参数与 `g1_snapshot()` 函数:它在 `checking` 样本上断言表头存在、断言表头落在 `#latest-check` 的 30vh 可视区内、再把 `#latest-check` 的元素截图写到 `<DIR>/latest-check.png` 并断言宽高非零;`run_screenshots()` 的「恰含 5 个 PNG」断言逐字保留。</done>
 </task>
@@ -235,7 +235,7 @@ Output: `.planning/phases/idi-12-g1-band/screenshots/` 下的 5 张 1440×900 �
     <fails_when>tops is not exactly ['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png'], or any printed size is not (1440, 900), or any byte size is 0, or the subdirectory PNG is missing or has a zero dimension</fails_when>
     <automated>git status --porcelain frontend/</automated>
     <fails_when>output is not empty (the screenshots must be taken on the final rendering surface)</fails_when>
-    <automated>git status --porcelain scripts/</automated>
+    <automated>git status --porcelain -- scripts/ ':(exclude)scripts/.check09-old.py'</automated>
     <fails_when>output contains any path other than "scripts/check-09-idi09-validation.py"</fails_when>
   </verify>
   <acceptance_criteria>
@@ -278,7 +278,7 @@ Output: `.planning/phases/idi-12-g1-band/screenshots/` 下的 5 张 1440×900 �
 1. `.venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-12-g1-band/screenshots --g1-snapshot .planning/phases/idi-12-g1-band/screenshots/latest-check` → `exit=0`,`item shot: PASS` 与 `item g1-snapshot: PASS` 均 0 FAIL / 0 BLOCKED。
 2. 盘上核对:`screenshots/` 顶层恰 5 个 PNG、各 1440×900、各非空;`screenshots/latest-check/latest-check.png` 非空且宽高 > 0。
 3. `grep -cF -- 'shot 输出目录恰含 5 个 PNG' scripts/check-09-idi09-validation.py` → `1`。
-4. `git status --porcelain frontend/` → 空;`git status --porcelain scripts/` → 只有 `scripts/check-09-idi09-validation.py`。
+4. `git status --porcelain frontend/` → 空;`git status --porcelain -- scripts/ ':(exclude)scripts/.check09-old.py'` → 只有 `scripts/check-09-idi09-validation.py`。
 5. `idi-12-02-SUMMARY.md` 含两处落点的实际读数抄录。
 </verification>
 

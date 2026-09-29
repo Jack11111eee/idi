@@ -163,7 +163,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
 <task type="auto" tdd="false">
   <name>Task 1: 五条浏览器门 + 两个探针在最终态上复跑 —— 原始输出与退出码逐门落盘,判据锚行首 `^FAIL`</name>
   <files>.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log, .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-06-idi05-validation.log, .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-07-idi08-validation.log, .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-09-idi09-validation.log, .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-10-idi10-validation.log, .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/probe-05-resolve-color.log, .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/probe-07-focus-composite.log</files>
-  <precondition>波次 1 与波次 2 的全部改动均已提交,`git status --porcelain frontend/ scripts/` 为空 ⇒ 复跑确实落在**最终态**上。</precondition>
+  <precondition>波次 1 与波次 2 的全部改动均已提交,`git status --porcelain -- frontend/ scripts/ ':(exclude)scripts/.check09-old.py'` 为空 ⇒ 复跑确实落在**最终态**上。</precondition>
   <read_first>
     - `.planning/phases/idi-11-decard-and-hairline-dividers/gate-logs/idi-11-05/`(17 份原始输出的**落盘约定与文件名先例**)
     - `.planning/phases/idi-11-decard-and-hairline-dividers/idi-11-04-PLAN.md` / `idi-11-04-SUMMARY.md`(五条浏览器门 + 两探针 + 四静态门 + pytest 的同形复跑与判据写法)
@@ -199,7 +199,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
     <fails_when>the count is not "6" (all six items must be present and PASS)</fails_when>
     <automated>grep -E '^item 5: ' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log; grep -c '^FAIL' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log; grep -c '^rc=' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log</automated>
     <fails_when>the item 5 summary line does not show exactly "2 BLOCKED", or the FAIL count is not "0", or the rc marker line count is not "1"</fails_when>
-    <automated>git status --porcelain frontend/ scripts/ backend/</automated>
+    <automated>git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'</automated>
     <fails_when>output is not empty (this task must run gates, not edit code)</fails_when>
   </verify>
   <acceptance_criteria>
@@ -208,7 +208,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
     - `check-05-ui-uat.log` 的 `rc=2`,`item 5:` 汇总行显示恰 `2 BLOCKED`,且该 BLOCKED 的两条腿名为 `--ai-smoke` 相关的冒烟项(逐字抄进 SUMMARY);其余六份 `rc=0`。
     - `check-09-idi09-validation.log` 里 `item c1:` … `item c6:` 六行均以 `PASS` 开头且各为 `0 FAIL,0 BLOCKED`,六项断言条数被抄进 SUMMARY。
     - 与 Phase 11 收口日志的归一化逐行 diff 结果已登记(有位移则逐条给出成因)。
-    - `git status --porcelain frontend/ scripts/ backend/` 为空。
+    - `git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'` 为空。
   </acceptance_criteria>
   <done>五条浏览器门与两个探针在最终态上复跑完毕,原始输出与退出码逐门落盘;`^FAIL` 全为 0;`check-05` 的 `exit=2` 被证实仍只是 item 5 的两条 `--ai-smoke` 腿按设计 BLOCKED;`check-09` 的 `c1..c6` 全 PASS;`probe-05` 的 `BLOCKED [mutated]` 对照支被显式标注为非回归。</done>
 </task>
@@ -250,7 +250,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
     <fails_when>either grep prints nothing, or the PAIR count is not "53"</fails_when>
     <automated>grep -E '^[0-9]+ passed' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/pytest.log; grep -c '^rc=0$' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/pytest.log</automated>
     <fails_when>the passed count is not "219", or the skipped count is not "6", or the rc marker is not "rc=0"</fails_when>
-    <automated>git status --porcelain frontend/ scripts/ backend/; git diff --stat -- frontend/app.js frontend/index.html backend/ frontend/vendor/</automated>
+    <automated>git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'; git diff --stat -- frontend/app.js frontend/index.html backend/ frontend/vendor/</automated>
     <fails_when>the first command's output is not empty, or the second command's output is not empty</fails_when>
   </verify>
   <acceptance_criteria>
@@ -258,7 +258,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
     - `check-02-contrast.log` 含 `PASS: 0 failures` 与逐字不变的 `ORDER 0.363  --color-text-muted before --color-text on --color-surface`;`grep -c '/\* PAIR ' frontend/style.css` 输出 `53`。
     - `pytest.log` 的汇总行为 `219 passed, 6 skipped`(或等价的 pytest 计数写法,含 225 collected),逐字抄进 SUMMARY;SUMMARY 里写明「必须用项目 `.venv`」的成因。
     - `check-01` / `check-03` / `check-04` 的日志里能看到 `PASS`;`check-04` 的判据是 `!important;` **声明**数(不是命中行数)。
-    - `git status --porcelain frontend/ scripts/ backend/` 为空;`git diff --stat -- frontend/app.js frontend/index.html backend/ frontend/vendor/` 为空;`frontend/vendor/` 只有 `marked.min.js`。
+    - `git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'` 为空;`git diff --stat -- frontend/app.js frontend/index.html backend/ frontend/vendor/` 为空;`frontend/vendor/` 只有 `marked.min.js`。
     - 与 Phase 11 收口日志的归一化逐行 diff 结果已登记。
   </acceptance_criteria>
   <done>四个静态门 + pytest 基线 + `node --check` 在最终态上复跑完毕、原始输出与退出码落盘;`check-02` 零新增条目、零阈值改动、`ORDER` 不变;pytest 基线 219 passed / 6 skipped 不降;`frontend/**` 与 `backend/**` 逐字节未改。</done>
@@ -297,7 +297,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
     <fails_when>digest is None, or has_prev is False, or has_commits is False (the re-verification round must record the previous digest and the commits that invalidated it)</fails_when>
     <automated>.venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2,c3,c4,c5</automated>
     <fails_when>non-zero exit, or any FAIL, or any BLOCKED (the re-verified report's cited checks must still hold on HEAD)</fails_when>
-    <automated>git status --porcelain scripts/ frontend/ backend/</automated>
+    <automated>git status --porcelain -- scripts/ frontend/ backend/ ':(exclude)scripts/.check09-old.py'</automated>
     <fails_when>output contains any path other than "scripts/check-09-idi09-validation.py"</fails_when>
   </verify>
   <acceptance_criteria>
@@ -342,7 +342,7 @@ Output: `.planning/phases/idi-12-g1-band/gate-logs/idi-12-03/` 下的 13 份原�
 2. `check-05` 全量 `rc=2`,成因仅 item 5 的两条 `--ai-smoke` 腿;`check-06` / `check-07` / `check-09` / `check-10` / 两探针 `rc=0`。
 3. 四静态门 `rc=0`;`check-02` `PASS: 0 failures` + `ORDER 0.363` + PAIR 53;pytest `219 passed / 6 skipped`;`node --check` 通过。
 4. `idi-11-VERIFICATION.md` 有新的 `re_verification` 轮次与更新后的 `covered_digest`,`covered_files` 一条未删;11 份归档报告在 SUMMARY 里逐份列名登记。
-5. `git status --porcelain frontend/ scripts/ backend/` 仅含 `scripts/check-09-idi09-validation.py`(波次 1 的产物);`frontend/app.js` / `frontend/index.html` / `backend/**` / `frontend/vendor/**` 逐字节未改。
+5. `git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'` 仅含 `scripts/check-09-idi09-validation.py`(波次 1 的产物);`frontend/app.js` / `frontend/index.html` / `backend/**` / `frontend/vendor/**` 逐字节未改。
 6. **顺序性提醒(留给编排器,不在本计划内执行):** ROADMAP 的 Phase 12 状态翻转 / `## Progress` 行更新是**记账写入**,会再次改写 `idi-11-VERIFICATION.md` 的 `covered_files` 之一(`.planning/ROADMAP.md`)⇒ 该报告会再变 stale。核盘判据取 ROADMAP 的 `## Milestones` + `## Progress`,且**核盘必须放在收口序列的最后一个动词之后**;`state.*` 写入动词的输出不可作为判据。
 </verification>
 

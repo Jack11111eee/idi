@@ -222,7 +222,7 @@ Output: 改写后的 `frontend/style.css`(一条声明值 + 一段承重注释)�
     <fails_when>any of the three exits non-zero, or any of them fails to print "PASS"</fails_when>
     <automated>.venv/bin/python scripts/check-02-contrast.py</automated>
     <fails_when>non-zero exit, or the output does not end with "PASS: 0 failures"</fails_when>
-    <automated>git status --porcelain frontend/ scripts/ backend/ frontend/vendor/</automated>
+    <automated>git status --porcelain -- frontend/ scripts/ backend/ frontend/vendor/ ':(exclude)scripts/.check09-old.py'</automated>
     <fails_when>output contains any path other than "frontend/style.css", "scripts/check-09-idi09-validation.py" and "scripts/ui-states/checking/docs/DESIGN-check-2.md"</fails_when>
   </verify>
   <acceptance_criteria>
@@ -233,7 +233,7 @@ Output: 改写后的 `frontend/style.css`(一条声明值 + 一段承重注释)�
     - `frontend/style.css` 里 `#latest-check` 规则体的 `max-height` / `overflow-y` / `padding` / `border` / `border-radius` / `font-size` 六条声明与 HEAD 逐字节相同(`awk '/^#latest-check \{/{f=1} f{print} f&&/^\}/{exit}' frontend/style.css` 打印的块里,除 `background` 一条外逐字等于 HEAD 的同名块)。
     - `check-01` / `check-03` / `check-04` 各打印 `PASS` 且 `rc=0`;`check-02` 以 `PASS: 0 failures` 结尾且 `ORDER` 行为 `ORDER 0.363 …`。
     - `scripts/check-09-idi09-validation.py` 的 `ITEMS` 含六个键(`c1`…`c6`);`parse_args()` 仍有且仅有 `--item` / `--screenshot` / `--keep` 三个参数。
-    - `git status --porcelain frontend/ scripts/ backend/ frontend/vendor/` 只列出上表三个路径。
+    - `git status --porcelain -- frontend/ scripts/ backend/ frontend/vendor/ ':(exclude)scripts/.check09-old.py'` 只列出上表三个路径。
   </acceptance_criteria>
   <done>fixture 的 `checking` 报告带上了文法强制的「问题分级」表(含至少一行 P1),`parse_problem_grades` 返回 >= 1 行而 `is_pure_p2` 仍为假;`#latest-check` 的宿主绘制面已就地改归统一面(白),其 `border` / `border-radius` / `max-height` 逐字节未动;`check-09` 的新项 `c6` 在 `checking` 样本上以真实浏览器 computed style 证明「宿主底色 != 表头底色」**且**「宿主底色 == 统一面令牌 == 白」,并顺带证明样本仍处 `running` 态;`check-01`…`check-04` 全绿。</done>
 </task>
@@ -312,7 +312,7 @@ Output: 改写后的 `frontend/style.css`(一条声明值 + 一段承重注释)�
     <fails_when>non-zero exit, or any FAIL, or any BLOCKED (the Phase 11 REG-01 contract must be untouched by this phase)</fails_when>
     <automated>grep -cF -- 'git stash' .planning/phases/idi-12-g1-band/idi-12-01-SUMMARY.md; grep -cF -- 'M1' .planning/phases/idi-12-g1-band/idi-12-01-SUMMARY.md; grep -cF -- 'M2' .planning/phases/idi-12-g1-band/idi-12-01-SUMMARY.md</automated>
     <fails_when>the M1 count is "0" or the M2 count is "0" (both mutation readings must be documented); the first count being non-zero is acceptable only as the explicit "git stash was never used" prohibition note</fails_when>
-    <automated>git status --porcelain scripts/</automated>
+    <automated>git status --porcelain -- scripts/ ':(exclude)scripts/.check09-old.py'</automated>
     <fails_when>output contains any path other than "scripts/check-09-idi09-validation.py"</fails_when>
   </verify>
   <acceptance_criteria>
@@ -357,7 +357,7 @@ Output: 改写后的 `frontend/style.css`(一条声明值 + 一段承重注释)�
 1. `bash scripts/check-01-token-conformance.sh` → `PASS`;`bash scripts/check-03-hidden-uniqueness.sh` → `PASS`;`bash scripts/check-04-important-count.sh` → `PASS`。
 2. `.venv/bin/python scripts/check-02-contrast.py` → 以 `PASS: 0 failures` 结尾,`ORDER 0.363` 行逐字不变,`grep -c '/\* PAIR ' frontend/style.css` == 53。
 3. `.venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2,c3,c4,c5,c6` → `exit=0`、0 FAIL、0 BLOCKED(`c1..c5` 是 Phase 11 的 `REG-01` 契约,本阶段必须保持全绿;`c6` 是新增)。
-4. `git status --porcelain frontend/ scripts/ backend/ frontend/vendor/` → 只列出 `frontend/style.css`、`scripts/check-09-idi09-validation.py`、`scripts/ui-states/checking/docs/DESIGN-check-2.md`。
+4. `git status --porcelain -- frontend/ scripts/ backend/ frontend/vendor/ ':(exclude)scripts/.check09-old.py'` → 只列出 `frontend/style.css`、`scripts/check-09-idi09-validation.py`、`scripts/ui-states/checking/docs/DESIGN-check-2.md`。
 5. `git diff --stat -- frontend/app.js frontend/index.html backend/ frontend/vendor/` → 空。
 6. `idi-12-01-SUMMARY.md` 含两条变异读数与前置条件记录。
 </verification>

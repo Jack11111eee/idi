@@ -1,0 +1,110 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi08-gap-6oio1f4q(--keep 可保留)
+INFO browser.version: 153.0.8010.12
+
+=== g1: A11Y-05 Escape 关闭两个阻塞弹窗 + 划词菜单;范围锁三弹窗不响应 ===
+PASS g1 [#confirmation-modal] 打开后弹窗可见(断言前提,防假绿): expected=hidden=false actual=hidden=False
+PASS g1 [#confirmation-modal] 判别控制:非 Escape 按键不关闭弹窗: expected=仍可见 actual=hidden=False
+PASS g1 [#confirmation-modal] 受信 Escape 关闭弹窗: expected=hidden=true actual=hidden=True
+PASS g1 [#confirmation-modal] Escape 零决定:未弹出任何原生对话框(不等于「拒绝」): expected=0 个 actual=0 个
+PASS g1 [#confirmation-modal] Escape 零决定:未发出任何写批注/授权 POST: expected=1 个 actual=1 个
+INFO g1 [#confirmation-modal] 焦点交还读数: {'active': 'btn-authorize', 'focusable': True}
+PASS g1 [#confirmation-modal] 焦点交还 #btn-authorize(目标不可聚焦时按 A-8 静默降级): expected=active=btn-authorize 或目标不可聚焦 actual=active=btn-authorize focusable=True
+INFO g1 [tier] 样本状态: 待选自检档(阶段 5)
+PASS g1 [#tier-modal] phase5_awaiting_tier 下弹窗自动打开(断言前提,防假绿): expected=hidden=false actual=hidden=False
+PASS g1 [#tier-modal] 判别控制:非 Escape 按键不关闭弹窗: expected=仍可见 actual=hidden=False
+PASS g1 [#tier-modal] 受信 Escape 关闭弹窗: expected=hidden=true actual=hidden=True
+PASS g1 [#tier-modal] Escape 零决定:未发出任何 POST(不复位 selfcheck.tier、不发请求): expected=2 个 actual=2 个
+PASS g1 [#tier-modal] Escape 复位 tierModalShown(D-13 死状态的实质修复): expected=false actual=False
+PASS g1 [#tier-modal] 焦点交还 #btn-continue-check(F1-d): expected=btn-continue-check actual=btn-continue-check
+PASS g1 [#tier-modal] 复位生效:下一个自检事件能重新弹出(死状态已消): expected=hidden=false actual=hidden=False
+PASS g1 [#selection-menu] 鼠标拖拽后菜单可见(断言前提,防假绿): expected=hidden=false actual=hidden=False selLen=12
+INFO g1 [#selection-menu] 松开 Shift 后的焦点: btn-annotate
+PASS g1 [#selection-menu] 受信 Escape 关闭划词菜单: expected=hidden=true actual=hidden=True
+INFO g1 [#selection-menu] 选区来源: 真实鼠标拖拽(键盘来源的 Shift+方向键选区本环境不可自动化 ⇒ 人工项)
+PASS g1 [#permission-modal] 打开后可见(断言前提,防假绿): expected=hidden=false actual=hidden=False
+PASS g1 [#permission-modal] Escape 后仍可见(范围锁,刻意不响应): expected=仍可见 actual=hidden=False
+INFO g1 [#cli-check-overlay] 开机后的默认态: hidden=True
+PASS g1 [#cli-check-overlay] 注入可见态成功(断言前提,防假绿): expected=hidden=false actual=hidden=False  # 开启路径要求 cli 自检失败,本环境不满足 ⇒ 注入状态输入
+PASS g1 [#cli-check-overlay] Escape 后仍可见(范围锁,刻意不响应): expected=仍可见 actual=hidden=False
+PASS g1 [#mission-complete-modal] 进入归档态后自动弹出(断言前提,防假绿): expected=hidden=false actual=hidden=False
+PASS g1 [#mission-complete-modal] Escape 后仍可见(范围锁,刻意不响应): expected=仍可见 actual=hidden=False
+
+=== g2: A11Y-06 两个弹窗的 dialog 语义 + 背景 inert 的切换与挂载点 ===
+INFO g2 关闭态基线: {'appAttr': False, 'appIDL': False, 'bodyAttr': False, 'bodyIDL': False, 'confirmAttr': False, 'tierAttr': False, 'menuAttr': False}
+PASS g2 关闭态基线:#app 不带 inert 属性: expected=false actual=False
+PASS g2 关闭态基线:#app.inert IDL 为 false: expected=false actual=False
+INFO g2 [#confirmation-modal] 语义读数: {'role': 'dialog', 'ariaModal': 'true', 'labelledby': 'confirmation-modal-title', 'labelTarget': 'confirmation-modal-title', 'labelExists': True, 'labelName': '授权确认', 'labelInsideModal': True}
+PASS g2 [#confirmation-modal] role == dialog: expected=dialog actual=dialog
+PASS g2 [#confirmation-modal] aria-modal == true: expected=true actual=true
+PASS g2 [#confirmation-modal] aria-labelledby 的每个 id 都指向存在的元素: expected=全部存在 actual=labelledby=confirmation-modal-title exists=True
+PASS g2 [#confirmation-modal] 无障碍名称解析出非空文本(悬空引用会在这里变红): expected=非空 actual=name='授权确认'
+PASS g2 [#confirmation-modal] 无障碍名称取自弹窗**内部**的标题元素: expected=在弹窗内 actual=target=confirmation-modal-title inside=True
+PASS g2 [#confirmation-modal] 变异控制:指向不存在的 id 时解析为空(解析器不是恒真): expected=exists=false name='' actual=exists=False name=''
+PASS g2 [#confirmation-modal] 变异控制后属性已复原: expected=confirmation-modal-title actual=confirmation-modal-title
+INFO g2 [#confirmation-modal] 打开期间的惰性读数: {'appAttr': True, 'appIDL': True, 'bodyAttr': False, 'bodyIDL': False, 'confirmAttr': False, 'tierAttr': False, 'menuAttr': False}
+PASS g2 [#confirmation-modal] 打开期间 #app 带 inert 属性: expected=true actual=True
+PASS g2 [#confirmation-modal] 打开期间 #app.inert IDL 为 true(原生布尔属性): expected=true actual=True
+PASS g2 [#confirmation-modal] 挂载点边界:document.body 不带 inert(挂错节点会锁死弹窗自身): expected=false actual=False
+PASS g2 [#confirmation-modal] 挂载点边界:打开的弹窗自身不带 inert: expected=两个弹窗都不带 actual=confirm=False tier=False
+PASS g2 [#confirmation-modal] 挂载点边界:#selection-menu 不带 inert: expected=false actual=False
+INFO g2 [#confirmation-modal] 惰性期间的背景聚焦读数: {'before': 'confirm-word-input', 'after': 'confirm-word-input', 'moved': False, 'visible': True, 'disabled': False, 'appInert': True}
+PASS g2 [#confirmation-modal] 背景在惰性期间**不可聚焦**(宣告成真的行为读数): expected=焦点不移动 actual=moved=False before=confirm-word-input after=confirm-word-input
+PASS g2 [#confirmation-modal] 变异控制:摘掉属性后读数为假(读数不是恒真): expected=false/false actual=attr=False idl=False
+PASS g2 [#confirmation-modal] 变异控制:重跑派生函数后属性复原(派生式幂等): expected=true actual=True
+PASS g2 [#confirmation-modal] 关闭后 #app 不再带 inert(切换的另一半): expected=false actual=False
+PASS g2 [#confirmation-modal] 关闭后 #app.inert IDL 为 false: expected=false actual=False
+INFO g2 非惰性时的背景聚焦读数: {'before': 'btn-authorize', 'after': 'ai-route-select', 'moved': True, 'visible': True, 'disabled': False, 'appInert': False}
+PASS g2 行为控制:非惰性时同一背景元素可被聚焦(排除恒假读数): expected=焦点移动 actual=moved=True before=btn-authorize after=ai-route-select
+INFO g2 [#tier-modal] 语义读数: {'role': 'dialog', 'ariaModal': 'true', 'labelledby': 'tier-modal-title', 'labelTarget': 'tier-modal-title', 'labelExists': True, 'labelName': '选择自检档位', 'labelInsideModal': True}
+PASS g2 [#tier-modal] role == dialog: expected=dialog actual=dialog
+PASS g2 [#tier-modal] aria-modal == true: expected=true actual=true
+PASS g2 [#tier-modal] aria-labelledby 的每个 id 都指向存在的元素: expected=全部存在 actual=labelledby=tier-modal-title exists=True
+PASS g2 [#tier-modal] 无障碍名称解析出非空文本(悬空引用会在这里变红): expected=非空 actual=name='选择自检档位'
+PASS g2 [#tier-modal] 无障碍名称取自弹窗**内部**的标题元素: expected=在弹窗内 actual=target=tier-modal-title inside=True
+PASS g2 [#tier-modal] 变异控制:指向不存在的 id 时解析为空(解析器不是恒真): expected=exists=false name='' actual=exists=False name=''
+PASS g2 [#tier-modal] 变异控制后属性已复原: expected=tier-modal-title actual=tier-modal-title
+INFO g2 [#tier-modal] 打开期间的惰性读数: {'appAttr': True, 'appIDL': True, 'bodyAttr': False, 'bodyIDL': False, 'confirmAttr': False, 'tierAttr': False, 'menuAttr': False}
+PASS g2 [#tier-modal] 打开期间 #app 带 inert 属性: expected=true actual=True
+PASS g2 [#tier-modal] 打开期间 #app.inert IDL 为 true(原生布尔属性): expected=true actual=True
+PASS g2 [#tier-modal] 挂载点边界:document.body 不带 inert(挂错节点会锁死弹窗自身): expected=false actual=False
+PASS g2 [#tier-modal] 挂载点边界:打开的弹窗自身不带 inert: expected=两个弹窗都不带 actual=confirm=False tier=False
+PASS g2 [#tier-modal] 挂载点边界:#selection-menu 不带 inert: expected=false actual=False
+INFO g2 [#tier-modal] 惰性期间的背景聚焦读数: {'before': 'btn-tier-loose', 'after': 'btn-tier-loose', 'moved': False, 'visible': True, 'disabled': False, 'appInert': True}
+PASS g2 [#tier-modal] 背景在惰性期间**不可聚焦**(宣告成真的行为读数): expected=焦点不移动 actual=moved=False before=btn-tier-loose after=btn-tier-loose
+PASS g2 [#tier-modal] 变异控制:摘掉属性后读数为假(读数不是恒真): expected=false/false actual=attr=False idl=False
+PASS g2 [#tier-modal] 变异控制:重跑派生函数后属性复原(派生式幂等): expected=true actual=True
+PASS g2 [#tier-modal] 关闭后 #app 不再带 inert(切换的另一半): expected=false actual=False
+INFO g2 其余三个弹窗的语义读数: {'permission-modal': {'role': None, 'ariaModal': None}, 'mission-complete-modal': {'role': None, 'ariaModal': None}, 'cli-check-overlay': {'role': None, 'ariaModal': None}}
+PASS g2 [#permission-modal] 不带 dialog 语义(范围锁,刻意不响应): expected=role=null aria-modal=null actual={'role': None, 'ariaModal': None}
+PASS g2 [#mission-complete-modal] 不带 dialog 语义(范围锁,刻意不响应): expected=role=null aria-modal=null actual={'role': None, 'ariaModal': None}
+PASS g2 [#cli-check-overlay] 不带 dialog 语义(范围锁,刻意不响应): expected=role=null aria-modal=null actual={'role': None, 'ariaModal': None}
+
+=== g3: A11Y-03 Escape 关闭划词菜单后保持隐藏(后续 keyup 不重开)===
+PASS g3 鼠标拖拽产生非折叠选区(断言前提,防假绿): expected=非折叠且长度>0 actual=collapsed=False len=12
+PASS g3 拖拽后菜单可见(断言前提,防假绿): expected=hidden=false actual=hidden=False
+PASS g3 松开 Shift 把焦点送入 #btn-annotate(真实手势,非程序化移焦): expected=btn-annotate actual=btn-annotate
+PASS g3 受信 Escape 关闭划词菜单: expected=hidden=true actual=hidden=True
+PASS g3 回归点:紧随其后的 Escape **keyup** 不得把菜单弹回来: expected=hidden=true actual=hidden=True
+PASS g3 后续 ArrowRight 的 keyup 不重开菜单: expected=hidden=true actual=hidden=True
+PASS g3 再按一次 Escape 仍不重开菜单: expected=hidden=true actual=hidden=True
+PASS g3 关闭后选区仍存活(D-08 禁清空选区;清空式修法会在这里变红): expected=非折叠且长度>0 actual=collapsed=False len=12
+PASS g3 变异控制:守卫置空后同一 keyup 重新弹开菜单(证明上面的绿不是恒绿): expected=hidden=false(菜单弹回) actual=hidden=False
+PASS g3 正向控制:新的选区仍能弹出菜单(守卫按选区身份自清,菜单未被锁死): expected=hidden=false actual={'menuHidden': False, 'selLen': 12, 'selText': '1. 批注回应(2/2)', 'collapsed': False, 'active': 'round-doc', 'dismissedGuardSet': True}
+INFO g3 选区来源: 真实鼠标拖拽;键盘来源(Shift+方向键)本环境不可自动化 ⇒ 人工项
+
+=== g4: F1-d 成功路径 —— 选档成功后焦点交还 #btn-continue-check ===
+INFO g4 缺陷前提:点击前焦点在弹窗内: btn-tier-loose
+PASS g4 实例 1/2 选档后 #tier-modal 已隐藏: expected=hidden=true actual=hidden=True
+PASS g4 选档成功后焦点交还 #btn-continue-check(F1-d 成功路径): expected=btn-continue-check actual=btn-continue-check
+PASS g4 判别控制:交还调用被置空后焦点不再落在 #btn-continue-check(证明实例 1 的绿非恒绿): expected=active != btn-continue-check actual=BODY
+
+=== 逐项结论 ===
+item g1: PASS  (21 条断言,0 FAIL,0 BLOCKED)
+item g2: PASS  (39 条断言,0 FAIL,0 BLOCKED)
+item g3: PASS  (10 条断言,0 FAIL,0 BLOCKED)
+item g4: PASS  (3 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)
+
+[exit=0]

@@ -1,0 +1,134 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-xq3hdzxm(--keep 可保留)
+INFO browser: Playwright 自带 chromium(revision 1243,已缓存,零下载)
+INFO browser.version: 153.0.8010.12
+
+=== UAT 8: L-1 徽标收口 —— 流内 badge + sticky 表头(D-06)===
+INFO item8 样本: p1(会话流活动态,#state-badge 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-xq3hdzxm/p1-ugv4m0i8/p1
+PASS [p1] #state-badge position == static: expected=static actual=static  # L-1 承重约束 1:流内机制一字不动
+PASS [p1] #state-badge right 无声明: expected=auto actual=auto  # L-1 承重约束 1:不得给它加 right(加回浮层会复活 LAYOUT-03 的遮挡)
+INFO item8 [768px] badge × banner 原始 rect: badge={'left': 638.96875, 'right': 739.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} display=inline | banner={'left': 285.34375, 'right': 482.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27} display=block
+PASS [p1 @768px] #state-badge 与 #stream-banner 不相交: expected=不相交 actual=badge={'left': 638.96875, 'right': 739.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} banner={'left': 285.34375, 'right': 482.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27}  # L-1 的门断言几何不相交,不是「横幅不存在」
+INFO item8 [1024px] badge × banner 原始 rect: badge={'left': 894.96875, 'right': 995.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} display=inline | banner={'left': 413.34375, 'right': 610.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27} display=block
+PASS [p1 @1024px] #state-badge 与 #stream-banner 不相交: expected=不相交 actual=badge={'left': 894.96875, 'right': 995.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} banner={'left': 413.34375, 'right': 610.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27}  # L-1 的门断言几何不相交,不是「横幅不存在」
+INFO item8 [1280px] badge × banner 原始 rect: badge={'left': 1150.96875, 'right': 1251.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} display=inline | banner={'left': 541.34375, 'right': 738.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27} display=block
+PASS [p1 @1280px] #state-badge 与 #stream-banner 不相交: expected=不相交 actual=badge={'left': 1150.96875, 'right': 1251.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} banner={'left': 541.34375, 'right': 738.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27}  # L-1 的门断言几何不相交,不是「横幅不存在」
+INFO item8 sticky 原始数值: scrollTop=4348 scrollHeight=5248 clientHeight=900 header={'top': 0, 'bottom': 34, 'left': 1009, 'right': 1440} panel={'top': 0, 'bottom': 900, 'left': 1008, 'right': 1440}
+PASS [p1] 滚动到底后 #doc-panel-header 仍落在 #doc-panel 可视区内: expected=header.bottom > panel.top 且 header.top < panel.bottom actual=header={'top': 0, 'bottom': 34, 'left': 1009, 'right': 1440} panel={'top': 0, 'bottom': 900, 'left': 1008, 'right': 1440}  # sticky 生效:标题行钉在面板顶部而非随正文滚走
+PASS [p1] sticky 把 #doc-panel-header 钉在 #doc-panel 顶部(<=1px): expected=|header.top - panel.top| <= 1px actual=0.000px
+INFO item8 L-2 文档级溢出 @1440px(波次 2 之后:L-3 / L-4 已落地;面板内部横向滚动条不计入): scrollWidth=1440 clientWidth=1440 overflow=0px docPanelWidth=432
+PASS [@1440px] 文档级 scrollWidth <= clientWidth: expected=scrollWidth <= clientWidth actual=1440 <= 1440  # LAYOUT-02 的字面承诺:≥1024px 无横向溢出
+PASS [@1440px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界: expected=<= 432.0px actual=432.0px  # L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽(文档级 scrollWidth 对该失效模式结构性失明)
+INFO item8 L-2 文档级溢出 @1024px(波次 2 之后:L-3 / L-4 已落地;面板内部横向滚动条不计入): scrollWidth=1024 clientWidth=1024 overflow=0px docPanelWidth=340
+PASS [@1024px] 文档级 scrollWidth <= clientWidth: expected=scrollWidth <= clientWidth actual=1024 <= 1024  # LAYOUT-02 的字面承诺:≥1024px 无横向溢出
+PASS [@1024px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界: expected=<= 340.0px actual=340.0px  # L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽(文档级 scrollWidth 对该失效模式结构性失明)
+INFO item8 L-2 文档级溢出 @768px(波次 2 之后:L-3 / L-4 已落地;面板内部横向滚动条不计入): scrollWidth=768 clientWidth=768 overflow=0px docPanelWidth=340
+INFO item8 L-2 @768px: 保持只读诊断(768px 处的承诺是「无内容遮挡」,该承诺未被覆盖:badge × banner 断言只测 badge 那一对,banner × #doc-panel-header 的 h1 不在覆盖范围内 —— 显式「未覆盖」。实测:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,重叠 42×16px,相交带 768–855px。这是已知缺口(既未满足、也未断言),收窄已登记在 idi-06-UI-SPEC.md §L-2(A-10 行))
+PASS [@768px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界: expected=<= 340.0px actual=340.0px  # L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽(文档级 scrollWidth 对该失效模式结构性失明)
+INFO item8 [static] L-2 守卫形态: frontend/style.css 里 '@media' 计数=1 命中行=[2034];Phase 7 的减弱动效媒体块 ⇒ 期望 1(L-2 的窄窗口守卫仍走「被实测推翻」支、仍未写出 —— 两者不是同一件事)
+PASS [static] frontend/style.css 的 @media 出现次数 == 决策(Phase 7 的 prefers-reduced-motion 块 ⇒ 1;L-2 的窄窗口守卫仍未写出): expected=1 actual=1  # 该断言读文件文本而非渲染结果,与几何断言互补。删掉那个减弱动效媒体块必须把本常量改回 0;L-2 的窄窗口守卫若日后实测证成并写出,须同步改本常量与 idi-06-03-SUMMARY.md 的决策记录
+INFO item8 [p1] L-5 clearance 普查(可聚焦元素 × 最近裁剪祖先 × 实测 clearance;阈值 4px): 18 对
+INFO item8 [p1] L-5 clearance: #message-input × #main-pane = 136.0px visible=True intersects=True rect={'left': 136, 'top': 413, 'right': 802, 'bottom': 465, 'width': 666, 'height': 52}
+INFO item8 [p1] L-5 clearance: #btn-send × #main-pane = 136.0px visible=True intersects=True rect={'left': 810, 'top': 413, 'right': 872, 'bottom': 465, 'width': 62, 'height': 52}
+INFO item8 [p1] L-5 clearance: #check-switcher × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-continue-check × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-continue-repair × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #ai-route-select × #main-pane = 46.0px visible=True intersects=True rect={'left': 136, 'top': 820, 'right': 288, 'bottom': 854, 'width': 152, 'height': 34}
+INFO item8 [p1] L-5 clearance: #project-path-input × #main-pane = 46.0px visible=True intersects=True rect={'left': 296, 'top': 820, 'right': 586, 'bottom': 854, 'width': 290, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-ping × #main-pane = 46.0px visible=True intersects=True rect={'left': 594, 'top': 820, 'right': 700, 'bottom': 854, 'width': 106, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-process-round × #main-pane = 46.0px visible=True intersects=True rect={'left': 708, 'top': 820, 'right': 814, 'bottom': 854, 'width': 106, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-abort × #main-pane = 46.0px visible=True intersects=True rect={'left': 822, 'top': 820, 'right': 872, 'bottom': 854, 'width': 50, 'height': 34}
+INFO item8 [p1] L-5 clearance: #enter-path-input × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 68, 'right': 1342, 'bottom': 102, 'width': 293, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-enter × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1350, 'top': 68, 'right': 1400, 'bottom': 102, 'width': 50, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-divergence × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 185.9375, 'right': 1267.34375, 'bottom': 223.9375, 'width': 218.34375, 'height': 38}
+INFO item8 [p1] L-5 clearance: #btn-approve-draft × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 373.9375, 'right': 1139, 'bottom': 411.9375, 'width': 90, 'height': 38}
+INFO item8 [p1] L-5 clearance: #round-switcher × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #round-doc × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-authorize × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-start-writing × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-6 命中区普查(可交互元素 rect;阈值 24×24): 28 个
+INFO item8 [p1] L-6 命中区: #message-input w=666.0 h=52.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-send w=62.0 h=52.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #check-switcher w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-continue-check w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-continue-repair w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #ai-route-select w=152.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #project-path-input w=290.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-ping w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-process-round w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-abort w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #enter-path-input w=293.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-enter w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-divergence w=218.3 h=38.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-approve-draft w=90.0 h=38.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #round-switcher w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-authorize w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-start-writing w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-permission-allow w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-permission-deny w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #confirm-word-input w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-confirm-authorize w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-confirm-cancel w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-tier-loose w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-tier-strict w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-mission-close w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-annotate w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-plain-ask w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #cli-recheck-btn w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-5 clearance 普查(可聚焦元素 × 最近裁剪祖先 × 实测 clearance;阈值 4px): 19 对
+INFO item8 [p3] L-5 clearance: #message-input × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-send × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: summary × #main-pane = 115.0px visible=True intersects=True rect={'left': 149, 'top': 115, 'right': 859, 'bottom': 139, 'width': 710, 'height': 24}
+INFO item8 [p3] L-5 clearance: #check-switcher × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-continue-check × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-continue-repair × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #ai-route-select × #main-pane = 136.0px visible=True intersects=True rect={'left': 136, 'top': 274, 'right': 288, 'bottom': 308, 'width': 152, 'height': 34}
+INFO item8 [p3] L-5 clearance: #project-path-input × #main-pane = 274.0px visible=True intersects=True rect={'left': 296, 'top': 274, 'right': 586, 'bottom': 308, 'width': 290, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-ping × #main-pane = 274.0px visible=True intersects=True rect={'left': 594, 'top': 274, 'right': 700, 'bottom': 308, 'width': 106, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-process-round × #main-pane = 194.0px visible=True intersects=True rect={'left': 708, 'top': 274, 'right': 814, 'bottom': 308, 'width': 106, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-abort × #main-pane = 136.0px visible=True intersects=True rect={'left': 822, 'top': 274, 'right': 872, 'bottom': 308, 'width': 50, 'height': 34}
+INFO item8 [p3] L-5 clearance: #enter-path-input × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 66, 'right': 1342, 'bottom': 100, 'width': 293, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-enter × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1350, 'top': 66, 'right': 1400, 'bottom': 100, 'width': 50, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-divergence × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-approve-draft × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #round-switcher × #doc-panel = 110.8px visible=True intersects=True rect={'left': 1119.796875, 'top': 144, 'right': 1275.796875, 'bottom': 172, 'width': 156, 'height': 28}
+INFO item8 [p3] L-5 clearance: #round-doc × #doc-panel = -63.6px visible=True intersects=True rect={'left': 1049, 'top': 188, 'right': 1400, 'bottom': 963.640625, 'width': 351, 'height': 775.640625}
+INFO item8 [p3] L-5 clearance: #btn-authorize × #doc-panel = -119.6px visible=True intersects=False rect={'left': 1049, 'top': 979.640625, 'right': 1227, 'bottom': 1019.640625, 'width': 178, 'height': 40}
+INFO item8 [p3] L-5 clearance: #btn-start-writing × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-6 命中区普查(可交互元素 rect;阈值 24×24): 29 个
+INFO item8 [p3] L-6 命中区: #message-input w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-send w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: summary w=710.0 h=24.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #check-switcher w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-continue-check w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-continue-repair w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #ai-route-select w=152.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #project-path-input w=290.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-ping w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-process-round w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-abort w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #enter-path-input w=293.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-enter w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-divergence w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-approve-draft w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #round-switcher w=156.0 h=28.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-authorize w=178.0 h=40.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-start-writing w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-permission-allow w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-permission-deny w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #confirm-word-input w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-confirm-authorize w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-confirm-cancel w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-tier-loose w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-tier-strict w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-mission-close w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-annotate w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-plain-ask w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #cli-recheck-btn w=0.0 h=0.0 visible=False below24=None
+
+=== 逐项结论 ===
+item 8: PASS  (13 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)
+
+[exit=0]

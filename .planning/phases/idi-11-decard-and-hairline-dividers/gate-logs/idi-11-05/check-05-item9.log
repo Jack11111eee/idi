@@ -1,0 +1,46 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-nhqt0n3a(--keep 可保留)
+INFO browser: Playwright 自带 chromium(revision 1243,已缓存,零下载)
+INFO browser.version: 153.0.8010.12
+
+=== UAT 9: L-4 面板区滚动容器收敛(D-14)===
+INFO item9 样本: p1(会话流活动态,#session-panel / #ai-events 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-nhqt0n3a/p1-nqsc7yps/p1
+INFO item9 [p1] 面板区滚动者普查(实测数组): 3 个:['#main-pane', '#chat-messages', '#latest-check']
+PASS [p1] 面板区滚动者集合 == {#main-pane, #chat-messages, #latest-check}: expected=['#chat-messages', '#latest-check', '#main-pane'] actual=['#chat-messages', '#latest-check', '#main-pane']  # 口径取「恰好」而非「至多」:意外新增第四个滚动者会在这里 FAIL
+PASS [p1] 排除 #chat-messages(SC#3 明文豁免)后 == {#main-pane, #latest-check}: expected=['#latest-check', '#main-pane'] actual=['#latest-check', '#main-pane']  # D-14 第 1 条的字面读法:面板区内恰好两个滚动容器
+PASS [p1] #ai-events 计算 max-height == none: expected=none actual=none  # L-4:套娃第一层(55vh 限高 + 内滚动)已原地删除
+PASS [p1] #annotation-list 计算 max-height == none: expected=none actual=none  # L-4:套娃第二层(32vh 限高 + 内滚动)已原地删除
+PASS [p1] #chat-messages overflow-y == auto: expected=auto actual=auto  # D-12:输入行必须钉底,会话流滚动者按保留项对待
+INFO item9 [static] #latest-check 保留项护栏: frontend/style.css 里 'max-height: 30vh;' 计数=1 命中行=[1651]
+PASS [static] frontend/style.css 的 max-height: 30vh 声明计数 == 1: expected=1 actual=1  # 删掉它会去掉 #latest-check 的内部滚动、把裁决按钮推出视口 ⇒ 若要改口径,先更新本断言与 UI-SPEC §L-4 的保留理由
+INFO item9 [p1] 自动跟随原始读数: before=0 after=1721 scrollHeight=2646 clientHeight=900 pane=[0,900] last=[848,900] 末条='说话第 39 条自动跟随探针:把面板撑到可滚。\n'
+PASS [p1] 自动跟随:#main-pane 随应用自身的 renderEvent 滚到最新条目: expected=before=0 ∧ after>0 ∧ 末条 rect ⊆ #main-pane 可见盒 actual=after=1721 last=[848,900] pane=[0,900]  # 与 (b)「末条内容可达」的区别:(b) 先自设 c.scrollTop = scrollHeight 再读 rect,测显式滚动后可达;本条 JS 内零 scrollTop 赋值,测应用自身把新条目滚入视野
+INFO item9 [p1] #main-pane 末条内容可达 原始数值: scrollHeight=4966 clientHeight=900 scrollTop=4066 last=#ai-panel lastRect={'top': -3866, 'bottom': 900, 'left': 120, 'right': 888, 'width': 768, 'height': 4766} container={'top': 0, 'bottom': 900, 'left': 0, 'right': 1008, 'width': 1008, 'height': 900}
+PASS [p1] #main-pane 滚到底(scrollTop + clientHeight >= scrollHeight - 1): expected=>= 4965 actual=4966
+PASS [p1] #main-pane 末条子元素落在容器可视区内: expected=container.top <= last.bottom <= container.bottom + 1 actual=last.bottom=900 container=[0, 900]  # 内容末端可达:末条不被限高截断到可视区之外
+INFO item9 样本: checking(自检报告态,#checks-panel / #latest-check 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-nhqt0n3a/checking-xbqs2isk/checking
+INFO item9 [checking] #latest-check 末条内容可达 原始数值: scrollHeight=4585 clientHeight=268 scrollTop=4317 last=p lastRect={'top': 321.9375, 'bottom': 344.6875, 'left': 145, 'right': 863, 'width': 718, 'height': 22.75} container={'top': 90, 'bottom': 360, 'left': 136, 'right': 872, 'width': 736, 'height': 270}
+PASS [checking] #latest-check 滚到底(scrollTop + clientHeight >= scrollHeight - 1): expected=>= 4584 actual=4585
+PASS [checking] #latest-check 末条子元素落在容器可视区内: expected=container.top <= last.bottom <= container.bottom + 1 actual=last.bottom=344.6875 container=[90, 360]  # 内容末端可达:末条不被限高截断到可视区之外
+INFO item9 [p1] L-5 clearance 普查(全部原始行): 18 对:[('#message-input', '#main-pane', 136, True, True), ('#btn-send', '#main-pane', 136, True, True), ('#check-switcher', '#main-pane', 0, False, False), ('#btn-continue-check', '#main-pane', 0, False, False), ('#btn-continue-repair', '#main-pane', 0, False, False), ('#ai-route-select', '#main-pane', 46, True, True), ('#project-path-input', '#main-pane', 46, True, True), ('#btn-ping', '#main-pane', 46, True, True), ('#btn-process-round', '#main-pane', 46, True, True), ('#btn-abort', '#main-pane', 46, True, True), ('#enter-path-input', '#doc-panel', 40, True, True), ('#btn-enter', '#doc-panel', 40, True, True), ('#btn-divergence', '#doc-panel', 40, True, True), ('#btn-approve-draft', '#doc-panel', 40, True, True), ('#round-switcher', '#doc-panel', -1009, False, False), ('#round-doc', '#doc-panel', -1009, False, False), ('#btn-authorize', '#doc-panel', -1009, False, False), ('#btn-start-writing', '#doc-panel', -1009, False, False)]
+PASS [p1] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= 4px: expected=全部 >= 4px actual=共 11 行(另有 0 行内容区声明),未达标 []  # 4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)
+INFO item9 [p1] L-6 命中区普查(可见行;阈值 24×24): 11 个:[('#message-input', 666, 52), ('#btn-send', 62, 52), ('#ai-route-select', 152, 34), ('#project-path-input', 290, 34), ('#btn-ping', 106, 34), ('#btn-process-round', 106, 34), ('#btn-abort', 50, 34), ('#enter-path-input', 293, 34), ('#btn-enter', 50, 34), ('#btn-divergence', 218.34375, 38), ('#btn-approve-draft', 90, 38)]
+PASS [p1] 每个可交互元素的计算盒宽高均 >= 24px: expected=全部 >= 24px actual=共 11 行,未达标 []  # WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width 两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开
+INFO item9 [checking] L-5 clearance 普查(全部原始行): 18 对:[('#message-input', '#main-pane', 0, False, False), ('#btn-send', '#main-pane', 0, False, False), ('#check-switcher', '#main-pane', 52, True, True), ('#btn-continue-check', '#main-pane', 136, True, True), ('#btn-continue-repair', '#main-pane', 0, False, False), ('#ai-route-select', '#main-pane', 136, True, True), ('#project-path-input', '#main-pane', 296, True, True), ('#btn-ping', '#main-pane', 308, True, True), ('#btn-process-round', '#main-pane', 194, True, True), ('#btn-abort', '#main-pane', 136, True, True), ('#enter-path-input', '#doc-panel', 40, True, True), ('#btn-enter', '#doc-panel', 40, True, True), ('#btn-divergence', '#doc-panel', -1009, False, False), ('#btn-approve-draft', '#doc-panel', -1009, False, False), ('#round-switcher', '#doc-panel', -1009, False, False), ('#round-doc', '#doc-panel', 40, False, True), ('#btn-authorize', '#doc-panel', -1009, False, False), ('#btn-start-writing', '#doc-panel', -1009, False, False)]
+PASS [checking] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= 4px: expected=全部 >= 4px actual=共 9 行(另有 0 行内容区声明),未达标 []  # 4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)
+INFO item9 [checking] L-6 命中区普查(可见行;阈值 24×24): 9 个:[('#check-switcher', 736, 28), ('#btn-continue-check', 736, 34), ('#ai-route-select', 152, 34), ('#project-path-input', 290, 34), ('#btn-ping', 106, 34), ('#btn-process-round', 106, 34), ('#btn-abort', 50, 34), ('#enter-path-input', 293, 34), ('#btn-enter', 50, 34)]
+PASS [checking] 每个可交互元素的计算盒宽高均 >= 24px: expected=全部 >= 24px actual=共 9 行,未达标 []  # WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width 两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开
+INFO item9 样本: p3(批注面板可见态,#annotations-panel / #annotation-list 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-nhqt0n3a/p3-ysjz72dv/p3
+INFO item9 [p3] L-5 clearance 普查(全部原始行): 19 对:[('#message-input', '#main-pane', 0, False, False), ('#btn-send', '#main-pane', 0, False, False), ('summary', '#main-pane', 115, True, True), ('#check-switcher', '#main-pane', 0, False, False), ('#btn-continue-check', '#main-pane', 0, False, False), ('#btn-continue-repair', '#main-pane', 0, False, False), ('#ai-route-select', '#main-pane', 136, True, True), ('#project-path-input', '#main-pane', 274, True, True), ('#btn-ping', '#main-pane', 274, True, True), ('#btn-process-round', '#main-pane', 194, True, True), ('#btn-abort', '#main-pane', 136, True, True), ('#enter-path-input', '#doc-panel', 40, True, True), ('#btn-enter', '#doc-panel', 40, True, True), ('#btn-divergence', '#doc-panel', -1009, False, False), ('#btn-approve-draft', '#doc-panel', -1009, False, False), ('#round-switcher', '#doc-panel', 110.8, True, True), ('#round-doc', '#doc-panel', -63.6, True, True), ('#btn-authorize', '#doc-panel', -119.6, True, False), ('#btn-start-writing', '#doc-panel', -1009, False, False)]
+INFO item9 [p3] L-5 声明集(内容区,不断言): [('#round-doc', '#doc-panel', 775.6, 900, -63.6)] —— 高度 >= 容器 padding 盒的 50% 即可聚焦内容区:环在浏览器滚入视野后必然贴边(见 L5_CONTENT_REGION_MIN_RATIO 的注释)
+PASS [p3] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= 4px: expected=全部 >= 4px actual=共 9 行(另有 1 行内容区声明),未达标 []  # 4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)
+INFO item9 [p3] L-6 命中区普查(可见行;阈值 24×24): 10 个:[('summary', 710, 24), ('#ai-route-select', 152, 34), ('#project-path-input', 290, 34), ('#btn-ping', 106, 34), ('#btn-process-round', 106, 34), ('#btn-abort', 50, 34), ('#enter-path-input', 293, 34), ('#btn-enter', 50, 34), ('#round-switcher', 156, 28), ('#btn-authorize', 178, 40)]
+INFO item9 [p3] 命中区断言的主要对象: <summary> 实测 [('summary', 710, 24)]
+PASS [p3] 每个可交互元素的计算盒宽高均 >= 24px: expected=全部 >= 24px actual=共 10 行,未达标 []  # WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width 两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开
+
+=== 逐项结论 ===
+item 9: PASS  (17 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)
+
+[exit=0]

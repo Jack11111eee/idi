@@ -1,0 +1,78 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi05-gap-1ceylb74(--keep 可保留)
+INFO browser.version: 153.0.8010.12
+
+=== g1: TYPE-01 三档标题字号严格降序(四宿主)===
+INFO g1 令牌解析: --text-3xl=28.0 --text-2xl=22.0 --text-lg=18.0
+PASS g1 令牌序 --text-3xl > --text-2xl > --text-lg: expected=h1>h2>h3 actual=28.0 > 22.0 > 18.0
+PASS [p1] #draft-content 三档严格降序 h1>h2>h3: expected=h1>h2>h3 actual=28px > 22px > 18px
+PASS [p1] #draft-content h3 > chrome 标题(.panel-header h2): expected=>14.0px actual=18px
+PASS [p1] #brainstorm-content 三档严格降序 h1>h2>h3: expected=h1>h2>h3 actual=28px > 22px > 18px
+PASS [p1] #brainstorm-content h3 > chrome 标题(.panel-header h2): expected=>14.0px actual=18px
+PASS [p1] #round-doc 三档严格降序 h1>h2>h3: expected=h1>h2>h3 actual=28px > 22px > 18px
+PASS [p1] #round-doc h3 > chrome 标题(.panel-header h2): expected=>14.0px actual=18px
+PASS [p1] #latest-check 三档严格降序 h1>h2>h3: expected=h1>h2>h3 actual=28px > 22px > 18px
+PASS [p1] #latest-check h3 > chrome 标题(.panel-header h2): expected=>14.0px actual=18px
+
+=== g2: VISUAL-03 文档 h1 是全屏最大字号 ===
+INFO g2 文档 h1 字号: 28.0px
+INFO g2 可见元素字号 Top3: [('P#chat-greeting', 24), ('H2', 22), ('SPAN.collapse-indicator', 20)]
+PASS g2 全屏最大字号是文档 h1(无可见元素 >= 它): expected=<28.0px actual=max_other=24px @ P#chat-greeting
+PASS g2 容器标签 #doc-panel-header h1 严格小于文档 h1: expected=<28.0px actual=14.0px
+
+=== g3: VISUAL-04 活动面板竖条几何(三态)===
+INFO g3 [p1] #session-panel 几何: radiusTL=0px h2Delta=10 scrollW=768 clientW=768
+PASS [p1] #session-panel 竖条 3px 带无被不透明子元素遮挡: expected=0 个遮挡者 actual=[]
+PASS [p1] #session-panel 标题贴左缘且越过竖条(h2Delta >= 3): expected=>=3px actual=10px
+PASS [p1] #session-panel 标题行不横向溢出: expected=scrollW<=clientW actual=768<=768
+INFO g3 [p3] #annotations-panel 几何: radiusTL=0px h2Delta=10 scrollW=768 clientW=768
+PASS [p3] #annotations-panel 竖条 3px 带无被不透明子元素遮挡: expected=0 个遮挡者 actual=[]
+PASS [p3] #annotations-panel 标题贴左缘且越过竖条(h2Delta >= 3): expected=>=3px actual=10px
+PASS [p3] #annotations-panel 标题行不横向溢出: expected=scrollW<=clientW actual=768<=768
+INFO g3 [checking] #checks-panel 几何: radiusTL=0px h2Delta=10 scrollW=768 clientW=768
+PASS [checking] #checks-panel 竖条 3px 带无被不透明子元素遮挡: expected=0 个遮挡者 actual=[]
+PASS [checking] #checks-panel 标题贴左缘且越过竖条(h2Delta >= 3): expected=>=3px actual=10px
+PASS [checking] #checks-panel 标题行不横向溢出: expected=scrollW<=clientW actual=768<=768
+PASS [p1] 长标题下竖条声明未变: expected=rgb(13, 116, 206) 3px 0px 0px 0px inset actual=rgb(13, 116, 206) 3px 0px 0px 0px inset
+PASS [p1] 长标题下标题仍贴左缘(h2Delta >= 3): expected=>=3px actual=10px
+PASS [p1] 长标题下标题行不横向溢出: expected=scrollW<=clientW actual=768<=768
+INFO g3 圆角观察: border-top-left-radius=0px —— inset 阴影沿圆角裁切,竖条顶端在圆角过渡区收窄;是否「视觉断裂」属 E4/E5 人工判读项
+
+=== g4: VISUAL-05 掩码字形不撑高行盒 ===
+INFO g4 .annotation-quote: {'withGlyph': 20, 'without': 20, 'restored': 20, 'glyphH': '12px', 'glyphW': '12px', 'glyphVA': '-2px', 'glyphDisplay': 'inline-block', 'lineHeight': 'normal'}
+PASS g4 .annotation-quote 字形不撑高行盒(差分高度相等): expected=20px actual=with=20 without=20
+PASS g4 .annotation-quote 摘掉抑制样式后高度复原: expected=20px actual=20px
+PASS g4 .annotation-quote 字形为盒模型(display:inline-block,12×12): expected=inline-block 12px/12px actual=inline-block 12pxx12px
+INFO g4 .verdict-location: {'withGlyph': 20, 'without': 20, 'restored': 20, 'glyphH': '12px', 'glyphW': '12px', 'glyphVA': '-2px', 'glyphDisplay': 'inline-block', 'lineHeight': 'normal'}
+PASS g4 .verdict-location 字形不撑高行盒(差分高度相等): expected=20px actual=with=20 without=20
+PASS g4 .verdict-location 字形为盒模型(display:inline-block,12×12): expected=inline-block 12px/12px actual=inline-block 12pxx12px
+
+=== g5: VISUAL-01/E3 最窄面板 340px 下 #btn-authorize 不换行不裁切 ===
+INFO g5 实测: {'panelWidth': 340, 'bodyClientW': 339, 'fontSize': '16px', 'btnWidth': 178, 'btnHeight': 40, 'scrollW': 176, 'clientW': 176, 'lineBoxes': 1, 'rects': [{'w': 144, 'h': 17}]}
+PASS g5 面板确已压到最窄值 340px: expected=340px actual=340px
+PASS g5 #btn-authorize 字号为 var(--text-md) 的解析值(16px): expected=16px actual=16px
+PASS g5 文本单行(仅 1 个 line box): expected=1 actual=1
+PASS g5 不横向裁切(scrollWidth <= clientWidth): expected=scrollW<=clientW actual=176<=176
+PASS g5 按钮宽度不超出面板内容宽: expected=<=339px actual=178px
+
+=== g6: VISUAL-04 #ai-panel 折叠点击穿透 ===
+INFO g6 #ai-panel: {'before': {'toggled': False, 'display': 'block', 'indicator': '▾', 'headerShadow': 'none'}, 'afterFirst': {'toggled': True, 'display': 'none', 'indicator': '▸', 'headerShadow': 'none'}, 'afterSecond': {'toggled': False, 'display': 'block', 'indicator': '▾', 'headerShadow': 'none'}}
+PASS g6 初始态未折叠且面板体可见: expected=collapsed=False display!=none actual={'toggled': False, 'display': 'block', 'indicator': '▾', 'headerShadow': 'none'}
+PASS g6 首次点击 → .collapsed 生效、面板体 display:none: expected=collapsed=True display=none actual={'toggled': True, 'display': 'none', 'indicator': '▸', 'headerShadow': 'none'}
+PASS g6 首次点击 → 指示器字形切到 ▸: expected=▸ actual=▸
+PASS g6 二次点击 → 复原(折叠态解除、面板体可见、字形 ▾): expected=collapsed=False display!=none ▾ actual={'toggled': False, 'display': 'block', 'indicator': '▾', 'headerShadow': 'none'}
+PASS g6 折叠/展开全程标题行无竖条(box-shadow 恒 none): expected=none ×3 actual=none / none / none
+PASS g6 文档面板折叠往返一致(#doc-panel.collapsed 切换、正文隐藏): expected=True/none → False/可见 actual={'toggled': True, 'display': 'none', 'indicator': '▸', 'headerShadow': 'none'} → {'toggled': False, 'display': 'block', 'indicator': '▾', 'headerShadow': 'none'}
+PASS g6 文档面板标题行无竖条(box-shadow 恒 none): expected=none actual=none
+
+=== 逐项结论 ===
+item g1: PASS  (9 条断言,0 FAIL,0 BLOCKED)
+item g2: PASS  (2 条断言,0 FAIL,0 BLOCKED)
+item g3: PASS  (12 条断言,0 FAIL,0 BLOCKED)
+item g4: PASS  (5 条断言,0 FAIL,0 BLOCKED)
+item g5: PASS  (5 条断言,0 FAIL,0 BLOCKED)
+item g6: PASS  (7 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)
+
+[exit=0]

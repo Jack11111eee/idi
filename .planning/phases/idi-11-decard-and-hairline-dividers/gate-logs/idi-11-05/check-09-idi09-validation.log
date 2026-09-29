@@ -1,0 +1,193 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-09-gate-rptvfua_(--keep 可保留)
+INFO browser.version: 153.0.8010.12
+
+=== c1: 左栏 4 个 section 的连续面(REG-01 / SURF-01 / SURF-02)===
+PASS c1 [源码] 围栏内 --color-surface-card 残留计数 == 0(含注释): expected=== 0 actual=0  # 读 DESIGN TOKENS 围栏内的**全文含注释**(子串计数):只删声明行不够,点名它的注释也会让计数非零(D-04 / Hard Rule 5;Phase 10 的 --radius-lg 先例)。这不是通用围栏消费断言 —— 通用断言属 G2,不在 v1.16 范围
+PASS c1 [源码] 围栏内 --shadow-card 残留计数 == 0(含注释): expected=== 0 actual=0  # 读 DESIGN TOKENS 围栏内的**全文含注释**(子串计数):只删声明行不够,点名它的注释也会让计数非零(D-04 / Hard Rule 5;Phase 10 的 --radius-lg 先例)。这不是通用围栏消费断言 —— 通用断言属 G2,不在 v1.16 范围
+PASS c1 [令牌] 被删令牌 --color-surface-card 已不可解析(解析值 None): expected=None actual=None  # 被删令牌的探测器:它若还能解析出值,说明删漏了或消费者没搬完。令牌未声明按 FAIL 计,不得降级为 BLOCKED
+PASS c1 [令牌] 被删令牌 --shadow-card 已不可解析(解析值 None): expected=None actual=None  # 被删令牌的探测器:它若还能解析出值,说明删漏了或消费者没搬完。令牌未声明按 FAIL 计,不得降级为 BLOCKED
+INFO c1 body 计算 background-color 原始读数(统一面的实际绘制值): rgb(255, 255, 255)
+INFO c1 #session-panel 原始读数: background-color=rgb(255, 255, 255) box-shadow=none corner-radii=['0px', '0px', '0px', '0px'] border-widths=['0px', '0px', '1px', '0px']
+PASS [p1] #session-panel 计算 box-shadow == none(不绘制阴影): expected=none actual=none  # Phase 9 的卡片阴影随去卡片化整段作废
+PASS [p1] #session-panel 计算 border-top-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #session-panel 计算 border-top-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #session-panel 计算 border-bottom-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #session-panel 计算 border-bottom-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #session-panel 计算底色 == body 计算底色(同一份读数): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 连续面:面板与页面同色,屏幕上不再有可辨的灰底与 elevation 差(SURF-02)
+PASS [p1] #session-panel 计算底色 == rgb(255, 255, 255)(写死字面量): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白
+PASS [p1] #session-panel 计算 border-bottom-width == 1px(横线): expected=1px actual=1px
+PASS [p1] #session-panel 计算 border-top-width == 0px(横线只落下边): expected=0px actual=0px
+PASS [p1] #session-panel 计算 border-right-width == 0px(横线只落下边): expected=0px actual=0px
+PASS [p1] #session-panel 计算 border-left-width == 0px(横线只落下边): expected=0px actual=0px
+INFO c1 #annotations-panel 原始读数: background-color=rgb(255, 255, 255) box-shadow=none corner-radii=['0px', '0px', '0px', '0px'] border-widths=['0px', '0px', '1px', '0px']
+PASS [p1] #annotations-panel 计算 box-shadow == none(不绘制阴影): expected=none actual=none  # Phase 9 的卡片阴影随去卡片化整段作废
+PASS [p1] #annotations-panel 计算 border-top-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #annotations-panel 计算 border-top-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #annotations-panel 计算 border-bottom-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #annotations-panel 计算 border-bottom-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #annotations-panel 计算底色 == body 计算底色(同一份读数): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 连续面:面板与页面同色,屏幕上不再有可辨的灰底与 elevation 差(SURF-02)
+PASS [p1] #annotations-panel 计算底色 == rgb(255, 255, 255)(写死字面量): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白
+PASS [p1] #annotations-panel 计算 border-bottom-width == 1px(横线): expected=1px actual=1px
+PASS [p1] #annotations-panel 计算 border-top-width == 0px(横线只落下边): expected=0px actual=0px
+PASS [p1] #annotations-panel 计算 border-right-width == 0px(横线只落下边): expected=0px actual=0px
+PASS [p1] #annotations-panel 计算 border-left-width == 0px(横线只落下边): expected=0px actual=0px
+INFO c1 #checks-panel 原始读数: background-color=rgb(255, 255, 255) box-shadow=none corner-radii=['0px', '0px', '0px', '0px'] border-widths=['0px', '0px', '1px', '0px']
+PASS [p1] #checks-panel 计算 box-shadow == none(不绘制阴影): expected=none actual=none  # Phase 9 的卡片阴影随去卡片化整段作废
+PASS [p1] #checks-panel 计算 border-top-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #checks-panel 计算 border-top-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #checks-panel 计算 border-bottom-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #checks-panel 计算 border-bottom-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #checks-panel 计算底色 == body 计算底色(同一份读数): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 连续面:面板与页面同色,屏幕上不再有可辨的灰底与 elevation 差(SURF-02)
+PASS [p1] #checks-panel 计算底色 == rgb(255, 255, 255)(写死字面量): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白
+PASS [p1] #checks-panel 计算 border-bottom-width == 1px(横线): expected=1px actual=1px
+PASS [p1] #checks-panel 计算 border-top-width == 0px(横线只落下边): expected=0px actual=0px
+PASS [p1] #checks-panel 计算 border-right-width == 0px(横线只落下边): expected=0px actual=0px
+PASS [p1] #checks-panel 计算 border-left-width == 0px(横线只落下边): expected=0px actual=0px
+INFO c1 #ai-panel 原始读数: background-color=rgb(255, 255, 255) box-shadow=none corner-radii=['0px', '0px', '0px', '0px'] border-widths=['0px', '0px', '0px', '0px']
+PASS [p1] #ai-panel 计算 box-shadow == none(不绘制阴影): expected=none actual=none  # Phase 9 的卡片阴影随去卡片化整段作废
+PASS [p1] #ai-panel 计算 border-top-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #ai-panel 计算 border-top-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #ai-panel 计算 border-bottom-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #ai-panel 计算 border-bottom-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读**长手**不读简写:简写在多值规则体上会被 Chrome 序列化成三值,不可断言
+PASS [p1] #ai-panel 计算底色 == body 计算底色(同一份读数): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 连续面:面板与页面同色,屏幕上不再有可辨的灰底与 elevation 差(SURF-02)
+PASS [p1] #ai-panel 计算底色 == rgb(255, 255, 255)(写死字面量): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白
+PASS [p1] #ai-panel 计算 border-top-width == 0px(DOM 末位 section 无横线): expected=0px actual=0px  # 规则键控于非 DOM 末子元素 ⇒ 末位 section 四条边全 0px
+PASS [p1] #ai-panel 计算 border-right-width == 0px(DOM 末位 section 无横线): expected=0px actual=0px  # 规则键控于非 DOM 末子元素 ⇒ 末位 section 四条边全 0px
+PASS [p1] #ai-panel 计算 border-bottom-width == 0px(DOM 末位 section 无横线): expected=0px actual=0px  # 规则键控于非 DOM 末子元素 ⇒ 末位 section 四条边全 0px
+PASS [p1] #ai-panel 计算 border-left-width == 0px(DOM 末位 section 无横线): expected=0px actual=0px  # 规则键控于非 DOM 末子元素 ⇒ 末位 section 四条边全 0px
+INFO c1 对照组 button 原始读数: border-top-left-radius=999px border-top-width=1px box-shadow=none
+PASS [p1] 对照组 button(全局按钮族)计算 border-top-left-radius != 0px: expected=!= 0px actual=999px  # 去卡片化严格限于五个容器:表单控件与弹窗卡片仍有各自的圆角
+PASS [p1] 对照组 button(全局按钮族)计算 border-top-width != 0px: expected=!= 0px actual=1px  # 该控件承载一条 resting border:1px solid var(--color-border-strong)
+INFO c1 对照组 #project-path-input 原始读数: border-top-left-radius=8px border-top-width=1px box-shadow=none
+PASS [p1] 对照组 #project-path-input(AI 面板的路径输入框)计算 border-top-left-radius != 0px: expected=!= 0px actual=8px  # 去卡片化严格限于五个容器:表单控件与弹窗卡片仍有各自的圆角
+PASS [p1] 对照组 #project-path-input(AI 面板的路径输入框)计算 border-top-width != 0px: expected=!= 0px actual=1px  # 该控件承载一条 resting border:1px solid var(--color-border-strong)
+INFO c1 对照组 #check-switcher 原始读数: border-top-left-radius=8px border-top-width=1px box-shadow=none
+PASS [p1] 对照组 #check-switcher(核查报告切换 select)计算 border-top-left-radius != 0px: expected=!= 0px actual=8px  # 去卡片化严格限于五个容器:表单控件与弹窗卡片仍有各自的圆角
+PASS [p1] 对照组 #check-switcher(核查报告切换 select)计算 border-top-width != 0px: expected=!= 0px actual=1px  # 该控件承载一条 resting border:1px solid var(--color-border-strong)
+INFO c1 对照组 #ai-route-select 原始读数: border-top-left-radius=8px border-top-width=1px box-shadow=none
+PASS [p1] 对照组 #ai-route-select(AICaller 路线 select)计算 border-top-left-radius != 0px: expected=!= 0px actual=8px  # 去卡片化严格限于五个容器:表单控件与弹窗卡片仍有各自的圆角
+PASS [p1] 对照组 #ai-route-select(AICaller 路线 select)计算 border-top-width != 0px: expected=!= 0px actual=1px  # 该控件承载一条 resting border:1px solid var(--color-border-strong)
+INFO c1 对照组 .overlay-card 原始读数: border-top-left-radius=10px border-top-width=0px box-shadow=rgba(0, 0, 0, 0.2) 0px 8px 30px 0px
+PASS [p1] 对照组 .overlay-card(弹窗卡片(无 resting border,靠圆角 + elevation 取证))计算 border-top-left-radius != 0px: expected=!= 0px actual=10px  # 去卡片化严格限于五个容器:表单控件与弹窗卡片仍有各自的圆角
+PASS [p1] 对照组 .overlay-card(弹窗卡片(无 resting border,靠圆角 + elevation 取证))计算 box-shadow != none: expected=!= none actual=rgba(0, 0, 0, 0.2) 0px 8px 30px 0px  # 它**从未声明过 border**(计算 border-top-width 恒为 0px,改动前后都一样),故它的反向证据是 elevation 仍在:--shadow-overlay
+INFO c1 #session-panel .panel-header 活动标记原始读数: rgb(13, 116, 206) 3px 0px 0px 0px inset
+PASS [p1] #session-panel .panel-header 活动标记存活(inset 3px 0px 竖条): expected=含 inset 与 3px 0px actual=rgb(13, 116, 206) 3px 0px 0px 0px inset  # 去卡片化后仅存的活动态视觉线索,不得被本次改动波及;.panel-header 的圆角已在 D-11-7 归零,故它不进交互控件对照组
+
+=== c2: #doc-panel 的单边竖线 + sticky 表头(REG-01 / DIV-01)===
+INFO c2 令牌解析: --color-border-subtle=rgb(217, 217, 217)
+INFO c2 #doc-panel 原始读数: background-color=rgb(255, 255, 255) box-shadow=none overflow-y=auto corner-radii=['0px', '0px', '0px', '0px']
+INFO c2 #doc-panel 四条边框宽度原始读数: top=0px / right=0px / bottom=0px / left=1px
+INFO c2 #doc-panel border-left 原始读数: 1px solid rgb(217, 217, 217)
+PASS [p1] #doc-panel 计算 box-shadow == none(不绘制阴影): expected=none actual=none  # Phase 9 的四边卡片阴影随去卡片化整段作废
+PASS [p1] #doc-panel 计算 border-top-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读长手不读简写(简写在多值规则体上会被 Chrome 序列化成三值)
+PASS [p1] #doc-panel 计算 border-top-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读长手不读简写(简写在多值规则体上会被 Chrome 序列化成三值)
+PASS [p1] #doc-panel 计算 border-bottom-left-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读长手不读简写(简写在多值规则体上会被 Chrome 序列化成三值)
+PASS [p1] #doc-panel 计算 border-bottom-right-radius == 0px(不绘制圆角): expected=0px actual=0px  # 读长手不读简写(简写在多值规则体上会被 Chrome 序列化成三值)
+PASS [p1] #doc-panel 计算 border-left-width == 1px(竖线): expected=1px actual=1px
+PASS [p1] #doc-panel 计算 border-top-width == 0px(单边,非四边): expected=0px actual=0px  # 四边边界收成单边竖线(D-11-9);残留的顶侧边框会顶破 check-05 --item 8 的 sticky 容差
+PASS [p1] #doc-panel 计算 border-right-width == 0px(单边,非四边): expected=0px actual=0px  # 四边边界收成单边竖线(D-11-9);残留的顶侧边框会顶破 check-05 --item 8 的 sticky 容差
+PASS [p1] #doc-panel 计算 border-bottom-width == 0px(单边,非四边): expected=0px actual=0px  # 四边边界收成单边竖线(D-11-9);残留的顶侧边框会顶破 check-05 --item 8 的 sticky 容差
+PASS [p1] #doc-panel 计算 border-left-style == solid: expected=solid actual=solid
+PASS [p1] #doc-panel 计算 border-left-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 线取既有的语义令牌 gray-6 ⇒ 零新增令牌、零新增颜色值(D-11-8)
+PASS [p1] #doc-panel 计算 border-left-color == gray-6 字面量: expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 与上一条互补:只跟令牌比是**自指**的 —— 把该令牌换成 --color-border(gray-7)会让两侧一起变、恒过,而那正是 D-11-8 显式否决的备选。这一条把「线是浅档」钉死在 gray-6,使那个备选对本门可见
+PASS [p1] #doc-panel 计算 overflow-y == auto(承重的滚动契约): expected=auto actual=auto  # L-1 的 sticky 表头依赖 #doc-panel 仍是最近的可滚祖先
+INFO c2 #doc-panel-header 原始读数: position=sticky top=0px background-color=rgb(255, 255, 255)
+PASS [p1] #doc-panel-header 计算 position == sticky: expected=sticky actual=sticky
+PASS [p1] #doc-panel-header 计算 top == 0px: expected=0px actual=0px
+PASS [p1] #doc-panel-header 计算 background-color 非透明(sticky 遮挡前提): expected=非 rgba(0, 0, 0, 0) actual=rgb(255, 255, 255)  # 不加背景则滚动正文从标题行底下穿过 —— 背景声明是必需的,不是可选
+PASS [p1] #doc-panel-header 计算 background-color == body 计算底色(归属统一面): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # Phase 11 只改它的归属令牌:表头底色与统一面同值,不再取卡片令牌
+PASS [p1] #doc-panel 计算底色 == body 计算底色(统一面): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 五个容器统一面的一部分;面板被重新上色时这一条必须能失败
+PASS [p1] #doc-panel 计算底色 == rgb(255, 255, 255)(写死字面量): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 与上一条互补:只跟 body 比会跟着令牌一起变;这一条把统一面钉死在白
+
+=== c3: 两级刻度 —— 统一面 == body 底色,内陷面严格更暗 ===
+INFO c3 body 计算 background-color 原始读数: rgb(255, 255, 255)
+INFO c3 统一面 --color-surface-page 解析值: rgb(255, 255, 255)
+INFO c3 内陷面 --color-surface 解析值: rgb(249, 249, 249)
+PASS [p1] --color-surface-page 已声明且可解析(堵住 ok() 的 None-期望侧降级): expected=非 None actual=rgb(255, 255, 255)  # ok() 在期望侧为 None 时记 BLOCKED(exit 2,本项目当良性码)—— 令牌缺失必须是 FAIL,不是 BLOCKED
+PASS [p1] body 计算底色 == --color-surface-page 解析值(底色来自令牌): expected=== rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 等值复核:证明底色来自令牌而不是硬编码的 rgb()。少了这条,把 body 写成字面量再删掉令牌声明也能全绿
+PASS [p1] body 计算底色 == rgb(255, 255, 255)(统一面写死字面量): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # 与上一条互补:两侧都写死,防止「令牌被改坏而消费者仍接线」时假绿
+PASS [p1] body 计算底色 != rgb(240, 240, 240)(Phase 9 的 gray-3 页面档已退场): expected=!= rgb(240, 240, 240) actual=rgb(255, 255, 255)  # Phase 11 把卡片档并回页面档:旧的三级刻度叙事(gray-3 页面 < gray-2 内陷 < 白卡片)改写成**两级**(统一面白 > 内陷面 gray-2)—— 「统一」是把卡片档并回页面档,不是把所有层次压平
+PASS [p1] 内陷面 --color-surface 解析值 == rgb(249, 249, 249)(写死字面量): expected=== rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 与统一面同理:两侧都写死。少了这条,把内陷面令牌换成更暗的一档(例如旧gray-3)也能全绿 —— 亮度序的严格小于拦不住「更暗」
+INFO c3 统一面相对亮度: 1.000000
+INFO c3 内陷面相对亮度: 0.947307
+INFO c3 统一面 vs 内陷面 对比度比值(只读诊断,不判定): 1.0528
+PASS [p1] 内陷面相对亮度严格低于统一面(两级刻度未塌成一档): expected=lum(内陷面) < lum(统一面) actual=内陷面=0.947307 统一面=1.000000  # 严格小于(不是 <=):两档若相等,内陷面这一档就没有画出来
+
+=== c4: 灰缝归零 + 两条发丝线 + 竖线跨满几何 ===
+INFO c4 令牌解析: --color-border-subtle=rgb(217, 217, 217)
+INFO c4 #main-pane gap 原始读数: 0px
+PASS [p1] #main-pane 计算 gap == 0px(灰缝归零): expected=0px actual=0px  # Phase 9 把间隙当作卡片层次的载体(间隙里透出页面底色);Phase 11 里面板与页面同色,间隙不再承载任何东西,分区改由发丝线承担(SURF-03)
+INFO c4 竖线 #doc-panel border-left 原始读数: 1px rgb(217, 217, 217)
+PASS [p1] 竖线 #doc-panel 计算 border-left-width == 1px: expected=1px actual=1px
+PASS [p1] 竖线 #doc-panel 计算 border-left-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)
+PASS [p1] 竖线 #doc-panel 计算 border-left-color == gray-6 字面量: expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 与上一条互补:只跟令牌比是**自指的** —— 令牌被改成 gray-7 时两侧一起变、恒过;这一条把「线是浅档」钉死在 gray-6。**没有它,D-11-8 显式否决的那个备选(gray-7)对门是不可见的。**
+INFO c4 横线 #session-panel border-bottom 原始读数: 1px rgb(217, 217, 217)
+PASS [p1] 横线 #session-panel 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] 横线 #session-panel 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)
+PASS [p1] 横线 #session-panel 计算 border-bottom-color == gray-6 字面量: expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 字面量半条是承重的:使 D-11-8 否决的 gray-7 备选对本门可见
+PASS [p1] 横线 #session-panel 计算 border-top-width == 0px(线只落下边): expected=0px actual=0px  # 换向后的形状:线落在非末位 section 的**下**边线,上边永不带线
+INFO c4 横线 #annotations-panel border-bottom 原始读数: 1px rgb(217, 217, 217)
+PASS [p1] 横线 #annotations-panel 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] 横线 #annotations-panel 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)
+PASS [p1] 横线 #annotations-panel 计算 border-bottom-color == gray-6 字面量: expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 字面量半条是承重的:使 D-11-8 否决的 gray-7 备选对本门可见
+PASS [p1] 横线 #annotations-panel 计算 border-top-width == 0px(线只落下边): expected=0px actual=0px  # 换向后的形状:线落在非末位 section 的**下**边线,上边永不带线
+INFO c4 横线 #checks-panel border-bottom 原始读数: 1px rgb(217, 217, 217)
+PASS [p1] 横线 #checks-panel 计算 border-bottom-width == 1px: expected=1px actual=1px
+PASS [p1] 横线 #checks-panel 计算 border-bottom-color == var(--color-border-subtle): expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)
+PASS [p1] 横线 #checks-panel 计算 border-bottom-color == gray-6 字面量: expected=rgb(217, 217, 217) actual=rgb(217, 217, 217)  # 字面量半条是承重的:使 D-11-8 否决的 gray-7 备选对本门可见
+PASS [p1] 横线 #checks-panel 计算 border-top-width == 0px(线只落下边): expected=0px actual=0px  # 换向后的形状:线落在非末位 section 的**下**边线,上边永不带线
+PASS [p1] 横线 #ai-panel 计算 border-top-width == 0px(DOM 末位不带线): expected=0px actual=0px  # #ai-panel 是 DOM 末子元素 ⇒ 规则不匹配它;这也依赖「它恒可见」这条前提(frontend/app.js 从不给它加 .hidden)
+PASS [p1] 横线 #ai-panel 计算 border-bottom-width == 0px(DOM 末位不带线): expected=0px actual=0px  # #ai-panel 是 DOM 末子元素 ⇒ 规则不匹配它;这也依赖「它恒可见」这条前提(frontend/app.js 从不给它加 .hidden)
+INFO c4 竖线宿主 #doc-panel getBoundingClientRect: {'top': 0, 'bottom': 900, 'height': 900}
+INFO c4 视口高 window.innerHeight: 900
+PASS [p1] 竖线宿主 #doc-panel rect.top == 0(自视口顶起): expected=≈ 0 actual=0  # 0.5px 是浮点读数容差,不是几何放宽
+PASS [p1] 竖线宿主 #doc-panel rect.bottom == 视口高(跨满): expected=≈ 900 actual=900  # #app 是 align-items: stretch 的 flex 行 ⇒ #doc-panel 天然跨满视口高;这条几何读数使「跨满面板可视高度」可失败
+PASS [p1] 竖线宿主 #doc-panel rect.height == 视口高(跨满): expected=≈ 900 actual=900
+INFO c4 .panel-body padding 原始读数: 16px
+PASS [p1] .panel-body 计算 padding == 16px(对照组): expected=16px actual=16px  # D-11-6:去卡片化删的是容器边界,不是内容呼吸
+INFO c4 #doc-panel-body padding 原始读数: 32px 40px
+PASS [p1] #doc-panel-body 计算 padding == 32px 40px(对照组): expected=32px 40px actual=32px 40px  # 对照组:右栏阅读列内边距未受影响(check-05 item 4 锁死)
+INFO c4 .panel-header padding-top 原始读数: 6px
+PASS [p1] .panel-header 计算 padding-top == 6px(对照组): expected=6px actual=6px  # 对照组:表头 chrome 条的内边距未随卡片内边距改动
+INFO c4 [p1] 发丝线普查原始读数: #session-panel:display=flex,top=0.00,bt=0px,bb=1px / #annotations-panel:display=none,top=0.00,bt=0px,bb=1px / #checks-panel:display=none,top=0.00,bt=0px,bb=1px / #ai-panel:display=block,top=768.00,bt=0px,bb=0px
+PASS [p1] 可视的第一个面板(#session-panel)计算 border-top-width == 0px: expected=0px actual=0px  # 本 gap 的回归判据:旧 c4 只在 p1 上跑,而 p1 下可视的第一个面板恰是#session-panel ⇒ 那条断言在唯一不可能出缺陷的状态里恒真。本项在 #session-panel 被隐藏的 p3 / checking / archive 上也运行
+PASS [p1] 可见发丝线数 == 可见面板数 − 1(1): expected=1 actual=1  # 契约是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」,不是「恒 1 条」(可见=['#session-panel', '#ai-panel'] 带线=['#session-panel'])
+PASS [p1] 没有发丝线落在窗口边缘(border-top != 0 且 top <= 0.5px): expected=0 条 actual=0 条 []  # 判据落在**线**的位置上,不是面板的位置:可视的第一个面板自身的 rect.top 在 5 个状态里**恒为 0**(它就在窗口顶,这是合法的 —— 它只带下边线),故不得写成「面板 rect.top > 0」那样不可满足的形式
+INFO c4 [p12] 发丝线普查原始读数: #session-panel:display=flex,top=0.00,bt=0px,bb=1px / #annotations-panel:display=none,top=0.00,bt=0px,bb=1px / #checks-panel:display=none,top=0.00,bt=0px,bb=1px / #ai-panel:display=block,top=768.00,bt=0px,bb=0px
+PASS [p12] 可视的第一个面板(#session-panel)计算 border-top-width == 0px: expected=0px actual=0px  # 本 gap 的回归判据:旧 c4 只在 p1 上跑,而 p1 下可视的第一个面板恰是#session-panel ⇒ 那条断言在唯一不可能出缺陷的状态里恒真。本项在 #session-panel 被隐藏的 p3 / checking / archive 上也运行
+PASS [p12] 可见发丝线数 == 可见面板数 − 1(1): expected=1 actual=1  # 契约是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」,不是「恒 1 条」(可见=['#session-panel', '#ai-panel'] 带线=['#session-panel'])
+PASS [p12] 没有发丝线落在窗口边缘(border-top != 0 且 top <= 0.5px): expected=0 条 actual=0 条 []  # 判据落在**线**的位置上,不是面板的位置:可视的第一个面板自身的 rect.top 在 5 个状态里**恒为 0**(它就在窗口顶,这是合法的 —— 它只带下边线),故不得写成「面板 rect.top > 0」那样不可满足的形式
+INFO c4 [p3] 发丝线普查原始读数: #session-panel:display=none,top=0.00,bt=0px,bb=1px / #annotations-panel:display=flex,top=0.00,bt=0px,bb=1px / #checks-panel:display=none,top=0.00,bt=0px,bb=1px / #ai-panel:display=block,top=121.00,bt=0px,bb=0px
+PASS [p3] 可视的第一个面板(#annotations-panel)计算 border-top-width == 0px: expected=0px actual=0px  # 本 gap 的回归判据:旧 c4 只在 p1 上跑,而 p1 下可视的第一个面板恰是#session-panel ⇒ 那条断言在唯一不可能出缺陷的状态里恒真。本项在 #session-panel 被隐藏的 p3 / checking / archive 上也运行
+PASS [p3] 可见发丝线数 == 可见面板数 − 1(1): expected=1 actual=1  # 契约是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」,不是「恒 1 条」(可见=['#annotations-panel', '#ai-panel'] 带线=['#annotations-panel'])
+PASS [p3] 没有发丝线落在窗口边缘(border-top != 0 且 top <= 0.5px): expected=0 条 actual=0 条 []  # 判据落在**线**的位置上,不是面板的位置:可视的第一个面板自身的 rect.top 在 5 个状态里**恒为 0**(它就在窗口顶,这是合法的 —— 它只带下边线),故不得写成「面板 rect.top > 0」那样不可满足的形式
+INFO c4 [checking] 发丝线普查原始读数: #session-panel:display=none,top=0.00,bt=0px,bb=1px / #annotations-panel:display=none,top=0.00,bt=0px,bb=1px / #checks-panel:display=flex,top=0.00,bt=0px,bb=1px / #ai-panel:display=block,top=395.91,bt=0px,bb=0px
+PASS [checking] 可视的第一个面板(#checks-panel)计算 border-top-width == 0px: expected=0px actual=0px  # 本 gap 的回归判据:旧 c4 只在 p1 上跑,而 p1 下可视的第一个面板恰是#session-panel ⇒ 那条断言在唯一不可能出缺陷的状态里恒真。本项在 #session-panel 被隐藏的 p3 / checking / archive 上也运行
+PASS [checking] 可见发丝线数 == 可见面板数 − 1(1): expected=1 actual=1  # 契约是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」,不是「恒 1 条」(可见=['#checks-panel', '#ai-panel'] 带线=['#checks-panel'])
+PASS [checking] 没有发丝线落在窗口边缘(border-top != 0 且 top <= 0.5px): expected=0 条 actual=0 条 []  # 判据落在**线**的位置上,不是面板的位置:可视的第一个面板自身的 rect.top 在 5 个状态里**恒为 0**(它就在窗口顶,这是合法的 —— 它只带下边线),故不得写成「面板 rect.top > 0」那样不可满足的形式
+INFO c4 [archive] 发丝线普查原始读数: #session-panel:display=none,top=0.00,bt=0px,bb=1px / #annotations-panel:display=none,top=0.00,bt=0px,bb=1px / #checks-panel:display=flex,top=0.00,bt=0px,bb=1px / #ai-panel:display=block,top=331.16,bt=0px,bb=0px
+PASS [archive] 可视的第一个面板(#checks-panel)计算 border-top-width == 0px: expected=0px actual=0px  # 本 gap 的回归判据:旧 c4 只在 p1 上跑,而 p1 下可视的第一个面板恰是#session-panel ⇒ 那条断言在唯一不可能出缺陷的状态里恒真。本项在 #session-panel 被隐藏的 p3 / checking / archive 上也运行
+PASS [archive] 可见发丝线数 == 可见面板数 − 1(1): expected=1 actual=1  # 契约是「每对相邻可见面板之间恰 1 条、窗口边缘 0 条」,不是「恒 1 条」(可见=['#checks-panel', '#ai-panel'] 带线=['#checks-panel'])
+PASS [archive] 没有发丝线落在窗口边缘(border-top != 0 且 top <= 0.5px): expected=0 条 actual=0 条 []  # 判据落在**线**的位置上,不是面板的位置:可视的第一个面板自身的 rect.top 在 5 个状态里**恒为 0**(它就在窗口顶,这是合法的 —— 它只带下边线),故不得写成「面板 rect.top > 0」那样不可满足的形式
+
+=== c5: 滚动契约保持 —— #doc-panel / #chat-messages / sticky 表头 ===
+PASS [p1] #doc-panel 计算 overflow-y == auto(承重的滚动契约): expected=auto actual=auto  # L-1 的 sticky 表头依赖它仍是最近的可滚祖先;删它会同时打破 L-1 与计数门
+PASS [p1] #chat-messages 计算 overflow-y == auto(输入行钉底依赖它): expected=auto actual=auto
+PASS [p1] #doc-panel-header 计算 position == sticky: expected=sticky actual=sticky
+PASS [p1] #doc-panel-header 计算 top == 0px: expected=0px actual=0px
+INFO c5 滚动前 rect: panel.top=0 panel.bottom=900 header.top=0 header.bottom=36
+INFO c5 滚动后 rect: panel.top=0 panel.bottom=900 header.top=0 header.bottom=34
+INFO c5 可滚前提读数: scrollHeight=2488 clientHeight=900 scrollTop=1588
+PASS [p1] #doc-panel 可滚前提下,滚到底时 #doc-panel-header 仍在面板可视区内: expected=scrollHeight > clientHeight ∧ header ⊆ panel(滚到底后) actual=header=[0.00, 34.00] panel=[0.00, 900.00]  # 0.5px 容差是浮点读数容差,不是几何放宽 —— 表头必须整体落在面板可视带内
+
+=== 逐项结论 ===
+item c1: PASS  (59 条断言,0 FAIL,0 BLOCKED)
+item c2: PASS  (19 条断言,0 FAIL,0 BLOCKED)
+item c3: PASS  (6 条断言,0 FAIL,0 BLOCKED)
+item c4: PASS  (39 条断言,0 FAIL,0 BLOCKED)
+item c5: PASS  (5 条断言,0 FAIL,0 BLOCKED)
+
+exit=0  (0=全 pass,1=有 fail,2=有 blocked)
+
+[exit=0]

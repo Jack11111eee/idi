@@ -190,7 +190,7 @@ Plans:
 - **顺手做未裁定项** —— G2、`999.2`、`A11Y-V2` / `FLOW-V2` / `TOKEN-V2`、Nyquist 缺口、图标与空状态全部在 Out of Scope。
 
 **Gates**: `scripts/check-01-token-conformance.sh` PASS;`scripts/check-02-contrast.py` PASS(表头新绘制面已登记,零阈值改动);`scripts/check-03-hidden-uniqueness.sh`(`^\.hidden {` = 1);`scripts/check-04-important-count.sh`(`!important` 声明 = 1);`scripts/check-05-ui-uat.py`(全量,`.venv/bin/python` + `--browser bundled`)/ `check-06` / `check-07` / `check-09` / `check-10` / `probe-05` / `probe-07` 复跑无新增失败;`.venv/bin/python -m pytest backend/tests -q --tb=short` 基线不降(219 passed / 6 skipped);`node --check frontend/app.js`;5 张 `<state>.png` 在盘(1440×900);连带指纹逐份处置的记录。
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans executed
 
 Plans:
 **Wave 1**
@@ -203,7 +203,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] idi-12-03-PLAN.md — 整里程碑复跑(五条浏览器门 + 两探针 + 四静态门 + pytest 基线)原始输出与退出码逐门落盘 `gate-logs/idi-12-03/` + 连带指纹面逐份实测处置(11 份归档登记为已知限制、1 份在盘报告以 HEAD 内容重新验证)(REG-04)
+- [x] idi-12-03-PLAN.md — 整里程碑复跑(五条浏览器门 + 两探针 + 四静态门 + pytest 基线)原始输出与退出码逐门落盘 `gate-logs/idi-12-03/` + 连带指纹面逐份实测处置(11 份归档登记为已知限制、1 份在盘报告以 HEAD 内容重新验证)(REG-04)
 
 **UI hint**: yes
 
@@ -223,7 +223,7 @@ Plans:
 | 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete | 2026-09-26 |
 | 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | Complete | 2026-09-27 |
 | 11. 去卡片化与发丝分隔线 | v1.16 | 5/5 | Complete    | 2026-09-29 |
-| 12. G1 表头 band 与里程碑收口 | v1.16 | 2/3 | In Progress|  |
+| 12. G1 表头 band 与里程碑收口 | v1.16 | 3/3 | In Progress|  |
 
 **三个里程碑共 11 个阶段全部收口。** v1.15(视觉构图升级)已 shipped 并归档于 2026-09-28 —— Phase 9 交付卡片容器化与页面底色下沉(7 条需求 CARD 3 / VIS 2 / REG 2),Phase 10 交付表格重做与圆角刻度收敛(5 条需求 TABLE 2 / RADIUS 2 / REG-03);12/12 需求满足,里程碑审计 `status: tech_debt`(无 critical blocker,14 项 tech debt 已登记待裁定)。
 

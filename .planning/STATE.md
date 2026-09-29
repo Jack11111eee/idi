@@ -4,18 +4,18 @@ milestone: v1.16
 milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 12
 current_phase_name: G1 表头 band 与里程碑收口
-status: executing
-stopped_at: Completed idi-12-g1-band-02-PLAN.md
-last_updated: "2026-09-29T07:58:16.858Z"
+status: verifying
+stopped_at: Completed idi-12-g1-band-03-PLAN.md
+last_updated: "2026-09-29T08:43:42.750Z"
 last_activity: 2026-09-29
 last_activity_desc: Phase 12 execution started
-state_head: 351be8f836cdeb8803f15624007ab3ec91a6e283
+state_head: 3a0b7f2a2b283297900b4a1875f4b5b751e41cb1
 progress:
   total_phases: 2
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 8
-  completed_plans: 7
-  percent: 0
+  completed_plans: 8
+  percent: 50
 ---
 
 # Project State
@@ -31,10 +31,10 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 
 Phase: 12 (G1 表头 band 与里程碑收口) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-09-29 — Phase 12 execution started
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -117,6 +117,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase idi-11 P04 | 30min | 3 tasks | 14 files |
 | Phase idi-12-g1-band P01 | 82min | 3 tasks | 3 files |
 | Phase 12 P02 | 6 min | 2 tasks | 7 files |
+| Phase idi-12-g1-band P03 | 34min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -321,6 +322,11 @@ Recent decisions affecting current work:
 - [Phase 12]: checking fixture 报告补 ## 问题分级 二级标题 + 逐字表头 + 至少一行 P1:后端 _extract_table 只认二级标题下的表,且全 P2 会让 is_pure_p2 为真使 mode 翻成 p2
 - [Phase idi-12-g1-band]: 局部特写走专用参数加独立子目录:check-09 新增第四个参数 --g1-snapshot DIR,局部图写 DIR 下的 latest-check.png,调用时 DIR 取 screenshots/latest-check。不写进 --screenshot 目录顶层,故既有的「恰含 5 个 PNG」断言一字未动且仍 PASS
 - [Phase idi-12-g1-band]: g1_snapshot() 三条断言全走 ok_true:表头 count >= 1、表头矩形落在 #latest-check 矩形之内(0.5px 浮点容差)、元素截图宽高非零。派发顺序照 check-10:g1-snapshot 在 screenshot 之前;summary 追加 g1-snapshot 使结论行必打印
+- [Phase idi-12-g1-band]: 连带指纹面磁盘实测为 12 份(11 份归档 fail-closed stale + 1 份在盘),与规划期预期形状一致;11 份逐份列名登记为已知限制,不修归档路径(那是「修归档」,超出 G1-01 / REG-04 范围)
+- [Phase idi-12-g1-band]: 在盘的那份以 HEAD 内容重新验证而非刷新指纹:12 条真值逐条重立,新增第三轮 content_reverification 段(触发原因 + previous/current digest + 18 笔提交 + 4 个 changed_covered_files 逐条归因 + 重跑读数)
+- [Phase idi-12-g1-band]: digest 位移实测由 4 个 covered_files 造成(style.css / check-09 / ROADMAP / REQUIREMENTS),而非计划预期的 2 个;归因以「仅把这 4 份换回上一版内容即精确复现旧 digest」证明,不靠推断
+- [Phase idi-12-g1-band]: Truth 10 的变异证明本轮重跑而非承前:上一轮不重跑的唯一理由是载体哈希未变,而本轮两个载体都真的变了;M1 到 c4 21 FAIL、M3 到 c2 2 FAIL,读数与上一轮逐字相同,还原后 git hash-object 逐字节相同
+- [Phase idi-12-g1-band]: 跨阶段对照捞出两处计划未点名的读数位移:check-05 的行号锚点 +4 分解为 +1(Phase 11 收口后的 1ec75c6)+ +3(波次 1 的围栏注释 39bce0b);checking 样本的 #latest-check 因 fixture 补表后内容溢出而新增一个 Tab 停靠点(Chrome 把可滚动容器暴露为可聚焦),二者均非门失败
 
 ### Pending Todos
 
@@ -422,8 +428,8 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-29T07:58:16.809Z
-Stopped at: Completed idi-12-g1-band-02-PLAN.md
+Last session: 2026-09-29T08:43:42.618Z
+Stopped at: Completed idi-12-g1-band-03-PLAN.md
 Resume file: None
 
 ## Operator Next Steps

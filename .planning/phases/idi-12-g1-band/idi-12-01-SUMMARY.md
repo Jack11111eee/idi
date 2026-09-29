@@ -19,7 +19,7 @@ affects: [idi-12-02, idi-12-03, check-05, check-06, check-07, check-09, check-10
 actuals:
   tokens: 2581
   tasks: 3
-  commits: 2
+  commits: 4
   plan_head_before: a1c3a4d1168f8590fa806e429eab60dc590db908
 
 tech-stack:
@@ -100,7 +100,7 @@ status: complete
 - **Completed:** 2026-09-29T15:30+08:00
 - **Tasks:** 3/3
 - **Files modified:** 3
-- **Commits:** 2(measured:`git rev-list --count a1c3a4d..HEAD`)
+- **Commits:** 4(measured:`git rev-list --count a1c3a4d..HEAD`,取本计划全部提交落定后的读数 —— 2 条任务提交 + 1 条元数据提交 + 1 条 SUMMARY 标题修正提交)
 
 ## Accomplishments
 
@@ -118,7 +118,8 @@ Each task was committed atomically:
 2. **Task 2: 围栏承重注释就地改写** - `39bce0b` (docs)
 3. **Task 3: 两条变异证明** - 净产出为零代码改动(交付物是本 SUMMARY 的「Mutation Proofs」段),随本计划的元数据提交一并入册
 
-**Plan metadata:** 见本计划收口提交(docs: complete idi-12-01 plan)
+**Plan metadata:** `bfb32d2` (docs: complete G1 header-band plan) — SUMMARY + STATE + ROADMAP + REQUIREMENTS
+**SUMMARY fixup:** `eab5ca1` (docs: rename SUMMARY gate-evidence heading so `verify-summary` reads PASSED)
 
 ## Files Created/Modified
 

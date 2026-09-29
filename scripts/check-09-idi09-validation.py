@@ -791,8 +791,9 @@ def c5(page, tmp_root):
 # 两侧都写死的理由与 c3 / c1 同型:两侧都从同一个令牌解析时,令牌被改坏(而消费者仍接着
 # 线)也照样 PASS,那条接线的价值就消失了。
 #
-# 样本固定取 `checking`:`#latest-check` **只在该样本可见**(p1 下祖先 `#checks-panel` 带
-# `.hidden`),而本项要在运行时读到它内部的表头(表头来自 fixture 报告里的「问题分级」表)。
+# 样本固定取 `checking`:`#latest-check` 在 `archive` 样本**同样可见**(`applyArchiveView` 会摘掉
+# `#checks-panel` 的 `.hidden`),但**只有 `checking` 的报告带「问题分级」表** ⇒ 只有它有 `th`
+# 可读(`archive` 的 `DESIGN-check-1.md` 无表)。本项要读的正是这个表头。
 def c6(page, tmp_root):
     item = "c6"
     print("\n=== c6: G1 表头 band —— #latest-check 内的表头读作独立 band ===", flush=True)
@@ -895,14 +896,14 @@ def run_screenshots(page, out_dir, tmp_root):
 #
 # 三条断言把「拍到了 band」变成**可失败**的(D-12-10 的机械形态):band 在 1440x900 整窗图里
 # 只占几十像素,而 `max-height: 30vh` 使 `#latest-check` 是**滚动区** —— 表落在可视区外时
-# 截图照样「成功落盘」。故:①表头存在;②表头矩形落在宿主矩形**之内**;③PNG 宽高非零。
+# 截图照样「成功落盘」。故:①表头存在;②表头矩形落在宿主矩形**之内**;③截图尺寸 == 宿主矩形。
 def g1_snapshot(page, out_dir, tmp_root):
     item = "g1-snapshot"
     print("\n=== g1-snapshot: #latest-check 元素级特写(checking)===", flush=True)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # `checking` 是**唯一** `#latest-check` 可见的样本(p1 下祖先 `#checks-panel` 带
-    # `.hidden`)—— 局部特写必须落在该样本上,而表头来自 fixture 报告的「问题分级」表。
+    # 局部特写必须落在 `checking`:`#latest-check` 在 `archive` 也可见,但只有 `checking` 的
+    # 报告带「问题分级」表 ⇒ 只有它有表头可拍(`archive` 的 `DESIGN-check-1.md` 无表)。
     proj = c05.make_fixture("checking", tmp_root)
     c05.enter_project(page, proj)
 
@@ -940,15 +941,22 @@ def g1_snapshot(page, out_dir, tmp_root):
             note="max-height: 30vh 使它是滚动区,表落在可视区外时截图照样落盘 —— 这条判据"
                  "使「拍到了 band」可失败")
 
-    # ---- 断言 3:元素截图落盘且宽高非零 ----
+    # ---- 断言 3:元素截图落盘,且截到的矩形 == 宿主矩形 ----
     # 走 `page.locator(...).screenshot(...)` 的**元素截图**路径(照 check-10:653 的先例),
-    # 并以既有的 `png_size()` 断言宽高非零 —— 不新增读图工具。
+    # 并以既有的 `png_size()` 读回尺寸 —— 不新增读图工具。
+    # ⚠ 只断言「宽高非零」是**恒真**的:`screenshot()` 要么写出合法 PNG(尺寸必然 > 0),
+    # 要么抛异常直接终止进程,不会走到这里产出 FAIL 行。故把读数钉到断言 2 已读到的
+    # **宿主矩形**上 —— 容器被换掉、或截到了别的元素,会在这里红。
     png_path = out_dir / "latest-check.png"
     page.locator("#latest-check").screenshot(path=str(png_path))
     width, height = png_size(png_path)
-    ok_true(item, "[checking] #latest-check 元素截图落盘且宽高非零",
-            width is not None and height is not None and width > 0 and height > 0,
-            "width > 0 and height > 0", f"{width}x{height}", note=str(png_path))
+    host_wh = f"{host_rect['width']}x{host_rect['height']}" if host_rect else "None"
+    ok_true(item, "[checking] #latest-check 元素截图尺寸 == 宿主矩形(拍到的确实是该容器)",
+            width is not None and height is not None and host_rect is not None
+            and abs(width - round(host_rect["width"])) <= 1
+            and abs(height - round(host_rect["height"])) <= 1,
+            "≈ 宿主矩形(各留 1px 舍入容差)", f"{width}x{height} vs host={host_wh}",
+            note=str(png_path))
 
 
 ITEMS = {"c1": c1, "c2": c2, "c3": c3, "c4": c4, "c5": c5, "c6": c6}
@@ -957,7 +965,7 @@ ITEMS = {"c1": c1, "c2": c2, "c3": c3, "c4": c4, "c5": c5, "c6": c6}
 def parse_args():
     ap = argparse.ArgumentParser(add_help=True, description="Phase 9 卡片语言的运行时门")
     ap.add_argument("--item", action="append", default=None,
-                    help="只跑指定项:c1 / c2 / c3 / c4 / c5(可重复,或逗号分隔)")
+                    help="只跑指定项:c1 / c2 / c3 / c4 / c5 / c6(可重复,或逗号分隔)")
     ap.add_argument("--screenshot", default=None, metavar="DIR",
                     help="遍历 check-05 的 5 个样本,每个样本出一张 1440x900 整窗截图到 DIR")
     ap.add_argument("--g1-snapshot", default=None, metavar="DIR",

@@ -1,5 +1,5 @@
 INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
-INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-09-gate-fa9vyvt3(--keep 可保留)
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-09-gate-7kw1tn_c(--keep 可保留)
 INFO browser.version: 153.0.8010.12
 
 === c1: 左栏 4 个 section 的连续面(REG-01 / SURF-01 / SURF-02)===
@@ -195,6 +195,30 @@ INFO c6 #verdict-cards 内 .verdict-card 计数原始读数: 0
 PASS [checking] #btn-continue-check 不带 .hidden(样本未翻成 paused / p2): expected=classList 非 None 且不含 hidden actual=[]  # D-12-8 的防翻转前提:问题分级表若被做成全 P2,is_pure_p2 为真 ⇒ mode 翻成 p2 ⇒ 该按钮被隐藏
 PASS [checking] #verdict-cards 内 .verdict-card 计数 == 0(裁决卡未注入): expected=0 actual=0  # 与上一条同时成立即 mode === 'running';裁决卡注入会在 #latest-check 下方多出一棵子树,涟漪波及五条浏览器门与全部截图
 
+=== g1-snapshot: #latest-check 元素级特写(checking)===
+INFO g1-snapshot #latest-check 计算 background-color 原始读数: rgb(255, 255, 255)
+INFO g1-snapshot #latest-check th 计算 background-color 原始读数: rgb(249, 249, 249)
+INFO g1-snapshot #latest-check th 元素计数原始读数: 5
+PASS [checking] #latest-check th 元素数 >= 1(画面里有表头可看): expected=>= 1 actual=5  # 没有表头就没有可看的 band。前置是 fixture 报告带「问题分级」表(D-12-5 / D-12-8)
+INFO g1-snapshot #latest-check bounding_box: {'x': 136, 'y': 90, 'width': 736, 'height': 270}
+INFO g1-snapshot #latest-check th.first bounding_box: {'x': 145, 'y': 203.65625, 'width': 48, 'height': 31.25}
+PASS [checking] 表头落在 #latest-check 的可视区内(30vh 滚动区): expected=th 的上下边落在宿主矩形内(各留 0.5px 浮点容差) actual=host=[{'x': 136, 'y': 90, 'width': 736, 'height': 270}] th=[{'x': 145, 'y': 203.65625, 'width': 48, 'height': 31.25}]  # max-height: 30vh 使它是滚动区,表落在可视区外时截图照样落盘 —— 这条判据使「拍到了 band」可失败
+PASS [checking] #latest-check 元素截图尺寸 == 宿主矩形(拍到的确实是该容器): expected=≈ 宿主矩形(各留 1px 舍入容差) actual=736x270 vs host=736x270  # .planning/phases/idi-12-g1-band/screenshots/latest-check/latest-check.png
+
+=== shot: 逐样本整窗截图(1440x900)===
+INFO shot p1: .planning/phases/idi-12-g1-band/screenshots/p1.png 1440x900
+PASS shot [p1] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot p12: .planning/phases/idi-12-g1-band/screenshots/p12.png 1440x900
+PASS shot [p12] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot p3: .planning/phases/idi-12-g1-band/screenshots/p3.png 1440x900
+PASS shot [p3] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot checking: .planning/phases/idi-12-g1-band/screenshots/checking.png 1440x900
+PASS shot [checking] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+INFO shot archive: .planning/phases/idi-12-g1-band/screenshots/archive.png 1440x900
+PASS shot [archive] 截图落盘且为 1440x900: expected=1440x900 actual=1440x900
+PASS shot 样本清单逐项一一对应(无缺项、无多余样本): expected=['p1', 'p12', 'p3', 'checking', 'archive'] actual=['p1', 'p12', 'p3', 'checking', 'archive']  # 来源 check-05 的 STATES=['p1', 'p12', 'p3', 'checking', 'archive']
+PASS shot 输出目录恰含 5 个 PNG: expected=['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png'] actual=['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png']
+
 === 逐项结论 ===
 item c1: PASS  (59 条断言,0 FAIL,0 BLOCKED)
 item c2: PASS  (19 条断言,0 FAIL,0 BLOCKED)
@@ -202,6 +226,8 @@ item c3: PASS  (6 条断言,0 FAIL,0 BLOCKED)
 item c4: PASS  (39 条断言,0 FAIL,0 BLOCKED)
 item c5: PASS  (5 条断言,0 FAIL,0 BLOCKED)
 item c6: PASS  (7 条断言,0 FAIL,0 BLOCKED)
+item g1-snapshot: PASS  (3 条断言,0 FAIL,0 BLOCKED)
+item shot: PASS  (7 条断言,0 FAIL,0 BLOCKED)
 
 exit=0  (0=全 pass,1=有 fail,2=有 blocked)
 rc=0

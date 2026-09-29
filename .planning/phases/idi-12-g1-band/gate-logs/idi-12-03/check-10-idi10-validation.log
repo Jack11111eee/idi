@@ -1,5 +1,5 @@
 INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
-INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-10-gate-bbjgb3oe(--keep 可保留)
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-10-gate-2mtm3txu(--keep 可保留)
 INFO browser.version: 153.0.8010.12
 
 === t1: .markdown-body th — 表头浅底 + 1px 下边线(TABLE-01)===

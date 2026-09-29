@@ -136,13 +136,17 @@
      and is still consumed by --color-surface-sunken and --color-surface-hover, so
      changing this value does NOT orphan a primitive.
 
-     This token now has FOUR consumers, not one: `html, body`'s background, plus the
+     This token now has FIVE consumers, not one: `html, body`'s background, plus the
      three panels Phase 11 merged into this surface — `#main-pane > section`,
-     `#doc-panel` and `#doc-panel-header` all paint it. Changing the value here therefore
-     re-colours the page, all four left-column panels and the sticky document header at
-     once; none of them follows along on its own. (The sentence that used to stand here
-     claimed a single consumer and concluded that nothing else needed synchronising —
-     that half was the more dangerous half, and it is now false.) What the change also
+     `#doc-panel` and `#doc-panel-header` — plus `#latest-check`, which Phase 12 lifted
+     onto this ground (G1-01). Changing the value here therefore re-colours the page,
+     all three left-column panels, the sticky document header and the check-report
+     container at once; none of them follows along on its own. (The sentence that used
+     to stand here claimed a single consumer and concluded that nothing else needed
+     synchronising — that half was the more dangerous half, and it is now false. The
+     count has since gone stale twice more: Phase 11 raised it to four, and Phase 12
+     raised it to five — re-derive it from the file, never carry it forward.) What the
+     change also
      invalidates is every contrast pair drawn on it: the six entries on this ground
      must be RECOMPUTED — not refreshed — against white, and the two pairs Phase 9 had
      re-attributed to the raised ground are re-attributed back to this one. Both sets

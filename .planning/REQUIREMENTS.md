@@ -35,7 +35,7 @@
 
 ### 视觉取证
 
-- [ ] **VIS-01**: 产出 5 张 1440×900 整窗截图(`scripts/ui-states/` 的 p1 / p12 / p3 / checking / archive 五个样本),作为"分块割裂感已消除"的人眼取证
+- [x] **VIS-01**: 产出 5 张 1440×900 整窗截图(`scripts/ui-states/` 的 p1 / p12 / p3 / checking / archive 五个样本),作为"分块割裂感已消除"的人眼取证
 
 ## v2 Requirements
 
@@ -72,7 +72,7 @@
 | REG-03 | Phase 11 | Complete |
 | REG-04 | Phase 12 | Pending |
 | G1-01 | Phase 12 | Complete |
-| VIS-01 | Phase 12 | Pending |
+| VIS-01 | Phase 12 | Complete |
 
 **Coverage:**
 

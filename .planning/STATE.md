@@ -5,11 +5,11 @@ milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
 current_phase: 12
 current_phase_name: G1 表头 band 与里程碑收口
 status: planning
-stopped_at: Phase idi-11 complete, ready to plan Phase 12
-last_updated: "2026-09-29T02:34:05.859Z"
+stopped_at: Phase 12 context gathered
+last_updated: "2026-09-29T05:08:30.682Z"
 last_activity: 2026-09-29
 last_activity_desc: Phase idi-11 complete, transitioned to Phase 12
-state_head: 2a917ad864b551defe88cf7cb36fa24d253c8908
+state_head: f4603ef9cbce5eaedcdfc658fbf3ce243339872f
 progress:
   total_phases: 2
   completed_phases: 1
@@ -415,9 +415,9 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-28T07:49:52.624Z
-Stopped at: Phase idi-11 complete, ready to plan Phase 12
-Resume file: None
+Last session: 2026-09-29T05:08:30.626Z
+Stopped at: Phase 12 context gathered
+Resume file: .planning/phases/idi-12-g1-band/12-CONTEXT.md
 
 ## Operator Next Steps
 

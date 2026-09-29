@@ -126,8 +126,11 @@
      something to sit against; Phase 11 removes those cards, so the page and the panels
      must read as ONE continuous white surface. The elevation story therefore goes from
      three tiers to two: the unified surface white (relative luminance 1.000000) > the
-     inset control surface gray-2 (0.947307). The inset tier SURVIVES — controls and
-     #latest-check still read as recessed.
+     inset control surface gray-2 (0.947307). The inset tier SURVIVES — controls keep
+     their recessed ground. (The sentence that used to stand here claimed `#latest-check`
+     was recessed as well; that half is now false, because Phase 12 lifted that
+     container's own ground up to this unified surface, so the markdown table header
+     inside it reads as a band of its own instead of gray on gray.)
 
      Zero new tokens and zero new tier-1 primitives: gray-3 is already declared above
      and is still consumed by --color-surface-sunken and --color-surface-hover, so

@@ -128,6 +128,11 @@ Decisions are logged in PROJECT.md Key Decisions table(权威)与各阶段 `*-SU
 
 Recent decisions affecting current work:
 
+- [Phase 12]: **G1 修法选「移宿主 → 改白」(路线 a),不是移表头。** `#latest-check` 的 `background` 由 `--color-surface`(gray-2)就地改归 `--color-surface-page`(白)。选它的三条理由:①它是四个 `.markdown-body` 宿主里**唯一画灰底的**(另三个透明、继承白面板)⇒ 改白消除的是**不对称本身**,而不只是症状;②band 因此 = gray-2 on white = 1.053,与文档区表头**今天的样子完全相同**(Phase 10 已签核的读感);③唯一**不需要改写任何门**的路线 —— `check-10` 的 `t1` 把 `th` 底色钉死在 gray-2 字面量,只动宿主则 t1 全绿。**明确不追求更强的 band**:1.053 是用户看过并**接受**的读数。
+- [Phase 12]: **G1 的验收判据 = 视觉契约(两条计算底色不同 + 人眼截图),不是令牌接线。** 这正是「`check-10` 58/58 PASS 与 G1 可以共存」的成因 —— t1/t2 回答的是「`th` 是否画了某令牌」,从不回答「表头是否读作独立 band」。新判据落在 `check-09` 的新项 `c6`(7 条断言),**两侧钉死**:既断言 `host != th`,也断言 `host == --color-surface-page 解析值 == 写死白字面量`(D-12-7)。只钉「不同」的话,宿主改成 gray-4 之类仍然绿。
+- [Phase 12]: **fixture 必须忠于后端文法,否则 G1 从未被看见。** `backend/prompts.py` 要求每份自检报告都带「问题分级表」,而两个 fixture 报告都没有 ⇒ 样本里从来没有可消失的 band。补表时有**两条硬约束**(均由规划期核盘发现):①必须带 `## 问题分级` **二级标题** —— `grammar._extract_table` 只认二级标题下的表,无标题的表根本不被解析;②**至少一行 P0/P1** —— 全 P2 会让 `is_pure_p2` 为真 ⇒ `mode` 翻成 `p2` ⇒ 按钮被隐藏、裁决卡注入,涟漪波及五条浏览器门与全部截图。
+- [Phase 12]: **连带指纹判据 = `covered_files` 逐行匹配 + 额外测「路径是否还在盘」**(不是全文 grep —— 那会把只在正文提及的报告算进来)。磁盘实测 **12 份命中**(11 归档 fail-closed stale,逐份列名登记为已知限制、**未修复任何归档路径**;1 份在盘 `idi-11-VERIFICATION.md` 以 HEAD 内容重新验证)。**注:本阶段实际跑了四轮重新验证**(第三轮实现改动 + 第四轮整改与收口),成因见下方 Blockers。
+- [Phase 12]: **`check-05` 全量 `exit=2` 是设计行为**,成因恒为 item 5 两条 `--ai-smoke` 腿 BLOCKED(需真实 AI 调用,默认不执行)。判据必须锚**行首** verdict 形态 `^FAIL`,**不是子串搜索** —— `check-05` 有一条 PASS 行的**标签里带 FAIL 一词**,子串判据在本项目恒非空、无法通过。
 - [Roadmap v1.16]: **阶段边界 = 2 阶段(Phase 11 / 12),按「依赖 + 风险隔离」切,而非按 REQ 类别切。** Phase 11 = **反转本体 + 它的三条门禁同步义务**(SURF-01/02/03 + DIV-01/02/03 + REG-01/02/03,9 条需求);Phase 12 = **G1 定点修复 + 里程碑收口**(G1-01 + REG-04 + VIS-01,3 条需求)。**为什么 REG-01/REG-02/REG-03 与反转同阶段(不放到收口阶段):** 三者与反转是**同一次改动、两副面孔**,拆开会造出「改了面但没人验」的中间态(与 v1.15 把 REG-01/REG-02 与 CARD/VIS 同阶段交付的裁定同型);更关键的是这三条门在本阶段之后会**绿着说谎** —— `check-09` c1..c4 断言的正是被移除的卡片语言(必红,那是门在正确工作)、`check-02` 的 2 条卡片地面 PAIR 描述的那块面已不存在(数字仍达标)、`check-05 --item 8` 的 sticky 余量 `1.000px` 的成因正是被移除的那条 1px 上边框。**为什么 G1 单独成阶段:** 它与反转机制独立(不在同一区域、不共享规则)但有依赖(表头的宿主绘制面在 Phase 11 变),且反转是大而耦合的绘制模型改动 —— 混在一阶段会让「反转按截图微调」时把 G1 一并卷进去。**为什么 REG-04 归 Phase 12:** 「零新增失败」必须在**最后一次 `style.css` 改动之后**跑才成立。**显式裁定:REG-01 归 Phase 11,REG-04 归 Phase 12。**
 - [Roadmap v1.16]: **SURF 与 DIV 必须同阶段落地,不得拆开。** 只去卡片不留线 = 把 4 个面板之间原本承载层次的 12px 灰缝一并抹掉、分区彻底消失 —— 那是比任一终点都差的中间态;且 `check-09` 的 c4 同时断言「间距几何」与「面板内边距」,一次改写覆盖 SURF-03 与 DIV-02 两侧的契约。
 - [Roadmap v1.16]: **12 条需求 100% 映射,无 orphan、无跨阶段重复。** SURF-01/02/03、DIV-01/02/03、REG-01/02/03 → Phase 11(9 条);G1-01、REG-04、VIS-01 → Phase 12(3 条)。**Out of Scope 未为其预建任何阶段:** G2(`--radix-gray-1` 零消费 + 通用围栏消费断言 —— 用户只裁定「连带 G1」)、`999.2`、`A11Y-V2` / `FLOW-V2` / `TOKEN-V2`、Nyquist 缺口、图标与空状态。
@@ -334,19 +339,26 @@ None yet.
 
 ### Blockers/Concerns
 
+**Open — introduced by Phase 12(2026-09-29):**
+
+- **`ui.safety-gate` 对本阶段的前端改动结构性失明(工具侧缺陷,已复现两次)。** 它用 `git diff HEAD~1..HEAD` **单提交窗口**判断本波是否动了前端文件,而 `block = frontend && hasUiFiles && !hasUiSpec`。**GSD 协议要求每个计划以 `Write SUMMARY → commit` 收尾** ⇒ 一个 wave 的最后一个提交**按设计**就是 docs/SUMMARY 提交 ⇒ 窗口天然只含记账文件。**Phase 12 实测**:wave 1 的 `frontend/style.css` 在**首个**提交 `00bf51b`,最后一个提交 `04f1461` 只动 SUMMARY ⇒ 即便在正确的 `execute:wave:post` 时机派发,`hasUiFiles` 依然是 false。**「按时派发」修不好这个门。** 源码自己承认:`// Known limitation: multi-plan waves may need the wave-start commit for full coverage.`。**风险是活的**:v1.15/v1.16 的 Phase 9/10/11/12 **都没有 UI-SPEC.md**(只有 v1.14 的 idi-04/04.1/05/06/08 有)⇒ `hasUiSpec` 恒 false ⇒ 窗口哪天真的逮到前端改动,`block` 会立刻变 true。**Phase 12 的前端改动由其他手段覆盖**:`check-09 c6`(7 条断言 + 两条变异证明)、`check-02`、`check-01`、局部特写。
+- **Wave 1 的 fixture 表使 `#latest-check` 成为可聚焦滚动容器,`check-05` 的定长 Tab 驱动因此位移。** 实测成因:fixture 表让 `#latest-check` 溢出其 `max-height: 30vh` 盒(`scrollHeight 383 > clientHeight 268`),Chrome 把溢出滚动容器暴露为 keyboard-focusable ⇒ Tab 驱动的末元素位移,SC1 探针首控件由 `#btn-abort` 变为 `#btn-continue-check`。**三条 SC1 读数自洽且 item 10 PASS(42 条断言)**,但 item 10 的普查是**固定 29 选择器清单、不含 `#latest-check`** ⇒ 门对该新增停靠点失明。**未处置**(超出本阶段 `files_modified`),登记待裁定。
+- **`check-10` 的 t1 PASS 行仍挂改动前的注释**(`scripts/check-10-idi10-validation.py:328` 的 `note=` 仍写「HEAD 上 th 无自身底色(透明)」)。审计点名的 supporting tell,属「gate blind spot」项。**未处置** —— 改它会新拖入归档的 `idi-10-VERIFICATION.md`(D-12-4)。
+- **报告区表头在 `#latest-check` 的 30vh 滚动区内会滚走**(`#doc-panel-header` 是 `position: sticky`,报告表头不是)—— 与文档区不同语言,属**新能力**,超出 G1-01(D-12-4)。
+
 **Open — introduced by v1.16 规划(2026-09-28):**
 
-- **本阶段的连带指纹面必须在磁盘上先实测再处置,不得凭记忆断言份数。** `frontend/style.css` 在 v1.15 Phase 10 的实测形状是「**10 份覆盖,1 份可执行**」(9 份归档/quick 报告的 `covered_files` 路径归档后不可解析 ⇒ fail-closed stale,属 2026-09-14 登记的已知限制)。**但 v1.16 Phase 11 会改写 `scripts/check-09-idi09-validation.py`**,Phase 12 还可能触碰 `scripts/check-10-idi10-validation.py` 与 `scripts/check-05-ui-uat.py` —— 后者的覆盖者名单是 v1.14 记录过的 4 份(`idi-04.1` / `idi-05` / `idi-06` / `idi-07`,**不含 `idi-04`**)。判据锚报告 frontmatter 的 `covered_files` **逐行匹配** + **额外测路径是否在盘**,两条独立量都要过。
-- **门清单以磁盘现状为准:没有 `check-08`。** `scripts/` 实为 `check-01`…`check-07` + `check-09` + `check-10`,外加两个探针 `probe-05` / `probe-07`。规划期初稿的 REG-04 曾误列 `check-08`,已由路线图子代理核盘纠正,`REQUIREMENTS.md` 与 `ROADMAP.md` 均已同步修正 —— Phase 12 按磁盘现状执行(也不得为了对上清单去造一个 `check-08`)。
-- **`--color-surface-card` 与 `--shadow-card` 在本里程碑后消费者归零。** 这不是 G2(用户只裁定「连带 G1」),但围栏自己的抬头与 Hard Rule 5 / D-04 要求「只声明被消费的令牌」—— Phase 11 必须处置它们(删除,或显式论证保留)。**边界:不得顺手补一条通用的围栏消费断言**(那才是 G2,已明确排除)。
-- **`#doc-panel-header` 的 sticky 背景是承重声明,不得在去卡片化时被误删。** `.panel-header` 规则体内没有 `background`,不加则滚动正文从标题行底下穿过去;Phase 11 是**改它的归属**,不是删它。
-- **`check-10` 的 `t1` / `t2` 只钉令牌接线(`th` 是否画了 `--color-surface`),不钉视觉契约** —— 它们 58/58 PASS 与 G1 完全相容。Phase 12 修 G1 时若选「移表头」路线,这两条会红:那是门在正确工作,须改写为断言新契约,不得删除。`WR-04` 残项同源(无任何 `read_style(..., 'table', ...)`)。
+- **~~本阶段的连带指纹面必须在磁盘上先实测再处置~~** —— **已由 Phase 12 解除**:实测 12 份命中并逐份处置(见上方 Recent decisions)。
+- **~~门清单以磁盘现状为准:没有 `check-08`~~** —— **已由 Phase 12 解除**:REG-04 按磁盘现状执行(5 浏览器门 + 2 探针 + 4 静态门 + pytest),13 份日志在盘。
+- **~~`--color-surface-card` 与 `--shadow-card` 在本里程碑后消费者归零~~** —— **已由 Phase 11 解除**:两令牌已删(`grep -c` 全文 0 次)。
+- **~~`#doc-panel-header` 的 sticky 背景是承重声明~~** —— **已由 Phase 11 解除**:改归属而非删除,`check-09 c2` 覆盖。
+- **~~`check-10` 的 `t1` / `t2` 只钉令牌接线~~** —— **已由 Phase 12 处置**:选路线 (a)(移宿主)故 t1/t2 保持全绿;视觉契约由新项 `c6` 承担。`WR-04` 残项(无 `read_style(..., 'table', ...)`)仍未做,属通用加固,已列未裁定。
 
 **Open — carried forward from v1.15:**
 
-- **`check-05 --item 8` 的 sticky 断言余量为零(Phase 9 计划 01 引入,已实测坐实)。** 该断言是 `abs(header.top - panel.top) <= 1.0`,HEAD 上实测 `0.0`;Phase 9 给 `#doc-panel` 加了四边 `1px` 边框后,sticky 元素被钳制在滚动容器的 **padding box** 上,其顶边相对边框盒下移**恰好 1px** ⇒ 实测变为 **`1.000px`**,闭区间**仍通过但余量为零**(实跑 PASS,item 8:13 条断言 / 0 FAIL / 0 BLOCKED)。**v1.16 Phase 11 移除 `#doc-panel` 的边框正是该读数变化的唯一原因** ⇒ 由 **`REG-03` 指名处置**:边界改动后复测,余量读数与成因登记;若不成立则按「事实是否被改变」分诊并同步更新判据、说明改了什么(不得直接调门)。
+- **~~`check-05 --item 8` 的 sticky 断言余量为零~~** —— **已由 Phase 11 解除**:移除 `#doc-panel` 边框后余量由 `1.000px` 回到 `0.000px`(Phase 12 复跑实测 `item 8: PASS (13 条断言,0 FAIL,0 BLOCKED)`,读数 `|header.top - panel.top| = 0.000px`)。
 - **用户评审点是 Phase 9 的未闭合出口,已由 v1.16 关闭。** 用户 2026-09-28 看过 5 张截图后裁定反转卡片语言(「分块太割裂了,完全没有联动性…chatgpt 的界面就是一根细的衬线来分割不同的分区」)⇒ 视觉方向 = 全站去卡片;范围 = 去卡片化**连带 G1**;落地方式 = 走 GSD 新阶段。4 条开放项(`.overlay-card` 底色 / 卡片边界与阴影强度 / 页面级留白 / 输入框在白卡片上画 UA 白填充)随卡片语言一并被反转取代。
-- **本机 8765 端口存在一个先前遗留的 uvicorn 进程**,v1.15 Phase 9/10 的全部浏览器门都走了「复用,不新起、结束时也不关闭」分支。读数不受影响(被测页面仍是本仓库的 `frontend/`),但意味着这些门的证据不是在全新进程上取得的;若出现与「陈旧服务进程」相关的可疑读数,先排查该残留进程。
+- **本机 8765 端口存在一个先前遗留的 uvicorn 进程**,v1.15 Phase 9/10 与 v1.16 Phase 11/12 的全部浏览器门都走了「复用,不新起、结束时也不关闭」分支。读数不受影响(被测页面仍是本仓库的 `frontend/`),但意味着这些门的证据不是在全新进程上取得的;若出现与「陈旧服务进程」相关的可疑读数,先排查该残留进程。
 
 **Open — carried forward from v1.14:**
 

@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.16
 milestone_name: 界面去卡片化 —— 连续面与发丝分隔线
-current_phase: 12
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 12 complete — all phases complete
-last_updated: "2026-09-29T13:05:55.281Z"
-last_activity: 2026-09-29
-last_activity_desc: Phase 12 complete
-state_head: 3fb5cb9813fa9c6b75aa62503fc672a3dd8b6896
+last_updated: "2026-09-30T05:58:54.975Z"
+last_activity: 2026-09-30
+last_activity_desc: Milestone v1.16 completed and archived
+state_head: 2cc16a495cb14e9dff3fa568e8920cc0b6ab6ccf
 progress:
   total_phases: 2
   completed_phases: 2
   total_plans: 8
   completed_plans: 8
   percent: 100
+current_phase: 12
 ---
 
 # Project State
@@ -28,12 +28,10 @@ See: .planning/PROJECT.md (updated 2026-09-28)
 
 ## Current Position
 
-Phase: 12
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-09-29 — Phase 12 complete
-
-Progress: [██████████] 100%
+Phase: Milestone v1.16 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-09-30 — Milestone v1.16 completed and archived
 
 ## Performance Metrics
 
@@ -408,14 +406,6 @@ None yet.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
-| 260916-t8g | 修复 UI 审计报告 5 条功能性 BLOCKER(.hidden 全局规则 / SSE 断流可见化 / 归档只读态加固 / 键盘划词路径 / 错误内联) | 2026-09-16 | 0912429 | [260916-t8g-ui-5-blocker-hidden-sse-onerror](./quick/260916-t8g-ui-5-blocker-hidden-sse-onerror/) |
-| 260917-fqh | 修复 b9664e0 自身引入的两条缺陷(.hidden 注释理由错误 / 错误内联提示被挤成 flex 窄列)并补齐视图切换时不清除内联错误 | 2026-09-17 | 793071e | [260917-fqh-b9664e0-hidden-flex](./quick/260917-fqh-b9664e0-hidden-flex/) |
-| 260918-qrq | 信息架构对调(会话流入主区、文档区变可折叠右栏)+ ChatGPT 视觉语言换肤 + DESIGN.md §4.1/§4.2 修订。check-02 按用户知情决策红着交出(14 条失败) | 2026-09-18 | 65536dd | [260918-qrq-frontend-chatgpt](./quick/260918-qrq-frontend-chatgpt/) |
-| 4 | 260918-qrq 后续修正:会话流撑满主区(composer 贴底)+ 空态 :has()/:empty 居中问候 + 文档面板收窄至 480px + 修「进入」按钮换行 | 2026-09-18 | 253d4d3 | — |
-| 260919-0h3 | 建立前端验证 harness(`scripts/check-05-ui-uat.py` + `scripts/ui-states/` 5 个磁盘状态样本 + `requirements-dev.txt`),跑掉 idi-04 UAT 6 项。**结果 3 pass / 3 fail**——FAIL 全部是 260918-qrq 令牌值漂移(UAT 期望值定稿于 `0c658aa`,其后 `448686b` 换了令牌值层),非新缺陷;已按 YAML 写入 UAT `## Gaps` | 2026-09-19 | cc11e9f | [260919-0h3-harness-idi-04-uat-6](./quick/260919-0h3-harness-idi-04-uat-6/) |
-| 260919-1w1 | **P6 前置修正**:`#session-panel` 在阶段 3+ 该隐藏却从未隐藏(DESIGN.md §4.1/§4.2 明文「切换」非「叠加」)。一次修掉 D1(主区 90% 空白)/ D2(归档态与阶段5 仍渲染输入框)/ 发送按钮被批注流覆盖不可点 三个症状。harness 加五态显隐守卫,经 RED→GREEN 实证非空转 | 2026-09-19 | 1d849b1 | [260919-1w1-session-panel-3-d1-d2](./quick/260919-1w1-session-panel-3-d1-d2/) |
-| 260924-vb7 | 修复选档成功路径的焦点丢失(UI-REVIEW 优先级 1,用户裁定「先修焦点再收口」):`chooseTier()` 隐藏 `#tier-modal` 后不交还焦点,`document.activeElement` 回落到 `<body>`。加一行 `continueCheckBtn.focus()`,置于 `await refreshChecksAfterStream()` **之后**。check-07 新增 item g4。**遗留**:`idi-08-VERIFICATION.md` 因 `frontend/app.js` 内容变更而 stale,须重跑 `/gsd-verify-work idi-08` | 2026-09-24 | 40e8de9 | [260924-vb7-fix-the-tier-success-path-focus-loss-cho](./quick/260924-vb7-fix-the-tier-success-path-focus-loss-cho/) |
-| 260925-iin | **v1.14 收口前修复(五修一票,由里程碑审计 `gaps_found` 驱动):** ① 恢复 AI 事件自动跟随(改 `scrollIntoView({block:'nearest'})`,不回退 L-4)。② 补一条**真能失败**的自动跟随门(check-05 item 9 新增)。③ `.collapse-indicator` 的 `font-size: 20px` / `line-height: 1` → `--text-lg-plus` + `--lh-none: 1`,关闭 backlog `999.1` 第 1 项。④ 订正 `check-05:824` 的陈旧诊断。⑤ 新增 `FOCUSABLE_SELECTOR` ↔ `style.css:focus-visible` 枚举的**逐项(含顺序)**静态对齐门。**两组双向变异均已由编排器独立复现**。`verification.status: passed`(8/8 must-haves)。提交区间 `11fdedb..8075d3b`(6 个) | 2026-09-25 | 11fdedb | [260925-iin-v1-14-ai-999-1](./quick/260925-iin-v1-14-ai-999-1/) |
 
 ### Roadmap Evolution
 
@@ -446,9 +436,4 @@ Resume file: None
 
 ## Operator Next Steps
 
-- **下一步 = `/gsd-audit-milestone`**(v1.16 里程碑审计)。Phase 11 与 Phase 12 均已收口(`phase_complete === true` 且 `verification_status === 'passed'`),满足审计前提。**里程碑审计不在 Phase 12 范围内**(D-12-12),Phase 12 只承载 `G1-01` / `REG-04` / `VIS-01`。
-- **审计前已知的两条登记项**(均非阻塞,审计会看到):①`ui.safety-gate` 对本阶段的**前端改动结构性失明** —— 它用 `git diff HEAD~1..HEAD` 单提交窗口,而 GSD 协议要求每个计划以 SUMMARY 提交收尾 ⇒ 窗口按设计只含记账文件;`block` 恒为 false。本阶段前端改动由 `check-09 c6`(7 条断言 + 两条变异证明)、`check-02`、`check-01` 与局部特写覆盖。②Wave 1 的 fixture 表使 `#latest-check` 溢出 `max-height: 30vh`(scrollHeight 383 > clientHeight 268),Chrome 因而把它暴露为可聚焦滚动容器 ⇒ `check-05` 的定长 Tab 驱动末元素位移,SC1 探针首控件由 `#btn-abort` 变为 `#btn-continue-check`;读数自洽且 item 10 PASS(42 条),但 item 10 的普查是**固定 29 选择器清单、不含 `#latest-check`** ⇒ 门对该新增停靠点失明。
-- **`check-10` 的 t1 过期注释**(`scripts/check-10-idi10-validation.py:328`,仍写「HEAD 上 th 无自身底色(透明)」)与 **报告区表头 sticky** 均为**未裁定项**,本阶段明确未做(D-12-4)。
-- **两条待用户裁决的残留**:①未跟踪文件 `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(33KB,VERIFIER 前端解析工具残留;用户已裁定删除,但 `rm` / `git rm` 均被权限系统拒绝 ⇒ **需要人工执行**);②`.planning/.gsd-allow-shrink`(ROADMAP / STATE 重写的单次哨兵,过期无害)。另有一条 `scripts/.check09-old.py` 同为既存未跟踪残留,本阶段全程未动。
-- **Backlog `999.2` 仍开**(Phase 7 三条既有 affordance 缺陷);执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证。
-- **候选范围另见** `## Blockers/Concerns` 的 Open 段与 `.planning/ROADMAP.md` 的 `## Backlog`(`999.1` 已关闭)。
+- Start the next milestone with /gsd-new-milestone

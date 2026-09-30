@@ -90,7 +90,7 @@
          clears SC 1.4.11's 3:1 on any surface: gray-6 1.34, gray-7 1.49,
          gray-8 1.82 on --color-surface. This border is the control boundary —
          the only thing identifying a text input's edge — so it has to leave the
-         band. gray-9 = 3.24 / 3.15, which restores the intent signed off as S-3
+         band. gray-9 = 3.32 / 3.15, which restores the intent signed off as S-3
          (#8a8a8a, 3.45:1) in Radix terms rather than re-deciding it. The other
          three borders stay in band 6-8: they are decorative, and SC 1.4.11 does
          not apply to a border that identifies nothing.
@@ -119,7 +119,40 @@
   --color-text: var(--radix-gray-12);
   --color-text-secondary: var(--radix-gray-11);
   --color-text-muted: var(--radix-gray-11);
-  --color-surface-page: var(--radix-gray-1);
+  /* Phase 11 reverses the Phase 9 page-sink (SURF-02 / user decision D-11-1):
+     gray-3 #f0f0f0 -> white #ffffff. This is an IN-PLACE VALUE REWRITE, not a new
+     token — the declaration name and its position in the fence are unchanged. Reason:
+     Phase 9 pushed the page one step DOWN so the white cards it introduced had
+     something to sit against; Phase 11 removes those cards, so the page and the panels
+     must read as ONE continuous white surface. The elevation story therefore goes from
+     three tiers to two: the unified surface white (relative luminance 1.000000) > the
+     inset control surface gray-2 (0.947307). The inset tier SURVIVES — controls keep
+     their recessed ground. (The sentence that used to stand here claimed `#latest-check`
+     was recessed as well; that half is now false, because Phase 12 lifted that
+     container's own ground up to this unified surface, so the markdown table header
+     inside it reads as a band of its own instead of gray on gray.)
+
+     Zero new tokens and zero new tier-1 primitives: gray-3 is already declared above
+     and is still consumed by --color-surface-sunken and --color-surface-hover, so
+     changing this value does NOT orphan a primitive.
+
+     This token now has FIVE consumers, not one: `html, body`'s background, plus the
+     three panels Phase 11 merged into this surface — `#main-pane > section`,
+     `#doc-panel` and `#doc-panel-header` — plus `#latest-check`, which Phase 12 lifted
+     onto this ground (G1-01). Changing the value here therefore re-colours the page,
+     the left column's content, the right-hand document panel and its sticky header, and
+     the check-report container at once; none of them follows along on its own. (The
+     sentence that used to stand here claimed a single consumer and concluded that nothing else needed
+     synchronising — that half was the more dangerous half, and it is now false. The
+     count has since gone stale twice more: Phase 11 raised it to four, and Phase 12
+     raised it to five — re-derive it from the file, never carry it forward.) What the
+     change also
+     invalidates is every contrast pair drawn on it: the six entries on this ground
+     must be RECOMPUTED — not refreshed — against white, and the two pairs Phase 9 had
+     re-attributed to the raised ground are re-attributed back to this one. Both sets
+     are accounted for in this phase's manifest ledger below. "Refreshed" would assert
+     nothing changed since verification, which is false here. */
+  --color-surface-page: var(--white);
   --color-surface-sunken: var(--radix-gray-3);
   --color-kind-default: var(--radix-gray-11);
   --color-kind-result: var(--radix-gray-11);
@@ -161,11 +194,22 @@
      blue-11 rather than a lighter step: blue-2/3 are too light for both a 3px
      bar and a 14px heading. blue-11 is already declared and already consumed
      (it backs --color-action-primary / --color-text-info / --color-kind-say /
-     --color-border-streaming); this phase makes it the fifth. Measured 4.65 on
-     --color-surface-page — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
-     and is this phase's thinnest margin (0.15). Do NOT "play it safe" and step
+     --color-border-streaming); this phase makes it the fifth. Measured 4.77 on
+     the unified white surface — it clears TEXT (>=4.5) and NON-TEXT (>=3) at once,
+     and is this phase's thinnest margin (0.27). Do NOT "play it safe" and step
      it darker (05-N-2 / Pitfall 4a). Because the step is already declared,
-     this phase adds ZERO tier-1 primitives. */
+     this phase adds ZERO tier-1 primitives.
+
+     Phase 11 update (the value above is unchanged — only the ground moved
+     back): both consumers live in .panel-header, and the three panels that
+     carry the marker now paint the SAME surface as the page itself, so the
+     colour is drawn on the unified surface — measured 4.77 there. The history
+     is worth keeping: Phase 9 sank the page to gray-3, which dropped the
+     page-ground reading to 4.18 — still >= NON-TEXT (3.0) but below TEXT (4.5)
+     — and that is precisely why the TEXT half of the manifest entry was
+     re-attributed to the raised ground rather than the value being darkened.
+     Phase 11 merged that raised ground back into the page ground, so both
+     halves are drawn on one surface again. The value itself was never touched. */
   --color-marker-active: var(--radix-blue-11);
 
   /* Tier 2 — event-kind vocabulary (its own closed group) */
@@ -284,6 +328,28 @@
   --shadow-composer: rgba(0, 0, 0, 0.04) 0 0 0 1px, rgba(0, 0, 0, 0.04) 0 2px 8px 0, rgba(0, 0, 0, 0.024) 0 4px 80px 8px;
   --shadow-overlay: 0 8px 30px rgba(0, 0, 0, 0.2);
 
+  /* Tier 2 — the retired card container language (Phase 9 / VIS-01 / VIS-02 /
+     CARD-01 / CARD-02).
+
+     Phase 9 declared two tokens here for the card language: an alias of white
+     for the card ground, and the card's elevation shadow. Phase 11 reversed that
+     language — the four left-hand panels and the document panel now paint the
+     same surface token as the page itself — so both tokens lost their last
+     consumer.
+
+     They are DELETED rather than kept, for the reason this fence's own header
+     already states (D-04 / Hard Rule 5): never declare a token you are not
+     consuming. Phase 10 deleted a radius step under exactly this rule and
+     recorded the same disposition; this is that precedent applied to the two
+     tokens this reversal itself orphaned.
+
+     ⚠ This is NOT a generic fence-consumption assertion. Adding one — "every
+     declared token must have a consumer" — is G2, which the user explicitly
+     left OUT of this milestone's scope. Phase 11 disposes only of the tokens
+     its own change orphaned, each with its own dedicated residue assertion
+     (Phase 11 plan 03, mirroring Phase 10's dedicated radius-step assertion).
+     Do NOT generalise this. */
+
   /* Tier 2 — declared with their consumers (Hard Rule 5): .event-kind / .fatal. */
   --color-kind-fg: var(--white);
   --color-border-danger-subtle: var(--radix-red-7);
@@ -349,10 +415,18 @@
   --lh-reading: 1.625;
   --lh-none: 1;
 
-  /* Radius — four values. */
+  /* Radius — three values. The former fourth step (28px) was hand-tuned in by the
+     temporary visual pass of quick `260918-qrq` and never joined any scale
+     declaration: 04-UI-SPEC's radius ledger still reads 4px / 8px / 999px and never
+     even carried that name. It had exactly two consumers, and they go to DIFFERENT
+     steps — `.chat-user` to the card step (a real appearance change: the
+     large-radius bubble drops to the card radius), `#chat-input-row input` to the
+     pill step (zero visual change: at `min-height: 52px` the 28px radius was already
+     clamped by the UA, so it already WAS a pill, and re-recording it is accurate
+     bookkeeping rather than a visual edit). Deleted rather than kept: Hard Rule 5 —
+     never declare a token you are not consuming. */
   --radius-sm: 8px;
   --radius-md: 10px;
-  --radius-lg: 28px;
   --radius-pill: 999px;
 
   /* z-index ordering assertion (TOKEN-07): --z-badge (10) < --z-banner (20)
@@ -449,7 +523,105 @@
      rather than the 50 a pattern map would project from the focus ring alone.
      The six numbers are not drift: the contract is
      "enumerate the combinations that actually render", and each successive value
-     layer changes which combinations occur. */
+     layer changes which combinations occur.
+
+     Phase 9 (card containers) changed no SIZE, so it added no seventh number:
+     the manifest was still 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry.
+     What it changed was the GROUND of one group — two entries moved from
+     --color-surface-page to the raised ground, because the four left-hand panels
+     and #doc-panel stopped being transparent / gray-2 and became white cards.
+     Phase 11 reverses that: the raised ground is merged back into the page
+     ground, so those two entries return to --color-surface-page and the six
+     entries already on it are recomputed. The six numbers above stay a SIZE
+     ledger; 53 is the Phase 7, Phase 9 and Phase 11 size.
+
+     ---- Phase 9 page-ground RECOMPUTATION ledger (plan 02, CARD-03 / REG-01) ----
+
+     Sinking --color-surface-page from gray-1 (#fcfcfc) to gray-3 (#f0f0f0)
+     invalidated every pair drawn on it. EIGHT entries were on that ground. Each
+     was RECOMPUTED from the new ground — not refreshed. Refreshing would assert
+     "nothing has changed since verification", and that is false here: the ground
+     moved one whole step, so every one of these numbers moved.
+
+       pair                              need  gray-1  gray-3   white  disposition
+       --color-text TEXT                 4.5   15.88   14.30       —   name unchanged, passes
+       --color-text-secondary TEXT       4.5    5.77    5.19       —   name unchanged, passes
+       --color-text-muted TEXT           4.5    5.77    5.19       —   name unchanged, passes
+       --color-focus NON-TEXT            3.0    5.72    5.15       —   name unchanged, passes
+       --color-border-hover NON-TEXT     3.0    5.77    5.19       —   name unchanged, passes
+       --color-marker-active NON-TEXT    3.0    4.65    4.18       —   name unchanged, passes
+       --color-marker-active TEXT        4.5    4.65    4.18    4.77   re-attributed to card
+       --color-border-strong NON-TEXT    3.0    3.24    2.91    3.32   re-attributed to card
+
+     (The `white` column above was Phase 9's RAISED-GROUND column. Phase 11 makes
+     white the unified surface itself, so that column is now simply the page
+     ground's own value — which is why the Phase 11 ledger below can re-use it as
+     the "after" reading.)
+
+     The last two are the complete chain, not a refresh: their old PAGE value
+     (4.65 / 3.24 on gray-1) was passing, their new PAGE value (4.18 / 2.91 on
+     gray-3) FAILS, and plan 01 had already re-attributed them to the raised
+     ground, where they pass (4.77 / 3.32). The re-attribution happened first,
+     in plan 01, precisely so that check-02 was never red in the intermediate
+     state.
+
+     Counter-intuitive, and measured rather than assumed: darkening the page does
+     NOT improve every pair. Dark foregrounds gain contrast on a darker ground,
+     but the MID-TONE foregrounds lose it — blue-11 #0d74ce falls 4.65 -> 4.18
+     and gray-9 #8d8d8d falls 3.24 -> 2.91. Both failures are mid-tones. That is
+     the mechanical reason the answer was re-attribution and not recolouring.
+
+     The correct fix for those two was re-attribution, NOT recolouring and NOT
+     loosening a threshold. Both tokens' elements are painted entirely inside the
+     panels, and after plan 01 those panels are opaque white cards, so recording
+     the card as the ground is simply stating where the colour is really drawn.
+     Across the whole phase ZERO colour values changed, ZERO tier-1 primitives
+     were added, and ZERO thresholds were touched (check-02's TEXT_MIN / NON_TEXT_MIN
+     are byte-identical to HEAD).
+
+     ---- Phase 11 page-ground RECOMPUTATION ledger (plan 02, SURF-02 / REG-02) ----
+
+     Phase 11 merges the raised ground back into the page ground. The unified
+     surface is now white — the exact value the raised ground carried — so this
+     is the reverse of Phase 9, and the elevation ladder is two rungs again:
+     unified surface white (1.000000) > inset control surface gray-2 (0.947307).
+     EIGHT entries are affected.
+
+     SIX of them were already on the page ground. Each is RECOMPUTED, not
+     refreshed: the ground moved one whole step (gray-3 -> white), so every one
+     of these numbers moved — and all six moved UP, because a brighter ground
+     raises the contrast of a dark foreground.
+
+       pair                              need  gray-3   white   disposition
+       --color-text TEXT                 4.5   14.30   16.29   name unchanged, passes
+       --color-text-secondary TEXT       4.5    5.19    5.92   name unchanged, passes
+       --color-text-muted TEXT           4.5    5.19    5.92   name unchanged, passes
+       --color-focus NON-TEXT            3.0    5.15    5.87   name unchanged, passes
+       --color-border-hover NON-TEXT     3.0    5.19    5.92   name unchanged, passes
+       --color-marker-active NON-TEXT    3.0    4.18    4.77   name unchanged, passes
+
+     The other TWO are RE-ATTRIBUTED, not recomputed. Phase 9 had moved them off
+     the page ground onto the raised ground; Phase 11 moves them back. Both
+     grounds are white, so their ratios are UNCHANGED — the number standing
+     still is a consequence of the two grounds sharing one value, NOT evidence
+     that nothing was recomputed. Read this sentence before concluding the
+     ledger is lazy:
+
+       pair                              need  raised   page   disposition
+       --color-marker-active TEXT        4.5    4.77    4.77   ground label -> page
+       --color-border-strong NON-TEXT    3.0    3.32    3.32   ground label -> page
+
+     The two THINNEST margins of this phase are in that set, and are called out
+     so a later reader does not nudge them: the marker's TEXT half needs 4.5 and
+     measures 4.77 (margin 0.27); the strong-border NON-TEXT half needs 3.0 and
+     measures 3.32 (margin 0.32). Any change to either foreground token, or to
+     the unified surface value itself, breaks them immediately.
+
+     Size ledger unchanged: 53 pairs (35 TEXT + 18 NON-TEXT) + 1 ordering entry.
+     The ordering entry's two operands are both drawn on --color-surface (the
+     inset ground), which this phase does NOT touch, so its ratio is unchanged
+     at 0.363. Thresholds unchanged: check-02's TEXT_MIN / NON_TEXT_MIN are
+     byte-identical to HEAD. */
 
   /* body text on its four real grounds (page, panel, sunken, amber container) */
   /* PAIR --color-text ON --color-surface-page TEXT */
@@ -515,14 +687,28 @@
   /* PAIR --color-focus ON --color-surface NON-TEXT@0.75 */
 
   /* the active sidebar panel marker (VISUAL-04 / D-18), text half: the panel
-     heading switches to the marker colour (SC 1.4.5). All three panels live
-     inside #main-pane, and #main-pane and its ancestors declare no background
-     (html, body is what sets --color-surface-page), so the ground is
-     --color-surface-page. The non-text half — the 3px inset bar, a state
-     indicator under SC 1.4.11 — sits with the other NON-TEXT pairs below. */
+     heading switches to the marker colour (SC 1.4.5). Phase 9 re-attributed this
+     ground to the raised card; Phase 11 reverses that — the three panels that
+     carry the marker now paint the same surface as the page, so the heading is
+     painted on the unified surface, measured 4.77 >= 4.5 there. The entry
+     therefore names the page ground again. The value is untouched —
+     re-attribution, not recolouring.
+     The non-text half — the 3px inset bar, a state indicator under SC 1.4.11 —
+     sits with the other NON-TEXT pairs below. */
   /* PAIR --color-marker-active ON --color-surface-page TEXT */
 
   /* non-text boundaries and state indicators (SC 1.4.11, 3:1) */
+  /* the resting input / select boundary. This token has ten consumers and every
+     one of them is a resting input / select border. The selects carry their own
+     gray-2 background and are covered by the entry just below. The inputs
+     declare NO background, so Chrome paints the UA field fill white and the
+     border is drawn on white — a fact this file already registered verbatim in
+     the hover-boundary note further down, together with the measured resting
+     ratio 3.32 on white. Phase 9 re-attributed this ground to the raised card;
+     Phase 11 merges that card back into the unified page surface, which is also
+     white, so the entry names the page ground again and the ratio is unchanged.
+     This is the honest re-location of an ALREADY-RECORDED fact, not a new
+     claim. */
   /* PAIR --color-border-strong ON --color-surface-page NON-TEXT */
   /* PAIR --color-border-strong ON --color-surface NON-TEXT */
   /* the input controls' hover boundary (INTERACT-01 / D-10): a state indicator
@@ -557,8 +743,19 @@
   /* PAIR --color-action-irreversible ON --color-surface NON-TEXT */
 
   /* the active sidebar panel marker, non-text half: the 3px inset bar is a state
-     indicator (SC 1.4.11), on the same --color-surface-page ground as its TEXT
-     half above. */
+     indicator (SC 1.4.11). Two facts, so that this entry is not read as an
+     oversight.
+
+     (a) The bar is drawn by the SAME element family as the TEXT half above —
+     both are .panel-header inside the three panels that carry the marker — so
+     its physical ground is the unified surface, and its ratio there is 4.77.
+
+     (b) It names --color-surface-page, and that is now simply the truth rather
+     than a conservative choice. Phase 9 kept this entry on the page ground
+     because the page was the STRICTER of the two (4.18 on gray-3, against the
+     raised ground's 4.77). Phase 11 merged the raised ground into the page, so
+     both halves now sit on one surface at 4.77 and the "stricter side" argument
+     is retired — not overridden, and not a reason to move the entry. */
   /* PAIR --color-marker-active ON --color-surface-page NON-TEXT */
 
   /* hierarchy assertion (SC3): the hint grey must stay strictly quieter than
@@ -591,7 +788,15 @@ html, body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1-5);
+  /* Phase 11 反转 Phase 9 / D-9-2 的间距档:灰缝 12px -> 0(SURF-03)。Phase 9 把
+     间隙当作卡片层次的载体(间隙里透出页面底色);Phase 11 里面板与页面同色,间隙不再
+     承载任何东西,分区改由**非 DOM 末位面板的一条 1px 下边线**承担。
+     `align-items: center` 与 #main-pane > section 的 max-width 是**一对仍在工作**的
+     声明(定位置 / 控行长):侧沟在几何上仍在,只是透出的已是同一档白、不可见 —— 不得
+     把它们写成「已死声明」,也不得删除(D-11-5)。
+     卡片本身不得加 margin 这条纪律**继续有效**:那会移动既有几何并可能打在 24x24
+     命中区门上,而页面级留白是未裁定项(见 STATE 的开放清单)。 */
+  gap: 0;
   overflow-y: auto;
   align-items: center;
   /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
@@ -602,19 +807,104 @@ html, body {
   min-width: 0;
 }
 
+/* 左栏四个面板的连续面(Phase 11 反转 Phase 9 的卡片语言 / SURF-01 / SURF-02)。
+   就地改写既有规则体,选择器文本与源码顺序逐字不变 —— 硬规则 3「追加,不重排」
+   的落地形态。
+
+   ① 本容器不再绘制边界:原边界色依据(取 gray-7 那一档,落地用户 2026-09-26 的
+      「边框与阴影强度」裁定)随 `border: none` 整段作废。那个浅档令牌仍是
+      .event-list / .annotation-item / .badge-answered / #latest-check 四处的边界色
+      —— 那四处不是本阶段的对象,本次不动。
+   ② 本规则体内**禁止**出现 transform / filter / will-change / contain / perspective /
+      opacity / position / z-index / overflow 任何一项。#stream-banner 是 #doc-panel 的
+      后代且 position: fixed,前六个属性会建立「fixed 定位包含块」或新层叠上下文,把它
+      钉到面板上而不是视口;overflow: hidden 会裁剪 :focus-visible 的 2px 焦点环。
+      Phase 9 曾以「.panel-header 自带中等档圆角」为左栏免掉 overflow: hidden —— 那个
+      前提已随本阶段把该圆角归零而死,不得再拿它当理由。
+   ③ 本容器不再绘制阴影:原阴影依据随 `box-shadow: none` 整段作废。
+
+   `border: none` 与紧随其后的发丝线规则是一对:前者去掉四条边,后者只给**前三个**
+   section 补一条**下边线**(可视的第一个面板顶部永不带线 —— 它就在窗口边缘,画了会
+   读成多一条)。
+
+   `width` / `max-width` 是**保留**的声明,不是死代码:两条都仍在工作(定位置 / 控行长),
+   面板两侧的沟是被「面板与页面同色」消除的,不是被删声明消除的。 */
 #main-pane > section {
   width: 100%;
   max-width: 768px;
+  background: var(--color-surface-page);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 
-/* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条) */
+/* 左栏面板之间的发丝分隔线(Phase 11 / DIV-02 / D-11-10)。**Phase 11 波次 1 新增**的规则块;
+   本次 gap-closure **就地改写**它(选择器与边框侧换向),位置一字未移。规则块按「追加,不重排」
+   纪律紧随其所有者 #main-pane > section 之后(与 Phase 10 把 .markdown-body th 的规则放在被
+   改写的 th, td 规则正后方同一手法)。
+
+   为什么只 3 条:键控于「**非 DOM 末子元素**」。`#main-pane` 的 DOM 末子元素是 `#ai-panel`
+   ⇒ 恰命中**前三个** section,每个带一条**下边线**;末位的 `#ai-panel` 不带线。
+
+   ⚠ **机制前提(承重,不得删除这条登记):** `#ai-panel` 是 `#main-pane` 的 DOM 末子元素,
+   **且 `frontend/app.js` 从不给它加 `.hidden`**(全文只有 `#ai-panel-header` / `#ai-panel-body`
+   两个元素引用,没有任何一处对 `#ai-panel` 自身做 classList 切换)。**正因为这条前提,
+   「除 DOM 末个外都加下边线」才等价于「除最后一个可见 section 外都加下边线」。** 前提一旦被
+   破坏(日后给 `#ai-panel` 加了隐藏切换,或在其后插入新的 section),规则即失效 —— 最后一个
+   可见面板会多画一条下边线。
+
+   契约:可见的发丝线数 == 可见面板数 − 1(每对相邻可见面板之间恰 1 条、窗口边缘 0 条)。可视的
+   第一个面板**顶部永不带线**(它至多带下边线),故**永不**在窗口边缘(`#main-pane` 的 `top == 0`)
+   画线 —— 这正是本规则取**下边线**而非上边线的原因:`#session-panel` 被 `.hidden` 隐藏时
+   (p3 / checking / archive),可视的第一个面板是 `#annotations-panel` / `#checks-panel`,
+   它们就在窗口顶上;上边线会在 y == 0 处画出设计明令禁止的一条线。
+
+   特异性:本选择器现在是 **1-1-1**(`:not()` 取其实参中最具体者的特异性,`:last-child` 是伪类,
+   贡献 0-1-0;加一个类型选择器 section 即 0-0-1),
+   仍高于 #main-pane > section(1-0-1),故它对下边框的声明稳定胜出,与源码先后无关 ——
+   但仍按「追加,不重排」放在其所有者正后方。
+
+   档位取 gray-6:它已是 .event-list / .annotation-item / .badge-answered / #latest-check
+   四处的边界色 ⇒ 零新增令牌、零新增颜色值。D-11-8 显式否决的备选是 gray-7 那一档:
+   它更重,且其两处卡片消费者搬走后只剩 .markdown-body blockquote 一处,语义会从
+   「卡片边界」漂成「引用条」。
+
+   线宽等于**内容列宽**(受 #main-pane > section 的 max-width 约束),不是主区全宽 ——
+   与参照物「分隔线随内容列等宽」一致。
+
+   **不登记 NON-TEXT 对比度对**:这条线不标识任何控件、不标识任何状态 ⇒ SC 1.4.11
+   不适用。这不是本阶段的新判据,而是本文件里**既有**的两处登记:
+   ① role-band 段 —— the other three borders stay in band 6-8: they are decorative,
+      and SC 1.4.11 does not apply to a border that identifies nothing
+   ② PAIR 清单头部 —— Decorative separators are deliberately absent — SC 1.4.11 does
+      not apply to a border that identifies nothing
+   反证:gray-6 在白面上仅 1.412,若按 NON-TEXT 阈值 3.0 判即 FAIL;要让线达标就得换
+   gray-9(3.319),那会把发丝线变成深灰框,与去卡片化的目标相反。 */
+#main-pane > section:not(:last-child) { border-bottom: 1px solid var(--color-border-subtle); }
+
+/* 右:文档面板(基准宽由 --doc-panel-w 控制;收起态为 48px 竖条)
+
+   Phase 11 反转 Phase 9 的同族卡片语言(D-11-2 / D-11-9):四边边界收成**单边竖线**,
+   底色改归统一面。原「四边边界 + 卡片底色」的读感由此消失,故这里是就地改写那条声明,
+   不是追加一条 border 覆盖它(留下一条已死的声明会让注释与代码互相矛盾)。
+   `border-left` 是**盒内**手段:零新增 DOM 元素、零位移,且天然跨满 #doc-panel 整高
+   (#app 是 align-items: stretch 的 flex 行)—— 用 margin 或额外元素撑高会移动既有几何。
+   竖线只落左边,不得留任何顶侧 border/offset:check-05 --item 8 的 sticky 容差
+   (`abs(header.top - panel.top) <= 1.0`)今天恰好坐在边界上,残留的顶侧边框会把它顶破。
+   `overflow-y: auto` 是**承重的滚动契约**,不得删除:它是右列的滚动者,L-1 的 sticky
+   表头依赖 #doc-panel 仍是最近的可滚祖先。
+
+   **这条竖线不登记 NON-TEXT 对比度对**:与左栏横线同理,它是装饰性分隔 —— 不标识任何
+   控件、不标识任何状态 ⇒ SC 1.4.11 不适用(依据同上,本文件既有的两处登记:role-band
+   段的「they are decorative, and SC 1.4.11 does not apply to a border that identifies
+   nothing」与 PAIR 清单头部的「Decorative separators are deliberately absent」)。 */
 #doc-panel {
   flex: 0 0 var(--doc-panel-w);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   border-left: 1px solid var(--color-border-subtle);
-  background: var(--color-surface);
+  background: var(--color-surface-page);
   /* L-3 / D-09:#app 的两个 flex 子项都是 min-width: auto ⇒ flex-basis 不是硬约束,
      min-width: auto 胜出,长不可断内容能把 #doc-panel 顶得比它的 clamp() 还宽。
      上面的 anywhere 落地后 min-content 会塌缩,本行看似冗余 —— 它不依赖「六个目标
@@ -640,16 +930,19 @@ html, body {
 
 /* D-03 / D-05:sticky 表头 —— 把「恒可见」补回来,不改 badge 的流内机制。
    背景是必需的,不是可选:`.panel-header` 规则体内没有任何 background 声明,
-   sticky 之后正文会从标题行底下穿过去。`--color-surface` 与 `#doc-panel` 自身背景
-   同值且已被消费(`:474`)⇒ 零新增令牌。
+   sticky 之后正文会从标题行底下穿过去。Phase 11 只改它的**归属令牌**:表头底色与
+   统一面同值(都取页面令牌),sticky 的遮挡机制保持 —— 滚动正文不会从表头底下穿出来,
+   也不会在面板上出现一条比面板更暗的条带。**声明本身不得删除。**
    不加 z-index:sticky 元素是 positioned,默认画在静态内容之上;实测若有穿透再补,
    届时须连带登记 `--z-*` 的序关系断言(badge 10 < banner 20 < overlay 100 < selection-menu 200)。
-   border-radius: 0:半径在本元素上是加背景之后才**首次可见**的新视觉物,而 10px 圆角
-   会让滚动正文从四角露出;全宽条带没有卡片边缘需要圆角。 */
+   border-radius: 0:**一字不动**。Phase 9 之前这里的理由是「10px 圆角会让滚动正文从
+   四角露出」,卡片化反转了那个前提、改说「卡片圆角本来就该在四角裁切」;Phase 11 又把
+   容器圆角整个去掉 ⇒ 那条理由整段作废。它现在是一条**显式的零值**,不依赖任何裁切
+   论证,故一字不动。 */
 #doc-panel-header {
   position: sticky;
   top: 0;
-  background: var(--color-surface);
+  background: var(--color-surface-page);
   border-radius: 0;
 }
 
@@ -670,13 +963,16 @@ html, body {
 .inline-error { color: var(--color-action-danger); font-size: var(--text-base); margin: var(--space-1-5) 0 0; }
 
 /* 面板与折叠态 */
+/* Phase 11 / D-11-7:圆角归零。活动面板标记是 .panel-header 上的 `inset 3px 0 0` 竖条,
+   10px 圆角会把竖条上下端剪成收尖的弧 —— 它今天不可见只是因为 .panel-header 无背景色,
+   那是巧合,不是设计。`#doc-panel-header` 自身的零圆角因 ID 特异性早已胜出,故对它零影响。 */
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 36px;
   padding: var(--space-1-5) var(--space-2-5);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   cursor: pointer;
   user-select: none;
 }
@@ -685,7 +981,12 @@ html, body {
 
 .collapse-indicator { font-size: var(--text-lg-plus); line-height: var(--lh-none); }
 
-.panel-body { padding: var(--space-2-5); }
+/* Phase 9 / D-9-2:左栏 4 个面板的正文内边距取紧凑档 16px(HEAD 是 10px)。这是
+   .panel-body 唯一的声明,四个面板一致生效 —— 两条更具体的规则(#session-panel /
+   #checks-panel 的 .panel-body)都只声明 display / flex / gap,不声明 padding,
+   故无覆盖冲突。右栏 #doc-panel-body 是 id 选择器且元素不带该类,逐字不受影响
+   (它有 check-05 item 4 的活断言 `padding == "32px 40px"`)。 */
+.panel-body { padding: var(--space-4); }
 .panel-body.collapsed { display: none; }
 
 /* 探针控制行 */
@@ -917,12 +1218,36 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   padding: var(--space-half) var(--space-3);
   color: var(--color-text-muted);
 }
+/* 表格语言(D-10-1):表头浅底 + 仅横向分隔线。五件事逐条记下,缺一会被后来者读成任选或漏改。
+
+   (a) 档位依据:表头底色取 --color-surface,即 Phase 9 建立的三级 elevation 刻度里的
+   「内陷面」档 —— 页面(gray-3) < 内陷面(gray-2) < 白卡片。表格因此读作「白卡片内的
+   一个内陷块」,而不是与卡片语言无关的电子表格式网格。不得改落页面档,也不得改落原语。
+
+   (b) 就地改写:原「四条边取 --color-border」那条声明是就地改写成「四边零宽度 + 一条下边线」,
+   不是追加一条覆盖规则 —— 留下一条已死的声明会让注释与代码互相矛盾(与 Phase 9 对
+   #doc-panel 的左边框同一纪律)。
+
+   (c) 分隔线档位:行间分隔线与表头下边线同取 --color-border-subtle(gray-6,既有的容器
+   边界令牌,#doc-panel 与 .event-list 在用),比原 --color-border(gray-7)浅一档。它是
+   装饰性边界、不标识任何东西,故 SC 1.4.11 不适用、不新增 NON-TEXT 条目 —— 依据是
+   本文件两处既有登记,不是本阶段的判断:role-band 段的「border band 6-8」那一段写明
+   其余三条边界留在 6-8 是因为它们是装饰性的、SC 1.4.11 不适用于不标识任何东西的边界;
+   对比度配对清单头部同样写明装饰性分隔线被刻意略去。
+
+   (d) 零新增配对:表头的文字色从 .markdown-body 继承(即 --color-text),它在新的
+   内陷面绘制面上的配对早已登记在清单里(文字色 on --color-surface 那一条)⇒ 零新增条目。
+
+   (e) 不得碰:padding 与 font-size 两行逐字保留 —— font-size 被 scripts/check-05-ui-uat.py
+   的一条活断言锁死。行间不与相邻行画双线,由上方那条既有的 border-collapse 折叠规则承担。 */
 .markdown-body table { border-collapse: collapse; }
 .markdown-body th, .markdown-body td {
-  border: 1px solid var(--color-border);
+  border: none;
+  border-bottom: 1px solid var(--color-border-subtle);
   padding: var(--space-1) var(--space-2-5);
   font-size: var(--text-base);
 }
+.markdown-body th { background: var(--color-surface); }
 .markdown-body code {
   background: var(--color-surface-sunken);
   border-radius: var(--radius-sm);
@@ -1007,9 +1332,15 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   line-height: var(--lh-reading);
   word-break: break-word;
 }
+/* .chat-user:圆角收敛里**唯一外观真变**的消费者 —— 28px 的大圆角气泡收进卡片档
+   (--radius-md,10px),与 Phase 9 建立的卡片语言同族;气泡尾巴的尖角仍取 --radius-sm
+   (8px 的 border-bottom-right-radius,逐字保留)。
+   ⚠ 不得把它与 #chat-input-row input「统一」成同一个令牌:那一处 min-height: 52px,
+   28px 早已被 UA 钳成胶囊 ⇒ 它的真实形态是胶囊档。两处去向不同是刻意的,是本阶段
+   的承重点。 */
 .chat-user {
   align-self: flex-end;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--color-surface-user);
   color: var(--color-text);
   border-bottom-right-radius: var(--radius-sm);
@@ -1033,12 +1364,17 @@ button.danger { color: var(--color-action-danger); border-color: var(--color-act
   gap: var(--space-2);
   margin-top: var(--space-2-5);
 }
+/* #chat-input-row input:改记 --radius-pill 是**如实登记**,不是外观改动 —— 该元素
+   min-height: 52px,28px 的圆角早已被 UA 钳到约一半高度,它实际就是一个胶囊。
+   ⚠ 上面这条算术**不是**本条的判据:外观零变化由 radius-snapshots/ 里收敛前后的三份
+   并排读数承担(computed style 键级 diff + getBoundingClientRect() 逐值比对 + 元素
+   截图逐字节比对)。 */
 #chat-input-row input {
   flex: 1;
   min-height: 52px;
   padding: var(--space-1-5) var(--space-2-5);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   box-shadow: var(--shadow-composer);
   font-size: var(--text-md);
 }
@@ -1325,7 +1661,7 @@ button.primary {
   padding: var(--space-1-5) var(--space-2);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  background: var(--color-surface-page);
   font-size: var(--text-base);
 }
 #check-controls { display: flex; flex-direction: column; gap: var(--space-2); }

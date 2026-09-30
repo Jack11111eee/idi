@@ -1,0 +1,9 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+PROBE mutation-applied=yes
+PASS [mutated] .hint color == var(--color-text-muted) (pre-fix): expected=rgb(32, 32, 32) actual=rgb(32, 32, 32)
+PROBE mutated-prefix-verdict=PASS
+BLOCKED [mutated] .hint color == var(--color-text-muted) (post-fix): expected=<UNRESOLVED> actual=rgb(32, 32, 32)  # 令牌未声明或期望值解析失败
+PROBE mutated-postfix-verdict=BLOCKED
+PROBE contrast-table: pre_fix_expected=rgb(32, 32, 32) | hint_computed=rgb(32, 32, 32) | pre-fix verdict=PASS | post-fix verdict=BLOCKED
+PASS [control] .hint color == var(--color-text-muted): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+PROBE control-verdict=PASS

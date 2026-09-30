@@ -1,0 +1,525 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+INFO tmp: 临时工作目录 /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e(--keep 可保留)
+INFO browser: Playwright 自带 chromium(revision 1243,已缓存,零下载)
+INFO browser.version: 153.0.8010.12
+
+=== UAT 1: SC4 browser 实检 — six .hidden-only elements ===
+INFO [p1] #draft-empty: display=block offsetParent_is_null=False
+PASS [p1] #draft-empty 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p1] #rounds-hint: display=block offsetParent_is_null=True
+PASS [p1] #rounds-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p1] #btn-process-round: display=block offsetParent_is_null=False
+PASS [p1] #btn-process-round 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p1] #round-switcher: display=block offsetParent_is_null=True
+PASS [p1] #round-switcher 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p1] #writing-hint: display=block offsetParent_is_null=True
+PASS [p1] #writing-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p1] #session-panel: display=flex offsetParent_is_null=False
+PASS [p1] #session-panel 自身未被 .hidden 藏: expected=display!=none actual=flex
+INFO [p12] #draft-empty: display=none offsetParent_is_null=True
+PASS [p12] #draft-empty 自身 .hidden 生效: expected=none actual=none
+INFO [p12] #rounds-hint: display=block offsetParent_is_null=True
+PASS [p12] #rounds-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p12] #btn-process-round: display=block offsetParent_is_null=False
+PASS [p12] #btn-process-round 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p12] #round-switcher: display=block offsetParent_is_null=True
+PASS [p12] #round-switcher 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p12] #writing-hint: display=block offsetParent_is_null=True
+PASS [p12] #writing-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p12] #session-panel: display=flex offsetParent_is_null=False
+PASS [p12] #session-panel 自身未被 .hidden 藏: expected=display!=none actual=flex
+INFO [p3] #draft-empty: display=block offsetParent_is_null=True
+PASS [p3] #draft-empty 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p3] #rounds-hint: display=none offsetParent_is_null=True
+PASS [p3] #rounds-hint 自身 .hidden 生效: expected=none actual=none
+INFO [p3] #btn-process-round: display=block offsetParent_is_null=False
+PASS [p3] #btn-process-round 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p3] #round-switcher: display=block offsetParent_is_null=False
+PASS [p3] #round-switcher 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p3] #writing-hint: display=block offsetParent_is_null=True
+PASS [p3] #writing-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [p3] #session-panel: display=none offsetParent_is_null=True
+PASS [p3] #session-panel 自身 .hidden 生效: expected=none actual=none
+INFO [checking] #draft-empty: display=block offsetParent_is_null=True
+PASS [checking] #draft-empty 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [checking] #rounds-hint: display=none offsetParent_is_null=True
+PASS [checking] #rounds-hint 自身 .hidden 生效: expected=none actual=none
+INFO [checking] #btn-process-round: display=block offsetParent_is_null=False
+PASS [checking] #btn-process-round 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [checking] #round-switcher: display=none offsetParent_is_null=True
+PASS [checking] #round-switcher 自身 .hidden 生效: expected=none actual=none
+INFO [checking] #writing-hint: display=block offsetParent_is_null=True
+PASS [checking] #writing-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [checking] #session-panel: display=none offsetParent_is_null=True
+PASS [checking] #session-panel 自身 .hidden 生效: expected=none actual=none
+INFO [archive] #draft-empty: display=block offsetParent_is_null=True
+PASS [archive] #draft-empty 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [archive] #rounds-hint: display=none offsetParent_is_null=True
+PASS [archive] #rounds-hint 自身 .hidden 生效: expected=none actual=none
+INFO [archive] #btn-process-round: display=none offsetParent_is_null=True
+PASS [archive] #btn-process-round 自身 .hidden 生效: expected=none actual=none
+INFO [archive] #round-switcher: display=block offsetParent_is_null=False
+PASS [archive] #round-switcher 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [archive] #writing-hint: display=block offsetParent_is_null=True
+PASS [archive] #writing-hint 自身未被 .hidden 藏: expected=display!=none actual=block
+INFO [archive] #session-panel: display=none offsetParent_is_null=True
+PASS [archive] #session-panel 自身 .hidden 生效: expected=none actual=none
+PASS [p3] #draft-empty 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #rounds-hint 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #btn-process-round 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #round-switcher 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #writing-hint 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #session-panel 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #selection-menu 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #annotations-panel 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #checks-panel 强制 .hidden → 隐藏: expected=none actual=none
+PASS [p3] #draft-empty 摘掉 .hidden → 自身可见: expected=display!=none actual=block
+PASS [p3] #rounds-hint 摘掉 .hidden → 自身可见: expected=display!=none actual=block
+PASS [p3] #btn-process-round 摘掉 .hidden → 自身可见: expected=display!=none actual=block
+PASS [p3] #round-switcher 摘掉 .hidden → 自身可见: expected=display!=none actual=block
+PASS [p3] #writing-hint 摘掉 .hidden → 自身可见: expected=display!=none actual=block
+PASS [p3] #session-panel 摘掉 .hidden → 自身可见: expected=display!=none actual=flex
+INFO item1 覆盖说明: #writing-hint 在 5 个样本状态中没有任何一格是「app.js 给自身加 .hidden」——它只被祖先 #writing-view 藏住;其自身 .hidden 由上面的强制加类断言覆盖
+
+=== UAT 2: 冻结轮 backstop ===
+PASS [p3→round1] #round-doc 带 round-frozen: expected=round-frozen in classList actual=['markdown-body', 'round-frozen']
+INFO [p3→round1] box-shadow 原始值: 'rgb(79, 52, 34) 3px 0px 0px 0px inset'
+INFO [p3→round1] 令牌解析 --color-action-warning: rgb(79, 52, 34)
+PASS [p3→round1] 冻结轮 box-shadow 语义(inset/3px/0/0/0/amber): expected=inset 3px 0 0 rgb(79, 52, 34) actual=rgb(79, 52, 34) 3px 0px 0px 0px inset  # Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等
+INFO [p3→round1] UAT 字面子串: 'inset 3px 0 0 rgb(79, 52, 34)' present=False —— Chrome 把颜色放在最前、inset 放在最后,该字面序不存在(harness 规格修正,非产品缺陷)
+PASS [p3→round1] 冻结轮 opacity: expected=1 actual=1
+PASS [p3→round1] 冻结轮 filter: expected=saturate(0.6) actual=saturate(0.6)
+PASS [p3→round1] 正文对比度: expected=>=4.5:1 actual=ratio=16.29 (color=rgb(32, 32, 32) on bg=rgb(255, 255, 255))
+INFO [p3→round1] blockquote 比值(诊断,非正文): ratio=5.92 (color=rgb(100, 100, 100) on bg=rgb(255, 255, 255)) —— --color-text-muted = --radix-gray-11 = #646464(即 rgb(100,100,100)),在 --color-surface 上 5.62:1、在 --color-surface-page 上 5.77:1,两者均达标 AA
+
+=== UAT 3: DevTools computed-style 抽查 — Plan 01(13 项)===
+INFO item3 令牌解析(p1): --color-text-muted=rgb(100, 100, 100) --color-border-strong=rgb(141, 141, 141) --color-action-warning=rgb(79, 52, 34)
+INFO item3 令牌解析(p1): --color-kind-write=rgb(33, 131, 88) --color-kind-done=rgb(32, 32, 32) --color-surface-user=rgb(232, 232, 232)
+PASS [p1] .hint color == var(--color-text-muted): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+PASS [p1] #ai-route-select border-top-color == var(--color-border-strong): expected=rgb(141, 141, 141) actual=rgb(141, 141, 141)
+PASS [p1] #selection-menu border-top-color == var(--color-border-strong): expected=rgb(141, 141, 141) actual=rgb(141, 141, 141)
+PASS [p1] #stream-banner border-top-color == var(--color-action-warning): expected=rgb(79, 52, 34) actual=rgb(79, 52, 34)
+PASS [p1] .overlay-card box-shadow 含 rgba(0,0,0,0.2): expected=contains rgba(0, 0, 0, 0.2) actual=rgba(0, 0, 0, 0.2) 0px 8px 30px 0px
+PASS [p1] .kind-write .event-kind background == var(--color-kind-write): expected=rgb(33, 131, 88) actual=rgb(33, 131, 88)
+PASS [p1] .kind-done .event-kind background == var(--color-kind-done): expected=rgb(32, 32, 32) actual=rgb(32, 32, 32)
+PASS [p1] .chat-user background == var(--color-surface-user): expected=rgb(232, 232, 232) actual=rgb(232, 232, 232)
+INFO item3 构造说明: .kind-write/.kind-done/.chat-user 三处用应用自身的 renderEvent/appendChatMessage 渲染探针节点(真实代码路径,零 AI 调用、零网络)
+INFO item3 令牌解析(p3): --color-action-irreversible=rgb(25, 59, 45) --color-action-irreversible-fg=rgb(255, 255, 255) --color-action-irreversible-surface=rgb(25, 59, 45)
+INFO item3 令牌解析(p3): --color-text-info=rgb(13, 116, 206) --color-surface-info=rgb(244, 250, 255) --color-text-muted=rgb(100, 100, 100)
+PASS [p3] #btn-authorize color == var(--color-action-irreversible-fg): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)
+PASS [p3] #btn-authorize border-color == var(--color-action-irreversible): expected=rgb(25, 59, 45) actual=rgb(25, 59, 45)
+PASS [p3] #btn-authorize background-color == var(--color-action-irreversible-surface): expected=rgb(25, 59, 45) actual=rgb(25, 59, 45)
+INFO item3 三档读数: routine=('rgb(25, 59, 45)', 'rgb(33, 131, 88)', 'rgb(230, 246, 235)') commit=('rgb(255, 255, 255)', 'rgb(33, 131, 88)', 'rgb(33, 131, 88)') irreversible=('rgb(255, 255, 255)', 'rgb(25, 59, 45)', 'rgb(25, 59, 45)')
+PASS [p3] routine 三只三属性逐字节相同: expected=1 actual=1  # 档内相同是承重的:它能抓到「改错了一只」
+PASS [p3] commit 两只三属性逐字节相同: expected=1 actual=1
+PASS [p3] routine / commit / irreversible 三档两两不同: expected=3 actual=3  # 核心价值红线:授权绝不与例行/承诺按钮在计算样式上混同
+PASS [p3] #state-badge color == var(--color-text-info): expected=rgb(13, 116, 206) actual=rgb(13, 116, 206)
+PASS [p3] #state-badge background-color == var(--color-surface-info): expected=rgb(244, 250, 255) actual=rgb(244, 250, 255)
+PASS [p3] .badge-answered color == var(--color-text-muted): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+
+=== UAT 4: DevTools computed-style 抽查 — Plan 02(16 项)===
+INFO item4 令牌解析: --color-action-warning=rgb(79, 52, 34)
+PASS [p1] .panel-header padding-top: expected=6px actual=6px
+PASS [p1] .panel-header padding-left: expected=10px actual=10px
+PASS [p1] #doc-panel-body padding: expected=32px 40px actual=32px 40px
+PASS [p1] button padding-top(通用规则,探针 #btn-enter): expected=6px actual=6px
+PASS [p1] button padding-left(通用规则,探针 #btn-enter): expected=10px actual=10px
+PASS [p1] .overlay-card padding-top: expected=24px actual=24px
+INFO item4 .overlay-card: padding=24px 32px
+PASS [p1] #brainstorm-view margin-top: expected=24px actual=24px
+INFO item4 #brainstorm-view: padding=12px 14px(D-16 映射值,非 24px)
+PASS [p1] #brainstorm-view h2 font-size == var(--text-md): expected=16px actual=16px
+PASS [p1] #brainstorm-view h2 color == var(--color-action-warning): expected=rgb(79, 52, 34) actual=rgb(79, 52, 34)
+PASS [p1] #draft-view h2 font-size: expected=18px actual=18px
+PASS [p1] .panel-header h2 font-size: expected=14px actual=14px
+PASS [p1] .overlay-card h3 font-size: expected=24px actual=24px
+PASS [p1] .markdown-body font-size(探针 #draft-content): expected=16px actual=16px
+INFO item4 令牌解析(文档标题字号): --text-3xl=28px --text-2xl=22px --text-lg=18px
+PASS [p1] #draft-content h1 font-size == var(--text-3xl): expected=28px actual=28px
+PASS [p1] #draft-content h2 font-size == var(--text-2xl): expected=22px actual=22px
+PASS [p1] #draft-content h3 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] #brainstorm-content h1 font-size == var(--text-3xl): expected=28px actual=28px
+PASS [p1] #brainstorm-content h2 font-size == var(--text-2xl): expected=22px actual=22px
+PASS [p1] #brainstorm-content h3 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] #round-doc h1 font-size == var(--text-3xl): expected=28px actual=28px
+PASS [p1] #round-doc h2 font-size == var(--text-2xl): expected=22px actual=22px
+PASS [p1] #round-doc h3 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] #latest-check h1 font-size == var(--text-3xl): expected=28px actual=28px
+PASS [p1] #latest-check h2 font-size == var(--text-2xl): expected=22px actual=22px
+PASS [p1] #latest-check h3 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] .markdown-body code font-size: expected=14px actual=14px
+INFO item4 令牌解析(TYPE-02 复证): --text-base=14px --color-text-muted=rgb(100, 100, 100)
+PASS [p1] .markdown-body td font-size == var(--text-base): expected=14px actual=14px
+PASS [p1] .markdown-body blockquote color == var(--color-text-muted): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+INFO item4 令牌解析(字重档): --fw-medium=500 --fw-semibold=600
+PASS [p1] #btn-approve-draft font-weight == 500(--fw-medium): expected=500 actual=500
+PASS [p1] #btn-process-round font-weight == 500(--fw-medium): expected=500 actual=500
+PASS [p1] #btn-start-writing font-weight == 500(--fw-medium): expected=500 actual=500
+PASS [p1] #btn-continue-check font-weight == 500(--fw-medium): expected=500 actual=500
+PASS [p1] #btn-continue-repair font-weight == 500(--fw-medium): expected=500 actual=500
+PASS [p1] #btn-authorize font-weight == 600(--fw-semibold,D-12 唯一例外): expected=600 actual=600
+INFO item4 令牌解析(D-13 字号步进): --text-md=16px
+PASS [p1] #btn-authorize font-size == var(--text-md)(D-13): expected=16px actual=16px
+PASS [p1] #doc-panel-header h1 font-size: expected=14px actual=14px
+PASS [p1] #doc-panel-header h1 font-weight: expected=500 actual=500
+PASS [p1] #doc-pane 选择器不存在(契约漂移登记,D-01): expected=false actual=False  # 契约文本引用的 #doc-pane > h1 从来不是 HEAD 上的选择器
+INFO item4 页面级层级链(SC3): 文档 h1=28px > .overlay-card h3(模态)=24px > 文档 h2=22px > #doc-panel-header h1(容器标签)=14px
+PASS [p1] 页面级层级链 文档h1 > 模态h3 > 文档h2 > 容器标签h1(严格降序): expected=28 > 24 > 22 > 14 actual=28 > 24 > 22 > 14  # SC3:全屏最大最重的文字是文档自己的 h1,不是容器标签
+INFO item4 令牌解析(z-index): --z-selection-menu=200 --z-badge=10 --z-banner=20
+PASS [p1] #selection-menu z-index == var(--z-selection-menu): expected=200 actual=200
+PASS [p1] #state-badge z-index == var(--z-badge): expected=10 actual=10
+PASS [p1] #stream-banner z-index == var(--z-banner): expected=20 actual=20
+INFO [p1] 令牌解析 --color-marker-active: rgb(13, 116, 206)
+INFO [p1] #session-panel .panel-header box-shadow 原始值: 'rgb(13, 116, 206) 3px 0px 0px 0px inset'
+PASS [p1] 活动面板竖条 box-shadow 语义(inset/3px/0/0/0/marker): expected=inset 3px 0 0 rgb(13, 116, 206) actual=rgb(13, 116, 206) 3px 0px 0px 0px inset  # Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等
+PASS [p1] 活动面板标题 color == var(--color-marker-active): expected=rgb(13, 116, 206) actual=rgb(13, 116, 206)
+PASS [p1] 对照组 #ai-panel .panel-header box-shadow == none: expected=none actual=none
+PASS [p1] 对照组 #doc-panel-header box-shadow == none: expected=none actual=none
+PASS [p1] .verdict-location::before width: expected=12px actual=12px
+PASS [p1] .verdict-location::before height: expected=12px actual=12px
+PASS [p1] .verdict-location::before background-color == var(--color-text-secondary): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+INFO [p1] .verdict-location::before mask-image 原始值: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M6 0 C3.5 0 1.6 1.9 1.6 4.3 C1.6 6.2 3.4 8.4 6 12 C8.6 8.4 10.4 6.2 10.4 4.3 C10.4 1.9 8.5 0 6 0 Z M6 2.6 C7.5 2.6 8.7 3.8 8.7 5.2 C8.7 6.6 7.5 7.8 6 7.8 C4.5 7.8 3.3 6.6 3.3 5.2 C3.3 3.8 4.5 2.6 6 2.6 Z\'/%3E%3C/svg%3E")'
+PASS [p1] .verdict-location::before mask-image 接上 var(--icon-location): expected=!=none actual=url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0 C3.5 0 1.6 1.9 1.6 4.3 C1.6 6.2 3.4 8.4 6 12 C8.6 8.4 10.4 6.2 10.4 4.3 C10.4 1.9 8.5 0 6 0 Z M6 2.6 C7.5 2.6 8.7 3.8 8.7 5.2 C8.7 6.6 7.5 7.8 6 7.8 C4.5 7.8 3.3 6.6 3.3 5.2 C3.3 3.8 4.5 2.6 6 2.6 Z'/%3E%3C/svg%3E")
+PASS [p3→round1] #round-doc 带 round-frozen: expected=round-frozen in classList actual=['markdown-body', 'round-frozen']
+INFO [p3→round1] box-shadow 原始值: 'rgb(79, 52, 34) 3px 0px 0px 0px inset'
+INFO [p3→round1] 令牌解析 --color-action-warning: rgb(79, 52, 34)
+PASS [p3→round1] 冻结轮 box-shadow 语义(inset/3px/0/0/0/amber): expected=inset 3px 0 0 rgb(79, 52, 34) actual=rgb(79, 52, 34) 3px 0px 0px 0px inset  # Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等
+INFO [p3→round1] UAT 字面子串: 'inset 3px 0 0 rgb(79, 52, 34)' present=False —— Chrome 把颜色放在最前、inset 放在最后,该字面序不存在(harness 规格修正,非产品缺陷)
+PASS [p3→round1] 冻结轮 opacity: expected=1 actual=1
+PASS [p3→round1] 冻结轮 filter: expected=saturate(0.6) actual=saturate(0.6)
+INFO [p3] 令牌解析 --color-marker-active: rgb(13, 116, 206)
+INFO [p3] #annotations-panel .panel-header box-shadow 原始值: 'rgb(13, 116, 206) 3px 0px 0px 0px inset'
+PASS [p3] 活动面板竖条 box-shadow 语义(inset/3px/0/0/0/marker): expected=inset 3px 0 0 rgb(13, 116, 206) actual=rgb(13, 116, 206) 3px 0px 0px 0px inset  # Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等
+PASS [p3] 活动面板标题 color == var(--color-marker-active): expected=rgb(13, 116, 206) actual=rgb(13, 116, 206)
+PASS [p3] 对照组 #ai-panel .panel-header box-shadow == none: expected=none actual=none
+PASS [p3] 对照组 #doc-panel-header box-shadow == none: expected=none actual=none
+INFO [checking] 令牌解析 --color-marker-active: rgb(13, 116, 206)
+INFO [checking] #checks-panel .panel-header box-shadow 原始值: 'rgb(13, 116, 206) 3px 0px 0px 0px inset'
+PASS [checking] 活动面板竖条 box-shadow 语义(inset/3px/0/0/0/marker): expected=inset 3px 0 0 rgb(13, 116, 206) actual=rgb(13, 116, 206) 3px 0px 0px 0px inset  # Chrome 序列化为 'color x y blur spread inset',故用语义解析而非子串全等
+PASS [checking] 活动面板标题 color == var(--color-marker-active): expected=rgb(13, 116, 206) actual=rgb(13, 116, 206)
+PASS [checking] 对照组 #ai-panel .panel-header box-shadow == none: expected=none actual=none
+PASS [checking] 对照组 #doc-panel-header box-shadow == none: expected=none actual=none
+PASS [archive] #rounds-placeholder.archive-mode #round-doc opacity: expected=0.75 actual=0.75
+INFO item4 令牌解析: --color-text=rgb(32, 32, 32)
+PASS [archive] button color(通用规则,探针 #btn-enter) == var(--color-text): expected=rgb(32, 32, 32) actual=rgb(32, 32, 32)
+PASS S-2 DEPENDENCY --text-base 存活为 14px: expected=14px actual=14px  # Phase 5 SC5 / Phase 6 SC5 的下游门依赖此档
+
+=== UAT 5: DevTools computed-style 抽查 — Plan 03(10 项)===
+PASS [p1] #ai-route-select border-top-color == var(--color-border-strong): expected=rgb(141, 141, 141) actual=rgb(141, 141, 141)
+PASS [p1] #ai-route-select background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)
+PASS [p1] .hint color == var(--color-text-muted): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+PASS [p1] .hint 实际背景 == var(--color-surface-page): expected=rgb(255, 255, 255) actual=rgb(255, 255, 255)  # .hint 自身无背景,沿祖先链取到的实际底色
+PASS [p1] #stream-banner border-top-color == var(--color-action-warning): expected=rgb(79, 52, 34) actual=rgb(79, 52, 34)
+PASS [p1] .markdown-body color == var(--color-text): expected=rgb(32, 32, 32) actual=rgb(32, 32, 32)
+PASS [p1] .markdown-body 亮度显著低于 .hint: expected=< actual=lum(.markdown-body)=0.0144 lum(.hint)=0.1274  # ORDER 0.363 的可观察形态
+BLOCKED [p3] 交互冒烟「处理本轮批注」: expected=无错误完成 actual=<未执行>  # 需要真实 AI 调用,默认不执行;加 --ai-smoke 重跑
+BLOCKED [p3] 交互冒烟「发送」: expected=无错误完成 actual=<未执行>  # 需要真实 AI 调用,默认不执行;加 --ai-smoke 重跑
+
+=== UAT 6: CR-06 渲染结果 ===
+INFO item6 details: opened=True
+INFO item6 --color-text-muted 解析值: rgb(100, 100, 100)
+PASS CR-06 用户批注 .annotation-note color: expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+PASS CR-06 AI 回应正文 .annotation-answer-body color: expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+PASS [p3] .annotation-quote::before width: expected=12px actual=12px
+PASS [p3] .annotation-quote::before height: expected=12px actual=12px
+PASS [p3] .annotation-quote::before background-color == var(--color-text-secondary): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)
+INFO [p3] .annotation-quote::before mask-image 原始值: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M6 0.6 L8.8 2.2 L8.8 5.2 L10.6 7.4 L7.1 7.4 L7.1 10.6 L6 12 L4.9 10.6 L4.9 7.4 L1.4 7.4 L3.2 5.2 L3.2 2.2 Z\'/%3E%3C/svg%3E")'
+PASS [p3] .annotation-quote::before mask-image 接上 var(--icon-pin): expected=!=none actual=url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 0.6 L8.8 2.2 L8.8 5.2 L10.6 7.4 L7.1 7.4 L7.1 10.6 L6 12 L4.9 10.6 L4.9 7.4 L1.4 7.4 L3.2 5.2 L3.2 2.2 Z'/%3E%3C/svg%3E")
+
+=== UAT 7: 五个嵌入渲染目标的标题刻度(G-idi-05-1 / SC3)===
+INFO item7 渲染目标枚举: doc=['#draft-content', '#brainstorm-content', '#round-doc', '#latest-check'] embedded=['.event-content', '.chat-bubble', '.say-chunk', '.annotation-note', '.annotation-answer-body']
+INFO item7 容器创建: {'created': {'.event-content': True, '.chat-bubble': True, '.say-chunk': True, '.annotation-note': True, '.annotation-answer-body': True}}
+INFO item7 令牌解析: --text-xl=24px --text-lg=18px --text-md=16px --fw-semibold=600
+PASS [p1] .event-content h1 font-size == var(--text-xl): expected=24px actual=24px
+PASS [p1] .event-content h1 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .event-content h2 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] .event-content h2 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .event-content h3 font-size == var(--text-md): expected=16px actual=16px
+PASS [p1] .event-content h3 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .chat-bubble h1 font-size == var(--text-xl): expected=24px actual=24px
+PASS [p1] .chat-bubble h1 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .chat-bubble h2 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] .chat-bubble h2 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .chat-bubble h3 font-size == var(--text-md): expected=16px actual=16px
+PASS [p1] .chat-bubble h3 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .say-chunk h1 font-size == var(--text-xl): expected=24px actual=24px
+PASS [p1] .say-chunk h1 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .say-chunk h2 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] .say-chunk h2 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .say-chunk h3 font-size == var(--text-md): expected=16px actual=16px
+PASS [p1] .say-chunk h3 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .annotation-note h1 font-size == var(--text-xl): expected=24px actual=24px
+PASS [p1] .annotation-note h1 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .annotation-note h2 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] .annotation-note h2 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .annotation-note h3 font-size == var(--text-md): expected=16px actual=16px
+PASS [p1] .annotation-note h3 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .annotation-answer-body h1 font-size == var(--text-xl): expected=24px actual=24px
+PASS [p1] .annotation-answer-body h1 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .annotation-answer-body h2 font-size == var(--text-lg): expected=18px actual=18px
+PASS [p1] .annotation-answer-body h2 font-weight == var(--fw-semibold): expected=600 actual=600
+PASS [p1] .annotation-answer-body h3 font-size == var(--text-md): expected=16px actual=16px
+PASS [p1] .annotation-answer-body h3 font-weight == var(--fw-semibold): expected=600 actual=600
+INFO item7 文档 h1: #draft-content h1 = 28.0px
+PASS [p1] 文档 h1 严格大于 .event-content h1(SC3): expected=>24px actual=28px  # SC3:全屏最大最重的文字是文档自己的 h1
+PASS [p1] 文档 h1 严格大于 .chat-bubble h1(SC3): expected=>24px actual=28px  # SC3:全屏最大最重的文字是文档自己的 h1
+PASS [p1] 文档 h1 严格大于 .say-chunk h1(SC3): expected=>24px actual=28px  # SC3:全屏最大最重的文字是文档自己的 h1
+PASS [p1] 文档 h1 严格大于 .annotation-note h1(SC3): expected=>24px actual=28px  # SC3:全屏最大最重的文字是文档自己的 h1
+PASS [p1] 文档 h1 严格大于 .annotation-answer-body h1(SC3): expected=>24px actual=28px  # SC3:全屏最大最重的文字是文档自己的 h1
+PASS [p1] 五个渲染目标无第四字重档 700(契约只声明 400/500/600): expected=无 700 actual=600,600,600,600,600,600,600,600,600,600,600,600,600,600,600
+PASS app.js 的 renderMarkdown( 计数 == 11(1 定义 + 10 调用点): expected=11 actual=11  # 调用点数变了 ⇒ 按调用点更新 MARKDOWN_TARGETS,再跑本项
+PASS MARKDOWN_TARGETS 条数 == 9(与调用点枚举一一对应): expected=9 actual=9  # 渲染目标数变了 ⇒ 按调用点更新 MARKDOWN_TARGETS,再跑本项
+
+=== UAT 8: L-1 徽标收口 —— 流内 badge + sticky 表头(D-06)===
+INFO item8 样本: p1(会话流活动态,#state-badge 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/p1-w9hbkrl5/p1
+PASS [p1] #state-badge position == static: expected=static actual=static  # L-1 承重约束 1:流内机制一字不动
+PASS [p1] #state-badge right 无声明: expected=auto actual=auto  # L-1 承重约束 1:不得给它加 right(加回浮层会复活 LAYOUT-03 的遮挡)
+INFO item8 [768px] badge × banner 原始 rect: badge={'left': 638.96875, 'right': 739.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} display=inline | banner={'left': 285.34375, 'right': 482.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27} display=block
+PASS [p1 @768px] #state-badge 与 #stream-banner 不相交: expected=不相交 actual=badge={'left': 638.96875, 'right': 739.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} banner={'left': 285.34375, 'right': 482.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27}  # L-1 的门断言几何不相交,不是「横幅不存在」
+INFO item8 [1024px] badge × banner 原始 rect: badge={'left': 894.96875, 'right': 995.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} display=inline | banner={'left': 413.34375, 'right': 610.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27} display=block
+PASS [p1 @1024px] #state-badge 与 #stream-banner 不相交: expected=不相交 actual=badge={'left': 894.96875, 'right': 995.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} banner={'left': 413.34375, 'right': 610.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27}  # L-1 的门断言几何不相交,不是「横幅不存在」
+INFO item8 [1280px] badge × banner 原始 rect: badge={'left': 1150.96875, 'right': 1251.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} display=inline | banner={'left': 541.34375, 'right': 738.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27} display=block
+PASS [p1 @1280px] #state-badge 与 #stream-banner 不相交: expected=不相交 actual=badge={'left': 1150.96875, 'right': 1251.890625, 'top': 7, 'bottom': 32, 'width': 100.921875, 'height': 25} banner={'left': 541.34375, 'right': 738.65625, 'top': 12, 'bottom': 39, 'width': 197.3125, 'height': 27}  # L-1 的门断言几何不相交,不是「横幅不存在」
+INFO item8 sticky 原始数值: scrollTop=4348 scrollHeight=5248 clientHeight=900 header={'top': 0, 'bottom': 34, 'left': 1009, 'right': 1440} panel={'top': 0, 'bottom': 900, 'left': 1008, 'right': 1440}
+PASS [p1] 滚动到底后 #doc-panel-header 仍落在 #doc-panel 可视区内: expected=header.bottom > panel.top 且 header.top < panel.bottom actual=header={'top': 0, 'bottom': 34, 'left': 1009, 'right': 1440} panel={'top': 0, 'bottom': 900, 'left': 1008, 'right': 1440}  # sticky 生效:标题行钉在面板顶部而非随正文滚走
+PASS [p1] sticky 把 #doc-panel-header 钉在 #doc-panel 顶部(<=1px): expected=|header.top - panel.top| <= 1px actual=0.000px
+INFO item8 L-2 文档级溢出 @1440px(波次 2 之后:L-3 / L-4 已落地;面板内部横向滚动条不计入): scrollWidth=1440 clientWidth=1440 overflow=0px docPanelWidth=432
+PASS [@1440px] 文档级 scrollWidth <= clientWidth: expected=scrollWidth <= clientWidth actual=1440 <= 1440  # LAYOUT-02 的字面承诺:≥1024px 无横向溢出
+PASS [@1440px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界: expected=<= 432.0px actual=432.0px  # L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽(文档级 scrollWidth 对该失效模式结构性失明)
+INFO item8 L-2 文档级溢出 @1024px(波次 2 之后:L-3 / L-4 已落地;面板内部横向滚动条不计入): scrollWidth=1024 clientWidth=1024 overflow=0px docPanelWidth=340
+PASS [@1024px] 文档级 scrollWidth <= clientWidth: expected=scrollWidth <= clientWidth actual=1024 <= 1024  # LAYOUT-02 的字面承诺:≥1024px 无横向溢出
+PASS [@1024px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界: expected=<= 340.0px actual=340.0px  # L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽(文档级 scrollWidth 对该失效模式结构性失明)
+INFO item8 L-2 文档级溢出 @768px(波次 2 之后:L-3 / L-4 已落地;面板内部横向滚动条不计入): scrollWidth=768 clientWidth=768 overflow=0px docPanelWidth=340
+INFO item8 L-2 @768px: 保持只读诊断(768px 处的承诺是「无内容遮挡」,该承诺未被覆盖:badge × banner 断言只测 badge 那一对,banner × #doc-panel-header 的 h1 不在覆盖范围内 —— 显式「未覆盖」。实测:h1 = 439.0–481.0 × 8–28 vs banner = 285.3–482.7 × 12–39,重叠 42×16px,相交带 768–855px。这是已知缺口(既未满足、也未断言),收窄已登记在 idi-06-UI-SPEC.md §L-2(A-10 行))
+PASS [@768px] #doc-panel 实测宽 <= clamp(340px, 30vw, 480px) 上界: expected=<= 340.0px actual=340.0px  # L-2 的判别性探针:长不可断内容不得把面板顶得比它声明的宽还宽(文档级 scrollWidth 对该失效模式结构性失明)
+INFO item8 [static] L-2 守卫形态: frontend/style.css 里 '@media' 计数=1 命中行=[2034];Phase 7 的减弱动效媒体块 ⇒ 期望 1(L-2 的窄窗口守卫仍走「被实测推翻」支、仍未写出 —— 两者不是同一件事)
+PASS [static] frontend/style.css 的 @media 出现次数 == 决策(Phase 7 的 prefers-reduced-motion 块 ⇒ 1;L-2 的窄窗口守卫仍未写出): expected=1 actual=1  # 该断言读文件文本而非渲染结果,与几何断言互补。删掉那个减弱动效媒体块必须把本常量改回 0;L-2 的窄窗口守卫若日后实测证成并写出,须同步改本常量与 idi-06-03-SUMMARY.md 的决策记录
+INFO item8 [p1] L-5 clearance 普查(可聚焦元素 × 最近裁剪祖先 × 实测 clearance;阈值 4px): 18 对
+INFO item8 [p1] L-5 clearance: #message-input × #main-pane = 136.0px visible=True intersects=True rect={'left': 136, 'top': 413, 'right': 802, 'bottom': 465, 'width': 666, 'height': 52}
+INFO item8 [p1] L-5 clearance: #btn-send × #main-pane = 136.0px visible=True intersects=True rect={'left': 810, 'top': 413, 'right': 872, 'bottom': 465, 'width': 62, 'height': 52}
+INFO item8 [p1] L-5 clearance: #check-switcher × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-continue-check × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-continue-repair × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #ai-route-select × #main-pane = 46.0px visible=True intersects=True rect={'left': 136, 'top': 820, 'right': 288, 'bottom': 854, 'width': 152, 'height': 34}
+INFO item8 [p1] L-5 clearance: #project-path-input × #main-pane = 46.0px visible=True intersects=True rect={'left': 296, 'top': 820, 'right': 586, 'bottom': 854, 'width': 290, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-ping × #main-pane = 46.0px visible=True intersects=True rect={'left': 594, 'top': 820, 'right': 700, 'bottom': 854, 'width': 106, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-process-round × #main-pane = 46.0px visible=True intersects=True rect={'left': 708, 'top': 820, 'right': 814, 'bottom': 854, 'width': 106, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-abort × #main-pane = 46.0px visible=True intersects=True rect={'left': 822, 'top': 820, 'right': 872, 'bottom': 854, 'width': 50, 'height': 34}
+INFO item8 [p1] L-5 clearance: #enter-path-input × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 68, 'right': 1342, 'bottom': 102, 'width': 293, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-enter × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1350, 'top': 68, 'right': 1400, 'bottom': 102, 'width': 50, 'height': 34}
+INFO item8 [p1] L-5 clearance: #btn-divergence × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 185.9375, 'right': 1267.34375, 'bottom': 223.9375, 'width': 218.34375, 'height': 38}
+INFO item8 [p1] L-5 clearance: #btn-approve-draft × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 373.9375, 'right': 1139, 'bottom': 411.9375, 'width': 90, 'height': 38}
+INFO item8 [p1] L-5 clearance: #round-switcher × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #round-doc × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-authorize × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-5 clearance: #btn-start-writing × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p1] L-6 命中区普查(可交互元素 rect;阈值 24×24): 28 个
+INFO item8 [p1] L-6 命中区: #message-input w=666.0 h=52.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-send w=62.0 h=52.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #check-switcher w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-continue-check w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-continue-repair w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #ai-route-select w=152.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #project-path-input w=290.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-ping w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-process-round w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-abort w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #enter-path-input w=293.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-enter w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-divergence w=218.3 h=38.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #btn-approve-draft w=90.0 h=38.0 visible=True below24=False
+INFO item8 [p1] L-6 命中区: #round-switcher w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-authorize w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-start-writing w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-permission-allow w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-permission-deny w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #confirm-word-input w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-confirm-authorize w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-confirm-cancel w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-tier-loose w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-tier-strict w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-mission-close w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-annotate w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #btn-plain-ask w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p1] L-6 命中区: #cli-recheck-btn w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-5 clearance 普查(可聚焦元素 × 最近裁剪祖先 × 实测 clearance;阈值 4px): 19 对
+INFO item8 [p3] L-5 clearance: #message-input × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-send × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: summary × #main-pane = 115.0px visible=True intersects=True rect={'left': 149, 'top': 115, 'right': 859, 'bottom': 139, 'width': 710, 'height': 24}
+INFO item8 [p3] L-5 clearance: #check-switcher × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-continue-check × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-continue-repair × #main-pane = 0.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #ai-route-select × #main-pane = 136.0px visible=True intersects=True rect={'left': 136, 'top': 274, 'right': 288, 'bottom': 308, 'width': 152, 'height': 34}
+INFO item8 [p3] L-5 clearance: #project-path-input × #main-pane = 274.0px visible=True intersects=True rect={'left': 296, 'top': 274, 'right': 586, 'bottom': 308, 'width': 290, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-ping × #main-pane = 274.0px visible=True intersects=True rect={'left': 594, 'top': 274, 'right': 700, 'bottom': 308, 'width': 106, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-process-round × #main-pane = 194.0px visible=True intersects=True rect={'left': 708, 'top': 274, 'right': 814, 'bottom': 308, 'width': 106, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-abort × #main-pane = 136.0px visible=True intersects=True rect={'left': 822, 'top': 274, 'right': 872, 'bottom': 308, 'width': 50, 'height': 34}
+INFO item8 [p3] L-5 clearance: #enter-path-input × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1049, 'top': 66, 'right': 1342, 'bottom': 100, 'width': 293, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-enter × #doc-panel = 40.0px visible=True intersects=True rect={'left': 1350, 'top': 66, 'right': 1400, 'bottom': 100, 'width': 50, 'height': 34}
+INFO item8 [p3] L-5 clearance: #btn-divergence × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #btn-approve-draft × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-5 clearance: #round-switcher × #doc-panel = 110.8px visible=True intersects=True rect={'left': 1119.796875, 'top': 144, 'right': 1275.796875, 'bottom': 172, 'width': 156, 'height': 28}
+INFO item8 [p3] L-5 clearance: #round-doc × #doc-panel = -63.6px visible=True intersects=True rect={'left': 1049, 'top': 188, 'right': 1400, 'bottom': 963.640625, 'width': 351, 'height': 775.640625}
+INFO item8 [p3] L-5 clearance: #btn-authorize × #doc-panel = -119.6px visible=True intersects=False rect={'left': 1049, 'top': 979.640625, 'right': 1227, 'bottom': 1019.640625, 'width': 178, 'height': 40}
+INFO item8 [p3] L-5 clearance: #btn-start-writing × #doc-panel = -1009.0px visible=False intersects=False rect={'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'width': 0, 'height': 0}
+INFO item8 [p3] L-6 命中区普查(可交互元素 rect;阈值 24×24): 29 个
+INFO item8 [p3] L-6 命中区: #message-input w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-send w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: summary w=710.0 h=24.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #check-switcher w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-continue-check w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-continue-repair w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #ai-route-select w=152.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #project-path-input w=290.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-ping w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-process-round w=106.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-abort w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #enter-path-input w=293.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-enter w=50.0 h=34.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-divergence w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-approve-draft w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #round-switcher w=156.0 h=28.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-authorize w=178.0 h=40.0 visible=True below24=False
+INFO item8 [p3] L-6 命中区: #btn-start-writing w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-permission-allow w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-permission-deny w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #confirm-word-input w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-confirm-authorize w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-confirm-cancel w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-tier-loose w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-tier-strict w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-mission-close w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-annotate w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #btn-plain-ask w=0.0 h=0.0 visible=False below24=None
+INFO item8 [p3] L-6 命中区: #cli-recheck-btn w=0.0 h=0.0 visible=False below24=None
+
+=== UAT 9: L-4 面板区滚动容器收敛(D-14)===
+INFO item9 样本: p1(会话流活动态,#session-panel / #ai-events 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/p1-r8t1ui5g/p1
+INFO item9 [p1] 面板区滚动者普查(实测数组): 3 个:['#main-pane', '#chat-messages', '#latest-check']
+PASS [p1] 面板区滚动者集合 == {#main-pane, #chat-messages, #latest-check}: expected=['#chat-messages', '#latest-check', '#main-pane'] actual=['#chat-messages', '#latest-check', '#main-pane']  # 口径取「恰好」而非「至多」:意外新增第四个滚动者会在这里 FAIL
+PASS [p1] 排除 #chat-messages(SC#3 明文豁免)后 == {#main-pane, #latest-check}: expected=['#latest-check', '#main-pane'] actual=['#latest-check', '#main-pane']  # D-14 第 1 条的字面读法:面板区内恰好两个滚动容器
+PASS [p1] #ai-events 计算 max-height == none: expected=none actual=none  # L-4:套娃第一层(55vh 限高 + 内滚动)已原地删除
+PASS [p1] #annotation-list 计算 max-height == none: expected=none actual=none  # L-4:套娃第二层(32vh 限高 + 内滚动)已原地删除
+PASS [p1] #chat-messages overflow-y == auto: expected=auto actual=auto  # D-12:输入行必须钉底,会话流滚动者按保留项对待
+INFO item9 [static] #latest-check 保留项护栏: frontend/style.css 里 'max-height: 30vh;' 计数=1 命中行=[1651]
+PASS [static] frontend/style.css 的 max-height: 30vh 声明计数 == 1: expected=1 actual=1  # 删掉它会去掉 #latest-check 的内部滚动、把裁决按钮推出视口 ⇒ 若要改口径,先更新本断言与 UI-SPEC §L-4 的保留理由
+INFO item9 [p1] 自动跟随原始读数: before=0 after=1721 scrollHeight=2646 clientHeight=900 pane=[0,900] last=[848,900] 末条='说话第 39 条自动跟随探针:把面板撑到可滚。\n'
+PASS [p1] 自动跟随:#main-pane 随应用自身的 renderEvent 滚到最新条目: expected=before=0 ∧ after>0 ∧ 末条 rect ⊆ #main-pane 可见盒 actual=after=1721 last=[848,900] pane=[0,900]  # 与 (b)「末条内容可达」的区别:(b) 先自设 c.scrollTop = scrollHeight 再读 rect,测显式滚动后可达;本条 JS 内零 scrollTop 赋值,测应用自身把新条目滚入视野
+INFO item9 [p1] #main-pane 末条内容可达 原始数值: scrollHeight=4966 clientHeight=900 scrollTop=4066 last=#ai-panel lastRect={'top': -3866, 'bottom': 900, 'left': 120, 'right': 888, 'width': 768, 'height': 4766} container={'top': 0, 'bottom': 900, 'left': 0, 'right': 1008, 'width': 1008, 'height': 900}
+PASS [p1] #main-pane 滚到底(scrollTop + clientHeight >= scrollHeight - 1): expected=>= 4965 actual=4966
+PASS [p1] #main-pane 末条子元素落在容器可视区内: expected=container.top <= last.bottom <= container.bottom + 1 actual=last.bottom=900 container=[0, 900]  # 内容末端可达:末条不被限高截断到可视区之外
+INFO item9 样本: checking(自检报告态,#checks-panel / #latest-check 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/checking-40wnkbvd/checking
+INFO item9 [checking] #latest-check 末条内容可达 原始数值: scrollHeight=4585 clientHeight=268 scrollTop=4317 last=p lastRect={'top': 321.9375, 'bottom': 344.6875, 'left': 145, 'right': 863, 'width': 718, 'height': 22.75} container={'top': 90, 'bottom': 360, 'left': 136, 'right': 872, 'width': 736, 'height': 270}
+PASS [checking] #latest-check 滚到底(scrollTop + clientHeight >= scrollHeight - 1): expected=>= 4584 actual=4585
+PASS [checking] #latest-check 末条子元素落在容器可视区内: expected=container.top <= last.bottom <= container.bottom + 1 actual=last.bottom=344.6875 container=[90, 360]  # 内容末端可达:末条不被限高截断到可视区之外
+INFO item9 [p1] L-5 clearance 普查(全部原始行): 18 对:[('#message-input', '#main-pane', 136, True, True), ('#btn-send', '#main-pane', 136, True, True), ('#check-switcher', '#main-pane', 0, False, False), ('#btn-continue-check', '#main-pane', 0, False, False), ('#btn-continue-repair', '#main-pane', 0, False, False), ('#ai-route-select', '#main-pane', 46, True, True), ('#project-path-input', '#main-pane', 46, True, True), ('#btn-ping', '#main-pane', 46, True, True), ('#btn-process-round', '#main-pane', 46, True, True), ('#btn-abort', '#main-pane', 46, True, True), ('#enter-path-input', '#doc-panel', 40, True, True), ('#btn-enter', '#doc-panel', 40, True, True), ('#btn-divergence', '#doc-panel', 40, True, True), ('#btn-approve-draft', '#doc-panel', 40, True, True), ('#round-switcher', '#doc-panel', -1009, False, False), ('#round-doc', '#doc-panel', -1009, False, False), ('#btn-authorize', '#doc-panel', -1009, False, False), ('#btn-start-writing', '#doc-panel', -1009, False, False)]
+PASS [p1] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= 4px: expected=全部 >= 4px actual=共 11 行(另有 0 行内容区声明),未达标 []  # 4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)
+INFO item9 [p1] L-6 命中区普查(可见行;阈值 24×24): 11 个:[('#message-input', 666, 52), ('#btn-send', 62, 52), ('#ai-route-select', 152, 34), ('#project-path-input', 290, 34), ('#btn-ping', 106, 34), ('#btn-process-round', 106, 34), ('#btn-abort', 50, 34), ('#enter-path-input', 293, 34), ('#btn-enter', 50, 34), ('#btn-divergence', 218.34375, 38), ('#btn-approve-draft', 90, 38)]
+PASS [p1] 每个可交互元素的计算盒宽高均 >= 24px: expected=全部 >= 24px actual=共 11 行,未达标 []  # WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width 两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开
+INFO item9 [checking] L-5 clearance 普查(全部原始行): 18 对:[('#message-input', '#main-pane', 0, False, False), ('#btn-send', '#main-pane', 0, False, False), ('#check-switcher', '#main-pane', 52, True, True), ('#btn-continue-check', '#main-pane', 136, True, True), ('#btn-continue-repair', '#main-pane', 0, False, False), ('#ai-route-select', '#main-pane', 136, True, True), ('#project-path-input', '#main-pane', 296, True, True), ('#btn-ping', '#main-pane', 308, True, True), ('#btn-process-round', '#main-pane', 194, True, True), ('#btn-abort', '#main-pane', 136, True, True), ('#enter-path-input', '#doc-panel', 40, True, True), ('#btn-enter', '#doc-panel', 40, True, True), ('#btn-divergence', '#doc-panel', -1009, False, False), ('#btn-approve-draft', '#doc-panel', -1009, False, False), ('#round-switcher', '#doc-panel', -1009, False, False), ('#round-doc', '#doc-panel', 40, False, True), ('#btn-authorize', '#doc-panel', -1009, False, False), ('#btn-start-writing', '#doc-panel', -1009, False, False)]
+PASS [checking] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= 4px: expected=全部 >= 4px actual=共 9 行(另有 0 行内容区声明),未达标 []  # 4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)
+INFO item9 [checking] L-6 命中区普查(可见行;阈值 24×24): 9 个:[('#check-switcher', 736, 28), ('#btn-continue-check', 736, 34), ('#ai-route-select', 152, 34), ('#project-path-input', 290, 34), ('#btn-ping', 106, 34), ('#btn-process-round', 106, 34), ('#btn-abort', 50, 34), ('#enter-path-input', 293, 34), ('#btn-enter', 50, 34)]
+PASS [checking] 每个可交互元素的计算盒宽高均 >= 24px: expected=全部 >= 24px actual=共 9 行,未达标 []  # WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width 两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开
+INFO item9 样本: p3(批注面板可见态,#annotations-panel / #annotation-list 可见)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/p3-ttu06c8h/p3
+INFO item9 [p3] L-5 clearance 普查(全部原始行): 19 对:[('#message-input', '#main-pane', 0, False, False), ('#btn-send', '#main-pane', 0, False, False), ('summary', '#main-pane', 115, True, True), ('#check-switcher', '#main-pane', 0, False, False), ('#btn-continue-check', '#main-pane', 0, False, False), ('#btn-continue-repair', '#main-pane', 0, False, False), ('#ai-route-select', '#main-pane', 136, True, True), ('#project-path-input', '#main-pane', 274, True, True), ('#btn-ping', '#main-pane', 274, True, True), ('#btn-process-round', '#main-pane', 194, True, True), ('#btn-abort', '#main-pane', 136, True, True), ('#enter-path-input', '#doc-panel', 40, True, True), ('#btn-enter', '#doc-panel', 40, True, True), ('#btn-divergence', '#doc-panel', -1009, False, False), ('#btn-approve-draft', '#doc-panel', -1009, False, False), ('#round-switcher', '#doc-panel', 110.8, True, True), ('#round-doc', '#doc-panel', -63.6, True, True), ('#btn-authorize', '#doc-panel', -119.6, True, False), ('#btn-start-writing', '#doc-panel', -1009, False, False)]
+INFO item9 [p3] L-5 声明集(内容区,不断言): [('#round-doc', '#doc-panel', 775.6, 900, -63.6)] —— 高度 >= 容器 padding 盒的 50% 即可聚焦内容区:环在浏览器滚入视野后必然贴边(见 L5_CONTENT_REGION_MIN_RATIO 的注释)
+PASS [p3] L-5 每个裁剪容器 × 可聚焦后代的 clearance >= 4px: expected=全部 >= 4px actual=共 9 行(另有 1 行内容区声明),未达标 []  # 4px = Phase 7 的 outline: 2px + outline-offset: 2px 的环外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」(UI-SPEC §L-5 的决策规则)
+INFO item9 [p3] L-6 命中区普查(可见行;阈值 24×24): 10 个:[('summary', 710, 24), ('#ai-route-select', 152, 34), ('#project-path-input', 290, 34), ('#btn-ping', 106, 34), ('#btn-process-round', 106, 34), ('#btn-abort', 50, 34), ('#enter-path-input', 293, 34), ('#btn-enter', 50, 34), ('#round-switcher', 156, 28), ('#btn-authorize', 178, 40)]
+INFO item9 [p3] 命中区断言的主要对象: <summary> 实测 [('summary', 710, 24)]
+PASS [p3] 每个可交互元素的计算盒宽高均 >= 24px: expected=全部 >= 24px actual=共 10 行,未达标 []  # WCAG 2.5.8 按字面走尺寸,不走间距例外。未达标者只补 min-height / min-width 两条声明(机制锁定,见 UI-SPEC §L-6),不动 padding、不用 ::after 撑开
+
+=== UAT 10: A11Y-01 焦点环(D-05 / D-16 / D-17)===
+INFO item10 [static] :focus-visible 计数: 计数=1(只数代码,注释提及不计;规则块起始行=[1847]);期望 >= 1
+PASS [static] frontend/style.css 的 :focus-visible 计数 >= 1: expected=>= 1 actual=1  # 判据是 `>=` 而不是 `==`:七选择器枚举天然大于 1,日后按枚举纪律新增一类可聚焦元素会让它继续变大 —— 相等判据会把「按纪律扩展」误判成回归。计的是**规则块数**(注释剔除后),不是全文件子串数:后者会把散文提及算进来,规则删光也仍然 PASS
+INFO item10 [static] 焦点规则块: 块起始行=[1847];块内全部声明=[(1854, 'outline'), (1855, 'outline-offset')]
+PASS [static] 没有任何含 :focus-visible 的规则块设置 border / padding: expected=0 条 border / padding 声明 actual=0 条:[]  # D-05:焦点规则只能用不参与布局的 outline —— border / padding 会 reflow #probe-controls 并位移。必须用**块提取**而不是全文件 grep:全文件里 border / padding 到处都是,只有块内计数能回答「焦点规则自己设了没有」。失败时按上面行号定位到具体规则与属性
+INFO item10 [static] 减弱动效 × 新增过渡: prefers-reduced-motion 计数=1;transition: background-color 120ms 计数=1;**本断言不证明「同提交」** —— 「同提交」是 git 维度的事实,文件文本断言在结构上无法证明它。本断言只退化为「两者同时存在」。同提交只能落成计划 / 评审义务:本计划的 Task 1 已把它写进 <verify> 与 <done>,并由那一次提交的 diff 承载
+PASS [static] prefers-reduced-motion 与新增过渡同时存在: expected=>= 1 且 >= 1 actual=1 / 1  # ⚠ 本断言**不证明同提交**(见上面 INFO 行):它只证明两者同时存在。「同提交」是 git 维度的事实,只能由计划 / 评审义务承担
+INFO item10 [static] 令牌声明 / 消费: --color-focus: 围栏内声明=1 围栏外消费=1
+PASS [static] --color-focus 围栏内声明 == 1 且围栏外被消费 > 0: expected=声明 1 且消费 > 0 actual=声明 1 / 消费 1  # 硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— 裸令牌名不是消费
+INFO item10 [static] 令牌声明 / 消费: --color-surface-active: 围栏内声明=1 围栏外消费=1
+PASS [static] --color-surface-active 围栏内声明 == 1 且围栏外被消费 > 0: expected=声明 1 且消费 > 0 actual=声明 1 / 消费 1  # 硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— 裸令牌名不是消费
+INFO item10 [static] 令牌声明 / 消费: --color-border-hover: 围栏内声明=1 围栏外消费=1
+PASS [static] --color-border-hover 围栏内声明 == 1 且围栏外被消费 > 0: expected=声明 1 且消费 > 0 actual=声明 1 / 消费 1  # 硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— 裸令牌名不是消费
+INFO item10 [static] 令牌声明 / 消费: --color-overlay-hover: 围栏内声明=1 围栏外消费=1
+PASS [static] --color-overlay-hover 围栏内声明 == 1 且围栏外被消费 > 0: expected=声明 1 且消费 > 0 actual=声明 1 / 消费 1  # 硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— 裸令牌名不是消费
+INFO item10 [static] 令牌声明 / 消费: --color-overlay-active: 围栏内声明=1 围栏外消费=1
+PASS [static] --color-overlay-active 围栏内声明 == 1 且围栏外被消费 > 0: expected=声明 1 且消费 > 0 actual=声明 1 / 消费 1  # 硬规则 5「与消费者同提交」的机械形态:声明侧抓改名残留(声明了两次),消费侧抓死令牌(声明了却没人用)。围栏外只认 var() 形态 —— 裸令牌名不是消费
+INFO item10 [static] FOCUSABLE_SELECTOR ↔ :focus-visible: CSS 侧(规则块起始行=1847)= ['button', 'input', 'select', 'textarea', 'a[href]', 'summary', '[tabindex]'];Python 侧(常量定义行=1762)= ['button', 'input', 'select', 'textarea', 'a[href]', 'summary', '[tabindex]'];对称差=[]
+PASS [static] FOCUSABLE_SELECTOR 与 :focus-visible 枚举逐项(含顺序)一致: expected=['button', 'input', 'select', 'textarea', 'a[href]', 'summary', '[tabindex]'] actual=['button', 'input', 'select', 'textarea', 'a[href]', 'summary', '[tabindex]']  # 两侧必须**同一次改完,永远不要只改一侧**。只改 CSS ⇒ 门仍按旧集合普查,「规则覆盖了谁」与「门检查了谁」重新分叉而**门会绿**(静默缩水,即 G-idi-05-1 的成因);只改常量 ⇒ 普查会枚举到 CSS 规则没给环的元素,item 10 的运行时普查会报「未覆盖数 > 0」(症状是响的、不是静的)。**哪一侧权威:** CSS 规则是**真正授予环**的工件,常量是门对它的**镜像** —— 先判断本次改动的本意(是「规则要多覆盖一类可聚焦元素」还是「常量被误收窄」),再把另一侧同步到它,不要两边各改一半。**顺序也要一致:** 同一份列表、同一顺序;确需换序时两侧一起换。失败时到 `frontend/style.css` 文件末尾改该规则的选择器,并同步本文件的 `FOCUSABLE_SELECTOR`
+INFO item10 样本: p1(会话流活动态)→ /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/p1-izk5jm1f/p1
+INFO item10 令牌解析: --color-focus=rgb(31, 99, 189)
+INFO item10 [p1] 焦点环普查(全部原始行:标签 / visible / focusable / 采样到的 outline-width / outline-color): 29 个元素:[('#message-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-send', True, True, '2px', 'rgb(31, 99, 189)'), ('#check-switcher', False, True, None, None), ('#btn-continue-check', False, True, None, None), ('#btn-continue-repair', False, True, None, None), ('#ai-route-select', True, True, '2px', 'rgb(31, 99, 189)'), ('#project-path-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-ping', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-process-round', True, False, None, None), ('#btn-abort', True, True, '2px', 'rgb(31, 99, 189)'), ('#enter-path-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-enter', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-divergence', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-approve-draft', True, False, None, None), ('#round-switcher', False, True, None, None), ('#round-doc', False, True, None, None), ('#btn-authorize', False, False, None, None), ('#btn-start-writing', False, True, None, None), ('#btn-permission-allow', False, True, None, None), ('#btn-permission-deny', False, True, None, None), ('#confirm-word-input', False, True, None, None), ('#btn-confirm-authorize', False, False, None, None), ('#btn-confirm-cancel', False, True, None, None), ('#btn-tier-loose', False, True, None, None), ('#btn-tier-strict', False, True, None, None), ('#btn-mission-close', False, True, None, None), ('#btn-annotate', False, True, None, None), ('#btn-plain-ask', False, True, None, None), ('#cli-recheck-btn', False, True, None, None)]
+INFO item10 [p1] Tab 序列(全部原始载荷): [{'label': '#btn-divergence', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#message-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-send', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-divergence', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#message-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-send', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-divergence', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#message-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-send', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-divergence', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#message-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-send', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}]
+PASS [p1] 焦点环覆盖全部 Tab 可达的可聚焦元素(判定集非空且未覆盖数为 0): expected=未覆盖数 == 0 actual=判定集 9 个元素,未覆盖 []  # 未覆盖者若确实是可聚焦元素 ⇒ 它不在 :focus-visible 的七选择器枚举里,到 frontend/style.css 文件末尾补它的选择器,并同步本文件的 FOCUSABLE_SELECTOR;若它其实是**不可聚焦**的(说明 focusable 漏了一类,例如被 <fieldset disabled> 包裹的控件),则改 focusable 的判定式,**不要**改 CSS
+INFO item10 [p1] SC1 Tab 序列(全部原始载荷): [{'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}]
+PASS [p1] SC1 Tab 到 #btn-abort 的 outline-width == 2px: expected=2px actual=2px  # 焦点伪类匹配=True;几何 2px + outline-offset 2px 的外伸量 = CLEARANCE_MIN_PX = 4px
+PASS [p1] SC1 Tab 到 #btn-abort 的 outline-offset == 2px(= CLEARANCE_MIN_PX - 环宽): expected=2px actual=2px  # 外伸量 = 上面那条的宽度 + 这一条,合起来才是 CLEARANCE_MIN_PX;改几何即改那个门的阈值 —— 两者不是两件事
+PASS [p1] SC1 Tab 到 #btn-abort 的 outline-color == var(--color-focus): expected=rgb(31, 99, 189) actual=rgb(31, 99, 189)  # 期望侧来自运行时解析的令牌,不硬编码 rgb
+INFO item10 [p1] SC4 撑高裁剪容器(走应用自己的渲染路径): {'#ai-events': 40, '#draft-content': 80}(#ai-events / #draft-content 的子节点数)
+INFO item10 [p1] SC4 滚到底: {'#main-pane': [1746, 2646, 900], '#chat-messages': [0, 8, 8], '#doc-panel': [4348, 5248, 900]}([scrollTop, scrollHeight, clientHeight]);真的可滚的容器=['#main-pane', '#doc-panel']
+INFO item10 [p1] SC4 clearance 普查(全部原始行): 12 行:[('#enter-path-input', '#doc-panel', 40, True), ('#btn-enter', '#doc-panel', 40, True), ('#btn-divergence', '#doc-panel', 40, True), ('body', None, None, True), ('#message-input', '#main-pane', 129, True), ('#btn-send', '#main-pane', 129, True), ('#ai-route-select', '#main-pane', 136, True), ('#project-path-input', '#main-pane', 252, True), ('#btn-ping', '#main-pane', 252, True), ('#btn-abort', '#main-pane', 136, True), ('#enter-path-input', '#doc-panel', 40, True), ('#btn-enter', '#doc-panel', 40, True)]
+PASS [p1] SC4 滚到底后每个新 Tab 聚焦元素的 clearance >= 4px: expected=全部 >= 4px actual=共 11 行,未达标 []  # 4px = 环的 outline 2px + outline-offset 2px 的外伸量。实测未达标时**只改那一个容器**的 padding 为 var(--space-1),禁止「为确定性四个全抬」
+INFO item10 [p1] 过渡读数(全部原始值): [('button', 'background-color, border-color', '0.12s, 0.12s'), ('input', 'background-color, border-color', '0.12s, 0.12s'), ('select', 'background-color, border-color', '0.12s, 0.12s'), ('.event-list', 'background-color', '0.3s')]
+PASS [p1] button / input / select 的 transition-property 含 background-color 与 border-color: expected=三个控件都含这两个属性 actual=不符:[]  # D-12 的挂载规则只声明这两个属性;opacity 与 outline-* 刻意不在列表内(D-14)
+PASS [p1] button / input / select 的 transition-duration 两项均为 0.12s: expected=[0.12s] * 2 actual=不符:[]  # Chrome 把 120ms 序列化成 '0.12s',两个属性序列化成 '0.12s, 0.12s' —— 判据先拆成列表再逐项比,不用子串包含
+PASS [p1] .event-list 的 transition-duration == 0.3s(D-11 的具名例外在运行时可见): expected=background-color 且时长 0.3s actual=prop=background-color dur=0.3s  # D-11:300ms 那个时长**不是控件态**,它服务 .streaming / .aborted 两个流式状态指示类。把「例外仍在」变成可观测事实,而不是只写在注释里
+INFO item10 [p1] reduce 下的 transition-duration(全部原始值): [('button', '0s'), ('input', '0s'), ('select', '0s'), ('.event-list', '0s')]
+PASS [p1] reduced_motion='reduce' 下 button / input / select / .event-list 的 transition-duration 全为 0s: expected=四个目标全为 0s actual=不符:[]  # D-13:按选择器重写为 none,而不是把时长压到「几乎为零」。读完后已复位 reduced_motion='no-preference',否则会污染其后各项
+INFO item10 [p1] SC5 #btn-send 填充按钮读数: sel=#btn-send rect=[62, 52] bg[静默=rgb(13, 116, 206) hover=rgb(13, 116, 206)] shadow[静默=none hover=rgba(0, 0, 0, 0.06) 0px 0px 0px 999px inset 按下=rgba(0, 0, 0, 0.12) 0px 0px 0px 999px inset] 期望 hover=rgba(0, 0, 0, 0.06) active=rgba(0, 0, 0, 0.12)
+PASS [p1] SC5 #btn-send hover 时 background-color 不变: expected=rgb(13, 116, 206) actual=rgb(13, 116, 206)  # D-08:叠层走 box-shadow 的 inset,填充色本身不动。改填充色(或加 opacity)会把白字一起压暗,三个色族会跌破 AA 4.5:1
+PASS [p1] SC5 #btn-send hover 出现 inset 叠层(含 999px 铺满分量): expected=含 'inset' 与 '999px' actual=静默=none hover=rgba(0, 0, 0, 0.06) 0px 0px 0px 999px inset  # D-08:本文件既有的 box-shadow: inset 只有 3px 竖条形态;999px 大于任何按钮的盒宽 ⇒ 等价于整面覆盖。box-shadow 不参与布局 ⇒ 零位移
+PASS [p1] SC5 #btn-send hover 叠层的颜色 == var(--color-overlay-hover): expected=含 rgba(0, 0, 0, 0.06) actual=rgba(0, 0, 0, 0.06) 0px 0px 0px 999px inset  # 期望侧来自运行时解析的令牌,不硬编码 rgba 字面量
+PASS [p1] SC5 #btn-send 按住不放时叠层的颜色 == var(--color-overlay-active): expected=含 rgba(0, 0, 0, 0.12) actual=rgba(0, 0, 0, 0.12) 0px 0px 0px 999px inset  # D-09:alpha 从 0.06 提到 0.12。这一条与上一条合起来证明按下态真的换了一份叠层,而不是 hover 读数的回声
+PASS [p1] SC5 #btn-send 按住不放时的叠层 != hover 时的叠层: expected=!= rgba(0, 0, 0, 0.06) 0px 0px 0px 999px inset actual=rgba(0, 0, 0, 0.12) 0px 0px 0px 999px inset  # 对照半场:若 active 组没有落地(或 alpha 与 hover 相同),按下读数就是 hover 读数,上面那条「含 active 颜色」的断言在有 active 组时必然成立、无 active 组时不会变红
+INFO item10 [p1] #message-input hover 边界读数: sel=#message-input 静默=rgb(141, 141, 141) hover=rgb(100, 100, 100) 期望=rgb(100, 100, 100)
+PASS [p1] #message-input hover 后 border-color == var(--color-border-hover): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)  # D-10:静默是 --color-border-strong(gray-9),hover 加深一步到 --color-border-hover(gray-11)。期望侧来自运行时解析的令牌,不硬编码 rgb
+PASS [p1] #message-input hover 后 border-color != 静默值: expected=!= rgb(141, 141, 141) actual=rgb(100, 100, 100)  # 对照半场:只断言「等于令牌值」时,若 hover 规则没生效而静默值恰好等于期望值,那条断言会静默通过
+INFO item10 [p1] SC2 目标前提: #btn-send rect=62x52 disabled=False visible=True
+INFO item10 [p1] SC2 点击前的环(证明规则此刻是活的): {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}
+INFO item10 [p1] SC2 点击后的诊断(outline-style / outline-width,不参与判定): style=none width=3px focusVisible=False
+PASS [p1] SC2 鼠标点击 #btn-send 后 outline-color != var(--color-focus): expected=!= rgb(31, 99, 189) actual=rgb(255, 255, 255)  # 点击后焦点伪类不匹配 ⇒ 不出环。这比断言 UA 基线字符串稳
+INFO item10 样本: checking → /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/checking-yttmf038/checking
+INFO item10 [checking] 焦点环普查(全部原始行:标签 / visible / focusable / 采样到的 outline-width / outline-color): 29 个元素:[('#message-input', False, True, None, None), ('#btn-send', False, True, None, None), ('#check-switcher', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-continue-check', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-continue-repair', False, True, None, None), ('#ai-route-select', True, True, '2px', 'rgb(31, 99, 189)'), ('#project-path-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-ping', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-process-round', True, False, None, None), ('#btn-abort', True, True, '2px', 'rgb(31, 99, 189)'), ('#enter-path-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-enter', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-divergence', False, True, None, None), ('#btn-approve-draft', False, False, None, None), ('#round-switcher', False, True, None, None), ('#round-doc', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-authorize', False, False, None, None), ('#btn-start-writing', False, True, None, None), ('#btn-permission-allow', False, True, None, None), ('#btn-permission-deny', False, True, None, None), ('#confirm-word-input', False, True, None, None), ('#btn-confirm-authorize', False, False, None, None), ('#btn-confirm-cancel', False, True, None, None), ('#btn-tier-loose', False, True, None, None), ('#btn-tier-strict', False, True, None, None), ('#btn-mission-close', False, True, None, None), ('#btn-annotate', False, True, None, None), ('#btn-plain-ask', False, True, None, None), ('#cli-recheck-btn', False, True, None, None)]
+INFO item10 [checking] Tab 序列(全部原始载荷): [{'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#check-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-continue-check', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#check-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-continue-check', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#check-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-continue-check', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#check-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-continue-check', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}]
+PASS [checking] 焦点环覆盖全部 Tab 可达的可聚焦元素(判定集非空且未覆盖数为 0): expected=未覆盖数 == 0 actual=判定集 9 个元素,未覆盖 []  # 未覆盖者若确实是可聚焦元素 ⇒ 它不在 :focus-visible 的七选择器枚举里,到 frontend/style.css 文件末尾补它的选择器,并同步本文件的 FOCUSABLE_SELECTOR;若它其实是**不可聚焦**的(说明 focusable 漏了一类,例如被 <fieldset disabled> 包裹的控件),则改 focusable 的判定式,**不要**改 CSS
+INFO item10 [checking] SC1 Tab 序列(全部原始载荷): [{'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}]
+PASS [checking] SC1 Tab 到 #btn-abort 的 outline-width == 2px: expected=2px actual=2px  # 焦点伪类匹配=True;几何 2px + outline-offset 2px 的外伸量 = CLEARANCE_MIN_PX = 4px
+PASS [checking] SC1 Tab 到 #btn-abort 的 outline-offset == 2px(= CLEARANCE_MIN_PX - 环宽): expected=2px actual=2px  # 外伸量 = 上面那条的宽度 + 这一条,合起来才是 CLEARANCE_MIN_PX;改几何即改那个门的阈值 —— 两者不是两件事
+PASS [checking] SC1 Tab 到 #btn-abort 的 outline-color == var(--color-focus): expected=rgb(31, 99, 189) actual=rgb(31, 99, 189)  # 期望侧来自运行时解析的令牌,不硬编码 rgb
+INFO item10 [checking] SC5-朴素按下 裁决卡构造: renderVerdictCard(...) → {'buttons': 2, 'notes': 1}
+INFO item10 [checking] SC5-朴素按下 读数: sel=#idi07-verdict-probe .verdict-buttons button rect=[36, 30] ① 静默=rgb(249, 249, 249) ② 悬停=rgb(240, 240, 240) ③ 按住不放=rgb(232, 232, 232) 期望 rgb(249, 249, 249) / rgb(240, 240, 240) / rgb(232, 232, 232)
+PASS [checking] SC5-朴素按下 ① 静默 background-color == var(--color-surface): expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # 朴素按钮的底色来自 button 基础规则(0-0-1)的 --color-surface
+PASS [checking] SC5-朴素按下 ② 悬停 background-color == var(--color-surface-hover): expected=rgb(240, 240, 240) actual=rgb(240, 240, 240)  # L587 的 hover 对朴素按钮仍然生效 —— D-07 的 gate 只排除禁用按钮,不排除朴素按钮
+PASS [checking] SC5-朴素按下 ③ 按住不放 background-color == var(--color-surface-active): expected=rgb(232, 232, 232) actual=rgb(232, 232, 232)  # 朴素 active 停在 0-1-0,高于 button 基础规则(0-0-1)⇒ 按下反馈成立
+PASS [checking] SC5-朴素按下 ③ 按住不放读数 != ② 悬停读数: expected=!= rgb(240, 240, 240) actual=rgb(232, 232, 232)  # **D-09 的判据本体。** 若 L587 的让位(:where(:not(:active)))没生效,③ 会读到 ② 的值,而上面那条「③ == surface-active」**仍然成立**(它只要求等于期望值)⇒ 只断言相等时让位失效的实现不会变红。实测相等 ⇒ 到 frontend/style.css 检查 L587 那条规则的选择器是否还带着让位
+INFO item10 [checking] 动态 .verdict-note-input hover 边界读数: sel=#idi07-verdict-probe .verdict-note-input 静默=rgb(141, 141, 141) hover=rgb(100, 100, 100) 期望=rgb(100, 100, 100)
+PASS [checking] 动态 .verdict-note-input hover 后 border-color == var(--color-border-hover): expected=rgb(100, 100, 100) actual=rgb(100, 100, 100)  # D-10:静默是 --color-border-strong(gray-9),hover 加深一步到 --color-border-hover(gray-11)。期望侧来自运行时解析的令牌,不硬编码 rgb
+PASS [checking] 动态 .verdict-note-input hover 后 border-color != 静默值: expected=!= rgb(141, 141, 141) actual=rgb(100, 100, 100)  # 对照半场:只断言「等于令牌值」时,若 hover 规则没生效而静默值恰好等于期望值,那条断言会静默通过
+INFO item10 [checking] SC5′ 禁用按钮读数: sel=#idi07-verdict-probe .verdict-buttons button 静默=rgb(249, 249, 249) hover=rgb(249, 249, 249) opacity=0.5
+PASS [checking] SC5′ 禁用按钮 hover 时 background-color == 静默值: expected=rgb(249, 249, 249) actual=rgb(249, 249, 249)  # D-07 的 gate 证明:L587 的选择器带 :where(:not(:disabled)),禁用按钮不再匹配它。实测不等 ⇒ 到 frontend/style.css 检查那条 hover 规则的选择器是否还带着 gate
+PASS [checking] SC5′ 禁用按钮的计算 opacity 仍为 0.5(未被软化): expected=0.5 actual=0.5  # 禁用态是 G3 前提条件唯一的视觉信号,不得软化;.verdict-buttons button:disabled 用的是 0.5,不是 0.55
+INFO item10 样本: p3 → /var/folders/hc/n9c_9h7j3cqd14s_pgxbv4q00000gn/T/idi-05-uat-8g_32e9e/p3-vsjjxutg/p3
+INFO item10 [p3] 焦点环普查(全部原始行:标签 / visible / focusable / 采样到的 outline-width / outline-color): 29 个元素:[('#message-input', False, True, None, None), ('#btn-send', False, True, None, None), ('#check-switcher', False, True, None, None), ('#btn-continue-check', False, True, None, None), ('#btn-continue-repair', False, True, None, None), ('#ai-route-select', True, True, '2px', 'rgb(31, 99, 189)'), ('#project-path-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-ping', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-process-round', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-abort', True, True, '2px', 'rgb(31, 99, 189)'), ('#enter-path-input', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-enter', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-divergence', False, True, None, None), ('#btn-approve-draft', False, False, None, None), ('#round-switcher', True, True, '2px', 'rgb(31, 99, 189)'), ('#round-doc', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-authorize', True, True, '2px', 'rgb(31, 99, 189)'), ('#btn-start-writing', False, True, None, None), ('#btn-permission-allow', False, True, None, None), ('#btn-permission-deny', False, True, None, None), ('#confirm-word-input', False, True, None, None), ('#btn-confirm-authorize', False, False, None, None), ('#btn-confirm-cancel', False, True, None, None), ('#btn-tier-loose', False, True, None, None), ('#btn-tier-strict', False, True, None, None), ('#btn-mission-close', False, True, None, None), ('#btn-annotate', False, True, None, None), ('#btn-plain-ask', False, True, None, None), ('#cli-recheck-btn', False, True, None, None)]
+INFO item10 [p3] Tab 序列(全部原始载荷): [{'label': '#round-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-authorize', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-process-round', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-authorize', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-process-round', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-authorize', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}, {'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#project-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-ping', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-process-round', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-abort', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#enter-path-input', 'tag': 'input', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-enter', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-switcher', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#round-doc', 'tag': 'div', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': '#btn-authorize', 'tag': 'button', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}, {'label': 'body', 'tag': 'body', 'outlineWidth': '3px', 'outlineColor': 'rgb(32, 32, 32)', 'outlineOffset': '0px', 'focusVisible': False}]
+PASS [p3] 焦点环覆盖全部 Tab 可达的可聚焦元素(判定集非空且未覆盖数为 0): expected=未覆盖数 == 0 actual=判定集 10 个元素,未覆盖 []  # 未覆盖者若确实是可聚焦元素 ⇒ 它不在 :focus-visible 的七选择器枚举里,到 frontend/style.css 文件末尾补它的选择器,并同步本文件的 FOCUSABLE_SELECTOR;若它其实是**不可聚焦**的(说明 focusable 漏了一类,例如被 <fieldset disabled> 包裹的控件),则改 focusable 的判定式,**不要**改 CSS
+INFO item10 [p3] SC1 Tab 序列(全部原始载荷): [{'label': '#ai-route-select', 'tag': 'select', 'outlineWidth': '2px', 'outlineColor': 'rgb(31, 99, 189)', 'outlineOffset': '2px', 'focusVisible': True}]
+PASS [p3] SC1 Tab 到 #ai-route-select 的 outline-width == 2px: expected=2px actual=2px  # 焦点伪类匹配=True;几何 2px + outline-offset 2px 的外伸量 = CLEARANCE_MIN_PX = 4px
+PASS [p3] SC1 Tab 到 #ai-route-select 的 outline-offset == 2px(= CLEARANCE_MIN_PX - 环宽): expected=2px actual=2px  # 外伸量 = 上面那条的宽度 + 这一条,合起来才是 CLEARANCE_MIN_PX;改几何即改那个门的阈值 —— 两者不是两件事
+PASS [p3] SC1 Tab 到 #ai-route-select 的 outline-color == var(--color-focus): expected=rgb(31, 99, 189) actual=rgb(31, 99, 189)  # 期望侧来自运行时解析的令牌,不硬编码 rgb
+
+=== 逐项结论 ===
+item 1: PASS  (45 条断言,0 FAIL,0 BLOCKED)
+item 2: PASS  (5 条断言,0 FAIL,0 BLOCKED)
+item 3: PASS  (17 条断言,0 FAIL,0 BLOCKED)
+item 4: PASS  (65 条断言,0 FAIL,0 BLOCKED)
+item 5: BLOCKED  (9 条断言,0 FAIL,2 BLOCKED)
+item 6: PASS  (6 条断言,0 FAIL,0 BLOCKED)
+item 7: PASS  (38 条断言,0 FAIL,0 BLOCKED)
+item 8: PASS  (13 条断言,0 FAIL,0 BLOCKED)
+item 9: PASS  (17 条断言,0 FAIL,0 BLOCKED)
+item 10: PASS  (42 条断言,0 FAIL,0 BLOCKED)
+
+exit=2  (0=全 pass,1=有 fail,2=有 blocked)
+
+[exit=2]

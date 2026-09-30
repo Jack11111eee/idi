@@ -13,5 +13,11 @@ __pycache__/
 # GSD 里程碑锁(机器相关瞬时 claim:session id + pid;TTL 4h 自然过期)
 .planning/milestone.lock
 
+# GSD 里程碑切换的瞬时交接文件(new-milestone Step 5 写、Step 6 读,跨 shell 传 outgoing 版本号)
+.planning/.gsd-outgoing-milestone
+
 # GSD 研究员的网页抓取缓存(hash 命名的 JSON,机器本地,不属仓库内容)
 .planning/research/.cache/
+
+# 机器本地权限授予(会话级 Skill/Bash allow 条目,机器相关,不属仓库内容)
+.claude/settings.local.json

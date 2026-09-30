@@ -1,0 +1,435 @@
+================================================================================
+# verification-recheck.log — Phase 10 (idi-10) plan 04, Task 1
+# Generated: 2026-09-27T12:25:16Z   HEAD: a13156802d81924a67017aa6f0dec7624b940581
+# Purpose: triage the carry-forward fingerprint debt of frontend/style.css:
+#   how many passed reports cover it (10), how many are executable (1).
+# Coverage criterion: report frontmatter covered_files LINE-MATCH, not full-text grep.
+# fingerprint invoked via node $GSD query verification.fingerprint <dir> <files...>
+================================================================================
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.13-phases/idi-01-1-2/01-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.13-phases/idi-01-1-2
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 2
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=29 total=41 missing=12
+missing paths:
+  - .planning/phases/idi-01-1-2/01-CONTEXT.md
+  - .planning/phases/idi-01-1-2/idi-01-01-PLAN.md
+  - .planning/phases/idi-01-1-2/idi-01-01-SUMMARY.md
+  - .planning/phases/idi-01-1-2/idi-01-02-PLAN.md
+  - .planning/phases/idi-01-1-2/idi-01-02-SUMMARY.md
+  - .planning/phases/idi-01-1-2/idi-01-03-PLAN.md
+  - .planning/phases/idi-01-1-2/idi-01-03-SUMMARY.md
+  - .planning/phases/idi-01-1-2/idi-01-04-PLAN.md
+  - .planning/phases/idi-01-1-2/idi-01-04-SUMMARY.md
+  - .planning/phases/idi-01-1-2/01-DISCUSSION-LOG.md
+  - .planning/phases/idi-01-1-2/01-UAT.md
+  - .planning/phases/idi-01-1-2/SKELETON.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.13-phases/idi-02-g2/02-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.13-phases/idi-02-g2
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 2
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=15 total=26 missing=11
+missing paths:
+  - .planning/phases/idi-02-g2/02-CONTEXT.md
+  - .planning/phases/idi-02-g2/02-DISCUSSION-LOG.md
+  - .planning/phases/idi-02-g2/02-UAT.md
+  - .planning/phases/idi-02-g2/idi-02-01-PLAN.md
+  - .planning/phases/idi-02-g2/idi-02-01-SUMMARY.md
+  - .planning/phases/idi-02-g2/idi-02-02-PLAN.md
+  - .planning/phases/idi-02-g2/idi-02-02-SUMMARY.md
+  - .planning/phases/idi-02-g2/idi-02-03-PLAN.md
+  - .planning/phases/idi-02-g2/idi-02-03-SUMMARY.md
+  - .planning/phases/idi-02-g2/idi-02-04-PLAN.md
+  - .planning/phases/idi-02-g2/idi-02-04-SUMMARY.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.13-phases/idi-03-g3/03-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.13-phases/idi-03-g3
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 1
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=18 total=31 missing=13
+missing paths:
+  - .planning/phases/idi-03-g3/03-CONTEXT.md
+  - .planning/phases/idi-03-g3/03-DISCUSSION-LOG.md
+  - .planning/phases/idi-03-g3/idi-03-01-PLAN.md
+  - .planning/phases/idi-03-g3/idi-03-01-SUMMARY.md
+  - .planning/phases/idi-03-g3/idi-03-02-PLAN.md
+  - .planning/phases/idi-03-g3/idi-03-02-SUMMARY.md
+  - .planning/phases/idi-03-g3/idi-03-03-PLAN.md
+  - .planning/phases/idi-03-g3/idi-03-03-SUMMARY.md
+  - .planning/phases/idi-03-g3/idi-03-04-PLAN.md
+  - .planning/phases/idi-03-g3/idi-03-04-SUMMARY.md
+  - .planning/phases/idi-03-g3/idi-03-05-PLAN.md
+  - .planning/phases/idi-03-g3/idi-03-05-SUMMARY.md
+  - .planning/phases/idi-03-g3/idi-03-PATTERNS.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.14-phases/idi-04-tokens-contract/idi-04-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.14-phases/idi-04-tokens-contract
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 11
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=5 total=13 missing=8
+missing paths:
+  - .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-01-PLAN.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-01-SUMMARY.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-02-PLAN.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-02-SUMMARY.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-03-PLAN.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-03-SUMMARY.md
+  - .planning/phases/idi-04-tokens-contract/idi-04-UAT.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.14-phases/idi-04.1-radix/idi-04.1-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.14-phases/idi-04.1-radix
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 18
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=4 total=12 missing=8
+missing paths:
+  - .planning/phases/idi-04.1-radix/idi-04.1-01-PLAN.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-01-SUMMARY.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-02-PLAN.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-02-SUMMARY.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-03-PLAN.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-03-SUMMARY.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-04-PLAN.md
+  - .planning/phases/idi-04.1-radix/idi-04.1-04-SUMMARY.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.14-phases/idi-05-typography-and-visual-hierarchy/idi-05-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.14-phases/idi-05-typography-and-visual-hierarchy
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 15
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=3 total=11 missing=8
+missing paths:
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-01-PLAN.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-01-SUMMARY.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-02-PLAN.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-02-SUMMARY.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-03-PLAN.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-03-SUMMARY.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-04-PLAN.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-04-SUMMARY.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.14-phases/idi-06-layout-robustness/idi-06-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.14-phases/idi-06-layout-robustness
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 19
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=2 total=10 missing=8
+missing paths:
+  - .planning/phases/idi-06-layout-robustness/idi-06-01-PLAN.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-01-SUMMARY.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-02-PLAN.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-02-SUMMARY.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-03-PLAN.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-03-SUMMARY.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-04-PLAN.md
+  - .planning/phases/idi-06-layout-robustness/idi-06-04-SUMMARY.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/milestones/v1.14-phases/idi-07-interaction-states-and-focus/idi-07-VERIFICATION.md
+## PHASE DIR: .planning/milestones/v1.14-phases/idi-07-interaction-states-and-focus
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 15
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=3 total=9 missing=6
+missing paths:
+  - .planning/phases/idi-07-interaction-states-and-focus/idi-07-01-PLAN.md
+  - .planning/phases/idi-07-interaction-states-and-focus/idi-07-01-SUMMARY.md
+  - .planning/phases/idi-07-interaction-states-and-focus/idi-07-02-PLAN.md
+  - .planning/phases/idi-07-interaction-states-and-focus/idi-07-02-SUMMARY.md
+  - .planning/phases/idi-07-interaction-states-and-focus/idi-07-03-PLAN.md
+  - .planning/phases/idi-07-interaction-states-and-focus/idi-07-03-SUMMARY.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/phases/idi-09-card-containers/idi-09-VERIFICATION.md
+## PHASE DIR: .planning/phases/idi-09-card-containers
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 8
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work"
+}
+--- covered_files on-disk resolution ---
+present=10 total=10 missing=0
+
+--- verification.fingerprint (raw output) ---
+{
+  "covered_files": [
+    ".planning/phases/idi-09-card-containers/idi-09-01-PLAN.md",
+    ".planning/phases/idi-09-card-containers/idi-09-01-SUMMARY.md",
+    ".planning/phases/idi-09-card-containers/idi-09-02-PLAN.md",
+    ".planning/phases/idi-09-card-containers/idi-09-02-SUMMARY.md",
+    ".planning/phases/idi-09-card-containers/idi-09-03-PLAN.md",
+    ".planning/phases/idi-09-card-containers/idi-09-03-SUMMARY.md",
+    "frontend/style.css",
+    "scripts/check-05-ui-uat.py",
+    "scripts/check-09-idi09-validation.py",
+    "scripts/probe-card-border-token.py"
+  ],
+  "covered_digest": "v1:sha256:7b82f8d1c2f5f6e371effbe73c5182a4ed78d49eecbea3ea76cca3e76d6a7031"
+}rc=0
+
+--------------------------------------------------------------------------------
+## REPORT: .planning/quick/260925-iin-v1-14-ai-999-1/260925-iin-VERIFICATION.md
+## PHASE DIR: .planning/quick/260925-iin-v1-14-ai-999-1
+
+--- frontmatter status / covered_files line-match / full-text count ---
+status: passed
+covered_files lines matching '  - frontend/style.css': 1
+full-text 'frontend/style.css' occurrences: 6
+
+--- verification.status (raw JSON) ---
+{
+  "status": "stale",
+  "next_action": "Verification is stale. Re-run verify-work before transition.",
+  "next_command": "/gsd-verify-work 260925"
+}
+--- covered_files on-disk resolution ---
+present=5 total=7 missing=2
+missing paths:
+  - .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md
+  - .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-UI-SPEC.md
+
+--- verification.fingerprint (raw output) ---
+Error: could not compute fingerprint — a covered file is missing, unreadable, or escapes the project root
+rc=1
+
+===============================================================================
+# ADDENDUM — coverage criterion, false-positive detector, cause analysis
+# Appended: 2026-09-27 (same run as above)
+===============================================================================
+
+## A. Coverage criterion (the judgement anchor)
+
+A report counts as covering frontend/style.css iff BOTH hold, judged on the report's
+FRONTMATTER ONLY (the region between the first two `---` lines):
+
+  (1) `status: passed`
+  (2) its `covered_files:` list contains a line matching exactly `  - frontend/style.css`
+
+Full-text grep is NOT the criterion. A report that merely MENTIONS frontend/style.css in
+prose is a false positive. Measured enumeration over
+.planning/phases/ + .planning/milestones/*-phases/ + .planning/quick/
+(all 11 *VERIFICATION.md files on disk):
+
+  REPORT                                                                                status  fm_style  fulltext
+  .planning/milestones/v1.13-phases/idi-01-1-2/01-VERIFICATION.md                        passed     1          2
+  .planning/milestones/v1.13-phases/idi-02-g2/02-VERIFICATION.md                         passed     1          2
+  .planning/milestones/v1.13-phases/idi-03-g3/03-VERIFICATION.md                         passed     1          1
+  .planning/milestones/v1.14-phases/idi-04-tokens-contract/idi-04-VERIFICATION.md         passed     1         11
+  .planning/milestones/v1.14-phases/idi-04.1-radix/idi-04.1-VERIFICATION.md               passed     1         18
+  .planning/milestones/v1.14-phases/idi-05-.../idi-05-VERIFICATION.md                     passed     1         15
+  .planning/milestones/v1.14-phases/idi-06-.../idi-06-VERIFICATION.md                     passed     1         19
+  .planning/milestones/v1.14-phases/idi-07-.../idi-07-VERIFICATION.md                     passed     1         15
+  .planning/milestones/v1.14-phases/idi-08-.../idi-08-VERIFICATION.md                     passed     0         19   <-- FALSE POSITIVE for full-text grep
+  .planning/phases/idi-09-card-containers/idi-09-VERIFICATION.md                          passed     1          8
+  .planning/quick/260925-iin-v1-14-ai-999-1/260925-iin-VERIFICATION.md                   passed     1          6
+
+  => exactly 10 reports satisfy the criterion. NOT 11, NOT 6.
+
+## B. The idi-08 false-positive detector (independent evidence the anchor is right)
+
+  $ ls -l .planning/milestones/v1.14-phases/idi-08-accessibility-semantics-and-keyboard/idi-08-VERIFICATION.md
+    -> exists on disk (so the 0 below is not "file missing")
+  $ awk '/^---$/{n++} n==1' <idi-08-VERIFICATION.md> | grep -c '^  - frontend/style.css$'
+    0
+  $ grep -c 'frontend/style.css' <idi-08-VERIFICATION.md>
+    19
+
+idi-08's frontmatter covered_files list is:
+  .planning/phases/idi-08-.../idi-08-01-PLAN.md / idi-08-01-SUMMARY.md
+  .planning/phases/idi-08-.../idi-08-02-PLAN.md / idi-08-02-SUMMARY.md
+  .planning/phases/idi-08-.../idi-08-03-PLAN.md / idi-08-03-SUMMARY.md
+  frontend/app.js / frontend/index.html / scripts/check-05-ui-uat.py / scripts/check-07-idi08-validation.py
+  -- NO frontend/style.css.
+
+=> full-text grep would wrongly add idi-08 (19 hits, all prose). The line-match criterion
+   returns 0. This is the recorded proof that the criterion MUST anchor on frontmatter
+   covered_files lines.
+
+## C. Cause of the 9 fail-closed stales: PATH relocation, not content change
+
+For each of the 9, `verification.fingerprint` fails closed because at least one covered_files
+entry no longer resolves. Spot-checked (>= 2 required; 3 checked here) that each missing path's
+ORIGINAL location `.planning/phases/<id>/...` has a one-to-one counterpart at the ARCHIVED
+location `.planning/milestones/<ver>-phases/<id>/...`:
+
+  idi-04 (v1.14): .planning/phases/idi-04-tokens-contract/04-UI-SPEC.md
+                -> .planning/milestones/v1.14-phases/idi-04-tokens-contract/04-UI-SPEC.md        EXISTS
+                  .planning/phases/idi-04-tokens-contract/idi-04-01-PLAN.md
+                -> .planning/milestones/v1.14-phases/idi-04-tokens-contract/idi-04-01-PLAN.md    EXISTS
+  quick 260925-iin: .planning/phases/idi-05-typography-and-visual-hierarchy/idi-05-UI-SPEC.md
+                -> .planning/milestones/v1.14-phases/idi-05-.../idi-05-UI-SPEC.md                 EXISTS
+  idi-01 (v1.13): .planning/phases/idi-01-1-2/01-CONTEXT.md
+                -> .planning/milestones/v1.13-phases/idi-01-1-2/01-CONTEXT.md                    EXISTS
+                  .planning/phases/idi-01-1-2/idi-01-01-PLAN.md
+                -> .planning/milestones/v1.13-phases/idi-01-1-2/idi-01-01-PLAN.md                EXISTS
+
+Per-report measured missing/total (this run, on HEAD):
+
+  #  report                                  missing/total
+  1  idi-01-1-2 (v1.13)                        12/41
+  2  idi-02-g2 (v1.13)                         11/26
+  3  idi-03-g3 (v1.13)                         13/31
+  4  idi-04-tokens-contract (v1.14)             8/13
+  5  idi-04.1-radix (v1.14)                     8/12
+  6  idi-05-typography-and-visual-hierarchy     8/11
+  7  idi-06-layout-robustness                   8/10
+  8  idi-07-interaction-states-and-focus        6/9
+  9  idi-09-card-containers                     0/10    <-- ALL RESOLVE (only executable one)
+  10 quick/260925-iin-v1-14-ai-999-1            2/7
+
+  These match the planning-time readings in 10-CONTEXT.md exactly (12/41, 11/26, 13/31, 8/13,
+  8/12, 8/11, 8/10, 6/9, 2/7) -- no divergence to explain.
+
+## D. Registered known limitation (STATE.md, 2026-09-14)
+
+  "已归档阶段的 covered_digest 不可解析:covered_files 声明 .planning/phases/... 路径,归档后
+   移至 .planning/milestones/v1.13-phases/,重算返回 null(fail-closed=stale)。归档后的阶段报告
+   不再被 staleness 机制消费,故记为已知限制而非回填重算"
+  -- .planning/STATE.md, `## Deferred Items`, category `known-limitation`, Deferred At 2026-09-14
+
+  => the 9 were ALREADY fail-closed stale BEFORE Phase 10, for a reason unrelated to this
+     phase's frontend/style.css edits. Their remedy (repairing archived covered_files path
+     references) is separate, already-registered backlog work, NOT this phase's job.
+
+## E. idi-09's digest: old (stored) vs new (HEAD) -- proves content really changed
+
+  stored in idi-09-VERIFICATION.md frontmatter:
+    v1:sha256:6e811a1122c2e6d5c63308554a39c5d2d8dce462abef73847f0c7be39e2bb89e
+  recomputed on HEAD (section above):
+    v1:sha256:7b82f8d1c2f5f6e371effbe73c5182a4ed78d49eecbea3ea76cca3e76d6a7031
+
+  DIFFERENT => the covered inputs genuinely changed (frontend/style.css by waves 1 and 2).
+  Hence the correct handling is RE-VERIFICATION against HEAD, not refreshing the fingerprint.

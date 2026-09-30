@@ -1,0 +1,127 @@
+{
+  "phase": "12",
+  "phase_name": "G1 表头 band 与里程碑收口",
+  "timestamp": "2026-09-29T04:30:00Z",
+  "areas_completed": ["band 修法路线", "G1 运行时取证", "G1 视觉取证形态"],
+  "areas_remaining": ["REG-04 连带面"],
+  "decisions": {
+    "band 修法路线": [
+      {
+        "question": "G1 的 band 修哪一条、移到哪一档?",
+        "answer": "移宿主 → 改白:`#latest-check` 的 background 由 `--color-surface`(gray-2)改归 `--color-surface-page`(白)。理由:它是四个 `.markdown-body` 宿主里唯一画灰底的,改白后四个宿主读感一致,band = gray-2 on white(1.053),正是文档区表头 Phase 10 已签核的读感;零新增对比度条目、check-10 t1 全绿、零门改写。",
+        "options_presented": [
+          "移宿主 → 改白",
+          "移宿主 → gray-3",
+          "移表头 → 全局 th",
+          "局部覆盖 th"
+        ]
+      },
+      {
+        "question": "G1 的验收口径锚在哪一档?",
+        "answer": "锚「底色不同」:`#latest-check` 的计算底色 != `th` 的计算底色(不再同令牌相撞)+ 截图人眼确认。与 G1-01 原文一致。",
+        "options_presented": [
+          "锚「底色不同」",
+          "锚「与文档区同值」",
+          "1.053 不够强"
+        ]
+      },
+      {
+        "question": "改白之后,`#latest-check` 的边界(四边 1px gray-6 + 8px 圆角)动还是不动?",
+        "answer": "不动。G1-01 只谈 band;`#latest-check` 是内陷可滚区、不是面板,同族 `.event-list` / `.annotation-item` / `.badge-answered` 都保留各自边框与圆角;且 `probe-card-border-token.py` 把它的 gray-6 边框当作「非卡片」对照样本。",
+        "options_presented": [
+          "不动(推荐)",
+          "圆角归零",
+          "去掉四边边框"
+        ]
+      },
+      {
+        "question": "两条相邻项(check-10 t1 的过期注释 / 报告区表头 sticky)纳入 Phase 12 吗?",
+        "answer": "都不纳入。过期注释属审计的「gate blind spot」项(路线图已列为未裁定);sticky 是新能力。两条按纪律记入 Deferred。",
+        "options_presented": [
+          "都不纳入(推荐)",
+          "只修过期注释",
+          "两条都纳入"
+        ]
+      }
+    ],
+    "G1 运行时取证": [
+      {
+        "question": "G1 的运行时读数/截图素材怎么造?",
+        "answer": "补 fixture 的表:给 `scripts/ui-states/checking/docs/DESIGN-check-2.md` 补上 `prompts.py:494-499` 要求的「问题分级表」。fixture 因此忠于后端文法,`checking.png` 也真的会显示表 ⇒ 截图与读数同时成立。须逐门实测涟漪面(改的是所有门共用的样本)。",
+        "options_presented": [
+          "补 fixture 的表(推荐)",
+          "注入探针表",
+          "两者都做"
+        ]
+      },
+      {
+        "question": "G1 的运行时读数落成什么?",
+        "answer": "落成永久断言,加进 `scripts/check-09-idi09-validation.py`。优势:`idi-11-VERIFICATION.md` 的 covered_files 已同时含 `frontend/style.css` 与 `check-09`,故零新增连带覆盖者。须配变异证明(把 `#latest-check` 底色改回 gray-2 ⇒ 必 FAIL)。",
+        "options_presented": [
+          "落成永久断言(进 check-09)",
+          "一次性探针",
+          "只记 SUMMARY + 截图"
+        ]
+      },
+      {
+        "question": "新 check-09 断言钉多死?",
+        "answer": "钉「宿主 == 白」+「两者不同」:既断言 `#latest-check` 与 `th` 的计算底色不同,也断言 `#latest-check` 的计算底色 == `--color-surface-page` 的解析值。这样「改白」本身也被门锁住(否则宿主改成 gray-4 之类仍然绿)。可满足且有判别力。",
+        "options_presented": [
+          "钉「宿主==白」+「不同」(推荐)",
+          "只钉「两者不同」",
+          "再钉「两区 th 同值」"
+        ]
+      },
+      {
+        "question": "`checking` 的 fixture 报告补到什么程度?",
+        "answer": "只加那张表:只加 `| 编号 | 级别 | 位置 | 问题 | 建议修法 |` 表,解 G1 取证所需;fixture 其余部分(缺档位头部行、`## 发现` 小节)保持原样。最小改动,符合 CLAUDE.md 第 3 条。",
+        "options_presented": [
+          "只加那张表",
+          "对齐完整文法",
+          "加表 + 档位行"
+        ]
+      }
+    ],
+    "G1 视觉取证形态": [
+      {
+        "question": "要不要在 5 张整窗图之外追加一张 `#latest-check` 局部特写?",
+        "answer": "追加。5 张 1440×900 整窗图照旧(VIS-01 原文),额外加一张 `#latest-check` 的元素截图(`checking` 态,在补过表的 fixture 上)。band 在局部图里才看得清,这才是 G1-01 的直接人眼证据;实现照 `check-10:653` 的元素截图先例,零新 harness。",
+        "options_presented": [
+          "追加局部特写(推荐)",
+          "只用 5 张整窗图",
+          "不加图，只调滚动位"
+        ]
+      },
+      {
+        "question": "补的那张表放在报告的哪个位置?",
+        "answer": "紧跟 `# 核查报告 2` 标题行之后。既保证落在 `#latest-check` 的 30vh 可视区内(截图必拍到 band),又最贴 `prompts.py` 的文法顺序(档位行 → 问题分级表 → 结论行)。",
+        "options_presented": [
+          "紧跟标题行(推荐)",
+          "放在发现之后",
+          "替掉发现列表"
+        ]
+      }
+    ]
+  },
+  "deferred_ideas": [
+    "check-10 t1 的 PASS 行仍挂改动前的注释「HEAD 上 th 无自身底色(透明)」(scripts/check-10-idi10-validation.py:328)—— 审计点名的 supporting tell,属「gate blind spot」项,路线图已列为未裁定",
+    "报告区表头在 `#latest-check` 的 30vh 滚动区内会滚走(`#doc-panel-header` 是 position: sticky,报告表头不是)—— 新能力,超出 G1-01",
+    "G2(`--radix-gray-1` 零消费 + 通用围栏消费断言)—— 用户未点名",
+    "`999.2`(Phase 7 三条 affordance 缺陷)、暗色模式(A11Y-V2 / FLOW-V2 / TOKEN-V2)、Nyquist 缺口、图标与空状态"
+  ],
+  "canonical_refs": [
+    "DESIGN.md",
+    ".planning/REQUIREMENTS.md",
+    ".planning/ROADMAP.md",
+    ".planning/PROJECT.md",
+    ".planning/phases/idi-11-decard-and-hairline-dividers/11-CONTEXT.md",
+    ".planning/milestones/v1.15-MILESTONE-AUDIT.md",
+    "frontend/style.css",
+    "scripts/check-10-idi10-validation.py",
+    "scripts/check-02-contrast.py",
+    "scripts/check-09-idi09-validation.py",
+    "scripts/probe-card-border-token.py",
+    "scripts/ui-states/checking/docs/DESIGN-check-2.md",
+    "backend/prompts.py"
+  ]
+}

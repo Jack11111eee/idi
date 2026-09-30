@@ -1,0 +1,347 @@
+{
+  "status": "ok",
+  "commands": [
+    {
+      "command": ".venv/bin/python scripts/check-09-idi09-validation.py --item c6",
+      "statement": "non-zero exit, or any verdict line beginning with \"FAIL\", or the \"=== 逐项结论 ===\" block showing a non-zero FAIL or BLOCKED count for item c6, or the trailing line not starting with \"exit=0\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 1: G1 的 band 单条路径端到端 —— fixture 补表 + 宿主绘制面改白 + `c6` 双钉判据(真实浏览器读数证明)"
+    },
+    {
+      "command": ".venv/bin/python -c \"import sys;sys.path.insert(0,'.');import backend.grammar as g;t=open('scripts/ui-states/checking/docs/DESIGN-check-2.md',encoding='utf-8').read();r=g.parse_problem_grades(t);print('rows',len(r));print('levels',[x['level'] for x in r]);print('pure_p2',g.is_pure_p2(t));print('pass_conclusion',g.is_pass_conclusion(t))\"",
+      "statement": "rows is less than 1, or levels contains neither \"P0\" nor \"P1\", or pure_p2 is not False, or pass_conclusion is not False",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 1: G1 的 band 单条路径端到端 —— fixture 补表 + 宿主绘制面改白 + `c6` 双钉判据(真实浏览器读数证明)"
+    },
+    {
+      "command": "grep -cF -- 'background: var(--color-surface-page);' frontend/style.css",
+      "statement": "the count is not \"5\" (HEAD baseline is 4; the #latest-check rewrite must add exactly one and only one)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 1: G1 的 band 单条路径端到端 —— fixture 补表 + 宿主绘制面改白 + `c6` 双钉判据(真实浏览器读数证明)"
+    },
+    {
+      "command": "bash scripts/check-01-token-conformance.sh; bash scripts/check-03-hidden-uniqueness.sh; bash scripts/check-04-important-count.sh",
+      "statement": "any of the three exits non-zero, or any of them fails to print \"PASS\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 1: G1 的 band 单条路径端到端 —— fixture 补表 + 宿主绘制面改白 + `c6` 双钉判据(真实浏览器读数证明)"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-02-contrast.py",
+      "statement": "non-zero exit, or the output does not end with \"PASS: 0 failures\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 1: G1 的 band 单条路径端到端 —— fixture 补表 + 宿主绘制面改白 + `c6` 双钉判据(真实浏览器读数证明)"
+    },
+    {
+      "command": "git status --porcelain -- frontend/ scripts/ backend/ frontend/vendor/ ':(exclude)scripts/.check09-old.py'",
+      "statement": "output contains any path other than \"frontend/style.css\", \"scripts/check-09-idi09-validation.py\" and \"scripts/ui-states/checking/docs/DESIGN-check-2.md\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 1: G1 的 band 单条路径端到端 —— fixture 补表 + 宿主绘制面改白 + `c6` 双钉判据(真实浏览器读数证明)"
+    },
+    {
+      "command": "grep -cF -- 'still read as recessed' frontend/style.css",
+      "statement": "the count is not \"0\" (the falsified clause must be gone, not merely softened)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 2: 围栏承重注释就地改写 —— 删掉被证伪的那半句,按房屋写法记下新事实与旧句为何错"
+    },
+    {
+      "command": ".venv/bin/python -c \"import re,pathlib;t=pathlib.Path('frontend/style.css').read_text(encoding='utf-8');f=t[t.index('===== DESIGN TOKENS: START ====='):t.index('===== DESIGN TOKENS: END =====')];d=re.findall(r'(--[a-z0-9-]+)\\s*:\\s*([^;]+);', f);print('decls',len(d));print('unique',len(set(n for n,_ in d)))\"",
+      "statement": "decls is not \"119\" (HEAD baseline; a comment written in declaration form would add a spurious match and, because parse_decls lets the last match win, silently override a real declaration)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 2: 围栏承重注释就地改写 —— 删掉被证伪的那半句,按房屋写法记下新事实与旧句为何错"
+    },
+    {
+      "command": "bash scripts/check-01-token-conformance.sh",
+      "statement": "non-zero exit, or the output does not contain \"PASS\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 2: 围栏承重注释就地改写 —— 删掉被证伪的那半句,按房屋写法记下新事实与旧句为何错"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-02-contrast.py",
+      "statement": "non-zero exit, or the output does not end with \"PASS: 0 failures\", or the ORDER line is no longer \"ORDER 0.363  --color-text-muted before --color-text on --color-surface\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 2: 围栏承重注释就地改写 —— 删掉被证伪的那半句,按房屋写法记下新事实与旧句为何错"
+    },
+    {
+      "command": "grep -c '/\\* PAIR ' frontend/style.css",
+      "statement": "the count is not \"53\" (this phase adds zero contrast pairs; --color-text ON --color-surface-page is already registered)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 2: 围栏承重注释就地改写 —— 删掉被证伪的那半句,按房屋写法记下新事实与旧句为何错"
+    },
+    {
+      "command": "awk '/^#latest-check \\{/{f=1} f{print} f&&/^\\}/{exit}' frontend/style.css",
+      "statement": "the printed block does not contain exactly seven declarations (max-height / overflow-y / padding / border / border-radius / background / font-size), or its background declaration is not the unified-surface token (this task must not have touched the rule body — that was Task 1)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 2: 围栏承重注释就地改写 —— 删掉被证伪的那半句,按房屋写法记下新事实与旧句为何错"
+    },
+    {
+      "command": "git status --porcelain frontend/",
+      "statement": "output is not empty (a mutation is still applied — every mutation must have been restored)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 3: 两条变异证明 —— `c6` 的两个钉死半条各自「变异 → FAIL」真实读数,并在还原后证明逐字节相同"
+    },
+    {
+      "command": "git diff --exit-code -- frontend/style.css; echo \"rc=$?\"",
+      "statement": "rc is not \"0\" (frontend/style.css must be byte-identical to its committed state after both mutations)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 3: 两条变异证明 —— `c6` 的两个钉死半条各自「变异 → FAIL」真实读数,并在还原后证明逐字节相同"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-09-idi09-validation.py --item c6",
+      "statement": "non-zero exit, or any FAIL, or any BLOCKED, or the trailing line not starting with \"exit=0\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 3: 两条变异证明 —— `c6` 的两个钉死半条各自「变异 → FAIL」真实读数,并在还原后证明逐字节相同"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2,c3,c4,c5",
+      "statement": "non-zero exit, or any FAIL, or any BLOCKED (the Phase 11 REG-01 contract must be untouched by this phase)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 3: 两条变异证明 —— `c6` 的两个钉死半条各自「变异 → FAIL」真实读数,并在还原后证明逐字节相同"
+    },
+    {
+      "command": "grep -cF -- 'git stash' .planning/phases/idi-12-g1-band/idi-12-01-SUMMARY.md; grep -cF -- 'M1' .planning/phases/idi-12-g1-band/idi-12-01-SUMMARY.md; grep -cF -- 'M2' .planning/phases/idi-12-g1-band/idi-12-01-SUMMARY.md",
+      "statement": "the M1 count is \"0\" or the M2 count is \"0\" (both mutation readings must be documented); the first count being non-zero is acceptable only as the explicit \"git stash was never used\" prohibition note",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 3: 两条变异证明 —— `c6` 的两个钉死半条各自「变异 → FAIL」真实读数,并在还原后证明逐字节相同"
+    },
+    {
+      "command": "git status --porcelain -- scripts/ ':(exclude)scripts/.check09-old.py'",
+      "statement": "output contains any path other than \"scripts/check-09-idi09-validation.py\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-01-PLAN.md",
+      "task": "Task 3: 两条变异证明 —— `c6` 的两个钉死半条各自「变异 → FAIL」真实读数,并在还原后证明逐字节相同"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-09-idi09-validation.py --item c6 --g1-snapshot .planning/phases/idi-12-g1-band/screenshots/latest-check",
+      "statement": "non-zero exit, or any verdict line beginning with \"FAIL\", or any BLOCKED, or the trailing line not starting with \"exit=0\", or the \"=== 逐项结论 ===\" block not listing a \"g1-snapshot\" row",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 1: 给 `check-09` 加专用参数 `--g1-snapshot DIR` —— 元素级局部特写走独立落点,不动「恰含 5 个 PNG」那条断言"
+    },
+    {
+      "command": ".venv/bin/python -c \"import struct,pathlib;p=pathlib.Path('.planning/phases/idi-12-g1-band/screenshots/latest-check/latest-check.png');h=p.open('rb').read(24);print('sig',h[:8]==b'\\x89PNG\\r\\n\\x1a\\n');print('size',struct.unpack('>II',h[16:24]))\"",
+      "statement": "sig is not True, or the printed size tuple has a zero component, or the read raises",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 1: 给 `check-09` 加专用参数 `--g1-snapshot DIR` —— 元素级局部特写走独立落点,不动「恰含 5 个 PNG」那条断言"
+    },
+    {
+      "command": "grep -cF -- 'g1-snapshot' scripts/check-09-idi09-validation.py",
+      "statement": "the count is \"0\" (the flag must appear in parse_args, in the main() dispatch, in the summary list, and in the docstring)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 1: 给 `check-09` 加专用参数 `--g1-snapshot DIR` —— 元素级局部特写走独立落点,不动「恰含 5 个 PNG」那条断言"
+    },
+    {
+      "command": "grep -cF -- 'shot 输出目录恰含 5 个 PNG' scripts/check-09-idi09-validation.py",
+      "statement": "the count is not \"1\" (the existing exactly-5-PNG assertion must be present exactly once, unmodified)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 1: 给 `check-09` 加专用参数 `--g1-snapshot DIR` —— 元素级局部特写走独立落点,不动「恰含 5 个 PNG」那条断言"
+    },
+    {
+      "command": "git status --porcelain -- scripts/ frontend/ ':(exclude)scripts/.check09-old.py'",
+      "statement": "output contains any path other than \"scripts/check-09-idi09-validation.py\", or output is empty",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 1: 给 `check-09` 加专用参数 `--g1-snapshot DIR` —— 元素级局部特写走独立落点,不动「恰含 5 个 PNG」那条断言"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-09-idi09-validation.py --screenshot .planning/phases/idi-12-g1-band/screenshots --g1-snapshot .planning/phases/idi-12-g1-band/screenshots/latest-check",
+      "statement": "non-zero exit, or any verdict line beginning with \"FAIL\", or any BLOCKED, or the trailing line not starting with \"exit=0\", or the \"=== 逐项结论 ===\" block not listing both a \"shot\" and a \"g1-snapshot\" row with 0 FAIL and 0 BLOCKED",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 2: 产出 5 张 1440×900 整窗图 + 1 张局部特写,并在盘上逐张取证"
+    },
+    {
+      "command": ".venv/bin/python -c \"import pathlib,struct;d=pathlib.Path('.planning/phases/idi-12-g1-band/screenshots');tops=sorted(p.name for p in d.glob('*.png'));print('top',tops);[print(n,*struct.unpack('>II',(d/n).open('rb').read(24)[16:24]),(d/n).stat().st_size) for n in tops];sub=d/'latest-check'/'latest-check.png';h=sub.open('rb').read(24);print('sub',sub.name,struct.unpack('>II',h[16:24]),sub.stat().st_size)\"",
+      "statement": "tops is not exactly ['archive.png', 'checking.png', 'p1.png', 'p12.png', 'p3.png'], or any printed size is not (1440, 900), or any byte size is 0, or the subdirectory PNG is missing or has a zero dimension",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 2: 产出 5 张 1440×900 整窗图 + 1 张局部特写,并在盘上逐张取证"
+    },
+    {
+      "command": "git status --porcelain frontend/",
+      "statement": "output is not empty (the screenshots must be taken on the final rendering surface)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 2: 产出 5 张 1440×900 整窗图 + 1 张局部特写,并在盘上逐张取证"
+    },
+    {
+      "command": "git status --porcelain -- scripts/ ':(exclude)scripts/.check09-old.py'",
+      "statement": "output contains any path other than \"scripts/check-09-idi09-validation.py\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-02-PLAN.md",
+      "task": "Task 2: 产出 5 张 1440×900 整窗图 + 1 张局部特写,并在盘上逐张取证"
+    },
+    {
+      "command": "for f in check-05-ui-uat check-06-idi05-validation check-07-idi08-validation check-09-idi09-validation check-10-idi10-validation probe-05-resolve-color probe-07-focus-composite; do printf '%s ' \"$f\"; grep -c '^FAIL' \".planning/phases/idi-12-g1-band/gate-logs/idi-12-03/$f.log\"; done",
+      "statement": "any of the seven printed counts is not \"0\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 1: 五条浏览器门 + 两个探针在最终态上复跑 —— 原始输出与退出码逐门落盘,判据锚行首 `^FAIL`"
+    },
+    {
+      "command": "grep -n '^rc=' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-06-idi05-validation.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-07-idi08-validation.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-09-idi09-validation.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-10-idi10-validation.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/probe-05-resolve-color.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/probe-07-focus-composite.log",
+      "statement": "any of the six printed rc lines is not \"rc=0\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 1: 五条浏览器门 + 两个探针在最终态上复跑 —— 原始输出与退出码逐门落盘,判据锚行首 `^FAIL`"
+    },
+    {
+      "command": "grep -E '^item (c1|c2|c3|c4|c5|c6): PASS' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-09-idi09-validation.log | wc -l",
+      "statement": "the count is not \"6\" (all six items must be present and PASS)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 1: 五条浏览器门 + 两个探针在最终态上复跑 —— 原始输出与退出码逐门落盘,判据锚行首 `^FAIL`"
+    },
+    {
+      "command": "grep -E '^item 5: ' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log; grep -c '^FAIL' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log; grep -c '^rc=' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-05-ui-uat.log",
+      "statement": "the item 5 summary line does not show exactly \"2 BLOCKED\", or the FAIL count is not \"0\", or the rc marker line count is not \"1\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 1: 五条浏览器门 + 两个探针在最终态上复跑 —— 原始输出与退出码逐门落盘,判据锚行首 `^FAIL`"
+    },
+    {
+      "command": "git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'",
+      "statement": "output is not empty (this task must run gates, not edit code)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 1: 五条浏览器门 + 两个探针在最终态上复跑 —— 原始输出与退出码逐门落盘,判据锚行首 `^FAIL`"
+    },
+    {
+      "command": "for f in check-01-token-conformance check-02-contrast check-03-hidden-uniqueness check-04-important-count pytest node-check-app-js; do printf '%s ' \"$f\"; grep -c '^rc=' \".planning/phases/idi-12-g1-band/gate-logs/idi-12-03/$f.log\"; done",
+      "statement": "any of the six printed counts is not \"1\" (each log must carry exactly one rc marker)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 2: 四个静态门 + pytest 基线 + `node --check` 复跑落盘"
+    },
+    {
+      "command": "grep -n '^rc=0$' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-01-token-conformance.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-02-contrast.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-03-hidden-uniqueness.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-04-important-count.log .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/node-check-app-js.log | wc -l",
+      "statement": "the count is not \"5\" (all five of these must exit 0)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 2: 四个静态门 + pytest 基线 + `node --check` 复跑落盘"
+    },
+    {
+      "command": "grep -F 'PASS: 0 failures' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-02-contrast.log; grep -F 'ORDER 0.363' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/check-02-contrast.log; grep -c '/\\* PAIR ' frontend/style.css",
+      "statement": "either grep prints nothing, or the PAIR count is not \"53\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 2: 四个静态门 + pytest 基线 + `node --check` 复跑落盘"
+    },
+    {
+      "command": "grep -E '^[0-9]+ passed' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/pytest.log; grep -c '^rc=0$' .planning/phases/idi-12-g1-band/gate-logs/idi-12-03/pytest.log",
+      "statement": "the passed count is not \"219\", or the skipped count is not \"6\", or the rc marker is not \"rc=0\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 2: 四个静态门 + pytest 基线 + `node --check` 复跑落盘"
+    },
+    {
+      "command": "git status --porcelain -- frontend/ scripts/ backend/ ':(exclude)scripts/.check09-old.py'; git diff --stat -- frontend/app.js frontend/index.html backend/ frontend/vendor/",
+      "statement": "the first command's output is not empty, or the second command's output is not empty",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 2: 四个静态门 + pytest 基线 + `node --check` 复跑落盘"
+    },
+    {
+      "command": "git diff --exit-code -- scripts/check-02-contrast.py scripts/check-01-token-conformance.sh scripts/check-03-hidden-uniqueness.sh scripts/check-04-important-count.sh scripts/check-05-ui-uat.py scripts/check-06-idi05-validation.py scripts/check-07-idi08-validation.py scripts/check-10-idi10-validation.py; echo \"rc=$?\"",
+      "statement": "rc is not \"0\" (no gate script other than check-09 may have been touched by this phase)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 3: 连带指纹逐份实测与处置 —— 11 份归档报告登记为已知限制,1 份在盘报告以 HEAD 内容重新验证"
+    },
+    {
+      "command": "grep -c '^  re_verification:' .planning/phases/idi-11-decard-and-hairline-dividers/idi-11-VERIFICATION.md; grep -c '^covered_digest:' .planning/phases/idi-11-decard-and-hairline-dividers/idi-11-VERIFICATION.md; grep -c '^  - frontend/style.css$' .planning/phases/idi-11-decard-and-hairline-dividers/idi-11-VERIFICATION.md",
+      "statement": "the re_verification count is not \"1\", or the covered_digest count is not \"1\", or the covered_files entry for frontend/style.css is not \"1\" (deleting an entry to make the report look fresh is forbidden)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 3: 连带指纹逐份实测与处置 —— 11 份归档报告登记为已知限制,1 份在盘报告以 HEAD 内容重新验证"
+    },
+    {
+      "command": ".venv/bin/python -c \"import re,pathlib;t=pathlib.Path('.planning/phases/idi-11-decard-and-hairline-dividers/idi-11-VERIFICATION.md').read_text(encoding='utf-8');m=re.search(r'^covered_digest:\\s*\\\"([^\\\"]+)\\\"',t,re.M);print('digest',m.group(1) if m else None);print('has_prev', 'previous_digest' in t);print('has_commits', 'commits_since_previous_report' in t)\"",
+      "statement": "digest is None, or has_prev is False, or has_commits is False (the re-verification round must record the previous digest and the commits that invalidated it)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 3: 连带指纹逐份实测与处置 —— 11 份归档报告登记为已知限制,1 份在盘报告以 HEAD 内容重新验证"
+    },
+    {
+      "command": ".venv/bin/python scripts/check-09-idi09-validation.py --item c1,c2,c3,c4,c5",
+      "statement": "non-zero exit, or any FAIL, or any BLOCKED (the re-verified report's cited checks must still hold on HEAD)",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 3: 连带指纹逐份实测与处置 —— 11 份归档报告登记为已知限制,1 份在盘报告以 HEAD 内容重新验证"
+    },
+    {
+      "command": "git status --porcelain -- scripts/ frontend/ backend/ ':(exclude)scripts/.check09-old.py'",
+      "statement": "output contains any path other than \"scripts/check-09-idi09-validation.py\"",
+      "status": "ok",
+      "severity": "none",
+      "plan": "idi-12-03-PLAN.md",
+      "task": "Task 3: 连带指纹逐份实测与处置 —— 11 份归档报告登记为已知限制,1 份在盘报告以 HEAD 内容重新验证"
+    }
+  ],
+  "counts": {
+    "blocker": 0,
+    "warning": 0,
+    "total": 42
+  },
+  "readError": null
+}

@@ -1,0 +1,9 @@
+INFO server: 127.0.0.1:8765 已在服务 —— 复用,不新起、结束时也不关闭
+PROBE archive-state opacity=0.75 visible=True
+PROBE links-before=0
+PROBE links-after=1 (mutation-applied=yes)
+PROBE focus={'tag': 'a', 'id': 'idi07-probe-link', 'focusVisible': True}
+PROBE ring outline-color=rgb(31, 99, 189) outline-width=2px
+PROBE composite ring=(31, 99, 189) ground=rgb(255, 255, 255) alpha=0.75 composited=(87, 138, 206) ratio=3.54 (>= 3.0)
+
+[exit=0]

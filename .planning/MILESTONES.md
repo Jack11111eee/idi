@@ -1,5 +1,64 @@
 # Milestones
 
+## v1.16 界面去卡片化 —— 连续面与发丝分隔线 (Shipped: 2026-09-30)
+
+**Phases completed:** 2 phases, 8 plans, 23 tasks
+
+**Key accomplishments:**
+
+- 把 v1.15 Phase 9 的卡片语言整体反转成「连续白面 + 1px 发丝分隔线」:统一面就地换值为白、五个容器去边界、灰缝归零、两条发丝线落位 —— 全部是 `frontend/style.css` 一个文件上的一次就地改写。
+- 删除本次反转自己孤立掉的两个卡片令牌(声明 + 围栏内 7 处点名注释全部改写),把 2 条卡片地面 PAIR 按元素实际绘制面重归属到统一面,并在围栏内登记六条页面地面 PAIR 的 gray-3 → white 重算 —— 全部是 `frontend/style.css` 一个文件上的纯声明层 + 注释层改动。
+- 把 Phase 9 自建的运行时门 `check-09` 的 `c1..c4` 由「断言卡片语言」**改写**为断言 Phase 11 的新契约(连续面 + 统一面 + 灰缝归零 + 两条发丝线),断言总数由 46 升到 102,零条断言被删除、零条降级为恒真;六条变异逐条给出真实的「变异 → FAIL」读数,并以六次 `git hash-object` + `git diff --exit-code` 证明逐字节还原(全程未用 `git stash`)。
+- 抓住一条会**静默死亡**的断言:`check-05` 的 `.hint` 实际背景断言,其期望侧走运行时解析、因本阶段删掉那个卡片底色令牌而返回 `None` ⇒ `ok()` 记 **BLOCKED**(不是 FAIL),而本门退出码本来就因两条 `--ai-smoke` 腿是 **2** ⇒ **门不会变红**,断言从「在检查」退化成「不知道」;退化先被实测复现(BLOCKED 计数 2 → 3、退出码一动不动),再把期望侧重新登记到统一面令牌,断言形式一字未变、BLOCKED 计数回到 2。同日复测 `REG-03`:sticky 余量由 `1.000px` 变为 `0.000px`,容差字面量 `<= 1.0` 与 `frontend/style.css` 均逐字未动。
+- 面板间发丝线的绘制边由「非 DOM 首子元素的上边线」换向为「非 DOM 末子元素的下边线」,消除 p3 / checking / archive 三个状态下画在窗口边缘的那条线;`check-09` 的 c4 扩写为遍历全部 5 个样本状态的逐状态普查、c2 补上第五个容器 `#doc-panel` 的底色断言,并以三条变异证明新判据会真的失败。
+- check-09 获得独立的 `--g1-snapshot DIR` 参数与元素级 `#latest-check` 局部特写(表头存在 + 落在 30vh 可视区内 + PNG 非零三条断言),并在同一棵最终态树上产出 5 张 1440×900 整窗图与 1 张局部图;既有的「--screenshot 目录恰含 5 个 PNG」断言一字未动且仍 PASS。
+
+**Range:** `01c4833` (2026-09-28 10:43) → `2cc16a4` (2026-09-30 13:37) — 67 commits, 3 days
+**Product surface:** 4 files, +959 / −317 (`frontend/style.css` 398 changed, `scripts/check-09-idi09-validation.py` 850 changed — 本阶段是**改写**而非新建, `scripts/check-05-ui-uat.py` +21, `scripts/ui-states/checking/docs/DESIGN-check-2.md` +7). Frontend at close: `style.css` 2044 / `app.js` 1854 / `index.html` 269 = 4,167 LOC. Backend unchanged by this milestone; `frontend/app.js` / `frontend/index.html` / `frontend/vendor/` / `backend/` 自里程碑基址至 HEAD **逐字节为空**.
+**Closeout type:** `verified_closeout` — 2/2 phases `phase_complete === true` and `verification_status === 'passed'` (Phase 11 12/12, Phase 12 15/15).
+**Known verification overrides:** 0 newly acknowledged, 2 carried forward from a prior close (see STATE.md Deferred Items). Both are ledger-lag artifacts, not verdict overrides: `uat_gaps idi-05/05-UAT.md` (a `status: failed` never written back after plan 04 fixed it) and `quick_tasks 260917-fqh` (its SUMMARY has no `status:` field, so the scanner reads `unknown`).
+
+**Milestone audit:** `status: tech_debt` — 12/12 requirements satisfied, 2/2 phases verified, 10/10 cross-phase integration, 5/5 E2E flows; **no critical blocker, no unsatisfied requirement, no orphan**. 15 deferred items registered across 4 groups (idi-11 7 / idi-12 5 / repo 1 / known_limitations 2), of which the most notable is the **REG-02 范围缺口** (`frontend/style.css:740-742` 的 PAIR 归因散文仍描述已不存在的地面 —— 它守护的两条 PAIR 在任一面均 ≥ `NON_TEXT_MIN` 故门是绿的,错的是**归属**;这正是 REG-02 被写出来要消灭的那一类缺陷,而其范围当时被收窄到「点名 `--color-surface-card` 的配对」,这一族从未被扫过). 另有同型第二处 `style.css:716-717` 与 `check-05-ui-uat.py:827` 的过期读数 `5.77`(现为 `5.92`);`check-09` c2/c4 断言重叠、`WR-01` 恒真、`WR-04` 登记数字写错;Nyquist 缺口(`idi-11` / `idi-12` 均无 `VALIDATION.md`,规划期已由用户显式排除在范围外);3 份未跟踪文件.
+
+**Scope adjudications (all by the user):** 视觉方向 = **全站去卡片**;落地方式 = 走 GSD 新阶段;范围 = 去卡片化 **连带 G1**(`#latest-check` 表头 band 消失,从 v1.15 审计的候选池移入本里程碑);跳过领域研究. 明令排除(**不得为其预建阶段**):G2(`--radix-gray-1` 零消费 + 通用围栏消费断言)、`999.2`、暗色模式三组、Nyquist 缺口、图标与空状态. 收口时逐项裁定:**tech debt 照常收口记为已知项**(不插收口阶段)、**quick 任务归档到 v1.16**(8 个目录,含跨 v1.14→v1.15 时期者 —— quick 归档无 provenance 记录,故整体落入完成里程碑)、**3 份未跟踪文件都不动**.
+
+---
+
+## v1.15 视觉构图升级 (Shipped: 2026-09-28)
+
+**Phases completed:** 2 phases, 7 plans, 20 tasks
+
+**Key accomplishments:**
+
+- 界面首次拥有 elevation 层次 —— 左栏 4 个 section 与右栏 #doc-panel 由「完全透明 / 比页面更暗的 gray-2」变为同族白卡片(白底 + 1px 既有容器边界 + 10px 既有圆角 + 零位移极轻阴影),并接进一个真实浏览器 computed-style 运行时门(c1/c2),两条中间调 PAIR 的地面重新归属到卡片底色(4.77 / 3.32)。
+- 页面底色从 gray-1(#fcfcfc,全场最亮)下沉到 gray-3(#f0f0f0),使「白卡片浮在灰页面之上」在屏幕上真的成立 —— 三档 elevation(gray-3 页面 < gray-2 控件内陷面 < 白卡片)由真实浏览器读数证明严格递增;同时把左栏密度收到用户裁定的紧凑档(间距 12px / 内边距 16px),并把页面换值作废的 6 条对比度配对以 gray-3 逐条重算登记(不是刷新旧值)。
+- 本阶段是纯 CSS 的构图改动,本计划用本仓库唯一能证明「渲染语义仍然成立」的机器复核它:五条真实浏览器门 + 四个静态门 + pytest 基线全部复跑,零 FAIL、零处门改动、断言强度零降低;并产出 5 张 1440×900 整窗截图,补上 SC3 一直缺的「屏幕级」半边证据(gray-2 内陷面与白卡片在 5/5 样本里同帧共存)。
+- 文档区表格从「每格 1px 全边框的电子表格式网格」改为「gray-2 表头浅底 + 仅横向分隔线」,并新建运行时门 `scripts/check-10-idi10-validation.py`,在真实浏览器里以 computed style 读出 99 条断言、0 FAIL / 0 BLOCKED
+- 圆角刻度由 8 / 10 / 28 / 999 收敛为 8 / 10 / 999:删掉从未并入刻度的 `--radius-lg: 28px`,两处消费者按各自真实形态就地改归属(`.chat-user` → 卡片档 10px、`#chat-input-row input` → 胶囊档 999px),并以收敛前后的真实运行时读数(键级 computed style diff + 矩形逐值 + 元素 PNG 逐字节)证明输入框外观零变化
+- 本阶段两处纯 CSS 改动(表格重做 + 圆角收敛)在五条真实浏览器门上复跑零 FAIL、与 phase 9 基线逐项结论块逐项同形、门改动实测零处;5 张 1440×900 整窗截图落盘(p3 一张同时可见三个机器可解析表),另出一张 `.chat-user` 10px 圆角的人眼取证图
+- 实测落定连带指纹的真实形状是「10 份覆盖 `frontend/style.css`,1 份可执行」—— 9 份归档/quick 报告因 `covered_files` 路径归档后不可解析而 fail-closed stale(与本次改动无关,属 2026-09-14 登记的已知限制),唯一可执行的 `idi-09` 以 HEAD 内容重新验证(非刷新指纹):24 条 must-have 逐条复核 24/24 成立,`covered_digest` 由 `6e811a11…` 重算为 `7b82f8d1…`,`verification.status` 由 `stale` 回到 `passed`
+
+**Range:** `5a4faff` (2026-09-26 17:09) → `acd0e71` (2026-09-27 22:40) — 61 commits, 2 days
+**Product surface:** 5 files, +1713 / −31 (`frontend/style.css` +258, `scripts/check-05-ui-uat.py` +10, 新 `check-09` +552 / `check-10` +776 / `probe-card-border-token.py` +148). Frontend at close: `style.css` 1912 / `app.js` 1854 / `index.html` 269 = 4,035 LOC. Backend unchanged by this milestone (219 passed / 6 skipped); `app.js` / `index.html` 逐字节未改.
+**Closeout type:** `verified_closeout` — 2/2 phases `phase_complete === true` and `verification_status === 'passed'` (Phase 9 24/24, Phase 10 62/62).
+**Known verification overrides:** 0 newly acknowledged, 2 carried forward from a prior close (see STATE.md Deferred Items). Both are ledger-lag artifacts, not verdict overrides: `uat_gaps idi-05/05-UAT.md` (a `status: failed` never written back after plan 04 fixed it) and `quick_tasks 260917-fqh` (its SUMMARY has no `status:` field, so the scanner reads `unknown`).
+
+**Milestone audit:** `status: tech_debt` — 12/12 requirements satisfied, no critical blocker, no unsatisfied requirement. 14 deferred items registered, of which 3 are WARNING-class structural findings (**G1** — `#latest-check` 自身声明 `background: var(--color-surface)` 且自身是 `.markdown-body` 宿主,Phase 10 用同一令牌画 `th` ⇒ 自检报告表头灰底压灰底、band 消失,视觉层级破坏而非 a11y 失败;仓库上一阶段刚为 `#doc-panel-header` 修过同形。**G2** — `--radix-gray-1` 已声明零消费,围栏的「每个声明的令牌都被消费」性质已不成立,而 `check-01` 只扫围栏外、结构上看不见。以及伴随 G1 的门盲区 —— `check-10` 的 58/58 PASS 与 G1 完全相容,它回答「`th` 是否画了 `--color-surface`」而非「表头是否读作独立 band」).
+
+**Scope adjudications (both by the user, per item):** Phase 9 先只做卡片化(「开一个 phase,先看看效果吧」);看过 5 张截图后裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 另开 Phase 10,两项档位由用户在 `AskUserQuestion` 中选定(表格「表头浅底 + 仅横向分隔」,圆角「严格收敛 8 / 10 / 胶囊」)。第三项候选(图标与空状态)**未点名,仍留 Out of Scope**。
+
+**Deferred to the next milestone:**
+
+- **G1 / G2 的处置决策**(见上)。两者都不阻塞收口,但都值得在下一里程碑开一个明确决策。
+- **`check-10` 的判据粒度** —— 只钉令牌接线,不钉视觉契约;`WR-04` 残项同源(无任何 `read_style(..., 'table', ...)`,重新加回表级边框或改 `border-collapse` 都会让 t1/t2 保持绿)。
+- **`WR-03` / `WR-05` 两条加固残项** —— `r1`/`r2` 缺「至少一对被渲染」守卫;圆角快照 diff 的计划字面判据写「8 个键」而实测 9 个(实质已由测量验证,错的是计划文本,但归档里留下了一条按字面跑会失败的命令)。
+- **`IN-05`** —— `th` 仍渲染 UA 默认字重 700,在文件声明的三档 400/500/600 之外(既有问题,但 Phase 10 让表头成为唯一带底色的单元格,该字重值得一次显式决策)。**`IN-06`** —— 表格语言只到 `.markdown-body`,9 个 markdown 宿主里 4 个覆盖(既有作用域,但它界定了「表格被重做了」的含义)。
+- **Nyquist 缺口** —— `idi-09` / `idi-10` 均无 `VALIDATION.md`(能力开着,`validate-phase` 从未对它们跑过)。连同 v1.14 遗留的 `idi-04` / `idi-06` 一起,建议 `/gsd-validate-phase`。
+- **`check-05` 一条陈旧 INFO**(`scripts/check-05-ui-uat.py:827` 仍打印页面为 gray-1 的旧比值;`info()` only,无门假绿)与 **`check-05 --item 8` 的 sticky 断言余量为零**(实测恰 `1.000px`,由 Phase 9 给 `#doc-panel` 加的 1px 上边框引入;事实未变,但任何 1px 级改动都会顶破)。
+- **仓库卫生** —— `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(VERIFIER 工具残留,用户已裁定删除,`rm` / `git rm` 被权限系统拒绝 ⇒ 待人工执行)。
+
+---
+
 ## v1.14 前端视觉与可访问性 (Shipped: 2026-09-26)
 
 **Phases completed:** 6 phases, 21 plans, 60 tasks

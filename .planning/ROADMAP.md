@@ -2,8 +2,10 @@
 
 ## Milestones
 
-- ✅ **v1.13 交互式讨论迭代系统 MVP** — Phases 1-3 (shipped 2026-09-13) — 详见 `milestones/v1.13-ROADMAP.md`
+- ✅ **v1.13 交互式讨论迭代系统 MVP** — Phases 1-3 (shipped 2026-09-13) — 20 条需求(FLOW 7 / UI 4 / AI 5 / DATA 4)全部交付 — 详见 `milestones/v1.13-ROADMAP.md`
 - ✅ **v1.14 前端视觉与可访问性** — Phases 4-8 (shipped 2026-09-26) — 38 条需求(TOKEN 8 / VISUAL 5 / TYPE 3 / A11Y 9 / LAYOUT 4 / INTERACT 2 / CHECK 4 / REG 3)全部交付 — 详见 `milestones/v1.14-ROADMAP.md`
+- ✅ **v1.15 视觉构图升级** — Phases 9-10 (shipped 2026-09-28) — 12 条需求(CARD 3 / VIS 2 / REG 2 / TABLE 2 / RADIUS 2 / REG-03)全部交付 — 详见 `milestones/v1.15-ROADMAP.md`
+- ✅ **v1.16 界面去卡片化 —— 连续面与发丝分隔线** — Phases 11-12 (shipped 2026-09-30) — 12 条需求(SURF 3 / DIV 3 / REG 4 / G1 1 / VIS 1)全部交付 — 详见 `milestones/v1.16-ROADMAP.md`
 
 ## Phases
 
@@ -45,6 +47,36 @@
 
 </details>
 
+<details>
+<summary>✅ v1.15 视觉构图升级 (Phases 9-10) — SHIPPED 2026-09-28</summary>
+
+- [x] **Phase 9: 卡片容器化与页面底色下沉** (3/3 plans) — completed 2026-09-26
+  左栏 4 个面板与右栏文档区成为白底卡片;页面底色下沉至 gray-3,形成 gray-3 < gray-2 < 白 三级 elevation 刻度;受影响的对比度对重算并登记;五条 UI 门复跑无新增失败
+- [x] **Phase 10: 表格重做与圆角刻度收敛** (4/4 plans) — completed 2026-09-27
+  文档表格由「每格 1px 全边框」改为「表头浅底 + 仅横向分隔线」;圆角刻度收敛为 8 / 10 / 胶囊三档,删掉未并入刻度的 `--radius-lg: 28px`;两项均不引入新颜色值、不放宽阈值、不新增 `!important`
+
+**Milestone scope:** 12 条需求(CARD 3 / VIS 2 / REG 2 / TABLE 2 / RADIUS 2 / REG-03)全部交付并验证。范围裁定两次均由用户逐项作出:Phase 9 先只做卡片化(「开一个 phase,先看看效果吧」),用户看过截图后裁定「表格重做, 圆角刻度收敛。做这两个」⇒ 另开 Phase 10;第三项候选(图标与空状态)**未点名,仍留 Out of Scope**。
+**验证记录:** Phase 9 `passed` 24/24(收口前经用户裁定追加一次强度微调 quick `260926-vaf`,已按「以 HEAD 内容重新验证」处置,非刷新指纹);Phase 10 `passed` 62/62。里程碑审计 `milestones/v1.15-MILESTONE-AUDIT.md`(`status: tech_debt` —— 12/12 需求满足、无 critical blocker,14 项已登记 tech debt 待用户裁定)。
+**产品面:** 仅 `frontend/style.css`(+258)与 `scripts/`(新 `check-09` / `check-10` / `probe-card-border-token.py`,`check-05` +10);后端与 `app.js` / `index.html` 逐字节未改。
+**v1.16 与本里程碑的关系:** v1.16 **反转** Phase 9 的卡片语言(D-9-1 / D-9-2 / D-9-3 是一次已 shipped 的用户裁定,用户 2026-09-28 看过成品后逐项裁定反转);本里程碑审计登记的 **G1**(`#latest-check` 表头 band 消失)由用户裁定「连带」纳入 v1.16 的 `G1-01`。Phase 9 引入的 **sticky 余量为零**由 v1.16 的 `REG-03` 处置。
+
+</details>
+
+<details>
+<summary>✅ v1.16 界面去卡片化 —— 连续面与发丝分隔线 (Phases 11-12) — SHIPPED 2026-09-30</summary>
+
+- [x] **Phase 11: 去卡片化与发丝分隔线** (5/5 plans) — completed 2026-09-29
+  左栏 4 个 section 与 `#doc-panel` 移除边框/阴影/圆角、面板与页面统一为同一档底色、12px 灰缝与 768px 居中侧沟归零;分区改由 1px 发丝线承担(主区↔文档区竖线跨满高、左栏面板间横线);同步改写 `check-09` 的 c1..c4 并以变异证明其会失败、重新归属 `check-02` 的卡片地面配对、复测 `check-05 --item 8` 的 sticky 余量
+- [x] **Phase 12: G1 表头 band 与里程碑收口** (3/3 plans) — completed 2026-09-29
+  `#latest-check` 内表头读作独立 band(宿主绘制面与表头底色不再同令牌相撞,以运行时读数 + 截图取证);五条浏览器门 + 四个静态门 + pytest 基线复跑零新增失败;连带作废的 `passed` 报告按既有口径逐份处置;5 张 1440×900 整窗截图
+
+**Milestone scope:** 12 条需求(SURF 3 / DIV 3 / REG 4 / G1-01 / VIS-01)全部交付并验证;2/2 阶段 `passed`,跨阶段集成 10/10,E2E 五状态全部在像素级走通。
+**本里程碑的性质:反转,不是新增。** 反转对象是 v1.15 Phase 9 的卡片语言(D-9-1 / D-9-2 / D-9-3)—— 一次已 shipped 的用户裁定。用户 2026-09-28 看过成品后逐字裁定:「分块太割裂了,完全没有联动性…chatgpt 的界面就是一根细的衬线来分割不同的分区,我们的确实很大的一块」。故**门禁同步是承重需求**:`check-09` 的 c1..c4 逐条断言卡片语言,反转后必然全红;判据被改写为断言新契约,并以变异测试证明其会真的失败(不得删除、不得降级为恒真)。范围裁定(用户,2026-09-28,逐项):视觉方向 = 全站去卡片;落地方式 = 走 GSD 新阶段;范围 = 去卡片化 **连带 G1**;跳过领域研究。
+**验证记录:** Phase 11 `passed` 12/12 must-haves(经四轮 re-verification);Phase 12 `passed` 15/15。里程碑审计 `milestones/v1.16-MILESTONE-AUDIT.md`(`status: tech_debt` —— 12/12 需求满足、无 critical blocker、无 orphan,15 项 tech debt 已登记)。
+**产品面:** 仅 4 个源文件,`+959 / −317` 行(`frontend/style.css`、重写的 `scripts/check-09-idi09-validation.py`、`scripts/check-05-ui-uat.py`、`scripts/ui-states/checking/docs/DESIGN-check-2.md`);`frontend/app.js` / `frontend/index.html` / `frontend/vendor/` / `backend/` 自里程碑基址至 HEAD **逐字节为空**。
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -58,8 +90,16 @@
 | 6. 布局稳健性 | v1.14 | 4/4 | Complete | 2026-09-22 |
 | 7. 交互状态与焦点样式 | v1.14 | 3/3 | Complete | 2026-09-23 |
 | 8. 可访问性语义与键盘 | v1.14 | 3/3 | Complete | 2026-09-24 |
+| 9. 卡片容器化与页面底色下沉 | v1.15 | 3/3 | Complete | 2026-09-26 |
+| 10. 表格重做与圆角刻度收敛 | v1.15 | 4/4 | Complete | 2026-09-27 |
+| 11. 去卡片化与发丝分隔线 | v1.16 | 5/5 | Complete | 2026-09-29 |
+| 12. G1 表头 band 与里程碑收口 | v1.16 | 3/3 | Complete | 2026-09-29 |
 
-**全部 9 个阶段已收口。** 下一里程碑待 `/gsd-new-milestone` 定义。
+**四个里程碑共 12 个阶段全部收口。** v1.16(界面去卡片化 —— 连续面与发丝分隔线)已 shipped 并归档于 2026-09-30 —— Phase 11 交付反转本体(连续白面 + 1px 发丝分隔线)与其三条承重门禁同步义务,Phase 12 交付 G1 表头 band 定点修复与里程碑收口;12/12 需求满足,里程碑审计 `status: tech_debt`(无 critical blocker、无 unsatisfied 需求、无 orphan,15 项 tech debt 已登记待裁定)。
+
+**v1.16 的性质是反转,不是新增** —— 它整体推翻了 v1.15 Phase 9 的卡片语言(D-9-1 / D-9-2 / D-9-3 是一次已 shipped 的用户裁定,用户 2026-09-28 看过成品后逐项裁定反转)。因此 `check-09` 的 c1..c4 在反转后**必然全红**,那正是门在正确工作的证据;判据被改写为断言新契约,并以六条变异测试逐条证明其会真的失败。
+
+**下一步 = 启动 v1.17 里程碑**(`/gsd-new-milestone`)。v1.16 审计登记的待裁定项:①**REG-02 范围缺口** —— `style.css:740-742` 的 PAIR 归因散文仍描述已不存在的地面(两条受守护的 PAIR 在任一面均 ≥ `NON_TEXT_MIN` ⇒ 门绿,错的是**归属**),`style.css:716-717` 同型第二处,`check-05:827` 的 `5.77` 读数已过期(现为 5.92);②**G2** —— `--radix-gray-1` 已声明但零消费;③`check-09` c2/c4 断言重叠、`WR-01` 恒真、`WR-04` 登记数字写错;④**Nyquist 缺口** —— `idi-11` / `idi-12` 无 `VALIDATION.md`(建议 `/gsd-validate-phase 11` 与 `12`);⑤3 份未跟踪文件(`scripts/.check09-old.py` 等)。另:`999.1` 已关闭,`999.2`(Phase 7 三条既有 affordance 缺陷)仍在 Backlog,执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证。
 
 ## Backlog
 

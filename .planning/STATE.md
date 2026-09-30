@@ -21,10 +21,10 @@ current_phase: 12
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-28)
+See: .planning/PROJECT.md (updated 2026-09-30)
 
 **Core value:** 未经用户明确授权,流程绝不进入"撰写总设计文档"步骤;文档通过自检提示「使命完成」即为终点(只读归档态)。
-**Current focus:** v1.16 里程碑收口 —— Phases 11-12 全部完成,待里程碑审计(`/gsd-audit-milestone`)
+**Current focus:** 无活动里程碑 —— v1.16「界面去卡片化 —— 连续面与发丝分隔线」已 shipped 并归档于 2026-09-30。下一步 `/gsd-new-milestone`;候选池(REG-02 范围缺口优先 / G2 / Nyquist 缺口 / 门一致性残项 / 999.2)见 PROJECT.md 的 `## Current Milestone`。
 
 ## Current Position
 
@@ -430,10 +430,14 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-29T13:11:51Z
-Stopped at: Phase 12 complete — v1.16 的 2/2 阶段全部收口,待里程碑审计
+Last session: 2026-09-30
+Stopped at: Milestone v1.16 shipped and archived — 2/2 阶段全部收口,无活动里程碑
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- **下一步 = `/gsd-new-milestone`**(v1.17)。v1.16 的 2/2 阶段均已 `phase_complete === true` 且 `verification_status === 'passed'`,里程碑审计 `v1.16-MILESTONE-AUDIT.md` 为 `tech_debt`(12/12 需求满足、跨阶段集成 10/10、E2E 五状态像素级全通、**无 critical blocker / 无 unsatisfied 需求 / 无 orphan**)。
+- **归档产物:** `.planning/milestones/v1.16-ROADMAP.md` / `v1.16-REQUIREMENTS.md` / `v1.16-MILESTONE-AUDIT.md` / `v1.16-phases/` / `v1.16-quick/`(8 个 quick 任务 + README 索引,由用户裁定「归档到 v1.16」)。`.planning/REQUIREMENTS.md` 已随收口删除,下一里程碑重新起算。
+- **收口类型:** `verified_closeout`(非 override)。**Known verification overrides: 0 newly acknowledged, 2 carried forward from a prior close**(两条均为台账滞后而非裁量性豁免:`uat_gaps idi-05/05-UAT.md` 与 `quick_tasks 260917-fqh`,详见上方 `## Deferred Items`)。
+- **待裁定候选池(优先级由证据强度排序,详见 PROJECT.md `## Current Milestone`):** ①**REG-02 范围缺口**(`style.css:740-742` / `:716-717` 的 PAIR 归因散文已失真,`check-05:827` 读数过期;门仍绿,错的是**归属** —— 闭合成本低);②**G2**(`--radix-gray-1` 零消费 + 通用围栏消费断言);③**Nyquist 缺口**(`idi-11` / `idi-12` 无 `VALIDATION.md`,建议 `/gsd-validate-phase 11` 与 `12`);④门一致性残项(`check-09` c2/c4 断言重叠、`WR-01` 恒真、`WR-04` 登记数字写错、`IN-03`/`IN-04`/`IN-05`/`IN-06`);⑤**`999.2`**(Phase 7 三条既有 affordance 缺陷,执行它会作废 `idi-07` 的 `passed` 指纹,须连带重新验证)。**`999.1` 已关闭。**
+- **一条需要人工执行的命令:** `.planning/milestones/v1.15-phases/idi-10-tables-and-radius-scale/.musthaves_rest.txt`(33KB,VERIFIER 残留)用户此前已裁定删除,但 `rm` / `git rm` 均被权限系统拒绝(全局 `~/.claude/settings.json` 的 deny 列表含 `Bash(rm *)` / `Bash(* rm *)`)。**需在终端手动执行。**
